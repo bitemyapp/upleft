@@ -21,14 +21,14 @@ sha2 = "0.10"
 objc2-foundation = { workspace = true, features = [
     "NSArray", "NSAttributedString", "NSBundle", "NSCharacterSet", "NSData", "NSDate", "NSDateFormatter",
     "NSDictionary", "NSEnumerator", "NSError", "NSFileCoordinator", "NSFileManager", "NSFilePresenter",
-    "NSFileVersion", "NSFileWrapper", "NSFormatter", "NSISO8601DateFormatter", "NSIndexSet", "NSJSONSerialization",
+    "NSFileVersion", "NSFileWrapper", "NSFormatter", "NSHTTPCookieStorage", "NSISO8601DateFormatter", "NSIndexSet", "NSJSONSerialization",
     "NSLocale", "NSLock", "NSNotification", "NSNull", "NSObjCRuntime", "NSObject", "NSOperation", "NSPathUtilities",
     "NSProcessInfo", "NSRange", "NSRegularExpression", "NSString", "NSTextCheckingResult", "NSThread", "NSTimer",
-    "NSUndoManager", "NSURL", "NSURLRequest", "NSURLResponse", "NSURLSession", "NSUserDefaults", "NSUUID",
+    "NSUndoManager", "NSURL", "NSURLCache", "NSURLRequest", "NSURLResponse", "NSURLSession", "NSUserDefaults", "NSUUID",
     "NSValue", "NSXMLDocument", "NSXMLElement", "NSXMLNode", "NSXMLParser", "block2",
 ] }
 objc2-app-kit = { workspace = true, features = [
-    "NSAppearance", "NSApplication", "NSAttributedString", "NSColor", "NSFont", "NSImage", "NSParagraphStyle",
+    "NSAlert", "NSAppearance", "NSApplication", "NSAttributedString", "NSColor", "NSFont", "NSGraphics", "NSImage", "NSParagraphStyle",
     "NSPasteboard", "NSResponder", "NSSpeechSynthesizer", "NSText", "NSTextStorage", "NSWorkspace", "block2",
     "objc2-core-foundation",
 ] }
