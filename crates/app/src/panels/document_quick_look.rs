@@ -242,7 +242,7 @@ pub fn quick_look_session(owner: &AnyObject) -> Retained<QuickLookSession> {
     let key = &QUICK_LOOK_SESSION_KEY as *const u8 as *const std::ffi::c_void;
     let existing = unsafe { objc2::ffi::objc_getAssociatedObject(owner as *const AnyObject as *const _, key) };
     if !existing.is_null() {
-        let existing = unsafe { &*(existing as *const AnyObject) };
+        let existing = unsafe { &*existing };
         if let Some(session) = super::appkit_support::downcast::<QuickLookSession>(existing) {
             return session;
         }
