@@ -32,6 +32,7 @@ use upleft_render::appkit_compat::RectExt as _;
 use super::DocumentWindowController;
 use crate::ai::markdown_document::{ExternalEvent, Phase, PresentationState};
 use crate::panels::appkit_support::activate;
+use crate::panels::breadcrumb_view::Crumb;
 use crate::panels::change_summary_bar_view::{ChangeSummaryBarDelegate, ChangeSummaryBarView, Summary};
 use crate::panels::conflict_bar_view::{ConflictBarDelegate, ConflictBarView};
 use crate::support::find_engine::FindQuery;
@@ -150,7 +151,7 @@ impl DocumentWindowController {
         self.refresh_visual_debugger_if_visible();
         self.refresh_review_panel_if_visible();
         let completed_tasks = parsed.tasks.iter().fold(0isize, |count, task| if task.is_checked { count + 1 } else { count });
-        self.progress_ring().set_progress((completed_tasks, parsed.tasks.len() as isize));
+        self.progress_ring().set_progress(completed_tasks, parsed.tasks.len() as isize);
         self.refresh_toolbar_selection_state();
 
         // Path existence is stable across local edits; wipe only on external
@@ -258,10 +259,10 @@ impl DocumentWindowController {
             self.breadcrumb_view().set_trail(Vec::new());
             return;
         };
-        let mut trail: Vec<(isize, String, isize)> = Vec::new();
+        let mut trail: Vec<Crumb> = Vec::new();
         loop {
             let heading = &headings[index];
-            trail.insert(0, (index as isize, heading.title.clone(), heading.level));
+            trail.insert(0, Crumb::new(index as isize, &heading.title, heading.level));
             let Some(parent) = heading.parent_index else { break };
             index = parent as usize;
         }

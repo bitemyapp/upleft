@@ -31,7 +31,9 @@ fn run_loop_once(seconds: f64) {
 
 fn is_first_responder(window: &NSWindow, controller: &DocumentWindowController) -> bool {
     let text_view = controller.primary_container().text_view().clone();
-    let responder: Retained<NSResponder> = Retained::into_super(Retained::into_super(Retained::into_super(text_view)));
+    // MarkdownTextView → NSTextView → NSText → NSView → NSResponder.
+    let responder: Retained<NSResponder> =
+        Retained::into_super(Retained::into_super(Retained::into_super(Retained::into_super(text_view))));
     window.firstResponder().is_some_and(|first| std::ptr::eq(&*first, &*responder))
 }
 

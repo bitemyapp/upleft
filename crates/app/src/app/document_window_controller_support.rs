@@ -43,7 +43,7 @@ use crate::panels::appkit_support::downcast;
 use crate::panels::inspector_host_view::InspectorSection;
 use crate::panels::panel_chrome::panel_title;
 use crate::panels::search_results_panel_view::{SearchResultsDelegate, SearchResultsPanelView};
-use crate::panels::tidy_sheet_view::{TidySheetDelegate, TidySheetView};
+use crate::panels::tidy_sheet_view::{TidyProposal, TidySheetDelegate, TidySheetView};
 use crate::support::commands::Command;
 use crate::support::find_engine::{FindEngine, FindQuery};
 
@@ -428,7 +428,7 @@ impl DocumentWindowController {
                 let before = text
                     .substringWithRange(FoundationRange::new(edit.range.location as usize, edit.range.length as usize))
                     .to_string();
-                (edit.clone(), before, edit.replacement.clone())
+                TidyProposal { edit: edit.clone(), before, after: edit.replacement.clone() }
             })
             .collect();
         sheet.set_proposals(proposals);

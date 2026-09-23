@@ -7,17 +7,18 @@
 //! controller can install itself as each view's delegate.
 
 use objc2_core_foundation::CGFloat;
+use upleft_core::TextEdit;
 use upleft_render::view::density_gutter_view::{DensityGutterDelegate, DensityGutterView};
 use upleft_render::view::markdown_text_view_delegate::MarkdownTextViewDelegate;
 
 use crate::app::document_window_controller::DocumentWindowControllerDelegates;
-use crate::panels::breadcrumb_view::BreadcrumbDelegate;
+use crate::panels::breadcrumb_view::{BreadcrumbDelegate, BreadcrumbView};
 use crate::panels::change_summary_bar_view::ChangeSummaryBarDelegate;
 use crate::panels::conflict_bar_view::{ConflictBarDelegate, ConflictBarView};
 use crate::panels::find_bar_view::FindBarDelegate;
 use crate::panels::search_results_panel_view::SearchResultsDelegate;
 use crate::panels::task_panel_view::TaskPanelDelegate;
-use crate::panels::tidy_sheet_view::TidySheetDelegate;
+use crate::panels::tidy_sheet_view::{TidySheetDelegate, TidySheetView};
 
 // PORT: DocumentWindowController+Delegates.swift (`MarkdownTextViewDelegate`).
 impl MarkdownTextViewDelegate for DocumentWindowControllerDelegates {}
@@ -45,9 +46,14 @@ impl ConflictBarDelegate for DocumentWindowControllerDelegates {
 
 // PORT: DocumentWindowController+Delegates.swift (the panels' delegates;
 // their traits arrive with the panels on `port/panels`).
-impl BreadcrumbDelegate for DocumentWindowControllerDelegates {}
+impl BreadcrumbDelegate for DocumentWindowControllerDelegates {
+    fn breadcrumb_did_select_heading_at(&self, _view: &BreadcrumbView, _index: isize) {}
+}
 impl TaskPanelDelegate for DocumentWindowControllerDelegates {}
 impl FindBarDelegate for DocumentWindowControllerDelegates {}
 impl ChangeSummaryBarDelegate for DocumentWindowControllerDelegates {}
-impl TidySheetDelegate for DocumentWindowControllerDelegates {}
+impl TidySheetDelegate for DocumentWindowControllerDelegates {
+    fn tidy_sheet_did_apply(&self, _sheet: &TidySheetView, _edits: &[TextEdit]) {}
+    fn tidy_sheet_did_cancel(&self, _sheet: &TidySheetView) {}
+}
 impl SearchResultsDelegate for DocumentWindowControllerDelegates {}
