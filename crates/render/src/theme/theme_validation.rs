@@ -7,10 +7,14 @@
 
 use objc2::Message;
 use objc2::rc::Retained;
-use objc2_app_kit::{NSAppearance, NSAppearanceNameAqua, NSAppearanceNameDarkAqua, NSColor, NSColorSpace};
+use objc2_app_kit::{
+    NSAppearance, NSAppearanceNameAqua, NSAppearanceNameDarkAqua, NSColor, NSColorSpace,
+};
 
 use super::style_sheet::ColorResolver;
-use crate::render_contracts::{Theme, ThemeAppearance, ThemeColor, color_from_hex_string, system_color_named};
+use crate::render_contracts::{
+    Theme, ThemeAppearance, ThemeColor, color_from_hex_string, system_color_named,
+};
 use crate::swift_compat::{self, pow, smax, smin};
 
 #[derive(Debug, Clone, PartialEq)]
@@ -51,21 +55,34 @@ impl Theme {
 
     /// Paths of every colour that would silently fall back at runtime.
     pub fn invalid_color_paths(&self) -> Vec<String> {
-        self.all_colors().into_iter().filter(|(_, color)| !color.is_valid()).map(|(path, _)| path).collect()
+        self.all_colors()
+            .into_iter()
+            .filter(|(_, color)| !color.is_valid())
+            .map(|(path, _)| path)
+            .collect()
     }
 
     /// Essential text roles checked against the surfaces the renderer draws
     /// them on.
-    pub fn semantic_contrast_failures(&self, appearance: Option<&NSAppearance>) -> Vec<ThemeContrastFailure> {
+    pub fn semantic_contrast_failures(
+        &self,
+        appearance: Option<&NSAppearance>,
+    ) -> Vec<ThemeContrastFailure> {
         let owned;
         let appearance = match appearance {
             Some(appearance) => appearance,
             None => {
                 // SAFETY: AppKit exports the appearance names as immutable globals.
                 let name = unsafe {
-                    if self.appearance == ThemeAppearance::Dark { NSAppearanceNameDarkAqua } else { NSAppearanceNameAqua }
+                    if self.appearance == ThemeAppearance::Dark {
+                        NSAppearanceNameDarkAqua
+                    } else {
+                        NSAppearanceNameAqua
+                    }
                 };
-                let Some(named) = NSAppearance::appearanceNamed(name) else { return Vec::new() };
+                let Some(named) = NSAppearance::appearanceNamed(name) else {
+                    return Vec::new();
+                };
                 owned = named;
                 &owned
             }
@@ -75,23 +92,83 @@ impl Theme {
         let code = &self.code;
         let mut roles: Vec<(&str, &ThemeColor, &ThemeColor, f64)> = vec![
             ("palette.text", &palette.text, &palette.background, 4.5),
-            ("palette.textSecondary", &palette.text_secondary, &palette.background, 4.5),
-            ("palette.heading", &palette.heading, &palette.background, 4.5),
+            (
+                "palette.textSecondary",
+                &palette.text_secondary,
+                &palette.background,
+                4.5,
+            ),
+            (
+                "palette.heading",
+                &palette.heading,
+                &palette.background,
+                4.5,
+            ),
             ("palette.link", &palette.link, &palette.background, 3.0),
-            ("palette.textOnCode", &palette.text, &palette.code_background, 4.5),
-            ("palette.textOnInlineCode", &palette.text, &palette.inline_code_background, 4.5),
-            ("palette.textOnSelection", &palette.text, &palette.selection, 4.0),
+            (
+                "palette.textOnCode",
+                &palette.text,
+                &palette.code_background,
+                4.5,
+            ),
+            (
+                "palette.textOnInlineCode",
+                &palette.text,
+                &palette.inline_code_background,
+                4.5,
+            ),
+            (
+                "palette.textOnSelection",
+                &palette.text,
+                &palette.selection,
+                4.0,
+            ),
             // Comments and markers are intentionally quiet chrome, but they
             // still need a measurable floor against their actual surfaces.
-            ("code.commentOnCode", &code.comment, &palette.code_background, 2.0),
-            ("palette.markerOnBackground", &palette.marker, &palette.background, 1.5),
-            ("palette.calloutNoteOnBackground", &palette.callout_note, &palette.background, 2.0),
-            ("palette.calloutWarningOnBackground", &palette.callout_warning, &palette.background, 2.0),
-            ("palette.calloutSuccessOnBackground", &palette.callout_success, &palette.background, 2.0),
-            ("palette.calloutDangerOnBackground", &palette.callout_danger, &palette.background, 2.0),
+            (
+                "code.commentOnCode",
+                &code.comment,
+                &palette.code_background,
+                2.0,
+            ),
+            (
+                "palette.markerOnBackground",
+                &palette.marker,
+                &palette.background,
+                1.5,
+            ),
+            (
+                "palette.calloutNoteOnBackground",
+                &palette.callout_note,
+                &palette.background,
+                2.0,
+            ),
+            (
+                "palette.calloutWarningOnBackground",
+                &palette.callout_warning,
+                &palette.background,
+                2.0,
+            ),
+            (
+                "palette.calloutSuccessOnBackground",
+                &palette.callout_success,
+                &palette.background,
+                2.0,
+            ),
+            (
+                "palette.calloutDangerOnBackground",
+                &palette.callout_danger,
+                &palette.background,
+                2.0,
+            ),
         ];
         if let Some(important) = &palette.callout_important {
-            roles.push(("palette.calloutImportantOnBackground", important, &palette.background, 2.0));
+            roles.push((
+                "palette.calloutImportantOnBackground",
+                important,
+                &palette.background,
+                2.0,
+            ));
         }
         roles
             .into_iter()
@@ -99,11 +176,19 @@ impl Theme {
                 if !(foreground.is_valid() && background.is_valid()) {
                     return None;
                 }
-                let ratio = theme_contrast::ratio(&resolver.resolve(foreground), &resolver.resolve(background));
+                let ratio = theme_contrast::ratio(
+                    &resolver.resolve(foreground),
+                    &resolver.resolve(background),
+                );
+                #[allow(clippy::neg_cmp_op_on_partial_ord)] // `guard ratio < minimum else`
                 if !(ratio < minimum) {
                     return None;
                 }
-                Some(ThemeContrastFailure { path: path.to_owned(), ratio, minimum })
+                Some(ThemeContrastFailure {
+                    path: path.to_owned(),
+                    ratio,
+                    minimum,
+                })
             })
             .collect()
     }
@@ -122,11 +207,18 @@ pub mod theme_contrast {
     }
 
     fn relative_luminance(color: &NSColor) -> f64 {
-        let color = color.colorUsingColorSpace(&NSColorSpace::sRGBColorSpace()).unwrap_or_else(|| color.retain());
+        let color = color
+            .colorUsingColorSpace(&NSColorSpace::sRGBColorSpace())
+            .unwrap_or_else(|| color.retain());
         let linear = |component: f64| -> f64 {
-            if component <= 0.04045 { component / 12.92 } else { pow((component + 0.055) / 1.055, 2.4) }
+            if component <= 0.04045 {
+                component / 12.92
+            } else {
+                pow((component + 0.055) / 1.055, 2.4)
+            }
         };
-        0.2126 * linear(color.redComponent()) + 0.7152 * linear(color.greenComponent())
+        0.2126 * linear(color.redComponent())
+            + 0.7152 * linear(color.greenComponent())
             + 0.0722 * linear(color.blueComponent())
     }
 }

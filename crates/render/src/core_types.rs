@@ -67,7 +67,9 @@ impl CalloutKind {
     }
 
     pub fn from_raw_value(raw: &str) -> Option<CalloutKind> {
-        CalloutKind::ALL_CASES.into_iter().find(|kind| kind.raw_value() == raw)
+        CalloutKind::ALL_CASES
+            .into_iter()
+            .find(|kind| kind.raw_value() == raw)
     }
 
     /// `init?(token:)`: agents emit these in every casing imaginable.
@@ -85,7 +87,11 @@ pub enum ChangeKind {
 }
 
 impl ChangeKind {
-    pub const ALL_KINDS: [ChangeKind; 3] = [ChangeKind::Inserted, ChangeKind::Deleted, ChangeKind::Modified];
+    pub const ALL_KINDS: [ChangeKind; 3] = [
+        ChangeKind::Inserted,
+        ChangeKind::Deleted,
+        ChangeKind::Modified,
+    ];
 
     pub const fn raw_value(self) -> &'static str {
         match self {
@@ -130,13 +136,28 @@ pub enum InlineKind {
     Strong,
     Strikethrough,
     InlineCode,
-    Link { destination: String, title: Option<String> },
-    Autolink { destination: String },
-    Wikilink { target: String, label: Option<String> },
-    Image { source: String, alt: String },
-    InlineMath { latex_range: NSRange },
+    Link {
+        destination: String,
+        title: Option<String>,
+    },
+    Autolink {
+        destination: String,
+    },
+    Wikilink {
+        target: String,
+        label: Option<String>,
+    },
+    Image {
+        source: String,
+        alt: String,
+    },
+    InlineMath {
+        latex_range: NSRange,
+    },
     PathToken(PathToken),
-    FootnoteReference { identifier: String },
+    FootnoteReference {
+        identifier: String,
+    },
     SoftBreak,
     LineBreak,
     InlineHtml,

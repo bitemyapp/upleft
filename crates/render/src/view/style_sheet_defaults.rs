@@ -56,6 +56,10 @@ pub trait PanelAlpha {
 
 impl PanelAlpha for NSColor {
     fn panel_alpha(&self, alpha: f64, increase_contrast: bool) -> Retained<NSColor> {
-        self.colorWithAlphaComponent(if increase_contrast { smin(1.0, alpha * 1.8) } else { alpha })
+        self.colorWithAlphaComponent(if increase_contrast {
+            smin(1.0, alpha * 1.8)
+        } else {
+            alpha
+        })
     }
 }

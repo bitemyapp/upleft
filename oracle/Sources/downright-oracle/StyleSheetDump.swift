@@ -5,8 +5,8 @@ import MarkdownCore
 // Dumps for the render foundation: the resolved `StyleSheet` (`stylesheet`),
 // the built-in syntax highlighter (`highlight`), and the VS Code theme
 // importer plus the theme decoder (`vscode-theme`). `upleft-oracle` writes the
-// same shapes from `crates/conformance/src/dump/{style_sheet,highlight,
-// vscode_theme}.rs`; field names and order must match.
+// same shapes from `crates/conformance/src/dump/{style_sheet,highlight}.rs`;
+// field names and order must match.
 
 enum ThemeDump {
     static func theme(_ theme: Theme) -> JSON {
@@ -166,6 +166,18 @@ enum StyleSheetDump {
                     ("resolved", AttributeDump.colorJSON(color.resolved())),
                     ("snapshot", AttributeDump.colorJSON(ColorResolver(appearance: appearance).resolve(color))),
                 ])
+            })),
+            // The Increase Contrast branch of `StyleSheet.init`, whatever the
+            // machine's setting: every quiet colour pulled toward the text.
+            ("boosted", .array([
+                theme.palette.textSecondary, theme.palette.textFaint, theme.palette.marker, theme.palette.rule,
+                theme.palette.codeRule, theme.palette.railTick, theme.palette.railTickCurrent,
+                theme.palette.quoteRule,
+            ].map { color in
+                let resolver = ColorResolver(appearance: appearance)
+                return AttributeDump.colorJSON(
+                    resolver.resolve(color, towards: resolver.resolve(theme.palette.text), if: true)
+                )
             })),
             ("renderMetrics", renderMetrics(bodySize: theme.typography.bodySize, grid: sheet.baselineGrid)),
             ("themeStore", .object([

@@ -31,8 +31,10 @@ impl WordTable {
         let mut seen: HashSet<Vec<u8>> = HashSet::new();
         for (token, spellings) in groups {
             for spelling in spellings.iter() {
-                let bytes: Vec<u8> =
-                    spelling.bytes().map(|b| if folds_case { WordTable::lowered(b) } else { b }).collect();
+                let bytes: Vec<u8> = spelling
+                    .bytes()
+                    .map(|b| if folds_case { WordTable::lowered(b) } else { b })
+                    .collect();
                 if !seen.insert(bytes.clone()) {
                     continue;
                 }
@@ -49,7 +51,11 @@ impl WordTable {
             }
         });
         let (words, tokens) = pairs.into_iter().unzip();
-        WordTable { words, tokens, folds_case }
+        WordTable {
+            words,
+            tokens,
+            folds_case,
+        }
     }
 
     /// Classification of `units[start..end]`, or `None` when the word is not a
@@ -70,7 +76,11 @@ impl WordTable {
 
     #[inline(always)]
     fn lowered(b: u8) -> u8 {
-        if (0x41..=0x5A).contains(&b) { b + 0x20 } else { b }
+        if (0x41..=0x5A).contains(&b) {
+            b + 0x20
+        } else {
+            b
+        }
     }
 
     fn less(a: &[u8], b: &[u8]) -> bool {
@@ -90,15 +100,27 @@ impl WordTable {
         let shared = word.len().min(length);
         for i in 0..shared {
             let raw = units[start + i];
-            let unit = if self.folds_case && raw < 0x80 { WordTable::lowered(raw as u8) as Unit } else { raw };
+            let unit = if self.folds_case && raw < 0x80 {
+                WordTable::lowered(raw as u8) as Unit
+            } else {
+                raw
+            };
             let byte = word[i] as Unit;
             if byte != unit {
-                return if byte < unit { Ordering::Less } else { Ordering::Greater };
+                return if byte < unit {
+                    Ordering::Less
+                } else {
+                    Ordering::Greater
+                };
             }
         }
         if word.len() == length {
             return Ordering::Equal;
         }
-        if word.len() < length { Ordering::Less } else { Ordering::Greater }
+        if word.len() < length {
+            Ordering::Less
+        } else {
+            Ordering::Greater
+        }
     }
 }

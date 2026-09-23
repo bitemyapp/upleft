@@ -99,7 +99,9 @@ pub struct RunBuilder {
 impl RunBuilder {
     pub fn new(reserving_for_unit_count: usize) -> Self {
         // Empirically ~1 run per 6 code units of source.
-        RunBuilder { runs: Vec::with_capacity(8.max(reserving_for_unit_count / 6)) }
+        RunBuilder {
+            runs: Vec::with_capacity(8.max(reserving_for_unit_count / 6)),
+        }
     }
 
     #[inline]
@@ -117,7 +119,10 @@ impl RunBuilder {
             last.range.length += end - start;
             return;
         }
-        self.runs.push(SyntaxRun { range: NSRange::new(start, end - start), token });
+        self.runs.push(SyntaxRun {
+            range: NSRange::new(start, end - start),
+            token,
+        });
     }
 
     pub fn runs(&self) -> &[SyntaxRun] {

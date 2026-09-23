@@ -91,8 +91,11 @@ pub const TASK_BOX_STROKE_RATIO: f64 = 1.5 / 20.0;
 pub const TASK_TICK_STROKE_RATIO: f64 = 2.0 / 20.0;
 
 /// The tick, in unit coordinates measured from the bottom-left of the box.
-pub const TASK_TICK: [NSPoint; 3] =
-    [NSPoint::new(0.245, 0.500), NSPoint::new(0.430, 0.315), NSPoint::new(0.765, 0.690)];
+pub const TASK_TICK: [NSPoint; 3] = [
+    NSPoint::new(0.245, 0.500),
+    NSPoint::new(0.430, 0.315),
+    NSPoint::new(0.765, 0.690),
+];
 
 /// One-line chip a long code block collapses to in Read mode (§5.1).
 pub const CHIP_HEIGHT: f64 = 30.0;
@@ -126,6 +129,7 @@ pub fn indent_unit(body_size: f64) -> f64 {
 /// cleanly (§11.1). Rounds *up* by default (`snap(value, grid)`); code passes
 /// `RoundingRule::Down`.
 #[inline]
+#[allow(clippy::neg_cmp_op_on_partial_ord)] // `guard grid > 0.5 else`: NaN takes the guard
 pub fn snap(value: f64, grid: f64, rounding: RoundingRule) -> f64 {
     if !(grid > 0.5) {
         return value.round();

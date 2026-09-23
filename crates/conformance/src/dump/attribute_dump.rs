@@ -25,15 +25,24 @@ pub fn number_json(number: &NSNumber) -> Value {
     // SAFETY: an NSNumber is a CFNumber or CFBoolean (toll-free bridged).
     let (type_id, boolean_type) = unsafe { (CFGetTypeID(pointer), CFBooleanGetTypeID()) };
     if type_id == boolean_type {
-        return Object::new().with("type", "Bool").with("value", number.boolValue()).build();
+        return Object::new()
+            .with("type", "Bool")
+            .with("value", number.boolValue())
+            .build();
     }
     // SAFETY: as above; not a CFBoolean, so a CFNumber.
     let kind = unsafe { CFNumberGetType(pointer) };
     // kCFNumberFloat32Type, Float64, Float, Double, CGFloat.
     if matches!(kind, 5 | 6 | 12 | 13 | 16) {
-        return Object::new().with("type", "Double").with("value", double(number.doubleValue())).build();
+        return Object::new()
+            .with("type", "Double")
+            .with("value", double(number.doubleValue()))
+            .build();
     }
-    Object::new().with("type", "Int").with("value", number.integerValue() as i64).build()
+    Object::new()
+        .with("type", "Int")
+        .with("value", number.integerValue() as i64)
+        .build()
 }
 
 /// `value(_:)` for the value kinds font descriptors carry.
@@ -48,24 +57,38 @@ pub fn value(object: &AnyObject) -> Value {
         return color_json(color);
     }
     if let Some(string) = object.downcast_ref::<NSString>() {
-        return Object::new().with("type", "String").with("value", string.to_string()).build();
+        return Object::new()
+            .with("type", "String")
+            .with("value", string.to_string())
+            .build();
     }
-    Object::new().with("type", "unknown").with("class", object.class().name().to_string_lossy().into_owned()).build()
+    Object::new()
+        .with("type", "unknown")
+        .with(
+            "class",
+            object.class().name().to_string_lossy().into_owned(),
+        )
+        .build()
 }
 
 pub fn font_json(font: &NSFont) -> Value {
     let descriptor = font.fontDescriptor();
     let mut features = Vec::new();
     // SAFETY: AppKit exports the attribute names as immutable globals.
-    let (settings_key, variation_key) = unsafe { (NSFontFeatureSettingsAttribute, NSFontVariationAttribute) };
+    let (settings_key, variation_key) =
+        unsafe { (NSFontFeatureSettingsAttribute, NSFontVariationAttribute) };
     if let Some(settings) = descriptor.objectForKey(settings_key)
         && let Ok(settings) = settings.downcast::<NSArray>()
     {
         for setting in settings.iter() {
-            let Ok(setting) = setting.downcast::<NSDictionary>() else { continue };
+            let Ok(setting) = setting.downcast::<NSDictionary>() else {
+                continue;
+            };
             let mut pairs: Vec<(String, Retained<AnyObject>)> = Vec::new();
             for key in setting.allKeys().iter() {
-                let Ok(name) = key.clone().downcast::<NSString>() else { continue };
+                let Ok(name) = key.clone().downcast::<NSString>() else {
+                    continue;
+                };
                 if let Some(entry) = setting.objectForKey(&key) {
                     pairs.push((name.to_string(), entry));
                 }
@@ -84,8 +107,14 @@ pub fn font_json(font: &NSFont) -> Value {
     {
         let mut pairs: Vec<(i64, f64)> = Vec::new();
         for key in axes.allKeys().iter() {
-            let (Ok(axis), Some(entry)) = (key.clone().downcast::<NSNumber>(), axes.objectForKey(&key)) else { continue };
-            let Ok(entry) = entry.downcast::<NSNumber>() else { continue };
+            let (Ok(axis), Some(entry)) =
+                (key.clone().downcast::<NSNumber>(), axes.objectForKey(&key))
+            else {
+                continue;
+            };
+            let Ok(entry) = entry.downcast::<NSNumber>() else {
+                continue;
+            };
             pairs.push((axis.integerValue() as i64, entry.doubleValue()));
         }
         pairs.sort_by_key(|(axis, _)| *axis);
@@ -96,7 +125,11 @@ pub fn font_json(font: &NSFont) -> Value {
     Object::new()
         .with("type", "NSFont")
         .with("postScriptName", font.fontName().to_string())
-        .with("familyName", font.familyName().map_or(Value::Null, |name| name.to_string().into()))
+        .with(
+            "familyName",
+            font.familyName()
+                .map_or(Value::Null, |name| name.to_string().into()),
+        )
         .with("pointSize", double(font.pointSize()))
         .with("symbolicTraits", descriptor.symbolicTraits().0 as i64)
         .with("features", Value::Array(features))
@@ -132,11 +165,17 @@ pub fn color_json(color: &NSColor) -> Value {
             .with("type", "NSColor")
             .with("colorType", "componentBased")
             .with("colorSpace", space_name)
-            .with("components", Value::Array(components.into_iter().map(double).collect()))
+            .with(
+                "components",
+                Value::Array(components.into_iter().map(double).collect()),
+            )
             .build();
     }
     if kind == NSColorType::Pattern {
-        return Object::new().with("type", "NSColor").with("colorType", "pattern").build();
+        return Object::new()
+            .with("type", "NSColor")
+            .with("colorType", "pattern")
+            .build();
     }
     Object::new()
         .with("type", "NSColor")

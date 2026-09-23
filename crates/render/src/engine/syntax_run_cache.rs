@@ -88,13 +88,31 @@ fn canonically_equal(a: &[u16], b: &[u16]) -> bool {
 
 impl SyntaxRunCache {
     pub fn new(capacity: usize) -> Self {
-        SyntaxRunCache { state: Mutex::new(State { entries: HashMap::new(), stamp: 0 }), capacity }
+        SyntaxRunCache {
+            state: Mutex::new(State {
+                entries: HashMap::new(),
+                stamp: 0,
+            }),
+            capacity,
+        }
     }
 
     /// Runs for `code` (UTF-16), highlighted once per distinct content.
-    pub fn runs(&self, code: &[u16], language: Option<&str>, highlighter: &dyn SyntaxHighlighter) -> Arc<[SyntaxRun]> {
-        let key = Key { language: language.unwrap_or("").to_owned(), length: code.len(), hash: content_hash(code) };
-        let mut state = self.state.lock().unwrap_or_else(|poison| poison.into_inner());
+    pub fn runs(
+        &self,
+        code: &[u16],
+        language: Option<&str>,
+        highlighter: &dyn SyntaxHighlighter,
+    ) -> Arc<[SyntaxRun]> {
+        let key = Key {
+            language: language.unwrap_or("").to_owned(),
+            length: code.len(),
+            hash: content_hash(code),
+        };
+        let mut state = self
+            .state
+            .lock()
+            .unwrap_or_else(|poison| poison.into_inner());
         state.stamp = state.stamp.wrapping_add(1);
         let stamp = state.stamp;
         // The stored code is compared, not trusted to the hash: a collision
@@ -106,7 +124,14 @@ impl SyntaxRunCache {
             return hit.runs.clone();
         }
         let runs: Arc<[SyntaxRun]> = highlighter.highlight(code, language).into();
-        state.entries.insert(key, Entry { code: code.into(), runs: runs.clone(), stamp });
+        state.entries.insert(
+            key,
+            Entry {
+                code: code.into(),
+                runs: runs.clone(),
+                stamp,
+            },
+        );
         if state.entries.len() > self.capacity {
             self.evict(&mut state);
         }
@@ -114,12 +139,19 @@ impl SyntaxRunCache {
     }
 
     pub fn remove_all(&self) {
-        let mut state = self.state.lock().unwrap_or_else(|poison| poison.into_inner());
+        let mut state = self
+            .state
+            .lock()
+            .unwrap_or_else(|poison| poison.into_inner());
         state.entries.clear();
     }
 
     pub fn len(&self) -> usize {
-        self.state.lock().unwrap_or_else(|poison| poison.into_inner()).entries.len()
+        self.state
+            .lock()
+            .unwrap_or_else(|poison| poison.into_inner())
+            .entries
+            .len()
     }
 
     pub fn is_empty(&self) -> bool {
@@ -128,8 +160,11 @@ impl SyntaxRunCache {
 
     fn evict(&self, state: &mut State) {
         // Drop the least recently used quarter in one pass.
-        let mut stamps: Vec<(u64, Key)> =
-            state.entries.iter().map(|(key, entry)| (entry.stamp, key.clone())).collect();
+        let mut stamps: Vec<(u64, Key)> = state
+            .entries
+            .iter()
+            .map(|(key, entry)| (entry.stamp, key.clone()))
+            .collect();
         stamps.sort_by_key(|(stamp, _)| *stamp);
         for (_, key) in stamps.into_iter().take(self.capacity / 4) {
             state.entries.remove(&key);

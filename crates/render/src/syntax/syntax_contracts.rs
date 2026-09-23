@@ -70,7 +70,9 @@ impl SyntaxToken {
     }
 
     pub fn from_raw_value(raw: &str) -> Option<SyntaxToken> {
-        SyntaxToken::ALL_CASES.into_iter().find(|token| token.raw_value() == raw)
+        SyntaxToken::ALL_CASES
+            .into_iter()
+            .find(|token| token.raw_value() == raw)
     }
 }
 

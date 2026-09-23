@@ -36,8 +36,30 @@ impl LanguageScanner {
 }
 
 pub const CANONICAL_NAMES: [&str; 24] = [
-    "bash", "c", "cpp", "css", "diff", "go", "html", "java", "javascript", "json", "jsx", "markdown", "objc",
-    "plaintext", "python", "ruby", "rust", "sql", "swift", "toml", "tsx", "typescript", "xml", "yaml",
+    "bash",
+    "c",
+    "cpp",
+    "css",
+    "diff",
+    "go",
+    "html",
+    "java",
+    "javascript",
+    "json",
+    "jsx",
+    "markdown",
+    "objc",
+    "plaintext",
+    "python",
+    "ruby",
+    "rust",
+    "sql",
+    "swift",
+    "toml",
+    "tsx",
+    "typescript",
+    "xml",
+    "yaml",
 ];
 
 /// Alias → canonical. Agents label fences with whatever the ecosystem calls
@@ -103,13 +125,17 @@ pub fn canonical(raw: &str) -> Option<&'static str> {
     if let Some(name) = CANONICAL_NAMES.iter().find(|name| **name == key) {
         return Some(name);
     }
-    ALIASES.iter().find(|(alias, _)| *alias == key).map(|(_, canonical)| *canonical)
+    ALIASES
+        .iter()
+        .find(|(alias, _)| *alias == key)
+        .map(|(_, canonical)| *canonical)
 }
 
 /// Specs are built on first use and cached: constructing twenty `WordTable`s
 /// eagerly would cost the launch budget for languages a document never
 /// mentions.
-static CACHE: LazyLock<Mutex<HashMap<String, LanguageScanner>>> = LazyLock::new(|| Mutex::new(HashMap::new()));
+static CACHE: LazyLock<Mutex<HashMap<String, LanguageScanner>>> =
+    LazyLock::new(|| Mutex::new(HashMap::new()));
 
 pub fn scanner(canonical_name: &str) -> Option<LanguageScanner> {
     let mut cache = CACHE.lock().unwrap_or_else(|poison| poison.into_inner());
@@ -130,6 +156,7 @@ fn build(name: &str) -> Option<LanguageScanner> {
         // A spec is built at most once per canonical name for the life of the
         // process, exactly as the Swift cache holds it; leaking gives the
         // scanners a `'static` borrow without reference counting per call.
-        _ => language_definitions::spec(name).map(|spec| LanguageScanner::Generic(Box::leak(Box::new(spec)))),
+        _ => language_definitions::spec(name)
+            .map(|spec| LanguageScanner::Generic(Box::leak(Box::new(spec)))),
     }
 }

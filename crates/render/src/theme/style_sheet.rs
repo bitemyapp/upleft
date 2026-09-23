@@ -21,9 +21,9 @@ use objc2::rc::Retained;
 use objc2::runtime::AnyObject;
 use objc2_app_kit::{
     NSAppearance, NSColor, NSColorSpace, NSFont, NSFontDescriptor, NSFontDescriptorSymbolicTraits,
-    NSFontDescriptorSystemDesignSerif, NSFontFeatureSelectorIdentifierKey, NSFontFeatureSettingsAttribute,
-    NSFontFeatureTypeIdentifierKey, NSFontWeight, NSFontWeightBold, NSFontWeightMedium, NSFontWeightRegular,
-    NSFontWeightSemibold, NSWorkspace,
+    NSFontDescriptorSystemDesignSerif, NSFontFeatureSelectorIdentifierKey,
+    NSFontFeatureSettingsAttribute, NSFontFeatureTypeIdentifierKey, NSFontWeight, NSFontWeightBold,
+    NSFontWeightMedium, NSFontWeightRegular, NSFontWeightSemibold, NSWorkspace,
 };
 use objc2_core_foundation::CGSize;
 use objc2_core_text::{
@@ -131,7 +131,8 @@ const HEADING_EXPONENTS: [f64; 6] = [3.0, 2.0, 1.25, 0.5, -0.5, -0.75];
 const MATH_FONT_X_HEIGHT_RATIO: f64 = 0.431;
 
 /// The prose sample `averageCharacterWidth(of:)` measures.
-const AVERAGE_WIDTH_SAMPLE: &str = "the quick brown fox jumps over the lazy dog, and then it did it again. ";
+const AVERAGE_WIDTH_SAMPLE: &str =
+    "the quick brown fox jumps over the lazy dog, and then it did it again. ";
 
 fn clamp_level(level: i64) -> i64 {
     6.min(1.max(level))
@@ -142,19 +143,24 @@ impl StyleSheet {
     ///
     /// A non-`None` override is used by deterministic previews and tests: it
     /// must be able to force either Reduce Motion branch.
-    pub fn new(theme: Theme, appearance: &NSAppearance, reduce_motion_override: Option<bool>) -> StyleSheet {
+    pub fn new(
+        theme: Theme,
+        appearance: &NSAppearance,
+        reduce_motion_override: Option<bool>,
+    ) -> StyleSheet {
         let revision = ThemeStore::shared().revision();
 
         let workspace = NSWorkspace::sharedWorkspace();
-        let reduce_motion =
-            reduce_motion_override.unwrap_or_else(|| workspace.accessibilityDisplayShouldReduceMotion());
+        let reduce_motion = reduce_motion_override
+            .unwrap_or_else(|| workspace.accessibilityDisplayShouldReduceMotion());
         let increase_contrast = workspace.accessibilityDisplayShouldIncreaseContrast();
         let reduce_transparency = workspace.accessibilityDisplayShouldReduceTransparency();
 
         let typography = &theme.typography;
 
         // Fonts, built through locals.
-        let body_font = StyleSheet::system_font(typography.preset, typography.body_size, weight_regular());
+        let body_font =
+            StyleSheet::system_font(typography.preset, typography.body_size, weight_regular());
         let headings: [Retained<NSFont>; 6] = std::array::from_fn(|index| {
             let level = index as i64 + 1;
             let weight = if level <= 3 {
@@ -169,7 +175,11 @@ impl StyleSheet {
                 StyleSheet::heading_size(level, typography),
                 weight,
             );
-            if level == 6 { StyleSheet::applying(false, true, &font) } else { font }
+            if level == 6 {
+                StyleSheet::applying(false, true, &font)
+            } else {
+                font
+            }
         });
         let mono = StyleSheet::mono_font_named(
             &typography.mono_family,
@@ -204,7 +214,8 @@ impl StyleSheet {
         let background = resolver.resolve(&palette.background);
         let surface = resolver.resolve(&palette.surface);
         let text = resolved_text.clone();
-        let text_secondary = resolver.resolve_towards(&palette.text_secondary, &resolved_text, boost);
+        let text_secondary =
+            resolver.resolve_towards(&palette.text_secondary, &resolved_text, boost);
         let text_faint = resolver.resolve_towards(&palette.text_faint, &resolved_text, boost);
         let marker = resolver.resolve_towards(&palette.marker, &resolved_text, boost);
         let accent = resolver.resolve(&palette.accent);
@@ -214,7 +225,8 @@ impl StyleSheet {
         let inline_code_background = resolver.resolve(&palette.inline_code_background);
         let code_rule = resolver.resolve_towards(&palette.code_rule, &resolved_text, boost);
         let rail_tick = resolver.resolve_towards(&palette.rail_tick, &resolved_text, boost);
-        let rail_tick_current = resolver.resolve_towards(&palette.rail_tick_current, &resolved_text, boost);
+        let rail_tick_current =
+            resolver.resolve_towards(&palette.rail_tick_current, &resolved_text, boost);
         let quote_rule = resolver.resolve_towards(&palette.quote_rule, &resolved_text, boost);
         let path_missing = resolver.resolve(&palette.path_missing);
         let search_hit = resolver.resolve(&palette.search_hit);
@@ -239,7 +251,12 @@ impl StyleSheet {
             resolver.resolve(&palette.callout_warning),
             resolver.resolve(&palette.callout_success),
             resolver.resolve(&palette.callout_danger),
-            resolver.resolve(palette.callout_important.as_ref().unwrap_or(&palette.callout_danger)),
+            resolver.resolve(
+                palette
+                    .callout_important
+                    .as_ref()
+                    .unwrap_or(&palette.callout_danger),
+            ),
         ];
         let change_colors = [
             resolver.resolve(&palette.change_added),
@@ -321,26 +338,43 @@ impl StyleSheet {
 
     /// `monoFont(size:)`: the resolved mono face, re-sized when asked.
     pub fn mono_font(&self, size: Option<f64>) -> Retained<NSFont> {
-        let Some(size) = size else { return self.mono.clone() };
+        let Some(size) = size else {
+            return self.mono.clone();
+        };
         if size == self.mono.pointSize() {
             return self.mono.clone();
         }
-        NSFont::fontWithDescriptor_size(&self.mono.fontDescriptor(), size).unwrap_or_else(|| self.mono.clone())
+        NSFont::fontWithDescriptor_size(&self.mono.fontDescriptor(), size)
+            .unwrap_or_else(|| self.mono.clone())
     }
 
     /// `monoFontAttributes(size:)` as its two values: the font, and the
     /// `.ligature` attribute (1 when the theme wants ligatures, else 0).
     pub fn mono_font_attributes(&self, size: Option<f64>) -> (Retained<NSFont>, isize) {
-        (self.mono_font(size), if self.theme.typography.mono_ligatures { 1 } else { 0 })
+        (
+            self.mono_font(size),
+            if self.theme.typography.mono_ligatures {
+                1
+            } else {
+                0
+            },
+        )
     }
 
     /// `monoFontAttributes(size:)` as the attribute dictionary Swift returns.
-    pub fn mono_font_attributes_dictionary(&self, size: Option<f64>) -> Retained<NSDictionary<NSString, AnyObject>> {
+    pub fn mono_font_attributes_dictionary(
+        &self,
+        size: Option<f64>,
+    ) -> Retained<NSDictionary<NSString, AnyObject>> {
         let (font, ligature) = self.mono_font_attributes(size);
         let number = NSNumber::new_isize(ligature);
         // SAFETY: AppKit exports these keys as immutable globals.
-        let (font_key, ligature_key) =
-            unsafe { (objc2_app_kit::NSFontAttributeName, objc2_app_kit::NSLigatureAttributeName) };
+        let (font_key, ligature_key) = unsafe {
+            (
+                objc2_app_kit::NSFontAttributeName,
+                objc2_app_kit::NSLigatureAttributeName,
+            )
+        };
         let values: [&AnyObject; 2] = [font.as_ref(), number.as_ref()];
         NSDictionary::from_slices(&[font_key, ligature_key], &values)
     }
@@ -360,7 +394,10 @@ impl StyleSheet {
         const BEFORE: [f64; 6] = [6.0, 6.0, 6.0, 3.0, 3.0, 3.0];
         const AFTER: [f64; 6] = [2.0, 2.0, 2.0, 1.0, 1.0, 1.0];
         let index = (clamp_level(level) - 1) as usize;
-        (BEFORE[index] * self.baseline_grid, AFTER[index] * self.baseline_grid)
+        (
+            BEFORE[index] * self.baseline_grid,
+            AFTER[index] * self.baseline_grid,
+        )
     }
 
     fn system_font(preset: BodyPreset, size: f64, weight: NSFontWeight) -> Retained<NSFont> {
@@ -371,8 +408,12 @@ impl StyleSheet {
         // Reading = New York, reached through the descriptor's serif design.
         // SAFETY: AppKit exports the design name as an immutable global.
         let design = unsafe { NSFontDescriptorSystemDesignSerif };
-        let Some(descriptor) = base.fontDescriptor().fontDescriptorWithDesign(design) else { return base };
-        let Some(serif) = NSFont::fontWithDescriptor_size(&descriptor, size) else { return base };
+        let Some(descriptor) = base.fontDescriptor().fontDescriptorWithDesign(design) else {
+            return base;
+        };
+        let Some(serif) = NSFont::fontWithDescriptor_size(&descriptor, size) else {
+            return base;
+        };
         serif
     }
 
@@ -390,7 +431,8 @@ impl StyleSheet {
                 break;
             }
         }
-        let font = resolved.unwrap_or_else(|| NSFont::monospacedSystemFontOfSize_weight(size, weight_regular()));
+        let font = resolved
+            .unwrap_or_else(|| NSFont::monospacedSystemFontOfSize_weight(size, weight_regular()));
         StyleSheet::applying_ligatures(ligatures, &font)
     }
 
@@ -400,10 +442,17 @@ impl StyleSheet {
         }
         // SAFETY: AppKit exports these keys as immutable globals.
         let (type_key, selector_key, settings_key) = unsafe {
-            (NSFontFeatureTypeIdentifierKey, NSFontFeatureSelectorIdentifierKey, NSFontFeatureSettingsAttribute)
+            (
+                NSFontFeatureTypeIdentifierKey,
+                NSFontFeatureSelectorIdentifierKey,
+                NSFontFeatureSettingsAttribute,
+            )
         };
         let setting = |kind: i32, selector: u32| -> Retained<NSDictionary<NSString, NSNumber>> {
-            let values = [NSNumber::new_isize(kind as isize), NSNumber::new_isize(selector as isize)];
+            let values = [
+                NSNumber::new_isize(kind as isize),
+                NSNumber::new_isize(selector as isize),
+            ];
             NSDictionary::from_retained_objects(&[type_key, selector_key], &values)
         };
         let settings = NSArray::from_retained_slice(&[
@@ -414,8 +463,12 @@ impl StyleSheet {
         let attributes: Retained<NSDictionary<NSString, AnyObject>> =
             NSDictionary::from_slices(&[settings_key], &[settings.as_ref() as &AnyObject]);
         // SAFETY: the attributes dictionary holds a valid feature-settings array.
-        let descriptor = unsafe { font.fontDescriptor().fontDescriptorByAddingAttributes(&attributes) };
-        NSFont::fontWithDescriptor_size(&descriptor, font.pointSize()).unwrap_or_else(|| font.retain())
+        let descriptor = unsafe {
+            font.fontDescriptor()
+                .fontDescriptorByAddingAttributes(&attributes)
+        };
+        NSFont::fontWithDescriptor_size(&descriptor, font.pointSize())
+            .unwrap_or_else(|| font.retain())
     }
 
     fn applying(bold: bool, italic: bool, font: &NSFont) -> Retained<NSFont> {
@@ -429,8 +482,11 @@ impl StyleSheet {
         if italic {
             traits |= NSFontDescriptorSymbolicTraits::TraitItalic;
         }
-        let descriptor: Retained<NSFontDescriptor> = font.fontDescriptor().fontDescriptorWithSymbolicTraits(traits);
-        NSFont::fontWithDescriptor_size(&descriptor, font.pointSize()).unwrap_or_else(|| font.retain())
+        let descriptor: Retained<NSFontDescriptor> = font
+            .fontDescriptor()
+            .fontDescriptorWithSymbolicTraits(traits);
+        NSFont::fontWithDescriptor_size(&descriptor, font.pointSize())
+            .unwrap_or_else(|| font.retain())
     }
 
     /// The mean advance over a prose sample (§11.1).
@@ -460,15 +516,24 @@ impl StyleSheet {
                 sample.len() as isize,
             );
         }
-        let total = advances.iter().fold(0.0f64, |sum, advance| sum + advance.width);
-        if total > 0.0 { total / sample.len() as f64 } else { font.pointSize() * 0.5 }
+        let total = advances
+            .iter()
+            .fold(0.0f64, |sum, advance| sum + advance.width);
+        if total > 0.0 {
+            total / sample.len() as f64
+        } else {
+            font.pointSize() * 0.5
+        }
     }
 
     /// Math matched on x-height rather than point size, clamped to 0.90–1.10×
     /// the body size (§11.3).
     fn math_point_size_for(body: &NSFont, typography: &TypographyConfig) -> f64 {
         let optical = body.xHeight() / MATH_FONT_X_HEIGHT_RATIO;
-        let clamped = smin(smax(optical, typography.body_size * 0.90), typography.body_size * 1.10);
+        let clamped = smin(
+            smax(optical, typography.body_size * 0.90),
+            typography.body_size * 1.10,
+        );
         clamped * typography.math_scale
     }
 
@@ -495,7 +560,11 @@ impl StyleSheet {
     /// reader is meant to *do*.
     pub fn callout_color(&self, kind: CalloutKind) -> Retained<NSColor> {
         let index = match kind {
-            CalloutKind::Note | CalloutKind::Info | CalloutKind::Abstract | CalloutKind::Quote | CalloutKind::Example => 0,
+            CalloutKind::Note
+            | CalloutKind::Info
+            | CalloutKind::Abstract
+            | CalloutKind::Quote
+            | CalloutKind::Example => 0,
             CalloutKind::Warning | CalloutKind::Question | CalloutKind::Todo => 1,
             CalloutKind::Tip | CalloutKind::Success => 2,
             CalloutKind::Caution | CalloutKind::Danger | CalloutKind::Bug => 3,
@@ -545,7 +614,11 @@ impl StyleSheet {
     pub fn on_accent(&self) -> Retained<NSColor> {
         let accent = StyleSheet::relative_luminance(&self.accent);
         let distance = |color: &NSColor| (StyleSheet::relative_luminance(color) - accent).abs();
-        if distance(&self.background) >= distance(&self.text) { self.background.clone() } else { self.text.clone() }
+        if distance(&self.background) >= distance(&self.text) {
+            self.background.clone()
+        } else {
+            self.text.clone()
+        }
     }
 
     // MARK: - Task checkbox (§8.5, §11.4)
@@ -554,7 +627,8 @@ impl StyleSheet {
 
     /// Wash behind a completed box.
     pub fn task_field_color(&self) -> Retained<NSColor> {
-        self.accent.panel_alpha(StyleSheet::TASK_FIELD_ALPHA, self.increase_contrast)
+        self.accent
+            .panel_alpha(StyleSheet::TASK_FIELD_ALPHA, self.increase_contrast)
     }
 
     /// The box's outline.
@@ -562,16 +636,22 @@ impl StyleSheet {
         if checked {
             self.accent.panel_alpha(0.55, self.increase_contrast)
         } else {
-            self.text_secondary.panel_alpha(0.70, self.increase_contrast)
+            self.text_secondary
+                .panel_alpha(0.70, self.increase_contrast)
         }
     }
 
     /// The tick: the accent, pulled toward the text colour when the accent
     /// cannot carry a stroke against the field it lands on.
     pub fn task_tick_color(&self) -> Retained<NSColor> {
-        let field = ColorResolver::blend(&self.background, &self.accent, StyleSheet::TASK_FIELD_ALPHA);
+        let field =
+            ColorResolver::blend(&self.background, &self.accent, StyleSheet::TASK_FIELD_ALPHA);
         let ratio = StyleSheet::contrast_ratio(&self.accent, &field);
-        let base = if ratio < 4.0 { ColorResolver::blend(&self.accent, &self.text, 0.5) } else { self.accent.clone() };
+        let base = if ratio < 4.0 {
+            ColorResolver::blend(&self.accent, &self.text, 0.5)
+        } else {
+            self.accent.clone()
+        };
         base.panel_alpha(0.90, self.increase_contrast)
     }
 
@@ -583,16 +663,26 @@ impl StyleSheet {
 
     /// WCAG relative luminance, on the sRGB components.
     pub fn relative_luminance(color: &NSColor) -> f64 {
-        let Some(srgb) = color.colorUsingColorSpace(&NSColorSpace::sRGBColorSpace()) else { return 0.5 };
+        let Some(srgb) = color.colorUsingColorSpace(&NSColorSpace::sRGBColorSpace()) else {
+            return 0.5;
+        };
         let channel = |value: f64| -> f64 {
-            if value <= 0.03928 { value / 12.92 } else { pow((value + 0.055) / 1.055, 2.4) }
+            if value <= 0.03928 {
+                value / 12.92
+            } else {
+                pow((value + 0.055) / 1.055, 2.4)
+            }
         };
         0.2126 * channel(srgb.redComponent())
             + 0.7152 * channel(srgb.greenComponent())
             + 0.0722 * channel(srgb.blueComponent())
     }
 
-    fn code_colors_for(code: &CodeTheme, text: &Retained<NSColor>, resolver: &ColorResolver<'_>) -> [Retained<NSColor>; 15] {
+    fn code_colors_for(
+        code: &CodeTheme,
+        text: &Retained<NSColor>,
+        resolver: &ColorResolver<'_>,
+    ) -> [Retained<NSColor>; 15] {
         let color = |token: SyntaxToken| -> Retained<NSColor> {
             match token {
                 SyntaxToken::Plain => text.clone(),
@@ -636,7 +726,12 @@ impl ColorResolver<'_> {
 
     /// Increase Contrast (§11.4) pulls the *quiet* colours a third of the way
     /// toward the primary text colour.
-    pub fn resolve_towards(&self, theme_color: &ThemeColor, target: &NSColor, enabled: bool) -> Retained<NSColor> {
+    pub fn resolve_towards(
+        &self,
+        theme_color: &ThemeColor,
+        target: &NSColor,
+        enabled: bool,
+    ) -> Retained<NSColor> {
         let base = self.resolve(theme_color);
         if !enabled {
             return base;
@@ -647,8 +742,9 @@ impl ColorResolver<'_> {
     fn snapshot(color: &NSColor, appearance: &NSAppearance) -> Retained<NSColor> {
         let resolved = RefCell::new(color.retain());
         let block = RcBlock::new(|| {
-            let converted =
-                color.colorUsingColorSpace(&NSColorSpace::sRGBColorSpace()).unwrap_or_else(|| color.retain());
+            let converted = color
+                .colorUsingColorSpace(&NSColorSpace::sRGBColorSpace())
+                .unwrap_or_else(|| color.retain());
             *resolved.borrow_mut() = converted;
         });
         appearance.performAsCurrentDrawingAppearance(&block);
@@ -658,7 +754,8 @@ impl ColorResolver<'_> {
 
     pub fn blend(a: &NSColor, b: &NSColor, t: f64) -> Retained<NSColor> {
         let srgb = NSColorSpace::sRGBColorSpace();
-        let (Some(lhs), Some(rhs)) = (a.colorUsingColorSpace(&srgb), b.colorUsingColorSpace(&srgb)) else {
+        let (Some(lhs), Some(rhs)) = (a.colorUsingColorSpace(&srgb), b.colorUsingColorSpace(&srgb))
+        else {
             return a.retain();
         };
         let mix = smin(smax(t, 0.0), 1.0);

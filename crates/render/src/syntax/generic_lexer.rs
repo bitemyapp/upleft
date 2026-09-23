@@ -25,7 +25,13 @@ static PUNCTUATION_UNITS: [bool; 128] = ascii_table("()[]{},;.:");
 
 impl<'a> GenericLexer<'a> {
     pub fn new(spec: &'a LanguageSpec, units: &'a [Unit]) -> Self {
-        GenericLexer { spec, units, count: units.len(), i: 0, builder: RunBuilder::new(units.len()) }
+        GenericLexer {
+            spec,
+            units,
+            count: units.len(),
+            i: 0,
+            builder: RunBuilder::new(units.len()),
+        }
     }
 
     pub fn highlight(units: &[Unit], spec: &LanguageSpec) -> Vec<SyntaxRun> {
@@ -59,7 +65,15 @@ impl<'a> GenericLexer<'a> {
                 self.scan_string(string);
                 // `"key": value`: a quoted key is an attribute, not a value.
                 let is_key = spec.keys_from_strings && self.is_followed_by_key_terminator();
-                self.builder.emit(if is_key { SyntaxToken::Attribute } else { SyntaxToken::String }, start, self.i);
+                self.builder.emit(
+                    if is_key {
+                        SyntaxToken::Attribute
+                    } else {
+                        SyntaxToken::String
+                    },
+                    start,
+                    self.i,
+                );
                 continue;
             }
             if self.is_number_start() {
@@ -85,7 +99,11 @@ impl<'a> GenericLexer<'a> {
             }
             self.i += 1;
             self.builder.emit(
-                if is_punctuation_unit(c) { SyntaxToken::Punctuation } else { SyntaxToken::Plain },
+                if is_punctuation_unit(c) {
+                    SyntaxToken::Punctuation
+                } else {
+                    SyntaxToken::Plain
+                },
                 start,
                 self.i,
             );
@@ -111,7 +129,11 @@ impl<'a> GenericLexer<'a> {
     #[inline(always)]
     fn unit(&self, offset: isize) -> Unit {
         let index = self.i as isize + offset;
-        if index < self.count as isize && index >= 0 { self.units[index as usize] } else { 0 }
+        if index < self.count as isize && index >= 0 {
+            self.units[index as usize]
+        } else {
+            0
+        }
     }
 
     /// Only blanks precede `pos` on its line.
@@ -190,7 +212,10 @@ impl<'a> GenericLexer<'a> {
     // MARK: - Strings
 
     fn match_string_open(&self, pos: isize) -> Option<&'a StringSpec> {
-        self.spec.strings.iter().find(|string| self.matches(&string.open, pos))
+        self.spec
+            .strings
+            .iter()
+            .find(|string| self.matches(&string.open, pos))
     }
 
     fn scan_string(&mut self, string: &StringSpec) {
@@ -300,7 +325,10 @@ impl<'a> GenericLexer<'a> {
         }
         self.i += 2;
         let mut tag: Vec<Unit> = Vec::new();
-        while self.i < self.count && self.units[self.i] != of('(') && !is_newline_unit(self.units[self.i]) {
+        while self.i < self.count
+            && self.units[self.i] != of('(')
+            && !is_newline_unit(self.units[self.i])
+        {
             tag.push(self.units[self.i]);
             self.i += 1;
         }
@@ -339,7 +367,9 @@ impl<'a> GenericLexer<'a> {
                 }
                 if k == quotes {
                     let mut h = 0;
-                    while h < hashes && self.i + quotes + h < self.count && self.units[self.i + quotes + h] == of('#')
+                    while h < hashes
+                        && self.i + quotes + h < self.count
+                        && self.units[self.i + quotes + h] == of('#')
                     {
                         h += 1;
                     }
@@ -398,7 +428,10 @@ impl<'a> GenericLexer<'a> {
             return true;
         }
         // Rust attributes read as one unit.
-        if spec.hash_attributes && c == of('#') && (self.unit(1) == of('[') || self.unit(1) == of('!')) {
+        if spec.hash_attributes
+            && c == of('#')
+            && (self.unit(1) == of('[') || self.unit(1) == of('!'))
+        {
             self.i += 1;
             if self.i < self.count && self.units[self.i] == of('!') {
                 self.i += 1;
@@ -419,7 +452,10 @@ impl<'a> GenericLexer<'a> {
             self.builder.emit(token, start, self.i);
             return true;
         }
-        if spec.has_symbols && c == of(':') && self.is_identifier_start(self.i as isize + 1) && self.unit(-1) != of(':')
+        if spec.has_symbols
+            && c == of(':')
+            && self.is_identifier_start(self.i as isize + 1)
+            && self.unit(-1) != of(':')
         {
             self.i += 1;
             while self.i < self.count && self.is_identifier_continue(self.units[self.i]) {
@@ -495,7 +531,9 @@ impl<'a> GenericLexer<'a> {
             let kind = self.units[self.i + 1] | 0x20;
             if kind == of('x') {
                 self.i += 2;
-                while self.i < self.count && (is_hex_digit_unit(self.units[self.i]) || self.units[self.i] == of('_')) {
+                while self.i < self.count
+                    && (is_hex_digit_unit(self.units[self.i]) || self.units[self.i] == of('_'))
+                {
                     self.i += 1;
                 }
                 self.scan_exponent(of('p'));
@@ -504,19 +542,25 @@ impl<'a> GenericLexer<'a> {
             }
             if kind == of('b') || kind == of('o') {
                 self.i += 2;
-                while self.i < self.count && (is_digit_unit(self.units[self.i]) || self.units[self.i] == of('_')) {
+                while self.i < self.count
+                    && (is_digit_unit(self.units[self.i]) || self.units[self.i] == of('_'))
+                {
                     self.i += 1;
                 }
                 self.scan_numeric_suffix();
                 return;
             }
         }
-        while self.i < self.count && (is_digit_unit(self.units[self.i]) || self.units[self.i] == of('_')) {
+        while self.i < self.count
+            && (is_digit_unit(self.units[self.i]) || self.units[self.i] == of('_'))
+        {
             self.i += 1;
         }
         if self.i < self.count && self.units[self.i] == of('.') && is_digit_unit(self.unit(1)) {
             self.i += 1;
-            while self.i < self.count && (is_digit_unit(self.units[self.i]) || self.units[self.i] == of('_')) {
+            while self.i < self.count
+                && (is_digit_unit(self.units[self.i]) || self.units[self.i] == of('_'))
+            {
                 self.i += 1;
             }
         }
@@ -543,7 +587,9 @@ impl<'a> GenericLexer<'a> {
 
     fn scan_numeric_suffix(&mut self) {
         while self.i < self.count
-            && (is_letter_unit(self.units[self.i]) || is_digit_unit(self.units[self.i]) || self.units[self.i] == of('_'))
+            && (is_letter_unit(self.units[self.i])
+                || is_digit_unit(self.units[self.i])
+                || self.units[self.i] == of('_'))
         {
             self.i += 1;
         }
@@ -565,7 +611,11 @@ impl<'a> GenericLexer<'a> {
         }
         // An extra start only counts when a real identifier character follows,
         // so CSS `-5px` is a number and `--main` is a custom property.
-        let next = if pos + 1 < self.count { self.units[pos + 1] } else { 0 };
+        let next = if pos + 1 < self.count {
+            self.units[pos + 1]
+        } else {
+            0
+        };
         is_letter_unit(next) || next == of('_') || self.spec.identifier_extra_starts.contains(&next)
     }
 
@@ -597,15 +647,18 @@ impl<'a> GenericLexer<'a> {
             return;
         }
         if spec.all_caps_are_constants && self.is_screaming_case(word_start, word_end) {
-            self.builder.emit(SyntaxToken::Constant, word_start, word_end);
+            self.builder
+                .emit(SyntaxToken::Constant, word_start, word_end);
             return;
         }
         if spec.calls_are_functions && self.next_non_blank() == of('(') {
-            self.builder.emit(SyntaxToken::Function, word_start, word_end);
+            self.builder
+                .emit(SyntaxToken::Function, word_start, word_end);
             return;
         }
         if spec.keys_from_identifiers && self.is_followed_by_key_terminator() {
-            self.builder.emit(SyntaxToken::Attribute, word_start, word_end);
+            self.builder
+                .emit(SyntaxToken::Attribute, word_start, word_end);
             return;
         }
         if spec.capitalised_are_types && is_upper_unit(self.units[start]) {
@@ -615,7 +668,11 @@ impl<'a> GenericLexer<'a> {
         self.builder.emit(SyntaxToken::Plain, word_start, word_end);
     }
 
-    fn match_string_prefix(&self, word_start: usize, word_end: usize) -> Option<&'a StringPrefixSpec> {
+    fn match_string_prefix(
+        &self,
+        word_start: usize,
+        word_end: usize,
+    ) -> Option<&'a StringPrefixSpec> {
         if !(self.i < self.count && !self.spec.string_prefixes.is_empty()) {
             return None;
         }
@@ -627,7 +684,11 @@ impl<'a> GenericLexer<'a> {
             let mut matched = true;
             for k in 0..prefix.bytes.len() {
                 let unit = self.units[word_start + k];
-                let lowered = if unit < 0x80 && (0x41..=0x5A).contains(&unit) { unit + 0x20 } else { unit };
+                let lowered = if unit < 0x80 && (0x41..=0x5A).contains(&unit) {
+                    unit + 0x20
+                } else {
+                    unit
+                };
                 if lowered != prefix.bytes[k] as Unit {
                     matched = false;
                     break;

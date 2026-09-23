@@ -25,9 +25,15 @@ impl BuiltinSyntaxHighlighter {
     /// `highlight(_ code: String, …)` converts with `Array(code.utf16)`.
     pub fn highlight_str(&self, code: &str, language: Option<&str>) -> Vec<SyntaxRun> {
         // The same early exits as the Swift guard, before paying for UTF-16.
-        let Some(raw) = language else { return Vec::new() };
-        let Some(canonical) = BuiltinSyntaxHighlighter::canonical_language(raw) else { return Vec::new() };
-        let Some(scanner) = language_catalog::scanner(canonical) else { return Vec::new() };
+        let Some(raw) = language else {
+            return Vec::new();
+        };
+        let Some(canonical) = BuiltinSyntaxHighlighter::canonical_language(raw) else {
+            return Vec::new();
+        };
+        let Some(scanner) = language_catalog::scanner(canonical) else {
+            return Vec::new();
+        };
         if code.is_empty() {
             return Vec::new();
         }
@@ -49,9 +55,15 @@ impl SyntaxHighlighter for BuiltinSyntaxHighlighter {
     /// An unknown or absent language yields no runs: the code block still gets
     /// its mono font and tint, it is simply uncoloured.
     fn highlight(&self, code: &[u16], language: Option<&str>) -> Vec<SyntaxRun> {
-        let Some(raw) = language else { return Vec::new() };
-        let Some(canonical) = BuiltinSyntaxHighlighter::canonical_language(raw) else { return Vec::new() };
-        let Some(scanner) = language_catalog::scanner(canonical) else { return Vec::new() };
+        let Some(raw) = language else {
+            return Vec::new();
+        };
+        let Some(canonical) = BuiltinSyntaxHighlighter::canonical_language(raw) else {
+            return Vec::new();
+        };
+        let Some(scanner) = language_catalog::scanner(canonical) else {
+            return Vec::new();
+        };
         if code.is_empty() {
             return Vec::new();
         }

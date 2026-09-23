@@ -5,7 +5,9 @@
 use std::collections::HashMap;
 
 use super::theme_store::ThemeStoreError;
-use crate::render_contracts::{CodeTheme, Theme, ThemeAppearance, ThemeColor, ThemePalette, TypographyConfig};
+use crate::render_contracts::{
+    CodeTheme, Theme, ThemeAppearance, ThemeColor, ThemePalette, TypographyConfig,
+};
 use crate::swift_compat::{self, json, smax, smin};
 use crate::syntax::syntax_contracts::SyntaxToken;
 
@@ -14,20 +16,57 @@ pub struct VSCodeThemeImporter;
 /// TextMate scopes to ask for, per token, most specific first. The first
 /// query that any of the theme's selectors answers wins.
 const SCOPE_QUERIES: [(SyntaxToken, &[&str]); 14] = [
-    (SyntaxToken::Keyword, &["keyword.control", "keyword", "storage.type", "storage.modifier", "storage"]),
+    (
+        SyntaxToken::Keyword,
+        &[
+            "keyword.control",
+            "keyword",
+            "storage.type",
+            "storage.modifier",
+            "storage",
+        ],
+    ),
     (SyntaxToken::String, &["string.quoted", "string"]),
     (SyntaxToken::Number, &["constant.numeric"]),
     (SyntaxToken::Comment, &["comment"]),
-    (SyntaxToken::Type, &["entity.name.type", "support.type", "entity.name.class", "support.class"]),
-    (SyntaxToken::Function, &["entity.name.function", "support.function", "meta.function-call"]),
+    (
+        SyntaxToken::Type,
+        &[
+            "entity.name.type",
+            "support.type",
+            "entity.name.class",
+            "support.class",
+        ],
+    ),
+    (
+        SyntaxToken::Function,
+        &[
+            "entity.name.function",
+            "support.function",
+            "meta.function-call",
+        ],
+    ),
     (SyntaxToken::Variable, &["variable.other", "variable"]),
-    (SyntaxToken::Constant, &["constant.language", "constant.character", "constant"]),
+    (
+        SyntaxToken::Constant,
+        &["constant.language", "constant.character", "constant"],
+    ),
     (SyntaxToken::Operator, &["keyword.operator"]),
     (SyntaxToken::Punctuation, &["punctuation", "meta.brace"]),
-    (SyntaxToken::Attribute, &["entity.other.attribute-name", "meta.decorator", "storage.type.annotation"]),
+    (
+        SyntaxToken::Attribute,
+        &[
+            "entity.other.attribute-name",
+            "meta.decorator",
+            "storage.type.annotation",
+        ],
+    ),
     (SyntaxToken::DiffAdded, &["markup.inserted"]),
     (SyntaxToken::DiffRemoved, &["markup.deleted"]),
-    (SyntaxToken::DiffHeader, &["meta.diff.header", "markup.changed", "meta.diff.range"]),
+    (
+        SyntaxToken::DiffHeader,
+        &["meta.diff.header", "markup.changed", "meta.diff.range"],
+    ),
 ];
 
 #[derive(Debug, Clone, PartialEq)]
@@ -39,7 +78,8 @@ pub struct ScopeEntry {
 impl VSCodeThemeImporter {
     pub fn theme(data: &[u8], fallback_name: &str) -> Result<Theme, ThemeStoreError> {
         // Published themes are JSONC far more often than JSON.
-        let raw = VSCodeThemeFile::decode(&JsoncSanitizer::strip(data)).ok_or(ThemeStoreError::NotAVSCodeTheme)?;
+        let raw = VSCodeThemeFile::decode(&JsoncSanitizer::strip(data))
+            .ok_or(ThemeStoreError::NotAVSCodeTheme)?;
         if raw.colors.is_none() && raw.token_colors.is_none() {
             return Err(ThemeStoreError::NotAVSCodeTheme);
         }
@@ -49,18 +89,30 @@ impl VSCodeThemeImporter {
         let scopes = raw.scope_entries();
 
         let background = Rgba::parse_optional(colors.get("editor.background").map(String::as_str))
-            .unwrap_or_else(|| Rgba::parse(if raw.is_dark() { "#1e1e1e" } else { "#ffffff" }).unwrap());
+            .unwrap_or_else(|| {
+                Rgba::parse(if raw.is_dark() { "#1e1e1e" } else { "#ffffff" }).unwrap()
+            });
         let text = Rgba::parse_optional(colors.get("editor.foreground").map(String::as_str))
             .or_else(|| raw.default_foreground())
-            .unwrap_or_else(|| Rgba::parse(if raw.is_dark() { "#d4d4d4" } else { "#1f1f1f" }).unwrap());
+            .unwrap_or_else(|| {
+                Rgba::parse(if raw.is_dark() { "#d4d4d4" } else { "#1f1f1f" }).unwrap()
+            });
 
         let code = VSCodeThemeImporter::code_theme(&scopes, colors, text, background);
         let palette = VSCodeThemeImporter::palette(colors, text, background, &code);
 
-        let declared_name =
-            raw.name.as_deref().map(swift_compat::trim_whitespaces_and_newlines).unwrap_or("").to_owned();
+        let declared_name = raw
+            .name
+            .as_deref()
+            .map(swift_compat::trim_whitespaces_and_newlines)
+            .unwrap_or("")
+            .to_owned();
         Ok(Theme {
-            name: if declared_name.is_empty() { fallback_name.to_owned() } else { declared_name },
+            name: if declared_name.is_empty() {
+                fallback_name.to_owned()
+            } else {
+                declared_name
+            },
             appearance: raw.appearance(background),
             palette,
             code,
@@ -70,7 +122,12 @@ impl VSCodeThemeImporter {
 
     // MARK: - Code theme
 
-    fn code_theme(scopes: &[ScopeEntry], colors: &HashMap<String, String>, text: Rgba, background: Rgba) -> CodeTheme {
+    fn code_theme(
+        scopes: &[ScopeEntry],
+        colors: &HashMap<String, String>,
+        text: Rgba,
+        background: Rgba,
+    ) -> CodeTheme {
         let mut found: HashMap<SyntaxToken, Rgba> = HashMap::new();
         for (token, queries) in SCOPE_QUERIES {
             for query in queries {
@@ -81,7 +138,13 @@ impl VSCodeThemeImporter {
             }
         }
         let color = |token: SyntaxToken, fallback: &dyn Fn() -> Rgba| -> ThemeColor {
-            ThemeColor { raw: found.get(&token).copied().unwrap_or_else(fallback).hex_string() }
+            ThemeColor {
+                raw: found
+                    .get(&token)
+                    .copied()
+                    .unwrap_or_else(fallback)
+                    .hex_string(),
+            }
         };
         let lookup = |key: &str| Rgba::parse_optional(colors.get(key).map(String::as_str));
         let added = lookup("gitDecoration.addedResourceForeground")
@@ -99,23 +162,36 @@ impl VSCodeThemeImporter {
             r#type: color(SyntaxToken::Type, &|| found_or_text(SyntaxToken::Keyword)),
             function: color(SyntaxToken::Function, &|| found_or_text(SyntaxToken::Type)),
             variable: color(SyntaxToken::Variable, &|| text),
-            constant: color(SyntaxToken::Constant, &|| found_or_text(SyntaxToken::Number)),
+            constant: color(SyntaxToken::Constant, &|| {
+                found_or_text(SyntaxToken::Number)
+            }),
             operator: color(SyntaxToken::Operator, &|| text.blended(background, 0.20)),
             punctuation: color(SyntaxToken::Punctuation, &|| text.blended(background, 0.30)),
-            attribute: color(SyntaxToken::Attribute, &|| found_or_text(SyntaxToken::Function)),
+            attribute: color(SyntaxToken::Attribute, &|| {
+                found_or_text(SyntaxToken::Function)
+            }),
             diff_added: color(SyntaxToken::DiffAdded, &|| added),
             diff_removed: color(SyntaxToken::DiffRemoved, &|| removed),
             diff_header: color(SyntaxToken::DiffHeader, &|| {
-                found.get(&SyntaxToken::Comment).copied().unwrap_or_else(|| text.blended(background, 0.40))
+                found
+                    .get(&SyntaxToken::Comment)
+                    .copied()
+                    .unwrap_or_else(|| text.blended(background, 0.40))
             }),
         }
     }
 
     // MARK: - Palette
 
-    fn palette(colors: &HashMap<String, String>, text: Rgba, background: Rgba, code: &CodeTheme) -> ThemePalette {
+    fn palette(
+        colors: &HashMap<String, String>,
+        text: Rgba,
+        background: Rgba,
+        code: &CodeTheme,
+    ) -> ThemePalette {
         let value = |keys: &[&str]| -> Option<Rgba> {
-            keys.iter().find_map(|key| Rgba::parse_optional(colors.get(*key).map(String::as_str)))
+            keys.iter()
+                .find_map(|key| Rgba::parse_optional(colors.get(*key).map(String::as_str)))
         };
         let accent = value(&["focusBorder", "textLink.foreground", "button.background"])
             .or_else(|| Rgba::parse(&code.keyword.raw))
@@ -123,22 +199,29 @@ impl VSCodeThemeImporter {
         let added = Rgba::parse(&code.diff_added.raw).unwrap_or(text);
         let removed = Rgba::parse(&code.diff_removed.raw).unwrap_or(text);
         let error = value(&["editorError.foreground", "errorForeground"]).unwrap_or(removed);
-        let warning = value(&["editorWarning.foreground"]).unwrap_or_else(|| Rgba::parse("#c9a227").unwrap());
-        let c = |rgba: Rgba| ThemeColor { raw: rgba.hex_string() };
+        let warning =
+            value(&["editorWarning.foreground"]).unwrap_or_else(|| Rgba::parse("#c9a227").unwrap());
+        let c = |rgba: Rgba| ThemeColor {
+            raw: rgba.hex_string(),
+        };
 
         ThemePalette {
             background: c(background),
             surface: c(value(&["editorWidget.background", "sideBar.background"])
                 .unwrap_or_else(|| background.blended(text, 0.05))),
             text: c(text),
-            text_secondary: c(value(&["descriptionForeground"]).unwrap_or_else(|| text.blended(background, 0.30))),
+            text_secondary: c(
+                value(&["descriptionForeground"]).unwrap_or_else(|| text.blended(background, 0.30))
+            ),
             text_faint: c(text.blended(background, 0.55)),
             heading: c(text),
             marker: c(text.blended(background, 0.65)),
             accent: c(accent),
             link: c(value(&["textLink.foreground"]).unwrap_or(accent)),
-            rule: c(value(&["panel.border", "editorGroup.border"]).unwrap_or_else(|| background.blended(text, 0.18))),
-            selection: c(value(&["editor.selectionBackground"]).unwrap_or_else(|| accent.blended(background, 0.70))),
+            rule: c(value(&["panel.border", "editorGroup.border"])
+                .unwrap_or_else(|| background.blended(text, 0.18))),
+            selection: c(value(&["editor.selectionBackground"])
+                .unwrap_or_else(|| accent.blended(background, 0.70))),
             // A code block is a tint plus a left rule (§11.3), so the editor
             // background is *derived* from the page background.
             code_background: c(background.blended(text, 0.05)),
@@ -149,7 +232,9 @@ impl VSCodeThemeImporter {
             quote_rule: c(background.blended(text, 0.30)),
             change_added: c(added),
             change_removed: c(removed),
-            change_modified: c(value(&["gitDecoration.modifiedResourceForeground"]).unwrap_or(warning)),
+            change_modified: c(
+                value(&["gitDecoration.modifiedResourceForeground"]).unwrap_or(warning)
+            ),
             path_missing: c(error),
             search_hit: c(value(&["editor.findMatchHighlightBackground"])
                 .unwrap_or_else(|| accent.blended(background, 0.65))),
@@ -170,7 +255,9 @@ impl VSCodeThemeImporter {
     pub fn foreground(scope: &str, entries: &[ScopeEntry]) -> Option<Rgba> {
         let mut best: Option<(i64, Rgba)> = None;
         for entry in entries {
-            let Some(score) = VSCodeThemeImporter::score(&entry.selector, scope) else { continue };
+            let Some(score) = VSCodeThemeImporter::score(&entry.selector, scope) else {
+                continue;
+            };
             if best.is_none_or(|(best_score, _)| score > best_score) {
                 best = Some((score, entry.color));
             }
@@ -225,7 +312,9 @@ fn optional_string(object: &json::Value, key: &str) -> Result<Option<String>, ()
 impl VSCodeThemeFile {
     fn decode(data: &[u8]) -> Option<VSCodeThemeFile> {
         let root = json::parse(data).ok()?;
-        let json::Value::Object(_) = root else { return None };
+        let json::Value::Object(_) = root else {
+            return None;
+        };
         let name = optional_string(&root, "name").ok()?;
         let r#type = optional_string(&root, "type").ok()?;
         let colors = match root.get("colors") {
@@ -234,7 +323,9 @@ impl VSCodeThemeFile {
             Some(json::Value::Object(pairs)) => Some(
                 pairs
                     .iter()
-                    .filter_map(|(key, value)| value.as_str().map(|text| (key.clone(), text.to_owned())))
+                    .filter_map(|(key, value)| {
+                        value.as_str().map(|text| (key.clone(), text.to_owned()))
+                    })
                     .collect(),
             ),
             Some(_) => return None,
@@ -250,7 +341,12 @@ impl VSCodeThemeFile {
             }
             Some(_) => return None,
         };
-        Some(VSCodeThemeFile { name, r#type, colors, token_colors })
+        Some(VSCodeThemeFile {
+            name,
+            r#type,
+            colors,
+            token_colors,
+        })
     }
 
     fn is_dark(&self) -> bool {
@@ -264,7 +360,12 @@ impl VSCodeThemeFile {
             if !entry.scope.as_ref().is_none_or(Vec::is_empty) {
                 continue;
             }
-            if let Some(color) = Rgba::parse_optional(entry.settings.as_ref().and_then(|s| s.foreground.as_deref())) {
+            if let Some(color) = Rgba::parse_optional(
+                entry
+                    .settings
+                    .as_ref()
+                    .and_then(|s| s.foreground.as_deref()),
+            ) {
                 return Some(color);
             }
         }
@@ -274,12 +375,19 @@ impl VSCodeThemeFile {
     fn scope_entries(&self) -> Vec<ScopeEntry> {
         let mut entries = Vec::new();
         for token in self.token_colors.iter().flatten() {
-            let Some(color) = Rgba::parse_optional(token.settings.as_ref().and_then(|s| s.foreground.as_deref()))
-            else {
+            let Some(color) = Rgba::parse_optional(
+                token
+                    .settings
+                    .as_ref()
+                    .and_then(|s| s.foreground.as_deref()),
+            ) else {
                 continue;
             };
             for selector in token.scope.iter().flatten() {
-                entries.push(ScopeEntry { selector: selector.clone(), color });
+                entries.push(ScopeEntry {
+                    selector: selector.clone(),
+                    color,
+                });
             }
         }
         entries
@@ -302,7 +410,9 @@ impl VSCodeThemeFile {
 
 impl TokenColor {
     fn decode(value: &json::Value) -> Option<TokenColor> {
-        let json::Value::Object(_) = value else { return None };
+        let json::Value::Object(_) = value else {
+            return None;
+        };
         let scope = match value.get("scope") {
             None | Some(json::Value::Null) => None,
             // `scope` is a single selector, a comma-separated list, or an
@@ -311,7 +421,10 @@ impl TokenColor {
                 let raw: Vec<String> = match scope {
                     json::Value::String(single) => vec![single.clone()],
                     json::Value::Array(items) => {
-                        let strings: Option<Vec<String>> = items.iter().map(|item| item.as_str().map(str::to_owned)).collect();
+                        let strings: Option<Vec<String>> = items
+                            .iter()
+                            .map(|item| item.as_str().map(str::to_owned))
+                            .collect();
                         strings.unwrap_or_default()
                     }
                     _ => Vec::new(),
@@ -361,7 +474,10 @@ impl Rgba {
         // `#rgb` and `#rgba` shorthands expand by doubling each Character.
         if count == 3 || count == 4 {
             use unicode_segmentation::UnicodeSegmentation;
-            text = text.graphemes(true).map(|grapheme| format!("{grapheme}{grapheme}")).collect();
+            text = text
+                .graphemes(true)
+                .map(|grapheme| format!("{grapheme}{grapheme}"))
+                .collect();
             count = swift_compat::character_count(&text);
         }
         if !(count == 6 || count == 8) {
@@ -373,7 +489,11 @@ impl Rgba {
             r: ((value >> if has_alpha { 24 } else { 16 }) & 0xFF) as f64 / 255.0,
             g: ((value >> if has_alpha { 16 } else { 8 }) & 0xFF) as f64 / 255.0,
             b: ((value >> if has_alpha { 8 } else { 0 }) & 0xFF) as f64 / 255.0,
-            a: if has_alpha { (value & 0xFF) as f64 / 255.0 } else { 1.0 },
+            a: if has_alpha {
+                (value & 0xFF) as f64 / 255.0
+            } else {
+                1.0
+            },
         })
     }
 
@@ -397,9 +517,20 @@ impl Rgba {
     }
 
     pub fn hex_string(self) -> String {
-        let byte = |value: f64| -> i64 { swift_compat::int_truncating((smin(smax(value, 0.0), 1.0) * 255.0).round()) };
-        let base = format!("#{:02x}{:02x}{:02x}", byte(self.r), byte(self.g), byte(self.b));
-        if self.a >= 0.999 { base } else { format!("{base}{:02x}", byte(self.a)) }
+        let byte = |value: f64| -> i64 {
+            swift_compat::int_truncating((smin(smax(value, 0.0), 1.0) * 255.0).round())
+        };
+        let base = format!(
+            "#{:02x}{:02x}{:02x}",
+            byte(self.r),
+            byte(self.g),
+            byte(self.b)
+        );
+        if self.a >= 0.999 {
+            base
+        } else {
+            format!("{base}{:02x}", byte(self.a))
+        }
     }
 }
 
@@ -486,7 +617,12 @@ impl JsoncSanitizer {
             }
             if c == 0x2C {
                 let mut j = i + 1;
-                while j < n && (bytes[j] == 0x20 || bytes[j] == 0x09 || bytes[j] == 0x0A || bytes[j] == 0x0D) {
+                while j < n
+                    && (bytes[j] == 0x20
+                        || bytes[j] == 0x09
+                        || bytes[j] == 0x0A
+                        || bytes[j] == 0x0D)
+                {
                     j += 1;
                 }
                 if j < n && (bytes[j] == 0x7D || bytes[j] == 0x5D) {

@@ -22,7 +22,12 @@ impl BlockCommentSpec {
     }
 
     pub fn with(open: &str, close: &str, nests: bool, must_start_line: bool) -> Self {
-        BlockCommentSpec { open: open.as_bytes().to_vec(), close: close.as_bytes().to_vec(), nests, must_start_line }
+        BlockCommentSpec {
+            open: open.as_bytes().to_vec(),
+            close: close.as_bytes().to_vec(),
+            nests,
+            must_start_line,
+        }
     }
 }
 
@@ -82,7 +87,10 @@ impl StringPrefixSpec {
 
     pub fn with(text: &str, escapes: bool) -> Self {
         // Every prefix literal is ASCII, where `lowercased()` is byte-wise.
-        StringPrefixSpec { bytes: text.to_ascii_lowercase().into_bytes(), escapes }
+        StringPrefixSpec {
+            bytes: text.to_ascii_lowercase().into_bytes(),
+            escapes,
+        }
     }
 }
 

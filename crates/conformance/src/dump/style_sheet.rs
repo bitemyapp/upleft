@@ -7,8 +7,8 @@ use serde_json::Value;
 use upleft_render::core_types::{CalloutKind, ChangeKind};
 use upleft_render::engine::render_metrics::{self as rm, RoundingRule};
 use upleft_render::render_contracts::{
-    CodeTheme, DecorationPolicy, FragmentKind, MarkdownRenderConfiguration, MarkdownRevealPolicy, RenderMode, Theme,
-    ThemeColor, ThemePalette, TypographyConfig, attribute_keys,
+    CodeTheme, DecorationPolicy, FragmentKind, MarkdownRenderConfiguration, MarkdownRevealPolicy,
+    RenderMode, Theme, ThemeColor, ThemePalette, TypographyConfig, attribute_keys,
 };
 use upleft_render::syntax::syntax_contracts::SyntaxToken;
 use upleft_render::theme::preview_appearance::PreviewAppearance;
@@ -22,7 +22,13 @@ use super::json::{Object, double};
 
 pub fn appearance_named(dark: bool) -> Retained<NSAppearance> {
     // SAFETY: AppKit exports the appearance names as immutable globals.
-    let name = unsafe { if dark { NSAppearanceNameDarkAqua } else { NSAppearanceNameAqua } };
+    let name = unsafe {
+        if dark {
+            NSAppearanceNameDarkAqua
+        } else {
+            NSAppearanceNameAqua
+        }
+    };
     NSAppearance::appearanceNamed(name).expect("aqua appearances exist")
 }
 
@@ -77,7 +83,12 @@ pub mod theme_dump {
         ] {
             object = object.with(label, color.raw.clone());
         }
-        object.with("calloutImportant", optional_string(p.callout_important.as_ref().map(|c| c.raw.as_str()))).build()
+        object
+            .with(
+                "calloutImportant",
+                optional_string(p.callout_important.as_ref().map(|c| c.raw.as_str())),
+            )
+            .build()
     }
 
     pub fn code(c: &CodeTheme) -> Value {
@@ -130,13 +141,25 @@ pub mod theme_dump {
                             Object::new()
                                 .with("path", path.clone())
                                 .with("raw", color.raw.clone())
-                                .with("validated", color.validated().map_or(Value::Null, |c| color_json(&c)))
+                                .with(
+                                    "validated",
+                                    color.validated().map_or(Value::Null, |c| color_json(&c)),
+                                )
                                 .build()
                         })
                         .collect(),
                 ),
             )
-            .with("invalidColorPaths", Value::Array(theme.invalid_color_paths().into_iter().map(Value::from).collect()))
+            .with(
+                "invalidColorPaths",
+                Value::Array(
+                    theme
+                        .invalid_color_paths()
+                        .into_iter()
+                        .map(Value::from)
+                        .collect(),
+                ),
+            )
             .with("contrastDefault", failures(None))
             .with("contrastAqua", failures(Some(&appearance_named(false))))
             .with("contrastDarkAqua", failures(Some(&appearance_named(true))))
@@ -176,12 +199,16 @@ const COLOR_PROBES: [&str; 26] = [
 type TypographyEdit = fn(&mut TypographyConfig);
 
 const TYPOGRAPHY_VARIANTS: [(&str, TypographyEdit); 7] = [
-    ("working", |t| t.preset = upleft_render::render_contracts::BodyPreset::Working),
+    ("working", |t| {
+        t.preset = upleft_render::render_contracts::BodyPreset::Working
+    }),
     ("menlo-ligatures", |t| {
         t.mono_family = "Menlo".into();
         t.mono_ligatures = true;
     }),
-    ("missing-face", |t| t.mono_family = "This Face Does Not Exist".into()),
+    ("missing-face", |t| {
+        t.mono_family = "This Face Does Not Exist".into()
+    }),
     ("empty-face", |t| t.mono_family = String::new()),
     ("wide-measure", |t| {
         t.measure_characters = 400.0;
@@ -203,9 +230,15 @@ const TYPOGRAPHY_VARIANTS: [(&str, TypographyEdit); 7] = [
 pub fn dump(theme_name: &str, dark: bool) -> Result<Value, Failure> {
     let appearance = appearance_named(dark);
     let store = ThemeStore::shared();
-    let Some(theme) = store.themes().into_iter().find(|theme| theme.name == theme_name) else {
+    let Some(theme) = store
+        .themes()
+        .into_iter()
+        .find(|theme| theme.name == theme_name)
+    else {
         let names: Vec<String> = store.themes().into_iter().map(|theme| theme.name).collect();
-        return Err(Failure::Error(format!("unknown theme {theme_name}; have {names:?}")));
+        return Err(Failure::Error(format!(
+            "unknown theme {theme_name}; have {names:?}"
+        )));
     };
     let sheet = StyleSheet::new(theme.clone(), &appearance, Some(true));
 
@@ -224,24 +257,36 @@ pub fn dump(theme_name: &str, dark: bool) -> Result<Value, Failure> {
         );
     }
 
-    let resolver = ColorResolver { appearance: &appearance };
+    let resolver = ColorResolver {
+        appearance: &appearance,
+    };
     let probes: Vec<Value> = COLOR_PROBES
         .iter()
         .map(|raw| {
             let color = ThemeColor::new(raw);
             Object::new()
                 .with("raw", *raw)
-                .with("validated", color.validated().map_or(Value::Null, |c| color_json(&c)))
+                .with(
+                    "validated",
+                    color.validated().map_or(Value::Null, |c| color_json(&c)),
+                )
                 .with("resolved", color_json(&color.resolved()))
                 .with("snapshot", color_json(&resolver.resolve(&color)))
                 .build()
         })
         .collect();
 
-    let slugs: Vec<Value> = [theme.name.as_str(), "Été à Paris", "  --a__b--  ", "", "日本語テーマ", "x\u{301}y"]
-        .iter()
-        .map(|name| Value::String(ThemeStore::slug(name)))
-        .collect();
+    let slugs: Vec<Value> = [
+        theme.name.as_str(),
+        "Été à Paris",
+        "  --a__b--  ",
+        "",
+        "日本語テーマ",
+        "x\u{301}y",
+    ]
+    .iter()
+    .map(|name| Value::String(ThemeStore::slug(name)))
+    .collect();
 
     Ok(Object::new()
         .with("theme", theme_dump::theme(&theme))
@@ -261,11 +306,42 @@ pub fn dump(theme_name: &str, dark: bool) -> Result<Value, Failure> {
         .with("typographyVariants", Value::Array(variants))
         .with("validation", theme_dump::validation(&theme))
         .with("colorProbes", Value::Array(probes))
-        .with("renderMetrics", render_metrics(theme.typography.body_size, sheet.baseline_grid))
+        .with("boosted", {
+            let p = &theme.palette;
+            let text = resolver.resolve(&p.text);
+            Value::Array(
+                [
+                    &p.text_secondary,
+                    &p.text_faint,
+                    &p.marker,
+                    &p.rule,
+                    &p.code_rule,
+                    &p.rail_tick,
+                    &p.rail_tick_current,
+                    &p.quote_rule,
+                ]
+                .into_iter()
+                .map(|color| color_json(&resolver.resolve_towards(color, &text, true)))
+                .collect(),
+            )
+        })
+        .with(
+            "renderMetrics",
+            render_metrics(theme.typography.body_size, sheet.baseline_grid),
+        )
         .with(
             "themeStore",
             Object::new()
-                .with("themes", Value::Array(store.themes().into_iter().map(|t| Value::String(t.name)).collect()))
+                .with(
+                    "themes",
+                    Value::Array(
+                        store
+                            .themes()
+                            .into_iter()
+                            .map(|t| Value::String(t.name))
+                            .collect(),
+                    ),
+                )
                 .with("current", store.current().name)
                 .with("revision", store.revision())
                 .with("slugs", Value::Array(slugs))
@@ -280,7 +356,10 @@ fn metrics(sheet: &StyleSheet) -> Value {
     Object::new()
         .with("baselineGrid", double(sheet.baseline_grid))
         .with("lineHeight", double(sheet.line_height))
-        .with("averageCharacterWidth", double(sheet.average_character_width))
+        .with(
+            "averageCharacterWidth",
+            double(sheet.average_character_width),
+        )
         .with("measureWidth", double(sheet.measure_width))
         .with("mathPointSize", double(sheet.math_point_size))
         .with(
@@ -296,20 +375,47 @@ fn metrics(sheet: &StyleSheet) -> Value {
         )
         .with(
             "headingSizes",
-            Value::Array((0..=7).map(|level| double(StyleSheet::heading_size(level, &sheet.theme.typography))).collect()),
+            Value::Array(
+                (0..=7)
+                    .map(|level| double(StyleSheet::heading_size(level, &sheet.theme.typography)))
+                    .collect(),
+            ),
         )
         .build()
 }
 
 fn fonts(sheet: &StyleSheet) -> Value {
     let mono = sheet.mono_font(None);
-    let sizes: [Option<f64>; 8] =
-        [None, Some(9.0), Some(11.0), Some(12.5), Some(13.0), Some(14.0), Some(mono.pointSize()), Some(20.0)];
+    let sizes: [Option<f64>; 8] = [
+        None,
+        Some(9.0),
+        Some(11.0),
+        Some(12.5),
+        Some(13.0),
+        Some(14.0),
+        Some(mono.pointSize()),
+        Some(20.0),
+    ];
     Object::new()
         .with("body", font_json(&sheet.body_font()))
-        .with("headings", Value::Array((0..=7).map(|level| font_json(&sheet.heading_font(level))).collect()))
+        .with(
+            "headings",
+            Value::Array(
+                (0..=7)
+                    .map(|level| font_json(&sheet.heading_font(level)))
+                    .collect(),
+            ),
+        )
         .with("mono", font_json(&mono))
-        .with("monoSized", Value::Array(sizes.iter().map(|size| font_json(&sheet.mono_font(*size))).collect()))
+        .with(
+            "monoSized",
+            Value::Array(
+                sizes
+                    .iter()
+                    .map(|size| font_json(&sheet.mono_font(*size)))
+                    .collect(),
+            ),
+        )
         .with(
             "monoAttributes",
             Value::Array(
@@ -317,7 +423,10 @@ fn fonts(sheet: &StyleSheet) -> Value {
                     .iter()
                     .map(|size| {
                         let (font, ligature) = sheet.mono_font_attributes(*size);
-                        Object::new().with("font", font_json(&font)).with("ligature", ligature as i64).build()
+                        Object::new()
+                            .with("font", font_json(&font))
+                            .with("ligature", ligature as i64)
+                            .build()
                     })
                     .collect(),
             ),
@@ -367,7 +476,14 @@ fn colors(sheet: &StyleSheet) -> Value {
     Object::new()
         .with("palette", palette.build())
         .with("luminance", luminance.build())
-        .with("headings", Value::Array((0..=7).map(|level| color_json(&sheet.heading_color(level))).collect()))
+        .with(
+            "headings",
+            Value::Array(
+                (0..=7)
+                    .map(|level| color_json(&sheet.heading_color(level)))
+                    .collect(),
+            ),
+        )
         .with(
             "callouts",
             Value::Array(
@@ -411,7 +527,10 @@ fn colors(sheet: &StyleSheet) -> Value {
                     .collect(),
             ),
         )
-        .with("startWindowPrimaryAction", color_json(&sheet.start_window_primary_action()))
+        .with(
+            "startWindowPrimaryAction",
+            color_json(&sheet.start_window_primary_action()),
+        )
         .with("onAccent", color_json(&sheet.on_accent()))
         .with("taskFieldColor", color_json(&sheet.task_field_color()))
         .with("taskRingChecked", color_json(&sheet.task_ring_color(true)))
@@ -449,7 +568,10 @@ fn colors(sheet: &StyleSheet) -> Value {
                     .collect(),
             ),
         )
-        .with("blendCatalog", color_json(&ColorResolver::blend(&label, &sheet.background, 0.5)))
+        .with(
+            "blendCatalog",
+            color_json(&ColorResolver::blend(&label, &sheet.background, 0.5)),
+        )
         .build()
 }
 
@@ -493,15 +615,46 @@ fn render_metrics(body_size: f64, grid: f64) -> Value {
     let doubles = |iter: &mut dyn Iterator<Item = f64>| Value::Array(iter.map(double).collect());
     Object::new()
         .with("constants", doubles(&mut constants.into_iter()))
-        .with("integers", Value::Array(vec![rm::CODE_TAB_COLUMNS.into(), rm::CODE_COLLAPSE_LINE_COUNT.into()]))
+        .with(
+            "integers",
+            Value::Array(vec![
+                rm::CODE_TAB_COLUMNS.into(),
+                rm::CODE_COLLAPSE_LINE_COUNT.into(),
+            ]),
+        )
         .with(
             "taskTick",
-            Value::Array(rm::TASK_TICK.iter().map(|point| Value::Array(vec![double(point.x), double(point.y)])).collect()),
+            Value::Array(
+                rm::TASK_TICK
+                    .iter()
+                    .map(|point| Value::Array(vec![double(point.x), double(point.y)]))
+                    .collect(),
+            ),
         )
-        .with("indentUnit", doubles(&mut [body_size, 16.0, 13.5, 11.0].into_iter().map(rm::indent_unit)))
-        .with("snapUp", doubles(&mut values.into_iter().map(|value| rm::snap_up(value, grid))))
-        .with("snapDown", doubles(&mut values.into_iter().map(|value| rm::snap(value, grid, RoundingRule::Down))))
-        .with("snapSmallGrid", doubles(&mut values.into_iter().map(|value| rm::snap_up(value, 0.5))))
+        .with(
+            "indentUnit",
+            doubles(
+                &mut [body_size, 16.0, 13.5, 11.0]
+                    .into_iter()
+                    .map(rm::indent_unit),
+            ),
+        )
+        .with(
+            "snapUp",
+            doubles(&mut values.into_iter().map(|value| rm::snap_up(value, grid))),
+        )
+        .with(
+            "snapDown",
+            doubles(
+                &mut values
+                    .into_iter()
+                    .map(|value| rm::snap(value, grid, RoundingRule::Down)),
+            ),
+        )
+        .with(
+            "snapSmallGrid",
+            doubles(&mut values.into_iter().map(|value| rm::snap_up(value, 0.5))),
+        )
         .build()
 }
 
@@ -524,9 +677,19 @@ fn contracts() -> Value {
             .collect(),
         )
     };
-    let mut configuration =
-        MarkdownRenderConfiguration::new(false, MarkdownRevealPolicy::PrimaryCaret, false, false, true, 0, 5000);
-    let clamped_init = [configuration.code_collapse_threshold(), configuration.large_file_threshold_megabytes()];
+    let mut configuration = MarkdownRenderConfiguration::new(
+        false,
+        MarkdownRevealPolicy::PrimaryCaret,
+        false,
+        false,
+        true,
+        0,
+        5000,
+    );
+    let clamped_init = [
+        configuration.code_collapse_threshold(),
+        configuration.large_file_threshold_megabytes(),
+    ];
     configuration.set_code_collapse_threshold(20_000);
     configuration.set_large_file_threshold_megabytes(-3);
     let defaults = MarkdownRenderConfiguration::default();
@@ -547,19 +710,34 @@ fn contracts() -> Value {
                     .collect(),
             ),
         )
-        .with("userFacingModes", Value::Array(RenderMode::USER_FACING_MODES.iter().map(|m| m.raw_value().into()).collect()))
+        .with(
+            "userFacingModes",
+            Value::Array(
+                RenderMode::USER_FACING_MODES
+                    .iter()
+                    .map(|m| m.raw_value().into())
+                    .collect(),
+            ),
+        )
         .with(
             "fragmentKinds",
             Value::Array(
                 FragmentKind::ALL_CASES
                     .iter()
-                    .map(|kind| Value::Array(vec![kind.raw_value().into(), kind.replaces_glyphs().into()]))
+                    .map(|kind| {
+                        Value::Array(vec![kind.raw_value().into(), kind.replaces_glyphs().into()])
+                    })
                     .collect(),
             ),
         )
         .with(
             "revealPolicies",
-            Value::Array(MarkdownRevealPolicy::ALL_CASES.iter().map(|p| p.raw_value().into()).collect()),
+            Value::Array(
+                MarkdownRevealPolicy::ALL_CASES
+                    .iter()
+                    .map(|p| p.raw_value().into())
+                    .collect(),
+            ),
         )
         .with(
             "configuration",
@@ -616,7 +794,9 @@ fn contracts() -> Value {
                         Value::Array(vec![
                             appearance.raw_value().into(),
                             appearance.title().into(),
-                            appearance.ns_appearance().map_or(Value::Null, |a| a.name().to_string().into()),
+                            appearance
+                                .ns_appearance()
+                                .map_or(Value::Null, |a| a.name().to_string().into()),
                         ])
                     })
                     .collect(),
@@ -624,7 +804,10 @@ fn contracts() -> Value {
         )
         .with(
             "gutterChrome",
-            Value::Array(vec![font_json(&GutterChrome::title_font()), font_json(&GutterChrome::body_font())]),
+            Value::Array(vec![
+                font_json(&GutterChrome::title_font()),
+                font_json(&GutterChrome::body_font()),
+            ]),
         )
         .build()
 }

@@ -40,11 +40,17 @@ impl RenderMode {
     }
 
     pub fn from_raw_value(raw: &str) -> Option<RenderMode> {
-        RenderMode::ALL_CASES.into_iter().find(|mode| mode.raw_value() == raw)
+        RenderMode::ALL_CASES
+            .into_iter()
+            .find(|mode| mode.raw_value() == raw)
     }
 
     pub fn normalized_for_editing(self) -> RenderMode {
-        if self == RenderMode::Read { RenderMode::Live } else { self }
+        if self == RenderMode::Read {
+            RenderMode::Live
+        } else {
+            self
+        }
     }
 
     pub const fn title(self) -> &'static str {
@@ -57,9 +63,15 @@ impl RenderMode {
 
     pub fn policy(self) -> DecorationPolicy {
         match self {
-            RenderMode::Read => DecorationPolicy::new(false, true, true, false, false, false, true, true),
-            RenderMode::Live => DecorationPolicy::new(true, true, true, true, true, false, true, false),
-            RenderMode::Source => DecorationPolicy::new(true, false, false, false, false, true, false, false),
+            RenderMode::Read => {
+                DecorationPolicy::new(false, true, true, false, false, false, true, true)
+            }
+            RenderMode::Live => {
+                DecorationPolicy::new(true, true, true, true, true, false, true, false)
+            }
+            RenderMode::Source => {
+                DecorationPolicy::new(true, false, false, false, false, true, false, false)
+            }
         }
     }
 }
@@ -137,8 +149,11 @@ pub enum MarkdownRevealPolicy {
 }
 
 impl MarkdownRevealPolicy {
-    pub const ALL_CASES: [MarkdownRevealPolicy; 3] =
-        [MarkdownRevealPolicy::Never, MarkdownRevealPolicy::PrimaryCaret, MarkdownRevealPolicy::AllCursors];
+    pub const ALL_CASES: [MarkdownRevealPolicy; 3] = [
+        MarkdownRevealPolicy::Never,
+        MarkdownRevealPolicy::PrimaryCaret,
+        MarkdownRevealPolicy::AllCursors,
+    ];
 
     pub const fn raw_value(self) -> &'static str {
         match self {
@@ -149,7 +164,9 @@ impl MarkdownRevealPolicy {
     }
 
     pub fn from_raw_value(raw: &str) -> Option<Self> {
-        MarkdownRevealPolicy::ALL_CASES.into_iter().find(|policy| policy.raw_value() == raw)
+        MarkdownRevealPolicy::ALL_CASES
+            .into_iter()
+            .find(|policy| policy.raw_value() == raw)
     }
 }
 
@@ -384,7 +401,9 @@ impl FragmentKind {
     }
 
     pub fn from_raw_value(raw: &str) -> Option<FragmentKind> {
-        FragmentKind::ALL_CASES.into_iter().find(|kind| kind.raw_value() == raw)
+        FragmentKind::ALL_CASES
+            .into_iter()
+            .find(|kind| kind.raw_value() == raw)
     }
 
     /// True when the fragment draws its own content instead of letting
@@ -400,9 +419,10 @@ impl FragmentKind {
             | FragmentKind::FrontMatter => true,
             // Code keeps its glyphs, and a callout, a list ornament and inline
             // math are chrome drawn *around* real text.
-            FragmentKind::CodeBlock | FragmentKind::Callout | FragmentKind::ListOrnament | FragmentKind::InlineMath => {
-                false
-            }
+            FragmentKind::CodeBlock
+            | FragmentKind::Callout
+            | FragmentKind::ListOrnament
+            | FragmentKind::InlineMath => false,
         }
     }
 }
@@ -436,7 +456,12 @@ define_class!(
 );
 
 impl FragmentPayload {
-    pub fn new(kind: FragmentKind, source_range: NSRange, block_identity: BlockIdentity, detail: &str) -> Retained<Self> {
+    pub fn new(
+        kind: FragmentKind,
+        source_range: NSRange,
+        block_identity: BlockIdentity,
+        detail: &str,
+    ) -> Retained<Self> {
         let this = Self::alloc().set_ivars(FragmentPayloadIvars {
             kind,
             source_range: Cell::new(source_range),
@@ -491,8 +516,11 @@ impl FragmentPayload {
     /// a source edit and the async parse that replaces this payload.
     pub fn project_source_ranges(&self, edit: NSRange, inserted_length: isize) {
         self.set_source_range(project_range(self.source_range(), edit, inserted_length));
-        let Some(mut table_data) = self.table_data().clone() else { return };
-        table_data.delimiter_range = project_range(table_data.delimiter_range, edit, inserted_length);
+        let Some(mut table_data) = self.table_data().clone() else {
+            return;
+        };
+        table_data.delimiter_range =
+            project_range(table_data.delimiter_range, edit, inserted_length);
         table_data.rows = table_data
             .rows
             .iter()
@@ -504,7 +532,11 @@ impl FragmentPayload {
                     .map(|cell| TableCell {
                         range: project_range(cell.range, edit, inserted_length),
                         content_range: project_range(cell.content_range, edit, inserted_length),
-                        inlines: cell.inlines.iter().map(|span| project_span(span, edit, inserted_length)).collect(),
+                        inlines: cell
+                            .inlines
+                            .iter()
+                            .map(|span| project_span(span, edit, inserted_length))
+                            .collect(),
                     })
                     .collect(),
                 is_header: row.is_header,
@@ -519,9 +551,17 @@ fn project_span(span: &InlineSpan, edit: NSRange, inserted_length: isize) -> Inl
         kind: span.kind.clone(),
         range: project_range(span.range, edit, inserted_length),
         content_range: project_range(span.content_range, edit, inserted_length),
-        leading_marker_range: span.leading_marker_range.map(|range| project_range(range, edit, inserted_length)),
-        trailing_marker_range: span.trailing_marker_range.map(|range| project_range(range, edit, inserted_length)),
-        children: span.children.iter().map(|child| project_span(child, edit, inserted_length)).collect(),
+        leading_marker_range: span
+            .leading_marker_range
+            .map(|range| project_range(range, edit, inserted_length)),
+        trailing_marker_range: span
+            .trailing_marker_range
+            .map(|range| project_range(range, edit, inserted_length)),
+        children: span
+            .children
+            .iter()
+            .map(|child| project_span(child, edit, inserted_length))
+            .collect(),
     }
 }
 
@@ -545,7 +585,10 @@ pub fn project_range(range: NSRange, edit: NSRange, inserted_length: isize) -> N
     let prefix = 0.max(edit_location - location);
     let suffix = 0.max(upper - edit_upper);
     let new_location = location.min(edit_location);
-    NSRange::new(new_location as usize, (prefix + inserted_length + suffix) as usize)
+    NSRange::new(
+        new_location as usize,
+        (prefix + inserted_length + suffix) as usize,
+    )
 }
 
 // MARK: - Theme (§11.2)
@@ -561,7 +604,9 @@ pub struct ThemeColor {
 
 impl ThemeColor {
     pub fn new(raw: &str) -> Self {
-        ThemeColor { raw: raw.to_owned() }
+        ThemeColor {
+            raw: raw.to_owned(),
+        }
     }
 
     /// `#rrggbb`, `#rrggbbaa`, or `system:<name>` naming an `NSColor` class
@@ -595,9 +640,13 @@ impl ThemeAppearance {
     }
 
     pub fn from_raw_value(raw: &str) -> Option<Self> {
-        [ThemeAppearance::Light, ThemeAppearance::Dark, ThemeAppearance::Auto]
-            .into_iter()
-            .find(|appearance| appearance.raw_value() == raw)
+        [
+            ThemeAppearance::Light,
+            ThemeAppearance::Dark,
+            ThemeAppearance::Auto,
+        ]
+        .into_iter()
+        .find(|appearance| appearance.raw_value() == raw)
     }
 }
 
@@ -682,24 +731,22 @@ color_struct!(
     }
 );
 
-color_struct!(
-    CodeTheme {
-        keyword: "keyword",
-        string: "string",
-        number: "number",
-        comment: "comment",
-        r#type: "type",
-        function: "function",
-        variable: "variable",
-        constant: "constant",
-        operator: "operator",
-        punctuation: "punctuation",
-        attribute: "attribute",
-        diff_added: "diffAdded",
-        diff_removed: "diffRemoved",
-        diff_header: "diffHeader",
-    }
-);
+color_struct!(CodeTheme {
+    keyword: "keyword",
+    string: "string",
+    number: "number",
+    comment: "comment",
+    r#type: "type",
+    function: "function",
+    variable: "variable",
+    constant: "constant",
+    operator: "operator",
+    punctuation: "punctuation",
+    attribute: "attribute",
+    diff_added: "diffAdded",
+    diff_removed: "diffRemoved",
+    diff_header: "diffHeader",
+});
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum BodyPreset {
@@ -720,7 +767,9 @@ impl BodyPreset {
     }
 
     pub fn from_raw_value(raw: &str) -> Option<Self> {
-        BodyPreset::ALL_CASES.into_iter().find(|preset| preset.raw_value() == raw)
+        BodyPreset::ALL_CASES
+            .into_iter()
+            .find(|preset| preset.raw_value() == raw)
     }
 
     pub const fn title(self) -> &'static str {
@@ -769,11 +818,17 @@ impl TypographyConfig {
 
     fn decode(value: &json::Value, path: &str) -> Result<Self, String> {
         let json::Value::Object(_) = value else {
-            return Err(format!("{path}: expected an object, found {}", value.kind()));
+            return Err(format!(
+                "{path}: expected an object, found {}",
+                value.kind()
+            ));
         };
         let preset_raw = decode_string(value, "preset", path)?;
-        let preset = BodyPreset::from_raw_value(&preset_raw)
-            .ok_or_else(|| format!("{path}.preset: cannot initialize BodyPreset from invalid String value {preset_raw}"))?;
+        let preset = BodyPreset::from_raw_value(&preset_raw).ok_or_else(|| {
+            format!(
+                "{path}.preset: cannot initialize BodyPreset from invalid String value {preset_raw}"
+            )
+        })?;
         Ok(TypographyConfig {
             preset,
             body_size: decode_number(value, "bodySize", path)?,
@@ -790,13 +845,25 @@ impl TypographyConfig {
 
     fn encode(&self) -> Vec<(&'static str, EncodedValue)> {
         vec![
-            ("preset", EncodedValue::String(self.preset.raw_value().to_owned())),
+            (
+                "preset",
+                EncodedValue::String(self.preset.raw_value().to_owned()),
+            ),
             ("bodySize", EncodedValue::Number(self.body_size)),
             ("scaleRatio", EncodedValue::Number(self.scale_ratio)),
-            ("lineHeightMultiple", EncodedValue::Number(self.line_height_multiple)),
-            ("measureCharacters", EncodedValue::Number(self.measure_characters)),
+            (
+                "lineHeightMultiple",
+                EncodedValue::Number(self.line_height_multiple),
+            ),
+            (
+                "measureCharacters",
+                EncodedValue::Number(self.measure_characters),
+            ),
             ("monoFamily", EncodedValue::String(self.mono_family.clone())),
-            ("monoSizeAdjust", EncodedValue::Number(self.mono_size_adjust)),
+            (
+                "monoSizeAdjust",
+                EncodedValue::Number(self.mono_size_adjust),
+            ),
             ("monoLigatures", EncodedValue::Bool(self.mono_ligatures)),
             ("opticalMargins", EncodedValue::Bool(self.optical_margins)),
             ("mathScale", EncodedValue::Number(self.math_scale)),
@@ -843,7 +910,10 @@ impl Theme {
     pub fn encode_pretty_sorted(&self) -> String {
         let root = EncodedValue::Object(vec![
             ("name", EncodedValue::String(self.name.clone())),
-            ("appearance", EncodedValue::String(self.appearance.raw_value().to_owned())),
+            (
+                "appearance",
+                EncodedValue::String(self.appearance.raw_value().to_owned()),
+            ),
             ("palette", EncodedValue::Object(self.palette.encode())),
             ("code", EncodedValue::Object(self.code.encode())),
             ("typography", EncodedValue::Object(self.typography.encode())),
@@ -857,7 +927,11 @@ impl Theme {
 // MARK: - Codable plumbing (synthesized `Decodable` over `JSONDecoder`)
 
 fn join(path: &str, key: &str) -> String {
-    if path.is_empty() { key.to_owned() } else { format!("{path}.{key}") }
+    if path.is_empty() {
+        key.to_owned()
+    } else {
+        format!("{path}.{key}")
+    }
 }
 
 fn required<'a>(object: &'a json::Value, key: &str, path: &str) -> Result<&'a json::Value, String> {
@@ -871,18 +945,28 @@ fn required<'a>(object: &'a json::Value, key: &str, path: &str) -> Result<&'a js
 fn decode_string(object: &json::Value, key: &str, path: &str) -> Result<String, String> {
     match required(object, key, path)? {
         json::Value::String(text) => Ok(text.clone()),
-        other => Err(format!("{}: expected String, found {}", join(path, key), other.kind())),
+        other => Err(format!(
+            "{}: expected String, found {}",
+            join(path, key),
+            other.kind()
+        )),
     }
 }
 
 fn decode_number(object: &json::Value, key: &str, path: &str) -> Result<f64, String> {
-    required(object, key, path)?.as_f64().map_err(|error| format!("{}: {error}", join(path, key)))
+    required(object, key, path)?
+        .as_f64()
+        .map_err(|error| format!("{}: {error}", join(path, key)))
 }
 
 fn decode_bool(object: &json::Value, key: &str, path: &str) -> Result<bool, String> {
     match required(object, key, path)? {
         json::Value::Bool(flag) => Ok(*flag),
-        other => Err(format!("{}: expected Bool, found {}", join(path, key), other.kind())),
+        other => Err(format!(
+            "{}: expected Bool, found {}",
+            join(path, key),
+            other.kind()
+        )),
     }
 }
 
@@ -890,11 +974,19 @@ fn decode_color(object: &json::Value, key: &str, path: &str) -> Result<ThemeColo
     decode_string(object, key, path).map(|raw| ThemeColor { raw })
 }
 
-fn decode_optional_color(object: &json::Value, key: &str, path: &str) -> Result<Option<ThemeColor>, String> {
+fn decode_optional_color(
+    object: &json::Value,
+    key: &str,
+    path: &str,
+) -> Result<Option<ThemeColor>, String> {
     match object.get(key) {
         None | Some(json::Value::Null) => Ok(None),
         Some(json::Value::String(raw)) => Ok(Some(ThemeColor { raw: raw.clone() })),
-        Some(other) => Err(format!("{}: expected String, found {}", join(path, key), other.kind())),
+        Some(other) => Err(format!(
+            "{}: expected String, found {}",
+            join(path, key),
+            other.kind()
+        )),
     }
 }
 
@@ -962,10 +1054,18 @@ pub fn swift_double_description(value: f64) -> String {
         return "nan".into();
     }
     if value.is_infinite() {
-        return if value < 0.0 { "-inf".into() } else { "inf".into() };
+        return if value < 0.0 {
+            "-inf".into()
+        } else {
+            "inf".into()
+        };
     }
     if value == 0.0 {
-        return if value.is_sign_negative() { "-0.0".into() } else { "0.0".into() };
+        return if value.is_sign_negative() {
+            "-0.0".into()
+        } else {
+            "0.0".into()
+        };
     }
     // `{:e}` prints the shortest round-trip digits: "1.25e16", "-5e-324".
     let scientific = format!("{:e}", value);
@@ -1044,7 +1144,11 @@ pub fn hex_components(hex_string: &str) -> Option<(f64, f64, f64, f64)> {
     let r = ((v >> if has_alpha { 24 } else { 16 }) & 0xFF) as f64 / 255.0;
     let g = ((v >> if has_alpha { 16 } else { 8 }) & 0xFF) as f64 / 255.0;
     let b = ((v >> if has_alpha { 8 } else { 0 }) & 0xFF) as f64 / 255.0;
-    let a = if has_alpha { (v & 0xFF) as f64 / 255.0 } else { 1.0 };
+    let a = if has_alpha {
+        (v & 0xFF) as f64 / 255.0
+    } else {
+        1.0
+    };
     Some((r, g, b, a))
 }
 
@@ -1059,7 +1163,9 @@ pub fn system_color_named(name: &str) -> Option<Retained<NSColor>> {
         "controlBackground" | "controlBackgroundColor" => NSColor::controlBackgroundColor(),
         "underPageBackground" | "underPageBackgroundColor" => NSColor::underPageBackgroundColor(),
         "accent" | "controlAccentColor" => NSColor::controlAccentColor(),
-        "selectedTextBackground" | "selectedTextBackgroundColor" => NSColor::selectedTextBackgroundColor(),
+        "selectedTextBackground" | "selectedTextBackgroundColor" => {
+            NSColor::selectedTextBackgroundColor()
+        }
         "separator" | "separatorColor" => NSColor::separatorColor(),
         "link" | "linkColor" => NSColor::linkColor(),
         "systemRed" => NSColor::systemRedColor(),
@@ -1109,7 +1215,13 @@ mod tests {
     fn projection_follows_the_swift_arithmetic() {
         let range = NSRange::new(10, 5);
         assert_eq!(project_range(range, NSRange::new(20, 3), 0), range);
-        assert_eq!(project_range(range, NSRange::new(0, 3), 1), NSRange::new(8, 5));
-        assert_eq!(project_range(range, NSRange::new(12, 2), 5), NSRange::new(10, 8));
+        assert_eq!(
+            project_range(range, NSRange::new(0, 3), 1),
+            NSRange::new(8, 5)
+        );
+        assert_eq!(
+            project_range(range, NSRange::new(12, 2), 5),
+            NSRange::new(10, 8)
+        );
     }
 }

@@ -17,8 +17,10 @@ use unicode_segmentation::UnicodeSegmentation;
 
 /// `CharacterSet.whitespaces` (probed: Zs, tab, and U+200B).
 pub fn is_whitespace(c: char) -> bool {
-    matches!(c as u32,
-        0x0009 | 0x0020 | 0x00A0 | 0x1680 | 0x2000..=0x200B | 0x202F | 0x205F | 0x3000)
+    matches!(
+        c as u32,
+        0x0009 | 0x0020 | 0x00A0 | 0x1680 | 0x2000..=0x200B | 0x202F | 0x205F | 0x3000
+    )
 }
 
 /// `CharacterSet.whitespacesAndNewlines`.
@@ -120,7 +122,9 @@ pub fn has_ascii_prefix(s: &str, prefix: &str) -> bool {
         if rest.is_empty() {
             return true;
         }
-        let Some(tail) = rest.strip_prefix(grapheme) else { return false };
+        let Some(tail) = rest.strip_prefix(grapheme) else {
+            return false;
+        };
         // A grapheme spanning past the prefix's end does not match.
         rest = tail;
     }
@@ -188,7 +192,11 @@ pub fn string_eq(a: &str, b: &str) -> bool {
 /// A key under which canonically equivalent strings collide, for maps that
 /// stand in for a Swift `Dictionary<String, _>` or `Set<String>`.
 pub fn string_key(s: &str) -> String {
-    if s.is_ascii() { s.to_owned() } else { s.nfc().collect() }
+    if s.is_ascii() {
+        s.to_owned()
+    } else {
+        s.nfc().collect()
+    }
 }
 
 /// Swift `String <`: the NFC-normalised scalars, lexicographically.
@@ -218,7 +226,10 @@ pub fn rounded(x: f64) -> f64 {
 /// `Int(x)`: truncation toward zero; Swift traps on NaN and out-of-range.
 #[inline(always)]
 pub fn int_truncating(x: f64) -> i64 {
-    assert!(x.is_finite() && x > -9.223372036854777e18 && x < 9.223372036854776e18, "Int({x}) traps");
+    assert!(
+        x.is_finite() && x > -9.223372036854777e18 && x < 9.223372036854776e18,
+        "Int({x}) traps"
+    );
     x as i64
 }
 
@@ -301,7 +312,11 @@ pub mod json {
     pub fn parse(bytes: &[u8]) -> Result<Value, String> {
         let bytes = bytes.strip_prefix(&[0xEF, 0xBB, 0xBF]).unwrap_or(bytes);
         let text = std::str::from_utf8(bytes).map_err(|error| error.to_string())?;
-        let mut parser = Parser { bytes: text.as_bytes(), text, i: 0 };
+        let mut parser = Parser {
+            bytes: text.as_bytes(),
+            text,
+            i: 0,
+        };
         parser.skip_whitespace();
         let value = parser.value(0)?;
         parser.skip_whitespace();
@@ -321,7 +336,9 @@ pub mod json {
 
     impl Parser<'_> {
         fn skip_whitespace(&mut self) {
-            while self.i < self.bytes.len() && matches!(self.bytes[self.i], b' ' | b'\t' | b'\n' | b'\r') {
+            while self.i < self.bytes.len()
+                && matches!(self.bytes[self.i], b' ' | b'\t' | b'\n' | b'\r')
+            {
                 self.i += 1;
             }
         }
@@ -434,7 +451,8 @@ pub mod json {
                 return self.error("short \\u escape");
             }
             let digits = &self.text[self.i..self.i + 4];
-            let value = u32::from_str_radix(digits, 16).map_err(|_| format!("bad \\u escape at byte {}", self.i))?;
+            let value = u32::from_str_radix(digits, 16)
+                .map_err(|_| format!("bad \\u escape at byte {}", self.i))?;
             if !digits.bytes().all(|b| b.is_ascii_hexdigit()) {
                 return self.error("bad \\u escape");
             }
@@ -447,7 +465,9 @@ pub mod json {
             let mut out = String::new();
             loop {
                 let start = self.i;
-                while self.i < self.bytes.len() && !matches!(self.bytes[self.i], b'"' | b'\\' | 0x00..=0x1F) {
+                while self.i < self.bytes.len()
+                    && !matches!(self.bytes[self.i], b'"' | b'\\' | 0x00..=0x1F)
+                {
                     self.i += 1;
                 }
                 out.push_str(&self.text[start..self.i]);
@@ -459,7 +479,9 @@ pub mod json {
                     }
                     Some(b'\\') => {
                         self.i += 1;
-                        let Some(&escape) = self.bytes.get(self.i) else { return self.error("unterminated escape") };
+                        let Some(&escape) = self.bytes.get(self.i) else {
+                            return self.error("unterminated escape");
+                        };
                         self.i += 1;
                         match escape {
                             b'"' => out.push('"'),

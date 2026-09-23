@@ -23,7 +23,12 @@ static NAME_UNITS: [bool; 128] = ascii_table("-_:.");
 
 impl<'a> MarkupLexer<'a> {
     pub fn highlight(units: &[Unit]) -> Vec<SyntaxRun> {
-        let mut lexer = MarkupLexer { units, count: units.len(), i: 0, builder: RunBuilder::new(units.len()) };
+        let mut lexer = MarkupLexer {
+            units,
+            count: units.len(),
+            i: 0,
+            builder: RunBuilder::new(units.len()),
+        };
         lexer.run();
         lexer.builder.finish()
     }
@@ -40,7 +45,10 @@ impl<'a> MarkupLexer<'a> {
                 continue;
             }
             let start = self.i;
-            while self.i < self.count && self.units[self.i] != of('<') && self.units[self.i] != of('&') {
+            while self.i < self.count
+                && self.units[self.i] != of('<')
+                && self.units[self.i] != of('&')
+            {
                 self.i += 1;
             }
             self.builder.emit(SyntaxToken::Plain, start, self.i);
@@ -94,7 +102,9 @@ impl<'a> MarkupLexer<'a> {
             }
             if c == of('>') || c == of('/') {
                 let start = self.i;
-                while self.i < self.count && (self.units[self.i] == of('/') || self.units[self.i] == of('>')) {
+                while self.i < self.count
+                    && (self.units[self.i] == of('/') || self.units[self.i] == of('>'))
+                {
                     self.i += 1;
                 }
                 self.builder.emit(SyntaxToken::Punctuation, start, self.i);
@@ -157,7 +167,10 @@ impl<'a> MarkupLexer<'a> {
         if self.i + bytes.len() > self.count {
             return false;
         }
-        bytes.iter().enumerate().all(|(k, byte)| self.units[self.i + k] == *byte as Unit)
+        bytes
+            .iter()
+            .enumerate()
+            .all(|(k, byte)| self.units[self.i + k] == *byte as Unit)
     }
 }
 

@@ -15,13 +15,14 @@ use std::sync::{Arc, LazyLock, Mutex, MutexGuard, Weak};
 use std::time::Duration;
 
 use dispatch2::{
-    DispatchObject, DispatchQueue, DispatchRetained, DispatchSource, DispatchTime, _dispatch_source_type_vnode,
-    dispatch_source_type_t, dispatch_source_vnode_flags_t,
+    _dispatch_source_type_vnode, DispatchObject, DispatchQueue, DispatchRetained, DispatchSource,
+    DispatchTime, dispatch_source_type_t, dispatch_source_vnode_flags_t,
 };
 use objc2::rc::Retained;
 use objc2_foundation::{
-    NSArray, NSDirectoryEnumerationOptions, NSFileManager, NSNumber, NSSearchPathDirectory, NSSearchPathDomainMask,
-    NSString, NSURL, NSURLFileSizeKey, NSURLIsRegularFileKey, NSUserDefaults,
+    NSArray, NSDirectoryEnumerationOptions, NSFileManager, NSNumber, NSSearchPathDirectory,
+    NSSearchPathDomainMask, NSString, NSURL, NSURLFileSizeKey, NSURLIsRegularFileKey,
+    NSUserDefaults,
 };
 use unicode_segmentation::UnicodeSegmentation;
 
@@ -39,15 +40,36 @@ const MAXIMUM_THEME_FILE_BYTES: i64 = 8 * 1024 * 1024;
 /// The bundled resource directory (`Sources/MarkdownRender/Themes`), embedded
 /// by file name. SwiftPM copies the same files into the resource bundle.
 const BUNDLED_THEME_FILES: [(&str, &[u8]); 6] = [
-    ("high-contrast.json", include_bytes!("../../../../vendor/downright/Sources/MarkdownRender/Themes/high-contrast.json")),
-    ("nord.json", include_bytes!("../../../../vendor/downright/Sources/MarkdownRender/Themes/nord.json")),
-    ("paper-light.json", include_bytes!("../../../../vendor/downright/Sources/MarkdownRender/Themes/paper-light.json")),
+    (
+        "high-contrast.json",
+        include_bytes!(
+            "../../../../vendor/downright/Sources/MarkdownRender/Themes/high-contrast.json"
+        ),
+    ),
+    (
+        "nord.json",
+        include_bytes!("../../../../vendor/downright/Sources/MarkdownRender/Themes/nord.json"),
+    ),
+    (
+        "paper-light.json",
+        include_bytes!(
+            "../../../../vendor/downright/Sources/MarkdownRender/Themes/paper-light.json"
+        ),
+    ),
     (
         "solarized-light.json",
-        include_bytes!("../../../../vendor/downright/Sources/MarkdownRender/Themes/solarized-light.json"),
+        include_bytes!(
+            "../../../../vendor/downright/Sources/MarkdownRender/Themes/solarized-light.json"
+        ),
     ),
-    ("system.json", include_bytes!("../../../../vendor/downright/Sources/MarkdownRender/Themes/system.json")),
-    ("warm-dark.json", include_bytes!("../../../../vendor/downright/Sources/MarkdownRender/Themes/warm-dark.json")),
+    (
+        "system.json",
+        include_bytes!("../../../../vendor/downright/Sources/MarkdownRender/Themes/system.json"),
+    ),
+    (
+        "warm-dark.json",
+        include_bytes!("../../../../vendor/downright/Sources/MarkdownRender/Themes/warm-dark.json"),
+    ),
 ];
 
 type Observer = Arc<dyn Fn(&Theme) + Send + Sync>;
@@ -70,7 +92,8 @@ pub struct ThemeStore {
     watcher: Mutex<Option<DirectoryWatcher>>,
 }
 
-static SHARED: LazyLock<Arc<ThemeStore>> = LazyLock::new(|| ThemeStore::new(NSUserDefaults::standardUserDefaults()));
+static SHARED: LazyLock<Arc<ThemeStore>> =
+    LazyLock::new(|| ThemeStore::new(NSUserDefaults::standardUserDefaults()));
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum ThemeStoreError {
@@ -85,9 +108,13 @@ impl ThemeStoreError {
     /// `errorDescription`.
     pub fn error_description(&self) -> String {
         match self {
-            ThemeStoreError::Unreadable(last_path_component) => format!("Could not read {last_path_component}."),
+            ThemeStoreError::Unreadable(last_path_component) => {
+                format!("Could not read {last_path_component}.")
+            }
             ThemeStoreError::NotAVSCodeTheme => "That file is not a VS Code colour theme.".into(),
-            ThemeStoreError::UserThemesUnavailable => "The Downright themes folder is unavailable.".into(),
+            ThemeStoreError::UserThemesUnavailable => {
+                "The Downright themes folder is unavailable.".into()
+            }
             ThemeStoreError::Io(message) => message.clone(),
         }
     }
@@ -163,7 +190,10 @@ impl ThemeStore {
     pub fn select(&self, name: &str) {
         {
             let mut state = lock(&self.state);
-            if !state.themes.iter().any(|theme| swift_compat::string_eq(&theme.name, name))
+            if !state
+                .themes
+                .iter()
+                .any(|theme| swift_compat::string_eq(&theme.name, name))
                 || swift_compat::string_eq(name, &state.selected_name)
             {
                 return;
@@ -172,7 +202,10 @@ impl ThemeStore {
         }
         let value = NSString::from_str(name);
         // SAFETY: an NSString is a valid property-list value.
-        unsafe { self.defaults.setObject_forKey(Some(&value), &NSString::from_str(SELECTION_DEFAULTS_KEY)) };
+        unsafe {
+            self.defaults
+                .setObject_forKey(Some(&value), &NSString::from_str(SELECTION_DEFAULTS_KEY))
+        };
         self.bump_and_notify();
     }
 
@@ -180,7 +213,9 @@ impl ThemeStore {
 
     /// User themes live in ~/Library/Application Support/Downright/Themes.
     pub fn reload_user_themes(self: &Arc<Self>) {
-        let Some(directory) = ThemeStore::user_themes_directory() else { return };
+        let Some(directory) = ThemeStore::user_themes_directory() else {
+            return;
+        };
         let _ = create_directory(&directory);
         let user_themes = ThemeStore::load_themes(&directory);
         lock(&self.state).user_themes = user_themes;
@@ -194,12 +229,20 @@ impl ThemeStore {
         for theme in &state.user_themes {
             overrides.insert(swift_compat::string_key(&theme.name), theme.clone());
         }
-        let bundled_names: Vec<String> =
-            state.bundled_themes.iter().map(|theme| swift_compat::string_key(&theme.name)).collect();
+        let bundled_names: Vec<String> = state
+            .bundled_themes
+            .iter()
+            .map(|theme| swift_compat::string_key(&theme.name))
+            .collect();
         let mut bundled: Vec<Theme> = state
             .bundled_themes
             .iter()
-            .map(|theme| overrides.get(&swift_compat::string_key(&theme.name)).cloned().unwrap_or_else(|| theme.clone()))
+            .map(|theme| {
+                overrides
+                    .get(&swift_compat::string_key(&theme.name))
+                    .cloned()
+                    .unwrap_or_else(|| theme.clone())
+            })
             .collect();
         bundled.sort_by(|a, b| swift_compat::string_cmp(&a.name, &b.name));
         let mut user_only: Vec<Theme> = state
@@ -216,7 +259,10 @@ impl ThemeStore {
     fn load_bundled_themes() -> Vec<Theme> {
         // `decode(_:)` sorts by file name and skips empty or oversized files;
         // the embedded list is already in that order and every file qualifies.
-        BUNDLED_THEME_FILES.iter().filter_map(|(_, data)| Theme::decode_json(data).ok()).collect()
+        BUNDLED_THEME_FILES
+            .iter()
+            .filter_map(|(_, data)| Theme::decode_json(data).ok())
+            .collect()
     }
 
     fn load_themes(directory: &NSURL) -> Vec<Theme> {
@@ -232,8 +278,9 @@ impl ThemeStore {
         let json: Vec<Retained<NSURL>> = contents
             .into_iter()
             .filter(|url| {
-                url.pathExtension()
-                    .is_some_and(|extension| swift_compat::lowercased(&extension.to_string()) == "json")
+                url.pathExtension().is_some_and(|extension| {
+                    swift_compat::lowercased(&extension.to_string()) == "json"
+                })
             })
             .collect();
         ThemeStore::decode(json)
@@ -244,7 +291,14 @@ impl ThemeStore {
     fn decode(urls: Vec<Retained<NSURL>>) -> Vec<Theme> {
         let mut named: Vec<(String, Retained<NSURL>)> = urls
             .into_iter()
-            .map(|url| (url.lastPathComponent().map(|name| name.to_string()).unwrap_or_default(), url))
+            .map(|url| {
+                (
+                    url.lastPathComponent()
+                        .map(|name| name.to_string())
+                        .unwrap_or_default(),
+                    url,
+                )
+            })
             .filter(|(name, _)| !swift_compat::has_ascii_prefix(name, "."))
             .collect();
         named.sort_by(|a, b| swift_compat::string_cmp(&a.0, &b.0));
@@ -252,7 +306,8 @@ impl ThemeStore {
             .into_iter()
             .filter_map(|(_, url)| {
                 // SAFETY: the keys are valid NSURLResourceKey constants.
-                let keys = unsafe { NSArray::from_slice(&[NSURLIsRegularFileKey, NSURLFileSizeKey]) };
+                let keys =
+                    unsafe { NSArray::from_slice(&[NSURLIsRegularFileKey, NSURLFileSizeKey]) };
                 let values = url.resourceValuesForKeys_error(&keys).ok()?;
                 // SAFETY: as above.
                 let (regular_key, size_key) = unsafe { (NSURLIsRegularFileKey, NSURLFileSizeKey) };
@@ -290,11 +345,15 @@ impl ThemeStore {
         if watcher.is_some() {
             return;
         }
-        let Some(path) = directory.path().map(|path| path.to_string()) else { return };
+        let Some(path) = directory.path().map(|path| path.to_string()) else {
+            return;
+        };
         let store: Weak<ThemeStore> = Arc::downgrade(self);
         *watcher = DirectoryWatcher::new(&path, move || {
             let Some(store) = store.upgrade() else { return };
-            let Some(directory) = ThemeStore::user_themes_directory() else { return };
+            let Some(directory) = ThemeStore::user_themes_directory() else {
+                return;
+            };
             let user_themes = ThemeStore::load_themes(&directory);
             {
                 let mut state = lock(&store.state);
@@ -306,10 +365,16 @@ impl ThemeStore {
     }
 
     /// Hot-reload: fires whenever the selected theme's file changes on disk.
-    pub fn observe(self: &Arc<Self>, handler: impl Fn(&Theme) + Send + Sync + 'static) -> ThemeObservation {
+    pub fn observe(
+        self: &Arc<Self>,
+        handler: impl Fn(&Theme) + Send + Sync + 'static,
+    ) -> ThemeObservation {
         let id = self.next_observer.fetch_add(1, Ordering::Relaxed);
         lock(&self.observers).push((id, Arc::new(handler)));
-        ThemeObservation { store: Mutex::new(Arc::downgrade(self)), id }
+        ThemeObservation {
+            store: Mutex::new(Arc::downgrade(self)),
+            id,
+        }
     }
 
     fn remove_observer(&self, id: u64) {
@@ -322,7 +387,10 @@ impl ThemeStore {
             state.revision = state.revision.wrapping_add(1);
             ThemeStore::current_of(&state)
         };
-        let handlers: Vec<Observer> = lock(&self.observers).iter().map(|(_, handler)| handler.clone()).collect();
+        let handlers: Vec<Observer> = lock(&self.observers)
+            .iter()
+            .map(|(_, handler)| handler.clone())
+            .collect();
         for handler in handlers {
             handler(&theme);
         }
@@ -334,18 +402,25 @@ impl ThemeStore {
     /// blocks and mermaid diagrams share one palette (§11.2).
     pub fn import_vscode_theme(self: &Arc<Self>, path: &str) -> Result<Theme, ThemeStoreError> {
         let url = NSURL::fileURLWithPath(&NSString::from_str(path));
-        let last_path_component = url.lastPathComponent().map(|name| name.to_string()).unwrap_or_default();
-        let data = std::fs::read(path).map_err(|_| ThemeStoreError::Unreadable(last_path_component))?;
+        let last_path_component = url
+            .lastPathComponent()
+            .map(|name| name.to_string())
+            .unwrap_or_default();
+        let data =
+            std::fs::read(path).map_err(|_| ThemeStoreError::Unreadable(last_path_component))?;
         let fallback_name = url
             .URLByDeletingPathExtension()
             .and_then(|url| url.lastPathComponent())
             .map(|name| name.to_string())
             .unwrap_or_default();
         let theme = VSCodeThemeImporter::theme(&data, &fallback_name)?;
-        let directory = ThemeStore::user_themes_directory().ok_or(ThemeStoreError::UserThemesUnavailable)?;
+        let directory =
+            ThemeStore::user_themes_directory().ok_or(ThemeStoreError::UserThemesUnavailable)?;
         create_directory(&directory)?;
         let file = directory
-            .URLByAppendingPathComponent(&NSString::from_str(&(ThemeStore::slug(&theme.name) + ".json")))
+            .URLByAppendingPathComponent(&NSString::from_str(
+                &(ThemeStore::slug(&theme.name) + ".json"),
+            ))
             .and_then(|url| url.path())
             .ok_or(ThemeStoreError::UserThemesUnavailable)?;
         self.export(&theme, &file.to_string())?;
@@ -358,7 +433,8 @@ impl ThemeStore {
     pub fn export(&self, theme: &Theme, path: &str) -> Result<(), ThemeStoreError> {
         let text = theme.encode_pretty_sorted();
         let temporary = format!("{path}.upleft-tmp-{}", std::process::id());
-        std::fs::write(&temporary, text.as_bytes()).map_err(|error| ThemeStoreError::Io(error.to_string()))?;
+        std::fs::write(&temporary, text.as_bytes())
+            .map_err(|error| ThemeStoreError::Io(error.to_string()))?;
         std::fs::rename(&temporary, path).map_err(|error| ThemeStoreError::Io(error.to_string()))
     }
 
@@ -370,11 +446,19 @@ impl ThemeStore {
             .graphemes(true)
             .map(|grapheme| {
                 let first = grapheme.chars().next().unwrap_or('-');
-                if swift_compat::is_letter(first) || swift_compat::is_number(first) { grapheme } else { "-" }
+                if swift_compat::is_letter(first) || swift_compat::is_number(first) {
+                    grapheme
+                } else {
+                    "-"
+                }
             })
             .collect();
         let collapsed = swift_compat::split_on_character(&allowed, '-').join("-");
-        if collapsed.is_empty() { "theme".to_owned() } else { collapsed }
+        if collapsed.is_empty() {
+            "theme".to_owned()
+        } else {
+            collapsed
+        }
     }
 }
 
@@ -382,7 +466,9 @@ fn create_directory(directory: &NSURL) -> Result<(), ThemeStoreError> {
     // SAFETY: no attributes dictionary is passed.
     unsafe {
         NSFileManager::defaultManager()
-            .createDirectoryAtURL_withIntermediateDirectories_attributes_error(directory, true, None)
+            .createDirectoryAtURL_withIntermediateDirectories_attributes_error(
+                directory, true, None,
+            )
             .map_err(|error| ThemeStoreError::Io(error.localizedDescription().to_string()))
     }
 }
@@ -495,12 +581,15 @@ struct WatchState {
 }
 
 impl DirectoryWatcher {
-    fn new(path: &str, on_change: impl Fn() + Send + Sync + 'static) -> Option<DirectoryWatcher> {
+    pub fn new(path: &str, on_change: impl Fn() + Send + Sync + 'static) -> Option<DirectoryWatcher> {
         let inner = Arc::new(WatcherInner {
             path: CString::new(path).ok()?,
             on_change: Box::new(on_change),
             queue: DispatchQueue::new("com.downright.theme-watch", None),
-            state: Mutex::new(WatchState { descriptor: -1, ..WatchState::default() }),
+            state: Mutex::new(WatchState {
+                descriptor: -1,
+                ..WatchState::default()
+            }),
         });
         WatcherInner::start(&inner);
         Some(DirectoryWatcher { inner })
@@ -527,7 +616,8 @@ impl WatcherInner {
             | dispatch_source_vnode_flags_t::DISPATCH_VNODE_DELETE.0;
         let kind: dispatch_source_type_t = (&raw const _dispatch_source_type_vnode).cast_mut();
         // SAFETY: a vnode source on an open descriptor, delivered on our queue.
-        let source = unsafe { DispatchSource::new(kind, opened as usize, mask as usize, Some(&this.queue)) };
+        let source =
+            unsafe { DispatchSource::new(kind, opened as usize, mask as usize, Some(&this.queue)) };
         let weak = Arc::downgrade(this);
         let events = source.clone();
         let handler = block2::RcBlock::new(move || {

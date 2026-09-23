@@ -1,7 +1,9 @@
 //! Port of `Syntax/LineLexers.swift`: two languages whose structure is the
 //! line, not the token.
 
-use super::scanner_core::{RunBuilder, Unit, ascii_table, is_blank_unit, is_digit_unit, is_newline_unit, member, of};
+use super::scanner_core::{
+    RunBuilder, Unit, ascii_table, is_blank_unit, is_digit_unit, is_newline_unit, member, of,
+};
 use super::syntax_contracts::{SyntaxRun, SyntaxToken};
 
 /// ```` ```diff ```` fences get real diff colouring (§11.3).
@@ -32,7 +34,11 @@ const DIFF_HEADERS: [&[u8]; 14] = [
 
 impl<'a> DiffLexer<'a> {
     pub fn highlight(units: &[Unit]) -> Vec<SyntaxRun> {
-        let mut lexer = DiffLexer { units, count: units.len(), builder: RunBuilder::new(units.len()) };
+        let mut lexer = DiffLexer {
+            units,
+            count: units.len(),
+            builder: RunBuilder::new(units.len()),
+        };
         lexer.run();
         lexer.builder.finish()
     }
@@ -73,7 +79,10 @@ impl<'a> DiffLexer<'a> {
         if pos + bytes.len() > limit {
             return false;
         }
-        bytes.iter().enumerate().all(|(k, byte)| self.units[pos + k] == *byte as Unit)
+        bytes
+            .iter()
+            .enumerate()
+            .all(|(k, byte)| self.units[pos + k] == *byte as Unit)
     }
 }
 
@@ -90,7 +99,11 @@ static EMPHASIS_UNITS: [bool; 128] = ascii_table("*_~");
 
 impl<'a> MarkdownLexer<'a> {
     pub fn highlight(units: &[Unit]) -> Vec<SyntaxRun> {
-        let mut lexer = MarkdownLexer { units, count: units.len(), builder: RunBuilder::new(units.len()) };
+        let mut lexer = MarkdownLexer {
+            units,
+            count: units.len(),
+            builder: RunBuilder::new(units.len()),
+        };
         lexer.run();
         lexer.builder.finish()
     }
@@ -108,13 +121,15 @@ impl<'a> MarkdownLexer<'a> {
                     && close.0 == open.0
                     && close.1 >= open.1
                 {
-                    self.builder.emit(SyntaxToken::Attribute, line_start, line_end);
+                    self.builder
+                        .emit(SyntaxToken::Attribute, line_start, line_end);
                     fence = None;
                 } else {
                     self.builder.emit(SyntaxToken::String, line_start, line_end);
                 }
             } else if let Some(open) = self.fence_run(line_start, line_end) {
-                self.builder.emit(SyntaxToken::Attribute, line_start, line_end);
+                self.builder
+                    .emit(SyntaxToken::Attribute, line_start, line_end);
                 fence = Some(open);
             } else {
                 self.classify_block(line_start, line_end);
@@ -145,7 +160,11 @@ impl<'a> MarkdownLexer<'a> {
             length += 1;
             j += 1;
         }
-        if length >= 3 { Some((marker, length)) } else { None }
+        if length >= 3 {
+            Some((marker, length))
+        } else {
+            None
+        }
     }
 
     fn classify_block(&mut self, lower: usize, upper: usize) {
@@ -325,7 +344,8 @@ impl<'a> MarkdownLexer<'a> {
         }
         let close_bracket = j;
         j += 1;
-        self.builder.emit(SyntaxToken::Punctuation, close_bracket, j);
+        self.builder
+            .emit(SyntaxToken::Punctuation, close_bracket, j);
         if !(j < limit && (self.units[j] == of('(') || self.units[j] == of('['))) {
             return j;
         }
