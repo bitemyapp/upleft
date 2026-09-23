@@ -68,7 +68,7 @@
       "name": "vscode-theme",
       "command": "vscode-theme",
       "output": "json",
-      "input": "json",
+      "input": "jsonc",
       "only": ["corpus/themes/"],
       "variants": [[]]
     }
