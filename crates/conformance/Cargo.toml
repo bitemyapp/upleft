@@ -41,6 +41,7 @@ objc2-app-kit = { workspace = true, features = [
     "NSVisualEffectView", "NSGlassEffectView", "NSProgressIndicator", "NSSegmentedControl", "NSPopUpButton", "NSMenu",
     "NSMenuItem", "NSSearchField", "NSTableRowView", "NSTableColumn", "NSCell", "NSTextFieldCell", "block2",
     "NSButton", "NSButtonCell", "NSToolbar", "NSToolbarItem", "NSWindowController",
+    "NSAccessibilityCustomAction",
 ] }
 objc2-quartz-core = { version = "0.3.2", default-features = false, features = [
     "std", "objc2-core-foundation", "objc2-core-graphics", "CALayer", "CAShapeLayer", "CATextLayer", "CAGradientLayer",
