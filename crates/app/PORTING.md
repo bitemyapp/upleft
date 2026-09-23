@@ -182,7 +182,7 @@ The app shell (`App/`, `Assets/`, `Debugging/`, `Lens/`) and the panels (`Panels
 
 **Main queue and timing.** `DispatchQueue.main.async` is `upleft_render::appkit_compat::main_async`, `asyncAfter` is `main_after`, `DispatchWorkItem` is `WorkItem`. `Task { @MainActor … }` from main-thread code is `main_async`. `NSAnimationContext`, `CATransaction`, `CABasicAnimation` and friends are called through objc2 with the same values in the same order; `Motion` is `upleft_render::motion`.
 
-**Shared state.** `Preferences.shared` is `Preferences::shared()`, `ThemeStore.shared` is `ThemeStore::shared()`, `StyleSheet` is `Rc<StyleSheet>` (a Swift value type; `StyleSheet.current` is `StyleSheet::current()`), `KeybindingStore.shared` is `KeybindingStore::shared()`, `UpdateCoordinator.shared` is `UpdateCoordinator::shared(mtm)`, `DocumentStateStore.shared` is `DocumentStateStore::shared()`.
+**Shared state.** `Preferences.shared` is `Preferences::shared()`, `ThemeStore.shared` is `ThemeStore::shared()`, `StyleSheet` is `Rc<StyleSheet>` (a Swift value type; `StyleSheet.current` is `StyleSheet::current(mtm)`, in `upleft_render::view::style_sheet_defaults`), `KeybindingStore.shared` is `KeybindingStore::shared()`, `UpdateCoordinator.shared` is `UpdateCoordinator::shared(mtm)`, `DocumentStateStore.shared` is `DocumentStateStore::shared()`.
 
 **Panels.** Panel types come from `crate::panels::<snake_case_file>` (branch `port/panels`, merged into `port/app-shell` as it lands). Never edit `src/panels/`.
 
