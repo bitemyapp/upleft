@@ -1,0 +1,1 @@
+{"panel": "UpdateWindowController", "theme": "Solarized Light", "dark": false, "width": 540, "height": 480, "state": {"steps": [{"do": "lastUpdateCheckDate", "value": 780000000}, {"do": "driverDidBeginUserCheck"}, {"do": "driverDidFindNoUpdate", "userInitiated": true}]}}

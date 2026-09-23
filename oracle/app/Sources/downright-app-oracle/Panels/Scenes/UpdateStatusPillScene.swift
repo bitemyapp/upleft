@@ -19,9 +19,11 @@ import MarkdownRender
 /// `NSApp`'s appearance, with the *system* Reduce Motion — not the
 /// harness's; the scene selects the scenario's theme in `ThemeStore.shared`
 /// for this process (`UpdateScenes.selectTheme`). With Reduce Motion off
-/// the pill animates its width and shell alpha through `animator()` and the
-/// harness waits for them to settle; with it on, it snaps. The arrival
-/// emphasis never plays: the harness never activates the app.
+/// the pill animates its width and shell alpha through `animator()`; the
+/// scene builds it (and runs the steps) inside a zero-duration
+/// `NSAnimationContext` group, so those changes land at once, as they do
+/// with Reduce Motion on. The arrival emphasis never plays: the harness
+/// never activates the app.
 @MainActor
 final class UpdateStatusPillScene: PanelScene {
     private var pill: UpdateStatusPill?
@@ -33,10 +35,15 @@ final class UpdateStatusPillScene: PanelScene {
         coordinator.tearDownForTesting()
         let presentation: UpdateStatusPill.Presentation =
             scenario.string("presentation") == "compactWarning" ? .compactWarning : .standard
+        // A zero-duration group: the pill's `animator()` width and alpha
+        // changes land at once instead of racing the settle loop.
+        NSAnimationContext.beginGrouping()
+        NSAnimationContext.current.duration = 0
         var early: UpdateStatusPill?
         if scenario.bool("buildFirst") { early = UpdateStatusPill(presentation: presentation) }
         UpdateScenes.run(scenario.array("steps"), on: coordinator, engine: nil)
         let pill = early ?? UpdateStatusPill(presentation: presentation)
+        NSAnimationContext.endGrouping()
         self.pill = pill
 
         let container = NSView(frame: NSRect(x: 0, y: 0, width: scenario.width, height: scenario.height))
@@ -86,6 +93,15 @@ enum UpdateScenes {
     static func selectTheme(_ name: String) {
         ThemeStore.shared.select(named: name)
         UserDefaults.standard.removeObject(forKey: "downright.theme.selected")
+    }
+
+    /// The bundle's icon as the application icon, as the app-window harness
+    /// sets it: an oracle binary has no bundle, and AppKit would otherwise
+    /// show the icon of the folder it runs from (a symbolic link for the
+    /// Swift oracle, a plain folder for `upleft-oracle`).
+    static func useBundleIcon() {
+        let path = repositoryRoot.appendingPathComponent("vendor/downright/Resources/AppIcon.icns").path
+        NSApp.applicationIconImage = NSImage(contentsOfFile: path)
     }
 
     /// The text between the first `<![CDATA[` and the next `]]>` of a feed
