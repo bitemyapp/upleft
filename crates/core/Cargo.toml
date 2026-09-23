@@ -1,0 +1,19 @@
+[package]
+name = "upleft-core"
+description = "Port of Downright's MarkdownCore: the document model, parser passes, diffs, and text transforms"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+publish.workspace = true
+
+[dependencies]
+upleft-markup.workspace = true
+objc2.workspace = true
+objc2-foundation = { workspace = true, features = ["NSString", "NSRegularExpression", "NSTextCheckingResult", "NSArray", "NSEnumerator", "NSRange", "NSObjCRuntime", "NSLocale", "NSData", "NSURL"] }
+objc2-core-foundation = { workspace = true, features = ["CFString"] }
+objc2-natural-language ={ version = "0.3.2", default-features = false, features = ["std", "NLTokenizer", "NLLanguage", "block2"] }
+block2.workspace = true
+unicode-normalization = "0.1.25"
+uuid = { version = "1", features = ["v4"] }
+sha2 = "0.10"
+libc = "0.2"
