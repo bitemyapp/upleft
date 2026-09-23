@@ -50,7 +50,7 @@ fn tex_files(directory: &Path, out: &mut Vec<PathBuf>) {
 }
 
 fn formulas(directory: &Path) -> Result<Vec<Formula>, Failure> {
-    let (base, _) = parameters()?;
+    let (base, _) = parameters("Paper Light", false)?;
     let mut files = Vec::new();
     tex_files(directory, &mut files);
     files.sort();
@@ -131,7 +131,7 @@ fn rasterize(image: &NSImage) -> Option<usize> {
 
 pub fn run(input: &Path, output: &Path) -> Result<(), Failure> {
     let formulas = formulas(input)?;
-    let (_, color) = parameters()?;
+    let (_, color) = parameters("Paper Light", false)?;
     let runs: usize = std::env::var("MATH_BENCH_RUNS")
         .ok()
         .and_then(|runs| runs.parse().ok())

@@ -226,14 +226,40 @@
       "command": "math",
       "output": "png",
       "input": "tex",
-      "variants": [[]]
+      "variants": [
+        ["--theme", "Paper Light"],
+        ["--theme", "Paper Light", "--dark"],
+        ["--theme", "Nord"],
+        ["--theme", "Nord", "--dark"],
+        ["--theme", "Warm Dark"],
+        ["--theme", "Warm Dark", "--dark"],
+        ["--theme", "High Contrast"],
+        ["--theme", "High Contrast", "--dark"],
+        ["--theme", "Solarized Light"],
+        ["--theme", "Solarized Light", "--dark"],
+        ["--theme", "System"],
+        ["--theme", "System", "--dark"]
+      ]
     },
     {
       "name": "math-tree",
       "command": "math-tree",
       "output": "json",
       "input": "tex",
-      "variants": [[]]
+      "variants": [
+        ["--theme", "Paper Light"],
+        ["--theme", "Paper Light", "--dark"],
+        ["--theme", "Nord"],
+        ["--theme", "Nord", "--dark"],
+        ["--theme", "Warm Dark"],
+        ["--theme", "Warm Dark", "--dark"],
+        ["--theme", "High Contrast"],
+        ["--theme", "High Contrast", "--dark"],
+        ["--theme", "Solarized Light"],
+        ["--theme", "Solarized Light", "--dark"],
+        ["--theme", "System"],
+        ["--theme", "System", "--dark"]
+      ]
     }
   ]
 }

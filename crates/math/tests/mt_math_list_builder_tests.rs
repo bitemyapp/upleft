@@ -1631,7 +1631,7 @@ fn test_custom() {
 
     MTMathAtomFactory::add_latex_symbol(
         "lcm",
-        &MTMathAtomFactory::operator_with_name("lcm", false).borrow(),
+        &MTMathAtomFactory::operator_with_name("lcm", false),
     );
     error = None;
     list = MTMathListBuilder::build_from_string_with_error(str, &mut error);

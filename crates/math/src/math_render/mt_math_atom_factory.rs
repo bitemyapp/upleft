@@ -1,10 +1,12 @@
 //! `MTMathAtomFactory.swift`: the symbol tables and atom constructors.
 
+use std::cell::RefCell;
 use std::collections::HashMap;
-use std::sync::{LazyLock, RwLock};
+use std::sync::atomic::{AtomicU64, Ordering};
+use std::sync::{LazyLock, Mutex, RwLock};
 
 use super::mt_math_list::{
-    AtomKind, MTColumnAlignment, MTFontStyle, MTLineStyle, MTMathAtom, MTMathAtomRef,
+    Detacher, MTColumnAlignment, MTFontStyle, MTLineStyle, MTMathAtom, MTMathAtomRef,
     MTMathAtomType, MTMathList, MTMathListRef,
 };
 use super::mt_math_list_builder::{MTParseError, MTParseErrors};
@@ -122,8 +124,9 @@ static ACCENT_VALUE_TO_NAME: LazyLock<HashMap<String, String>> = LazyLock::new(|
     )
 });
 
-/// What `supportedLatexSymbols` stores. `atom(forLatexSymbol:)` hands out a
-/// `copy()` of the stored atom; every stored atom is a fresh one of these.
+/// A built-in entry of `supportedLatexSymbols`. `atom(forLatexSymbol:)` hands
+/// out a `copy()` of the stored atom, and every built-in atom is a fresh one of
+/// these, so a template reproduces that copy exactly.
 #[derive(Clone, Debug)]
 pub enum SymbolTemplate {
     Atom {
@@ -157,26 +160,39 @@ impl SymbolTemplate {
             SymbolTemplate::Style(style) => MTMathAtom::style(*style),
         }
     }
+}
 
-    /// The template for an atom handed to `add(latexSymbol:value:)`.
-    fn of(atom: &MTMathAtom) -> SymbolTemplate {
-        match &atom.kind {
-            AtomKind::Atom => SymbolTemplate::Atom {
-                type_: atom.type_,
-                nucleus: atom.nucleus.clone(),
-            },
-            AtomKind::LargeOperator(op) => SymbolTemplate::LargeOperator {
-                nucleus: atom.nucleus.clone(),
-                limits: op.limits,
-            },
-            AtomKind::Space(space) => SymbolTemplate::Space(space.space),
-            AtomKind::Style(style) => SymbolTemplate::Style(style.style),
-            other => panic!(
-                "add(latexSymbol:value:) supports plain atoms, operators, spaces and styles, not {}",
-                other.class_name()
-            ),
+/// An entry of `supportedLatexSymbols`.
+#[derive(Clone, Debug)]
+enum SymbolEntry {
+    Builtin(SymbolTemplate),
+    /// An atom stored by `add(latexSymbol:value:)`, by registration id.
+    Custom(u64),
+}
+
+impl SymbolEntry {
+    fn builtin_nucleus(&self) -> &str {
+        match self {
+            SymbolEntry::Builtin(template) => template.nucleus(),
+            SymbolEntry::Custom(_) => "",
         }
     }
+}
+
+/// A registered atom graph that nothing outside the table references: it is
+/// only read under `CUSTOM`'s lock, by making a detached copy of it.
+struct DetachedAtom(MTMathAtomRef);
+
+// SAFETY: the graph is built by `Detacher` and shares no cell with anything
+// outside it; it is only touched (read or dropped) while `CUSTOM` is locked.
+unsafe impl Send for DetachedAtom {}
+
+static CUSTOM: LazyLock<Mutex<HashMap<u64, DetachedAtom>>> = LazyLock::new(Default::default);
+static NEXT_CUSTOM_ID: AtomicU64 = AtomicU64::new(1);
+
+thread_local! {
+    /// The atoms this thread registered, as the caller's own references.
+    static LIVE: RefCell<HashMap<u64, MTMathAtomRef>> = RefCell::new(HashMap::new());
 }
 
 fn atom(type_: MTMathAtomType, nucleus: &str) -> SymbolTemplate {
@@ -469,17 +485,20 @@ fn supported_latex_symbols() -> HashMap<String, SymbolTemplate> {
 }
 
 struct SymbolTables {
-    symbols: HashMap<String, SymbolTemplate>,
+    symbols: HashMap<String, SymbolEntry>,
     text_to_latex: HashMap<String, String>,
 }
 
 static SYMBOLS: LazyLock<RwLock<SymbolTables>> = LazyLock::new(|| {
-    let symbols = supported_latex_symbols();
+    let symbols: HashMap<String, SymbolEntry> = supported_latex_symbols()
+        .into_iter()
+        .map(|(name, template)| (name, SymbolEntry::Builtin(template)))
+        .collect();
     let text_to_latex = reverse(
         symbols
             .iter()
-            .filter(|(_, atom)| swift::count(atom.nucleus()) != 0)
-            .map(|(key, atom)| (key.clone(), atom.nucleus().to_owned())),
+            .filter(|(_, atom)| swift::count(atom.builtin_nucleus()) != 0)
+            .map(|(key, atom)| (key.clone(), atom.builtin_nucleus().to_owned())),
     );
     RwLock::new(SymbolTables {
         symbols,
@@ -778,15 +797,30 @@ impl MTMathAtomFactory {
         list
     }
 
-    /// Returns an atom for a latex symbol (e.g. theta), following aliases.
+    /// Returns an atom for a latex symbol (e.g. theta), following aliases:
+    /// a `copy()` of the stored atom.
     pub fn atom_for_latex_symbol(name: &str) -> Option<MTMathAtomRef> {
         let name = lookup(ALIASES, name).unwrap_or(name);
-        SYMBOLS
-            .read()
-            .unwrap()
-            .symbols
-            .get(name)
-            .map(SymbolTemplate::instantiate)
+        let entry = SYMBOLS.read().unwrap().symbols.get(name).cloned()?;
+        match entry {
+            SymbolEntry::Builtin(template) => Some(template.instantiate()),
+            SymbolEntry::Custom(id) => {
+                // The registering thread copies the caller's own atom, so a
+                // later change to it shows, as in Swift. Another thread copies
+                // the atom as it was registered: it cannot reach the caller's
+                // cells.
+                if let Some(live) = LIVE.with(|live| live.borrow().get(&id).cloned()) {
+                    return Some(live.borrow().copy());
+                }
+                let detached = CUSTOM
+                    .lock()
+                    .unwrap()
+                    .get(&id)
+                    .map(|stored| Detacher::default().atom(&stored.0))?;
+                let copy = detached.borrow().copy();
+                Some(copy)
+            }
+        }
     }
 
     /// The LaTeX symbol name for the given atom, if any.
@@ -797,15 +831,24 @@ impl MTMathAtomFactory {
         Self::text_to_latex_symbol_name(&atom.nucleus)
     }
 
-    /// Define a latex symbol for rendering.
-    pub fn add_latex_symbol(name: &str, value: &MTMathAtom) {
+    /// Define a latex symbol for rendering: any atom, stored by reference;
+    /// lookups hand out copies of it.
+    pub fn add_latex_symbol(name: &str, value: &MTMathAtomRef) {
+        let id = NEXT_CUSTOM_ID.fetch_add(1, Ordering::Relaxed);
+        let detached = DetachedAtom(Detacher::default().atom(value));
+        CUSTOM.lock().unwrap().insert(id, detached);
+        LIVE.with(|live| live.borrow_mut().insert(id, value.clone()));
+        let nucleus = value.borrow().nucleus.clone();
         let mut tables = SYMBOLS.write().unwrap();
-        tables
+        let replaced = tables
             .symbols
-            .insert(name.to_owned(), SymbolTemplate::of(value));
-        tables
-            .text_to_latex
-            .insert(value.nucleus.clone(), name.to_owned());
+            .insert(name.to_owned(), SymbolEntry::Custom(id));
+        tables.text_to_latex.insert(nucleus, name.to_owned());
+        drop(tables);
+        if let Some(SymbolEntry::Custom(old)) = replaced {
+            CUSTOM.lock().unwrap().remove(&old);
+            LIVE.with(|live| live.borrow_mut().remove(&old));
+        }
     }
 
     /// Returns a large operator for the given name.
