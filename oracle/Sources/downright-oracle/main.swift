@@ -14,8 +14,8 @@ import MarkdownRender
 //   downright-oracle stylesheet   <file.md> <out.json> [--theme NAME] [--dark]
 //   downright-oracle highlight    <file.md> <out.json>
 //   downright-oracle vscode-theme <theme.json> <out.json>
-//   downright-oracle math         <file.tex> <out.png>
-//   downright-oracle math-tree    <file.tex> <out.json>
+//   downright-oracle math         <file.tex> <out.png>  [--theme NAME] [--dark]
+//   downright-oracle math-tree    <file.tex> <out.json> [--theme NAME] [--dark]
 //   downright-oracle bench-math   <dir> <out.json>
 //
 // `upleft-oracle` (crates/conformance) takes identical arguments and writes
@@ -86,6 +86,9 @@ do {
         let text = try String(contentsOf: input, encoding: .utf8)
         try write(ParseDump.document(MarkdownParser.parse(text)), to: output)
 
+    case "unicode":
+        try write(UnicodeDump.document(input: String(contentsOf: input, encoding: .utf8)), to: output)
+
     case "core-text":
         try write(CoreTextDump.document(data: try Data(contentsOf: input), url: input), to: output)
 
@@ -121,10 +124,10 @@ do {
         try write(DisplayMapDump.run(text: text, flags: flags), to: output)
 
     case "math":
-        try MathDump.image(input, to: output)
+        try MathDump.image(input, to: output, theme: flags.theme, dark: flags.dark)
 
     case "math-tree":
-        try MathDump.tree(input, to: output)
+        try MathDump.tree(input, to: output, theme: flags.theme, dark: flags.dark)
 
     case "bench-math":
         try MathBench.run(input, to: output)

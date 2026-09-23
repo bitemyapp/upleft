@@ -11,6 +11,7 @@ serde_json.workspace = true
 png = "0.18"
 upleft-markup.workspace = true
 upleft-core.workspace = true
+upleft-swift-text.workspace = true
 upleft-render.workspace = true
 upleft-math.workspace = true
 objc2.workspace = true

@@ -13,6 +13,7 @@ pub mod math;
 pub mod math_bench;
 pub mod parse;
 pub mod style_sheet;
+pub mod unicode;
 
 use std::path::PathBuf;
 
@@ -96,12 +97,13 @@ impl From<std::io::Error> for Failure {
 /// Dispatches a request. Ported layers add their command here.
 pub fn run(request: &Request) -> Result<(), Failure> {
     match request.command.as_str() {
-        "math" => math::image(&request.input, &request.output),
-        "math-tree" => math::tree(&request.input, &request.output),
+        "math" => math::image(&request.input, &request.output, &request.theme, request.dark),
+        "math-tree" => math::tree(&request.input, &request.output, &request.theme, request.dark),
         "bench-math" => math_bench::run(&request.input, &request.output),
         "markup" => markup::run(&request.input, &request.output),
         "parse" => parse::run(&request.input, &request.output),
         "core-text" => core_text::run(&request.input, &request.output),
+        "unicode" => unicode::run(&request.input, &request.output),
         "bench-core-text" => core_text::bench(&request.input, &request.output),
         "decorate" => decorate::run(request),
         "incremental" => incremental::run(request),

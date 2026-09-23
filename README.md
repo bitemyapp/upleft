@@ -27,6 +27,9 @@ vendor/swift-markdown       swift-markdown at the revision Downright resolves
 vendor/beautiful-mermaid-swift, vendor/elk-swift   Mermaid dependencies
 oracle/                     downright-oracle: the Swift reference for conformance
 crates/                     the Rust port
+crates/swift-text           Swift String/Character/CharacterSet/NSString semantics shared by
+                            every crate, with Unicode tables generated from the Swift runtime
+                            and checked for every scalar by the `unicode` suite
 corpus/                     documents the conformance runner checks
 ```
 
