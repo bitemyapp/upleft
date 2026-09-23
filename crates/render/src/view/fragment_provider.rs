@@ -396,8 +396,13 @@ fn front_matter_fragment(
 }
 
 /// `ThematicBreakFragment(textElement:range:payload:context:)`.
-fn thematic_break_fragment(_request: &ObjectFragmentRequest<'_>) -> Option<Retained<NSTextLayoutFragment>> {
-    None
+fn thematic_break_fragment(request: &ObjectFragmentRequest<'_>) -> Option<Retained<NSTextLayoutFragment>> {
+    Some(crate::fragments::thematic_break_fragment::make(
+        request.text_element,
+        Some(request.element_range),
+        request.payload,
+        request.context,
+    ))
 }
 
 /// `CalloutFragment(textElement:range:payload:context:)`.
@@ -406,8 +411,13 @@ fn callout_fragment(_request: &ObjectFragmentRequest<'_>) -> Option<Retained<NST
 }
 
 /// `ListOrnamentFragment(textElement:range:payload:context:)`.
-fn list_ornament_fragment(_request: &ObjectFragmentRequest<'_>) -> Option<Retained<NSTextLayoutFragment>> {
-    None
+fn list_ornament_fragment(request: &ObjectFragmentRequest<'_>) -> Option<Retained<NSTextLayoutFragment>> {
+    Some(crate::fragments::list_ornament_fragment::make(
+        request.text_element,
+        Some(request.element_range),
+        request.payload,
+        request.context,
+    ))
 }
 
 /// Static geometry the view's hit testing borrows from object fragments.
@@ -419,8 +429,8 @@ pub mod object_geometry {
     use crate::theme::style_sheet::StyleSheet;
 
     /// `ListOrnamentFragment.taskHitRect(textEdge:centreY:bodySize:)`.
-    pub fn task_hit_rect(_text_edge: CGFloat, _centre_y: CGFloat, _body_size: CGFloat) -> Option<CGRect> {
-        None
+    pub fn task_hit_rect(text_edge: CGFloat, centre_y: CGFloat, body_size: CGFloat) -> Option<CGRect> {
+        Some(crate::fragments::list_ornament_fragment::task_hit_rect(text_edge, centre_y, body_size))
     }
 
     /// `CodeBlockFragment.copyButtonRect(in:style:language:)`.

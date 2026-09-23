@@ -9,3 +9,5 @@ pub mod footnote_reference_display;
 pub mod fragment_base;
 pub mod inline_code_pill;
 pub mod inline_math_display;
+pub mod list_ornament_fragment;
+pub mod thematic_break_fragment;
