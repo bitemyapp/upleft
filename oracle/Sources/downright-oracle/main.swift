@@ -21,6 +21,10 @@ import MarkdownRender
 //   downright-oracle math         <file.tex> <out.png>  [--theme NAME] [--dark]
 //   downright-oracle math-tree    <file.tex> <out.json> [--theme NAME] [--dark]
 //   downright-oracle bench-math   <dir> <out.json>
+//   downright-oracle density-model <file.md> <out.json> [--theme NAME] [--dark]
+//   downright-oracle density-hover <file.md> <out.png>  [--density leading|trailing]
+//                             [--hover 0.25|0.5|0.75|outline] [render flags]
+//   (`render` also takes `--density leading|trailing`.)
 //
 // `upleft-oracle` (crates/conformance) takes identical arguments and writes
 // identical formats.
@@ -50,6 +54,10 @@ struct Flags {
     var height: CGFloat = 1400
     var layout: URL?
     var captureFromScreen = true
+    /// `--density leading|trailing`: attach the density gutter as the app does.
+    var density: String?
+    /// `--hover`: which state `density-hover` drives the gutter into.
+    var hover: String?
 
     init(_ arguments: ArraySlice<String>) {
         var iterator = arguments.makeIterator()
@@ -61,6 +69,10 @@ struct Flags {
             case "--width": width = CGFloat(required(iterator.next().flatMap(Double.init)))
             case "--height": height = CGFloat(required(iterator.next().flatMap(Double.init)))
             case "--layout": layout = URL(fileURLWithPath: required(iterator.next()))
+            case "--density":
+                density = required(iterator.next())
+                guard density == "leading" || density == "trailing" else { usage() }
+            case "--hover": hover = required(iterator.next())
             case "--capture":
                 switch required(iterator.next()) {
                 case "screen": captureFromScreen = true
@@ -158,7 +170,28 @@ do {
             height: flags.height,
             captureFromScreen: flags.captureFromScreen
         )
-        CaptureSession.run(request: request, scene: command == "render" ? MarkdownScene() : ProbeScene())
+        CaptureSession.run(
+            request: request,
+            scene: command == "render" ? MarkdownScene(density: flags.density) : ProbeScene()
+        )
+
+    case "density-model":
+        let text = try String(contentsOf: input, encoding: .utf8)
+        try write(MainActor.assumeIsolated { try DensityModelDump.run(text: text, flags: flags) }, to: output)
+
+    case "density-hover":
+        let request = RenderRequest(
+            input: input, outputPNG: URL(fileURLWithPath: output), outputLayout: nil, mode: flags.mode,
+            themeName: flags.theme, dark: flags.dark, width: flags.width, height: flags.height,
+            captureFromScreen: flags.captureFromScreen
+        )
+        CaptureSession.run(
+            request: request,
+            scene: DensityHoverScene(
+                markdown: MarkdownScene(density: flags.density ?? "leading"),
+                action: flags.hover ?? "0.5"
+            )
+        )
 
     case "bench-view":
         let request = RenderRequest(

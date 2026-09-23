@@ -5,6 +5,7 @@ pub mod clipboard;
 pub mod core_text;
 pub mod attribute_dump;
 pub mod decorate;
+pub mod density;
 pub mod display_map;
 pub mod elk;
 pub mod highlight;
@@ -37,6 +38,10 @@ pub struct Request {
     pub layout: Option<PathBuf>,
     /// Capture the composited window (default) rather than `cacheDisplay`.
     pub capture_from_screen: bool,
+    /// `--density leading|trailing`: attach the density gutter as the app does.
+    pub density: Option<String>,
+    /// `--hover`: which state `density-hover` drives the gutter into.
+    pub hover: Option<String>,
 }
 
 impl Request {
@@ -55,6 +60,8 @@ impl Request {
             height: 1400.0,
             layout: None,
             capture_from_screen: true,
+            density: None,
+            hover: None,
         };
         let mut flags = flags.iter();
         while let Some(flag) = flags.next() {
@@ -72,6 +79,14 @@ impl Request {
                 "--width" => request.width = value()?.parse().map_err(|_| "--width takes a number")?,
                 "--height" => request.height = value()?.parse().map_err(|_| "--height takes a number")?,
                 "--layout" => request.layout = Some(value()?.into()),
+                "--density" => {
+                    let side = value()?;
+                    if !matches!(side.as_str(), "leading" | "trailing") {
+                        return Err(format!("unknown density side {side}"));
+                    }
+                    request.density = Some(side);
+                }
+                "--hover" => request.hover = Some(value()?),
                 "--capture" => {
                     request.capture_from_screen = match value()?.as_str() {
                         "screen" => true,
@@ -136,7 +151,16 @@ pub fn run(request: &Request) -> Result<(), Failure> {
         "bench-view" => view_bench::run(request),
         "render" => crate::capture::run(
             request.capture(),
-            Box::new(render::MarkdownScene::new(&request.mode, &request.theme)),
+            Box::new(render::MarkdownScene::new(&request.mode, &request.theme).with_density(request.density.clone())),
+        ),
+        "density-model" => density::model(request),
+        "density-hover" => crate::capture::run(
+            request.capture(),
+            Box::new(density::DensityHoverScene::new(
+                render::MarkdownScene::new(&request.mode, &request.theme)
+                    .with_density(Some(request.density.clone().unwrap_or_else(|| "leading".to_owned()))),
+                request.hover.clone().unwrap_or_else(|| "0.5".to_owned()),
+            )),
         ),
         _ => Err(Failure::NotPorted),
     }

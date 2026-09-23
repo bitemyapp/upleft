@@ -345,6 +345,19 @@
         ["--theme", "System"],
         ["--theme", "System", "--dark"]
       ]
+    },
+    {
+      "name": "density-model",
+      "command": "density-model",
+      "output": "json",
+      "variants": [
+        [],
+        [
+          "--theme",
+          "Nord",
+          "--dark"
+        ]
+      ]
     }
   ]
 }

@@ -10,6 +10,7 @@
 
 use std::cell::RefCell;
 use std::path::PathBuf;
+use std::sync::{Arc, Mutex};
 use std::time::{Duration, Instant};
 
 use block2::RcBlock;
@@ -22,7 +23,7 @@ use objc2_app_kit::{
     NSApplicationActivationPolicy, NSApplicationDelegate, NSBackingStoreType, NSBitmapImageFileType,
     NSBitmapImageRep, NSColorSpace, NSFont, NSTextView, NSView, NSWindow, NSWindowStyleMask,
 };
-use objc2_core_graphics::CGImage;
+use objc2_core_graphics::{CGBitmapContextCreate, CGBitmapContextCreateImage, CGContext, CGImage, CGImageAlphaInfo};
 use objc2_foundation::{NSDictionary, NSError, NSNotification, NSObject, NSObjectProtocol, NSPoint, NSRect, NSSize, NSString};
 use objc2_screen_capture_kit::{
     SCCaptureResolutionType, SCContentFilter, SCScreenshotManager, SCShareableContent, SCStreamConfiguration,
@@ -52,6 +53,16 @@ pub trait CaptureScene {
     fn before_settle_check(&mut self);
     /// Writes any extra outputs once the scene has settled.
     fn write_extras(&mut self, bitmap: &NSBitmapImageRep, request: &CaptureRequest) -> Result<(), String>;
+    /// False while the scene is still driving itself into the state to
+    /// capture; the session only counts stable captures once it is ready.
+    fn is_ready(&self) -> bool {
+        true
+    }
+    /// Further windows (child windows, panels) captured below the main
+    /// window, top to bottom, in the same PNG.
+    fn extra_windows(&self) -> Vec<Retained<NSWindow>> {
+        Vec::new()
+    }
 }
 
 struct Session {
@@ -188,7 +199,7 @@ fn check_settled() {
     enum Next {
         Wait,
         Written,
-        Capture { window_number: u32, output: PathBuf },
+        Capture { window_numbers: Vec<u32>, output: PathBuf },
     }
     let next = SESSION.with(|cell| -> Result<Next, String> {
         let mut guard = cell.borrow_mut();
@@ -206,6 +217,9 @@ fn check_settled() {
             session.stable_captures = 0;
             session.previous_capture = Some(png.clone());
         }
+        if !session.scene.is_ready() {
+            session.stable_captures = 0;
+        }
         let expired = session.deadline.is_some_and(|deadline| Instant::now() > deadline);
         if session.stable_captures < 2 && !expired {
             return Ok(Next::Wait);
@@ -220,66 +234,121 @@ fn check_settled() {
             return Ok(Next::Written);
         }
         let window = session.window.as_ref().expect("window");
-        Ok(Next::Capture { window_number: window.windowNumber() as u32, output: request.output_png })
+        let mut window_numbers = vec![window.windowNumber() as u32];
+        window_numbers.extend(session.scene.extra_windows().iter().map(|extra| extra.windowNumber() as u32));
+        Ok(Next::Capture { window_numbers, output: request.output_png })
     });
     match next {
         Err(message) => fail(&message),
         Ok(Next::Wait) => schedule_check(),
         Ok(Next::Written) => std::process::exit(0),
-        Ok(Next::Capture { window_number, output }) => capture_window_from_screen(window_number, output),
+        Ok(Next::Capture { window_numbers, output }) => capture_window_from_screen(window_numbers, output),
     }
 }
 
-/// See `captureWindowFromScreen` in the Swift oracle.
-fn capture_window_from_screen(window_number: u32, output: PathBuf) {
+/// See `captureWindowFromScreen` in the Swift oracle: the main window, then
+/// each extra window, stacked when there is more than one.
+fn capture_window_from_screen(window_numbers: Vec<u32>, output: PathBuf) {
     let on_content = RcBlock::new(move |content: *mut SCShareableContent, error: *mut NSError| {
         let Some(content) = (unsafe { content.as_ref() }) else {
             let message = unsafe { error.as_ref() }.map(|error| error.localizedDescription().to_string());
             fail(&format!("window capture failed: {}", message.unwrap_or_default()));
         };
         let windows = unsafe { content.windows() };
-        let Some(sc_window) = windows.iter().find(|window| unsafe { window.windowID() } == window_number) else {
-            fail("window capture failed: ScreenCaptureKit does not list the render window");
-        };
-        let filter = unsafe { SCContentFilter::initWithDesktopIndependentWindow(SCContentFilter::alloc(), &sc_window) };
-        let configuration = unsafe { SCStreamConfiguration::new() };
-        unsafe {
-            let rect = filter.contentRect();
-            let scale = f64::from(filter.pointPixelScale());
-            configuration.setWidth((rect.size.width * scale) as usize);
-            configuration.setHeight((rect.size.height * scale) as usize);
-            configuration.setShowsCursor(false);
-            configuration.setIgnoreShadowsSingleWindow(true);
-            configuration.setCaptureResolution(SCCaptureResolutionType::Best);
+        let mut filters = Vec::new();
+        for number in &window_numbers {
+            let Some(sc_window) = windows.iter().find(|window| unsafe { window.windowID() } == *number) else {
+                fail("window capture failed: ScreenCaptureKit does not list the render window");
+            };
+            filters.push(unsafe { SCContentFilter::initWithDesktopIndependentWindow(SCContentFilter::alloc(), &sc_window) });
         }
-        let output = output.clone();
-        let on_image = RcBlock::new(move |image: *mut CGImage, error: *mut NSError| {
-            let Some(image) = (unsafe { image.as_ref() }) else {
-                let message = unsafe { error.as_ref() }.map(|error| error.localizedDescription().to_string());
-                fail(&format!("window capture failed: {}", message.unwrap_or_default()));
-            };
-            let rep = NSBitmapImageRep::initWithCGImage(NSBitmapImageRep::alloc(), image);
-            let Some(png) = png_data(&rep) else {
-                fail("window capture failed: PNG encoding of the window capture failed");
-            };
-            if let Err(error) = std::fs::write(&output, png) {
-                fail(&format!("window capture failed: {error}"));
-            }
-            std::process::exit(0);
-        });
-        unsafe {
-            SCScreenshotManager::captureImageWithFilter_configuration_completionHandler(
-                &filter,
-                &configuration,
-                Some(&on_image),
-            )
-        };
+        capture_next(Arc::new(filters), Arc::new(Mutex::new(Vec::new())), output.clone());
     });
     unsafe {
         SCShareableContent::getShareableContentExcludingDesktopWindows_onScreenWindowsOnly_completionHandler(
             false, true, &on_content,
         )
     };
+}
+
+type Captured = Arc<Mutex<Vec<objc2_core_foundation::CFRetained<CGImage>>>>;
+
+fn capture_next(filters: Arc<Vec<Retained<SCContentFilter>>>, images: Captured, output: PathBuf) {
+    let index = images.lock().unwrap().len();
+    if index == filters.len() {
+        let images = images.lock().unwrap();
+        let image = if images.len() == 1 {
+            images[0].clone()
+        } else {
+            stack_images(&images).unwrap_or_else(|message| fail(&format!("window capture failed: {message}")))
+        };
+        let rep = NSBitmapImageRep::initWithCGImage(NSBitmapImageRep::alloc(), &image);
+        let Some(png) = png_data(&rep) else {
+            fail("window capture failed: PNG encoding of the window capture failed");
+        };
+        if let Err(error) = std::fs::write(&output, png) {
+            fail(&format!("window capture failed: {error}"));
+        }
+        std::process::exit(0);
+    }
+    let filter = &filters[index];
+    let configuration = unsafe { SCStreamConfiguration::new() };
+    unsafe {
+        let rect = filter.contentRect();
+        let scale = f64::from(filter.pointPixelScale());
+        configuration.setWidth((rect.size.width * scale) as usize);
+        configuration.setHeight((rect.size.height * scale) as usize);
+        configuration.setShowsCursor(false);
+        configuration.setIgnoreShadowsSingleWindow(true);
+        configuration.setCaptureResolution(SCCaptureResolutionType::Best);
+    }
+    let next_filters = filters.clone();
+    let on_image = RcBlock::new(move |image: *mut CGImage, error: *mut NSError| {
+        let Some(image) = (unsafe { image.as_ref() }) else {
+            let message = unsafe { error.as_ref() }.map(|error| error.localizedDescription().to_string());
+            fail(&format!("window capture failed: {}", message.unwrap_or_default()));
+        };
+        images.lock().unwrap().push(objc2_core_foundation::Type::retain(image));
+        capture_next(next_filters.clone(), images.clone(), output.clone());
+    });
+    unsafe {
+        SCScreenshotManager::captureImageWithFilter_configuration_completionHandler(filter, &configuration, Some(&on_image))
+    };
+}
+
+/// See `stackImages` in the Swift oracle: the captures one above the other,
+/// left-aligned, in the first capture's colour space.
+fn stack_images(images: &[objc2_core_foundation::CFRetained<CGImage>]) -> Result<objc2_core_foundation::CFRetained<CGImage>, String> {
+    let width = images.iter().map(|image| CGImage::width(Some(image))).max().unwrap_or(0);
+    let height: usize = images.iter().map(|image| CGImage::height(Some(image))).sum();
+    let space = images.first().and_then(|image| CGImage::color_space(Some(image))).ok_or("cannot make the stacking context")?;
+    // SAFETY: a fresh context that owns its own buffer.
+    let context = unsafe {
+        CGBitmapContextCreate(
+            std::ptr::null_mut(),
+            width,
+            height,
+            8,
+            0,
+            Some(&space),
+            CGImageAlphaInfo::PremultipliedLast.0,
+        )
+    }
+    .ok_or("cannot make the stacking context")?;
+    let mut top = height;
+    for image in images {
+        let image_height = CGImage::height(Some(image));
+        top -= image_height;
+        CGContext::draw_image(
+            Some(&context),
+            NSRect::new(
+                NSPoint::new(0.0, top as f64),
+                NSSize::new(CGImage::width(Some(image)) as f64, image_height as f64),
+            ),
+            Some(image),
+        );
+    }
+    CGBitmapContextCreateImage(Some(&context)).ok_or_else(|| "stacking failed".to_owned())
 }
 
 /// See `ProbeScene` in the Swift oracle: a stock TextKit 2 text view showing
