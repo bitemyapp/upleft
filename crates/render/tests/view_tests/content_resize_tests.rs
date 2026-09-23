@@ -1,5 +1,7 @@
 //! Port of `ContentResizeTests.swift`.
 
+#![allow(clippy::explicit_counter_loop)]
+
 use objc2::MainThreadMarker;
 use objc2_app_kit::{NSTextLayoutFragment, NSTextLayoutFragmentEnumerationOptions, NSTextSelectionDataSource};
 use objc2_foundation::{NSPoint, NSSize, NSString};
@@ -142,10 +144,10 @@ fn repeated_typing_does_not_stack_stale_fragments(mtm: MainThreadMarker) {
     let start = layout.documentRange().location();
     let block = block2::StackBlock::new(|fragment: std::ptr::NonNull<NSTextLayoutFragment>| -> objc2::runtime::Bool {
         let fragment = unsafe { fragment.as_ref() };
-        let offset = layout.offsetFromLocation_toLocation(&start, &fragment.rangeInElement().location()) as isize;
+        let offset = layout.offsetFromLocation_toLocation(&start, &fragment.rangeInElement().location());
         offsets.borrow_mut().push(offset);
         let frame = fragment.layoutFragmentFrame();
-        if !(frame.min_y() + 0.5 >= previous_max_y.get()) {
+        if frame.min_y() + 0.5 < previous_max_y.get() {
             failures.borrow_mut().push(offset);
         }
         previous_max_y.set(frame.max_y());

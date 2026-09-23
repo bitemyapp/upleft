@@ -77,7 +77,7 @@ fn heading_rail_hit_is_bound_to_chip(mtm: MainThreadMarker) {
 }
 
 fn accessibility_elements(view: &MarkdownTextView) -> Vec<Retained<NSAccessibilityElement>> {
-    let children = unsafe { view.accessibilityChildren() };
+    let children = view.accessibilityChildren();
     children
         .map(|children| {
             children

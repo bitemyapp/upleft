@@ -99,6 +99,9 @@ pub fn pump(condition: impl Fn() -> bool) -> bool {
     pump_main_queue(condition, Duration::from_secs(1))
 }
 
+/// Unused so far: no ported test asserts pixels, but one that does must
+/// declare this prerequisite, as Swift's do.
+#[allow(dead_code)]
 /// `RenderSmokeTests.viewportLayoutRuns()`: whether this process gets the
 /// TextKit 2 viewport pass that view-level geometry assertions need.
 pub fn viewport_layout_runs(mtm: MainThreadMarker) -> bool {
