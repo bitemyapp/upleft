@@ -8,7 +8,7 @@ publish.workspace = true
 
 [dependencies]
 objc2.workspace = true
-objc2-foundation = { workspace = true, features = ["NSString", "NSRegularExpression", "NSTextCheckingResult", "NSArray", "NSEnumerator", "NSRange", "NSObjCRuntime", "NSLocale"] }
+objc2-foundation = { workspace = true, features = ["NSString", "NSRegularExpression", "NSTextCheckingResult", "NSArray", "NSEnumerator", "NSRange", "NSObjCRuntime", "NSLocale", "NSURL"] }
 objc2-natural-language = { version = "0.3.2", default-features = false, features = ["std", "NLTokenizer", "NLLanguage", "block2"] }
 block2.workspace = true
 unicode-segmentation = "1.13"
