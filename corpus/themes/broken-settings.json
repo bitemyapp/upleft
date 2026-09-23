@@ -1,0 +1,1 @@
+{ "name": "Broken Settings", "tokenColors": [ { "scope": "comment", "settings": { "foreground": 5 } } ] }

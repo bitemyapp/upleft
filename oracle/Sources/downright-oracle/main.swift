@@ -9,6 +9,9 @@ import MarkdownRender
 //   downright-oracle decorate <file.md> <out.json> [--mode M] [--theme NAME] [--dark]
 //   downright-oracle render   <file.md> <out.png> [--layout out.json] [--mode M]
 //                             [--theme NAME] [--dark] [--width W] [--height H]
+//   downright-oracle stylesheet   <file.md> <out.json> [--theme NAME] [--dark]
+//   downright-oracle highlight    <file.md> <out.json>
+//   downright-oracle vscode-theme <theme.json> <out.json>
 //
 // `upleft-oracle` (crates/conformance) takes identical arguments and writes
 // identical formats.
@@ -115,6 +118,15 @@ do {
         let session = RenderSession(request: request)
         app.delegate = session
         app.run()
+
+    case "stylesheet":
+        try write(StyleSheetDump.dump(themeName: flags.theme, dark: flags.dark), to: output)
+
+    case "highlight":
+        try write(HighlightDump.document(String(contentsOf: input, encoding: .utf8)), to: output)
+
+    case "vscode-theme":
+        try write(VSCodeThemeDump.dump(Data(contentsOf: input), url: input), to: output)
 
     default:
         usage()

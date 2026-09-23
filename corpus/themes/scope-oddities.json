@@ -1,0 +1,18 @@
+{
+  "name": "Scope Oddities",
+  "type": "dark",
+  "colors": { "editor.background": "#101010", "editor.foreground": "#E0E0E0", "editor.background": "#FFFFFF" },
+  "tokenColors": [
+    { "scope": 7, "settings": { "foreground": "#010101" } },
+    { "scope": ["comment", 3], "settings": { "foreground": "#020202" } },
+    { "scope": "", "settings": { "foreground": "#030303" } },
+    { "scope": " , ", "settings": { "foreground": "#040404" } },
+    { "scope": "comment.block, comment.block.documentation", "settings": { "foreground": "#050505" } },
+    { "scope": "string.ünïcode", "settings": { "foreground": "#060606" } },
+    { "scope": "keyword.control.", "settings": { "foreground": "#070707" } },
+    { "scope": "keyword.control", "settings": { "foreground": "#080808" } },
+    { "scope": "keyword.control", "settings": { "foreground": "#090909" } },
+    { "settings": null },
+    { "scope": "constant.numeric", "settings": {} }
+  ],
+}
