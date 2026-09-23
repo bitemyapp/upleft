@@ -64,57 +64,10 @@ impl Date {
         )
     }
 
-    /// `JSONDecoder.DateDecodingStrategy.iso8601`: `yyyy-MM-ddTHH:mm:ss`,
-    /// optional fractional seconds, then `Z` or `±HH:MM` / `±HHMM`.
+    /// `JSONDecoder.DateDecodingStrategy.iso8601`: swift-foundation's lenient
+    /// ISO 8601 parser, as probed; see [`crate::decodable::parse_iso8601`].
     pub fn parse_iso8601(text: &str) -> Option<Date> {
-        let bytes = text.as_bytes();
-        let digits = |range: std::ops::Range<usize>| -> Option<i64> {
-            let slice = bytes.get(range)?;
-            if slice.is_empty() || !slice.iter().all(u8::is_ascii_digit) {
-                return None;
-            }
-            std::str::from_utf8(slice).ok()?.parse().ok()
-        };
-        if bytes.len() < 20 || bytes[4] != b'-' || bytes[7] != b'-' || bytes[10] != b'T' || bytes[13] != b':' || bytes[16] != b':' {
-            return None;
-        }
-        let (year, month, day) = (digits(0..4)?, digits(5..7)?, digits(8..10)?);
-        let (hour, minute, second) = (digits(11..13)?, digits(14..16)?, digits(17..19)?);
-        if !(1..=12).contains(&month) || !(1..=31).contains(&day) || hour > 23 || minute > 59 || second > 60 {
-            return None;
-        }
-        let mut index = 19;
-        let mut fraction = 0.0;
-        if bytes[index] == b'.' {
-            let start = index + 1;
-            index = start;
-            while index < bytes.len() && bytes[index].is_ascii_digit() {
-                index += 1;
-            }
-            if index == start {
-                return None;
-            }
-            fraction = format!("0.{}", &text[start..index]).parse().ok()?;
-        }
-        let offset = match bytes.get(index)? {
-            b'Z' if index + 1 == bytes.len() => 0,
-            sign @ (b'+' | b'-') => {
-                let rest = &text[index + 1..];
-                let (h, m) = if rest.len() == 5 && rest.as_bytes()[2] == b':' {
-                    (rest[0..2].parse::<i64>().ok()?, rest[3..5].parse::<i64>().ok()?)
-                } else if rest.len() == 4 {
-                    (rest[0..2].parse::<i64>().ok()?, rest[2..4].parse::<i64>().ok()?)
-                } else {
-                    return None;
-                };
-                let magnitude = h * 3600 + m * 60;
-                if *sign == b'+' { magnitude } else { -magnitude }
-            }
-            _ => return None,
-        };
-        let days = days_from_civil(year, month, day);
-        let seconds = days * 86_400 + hour * 3600 + minute * 60 + second - offset;
-        Some(Date::from_1970(seconds as f64 + fraction))
+        crate::decodable::parse_iso8601(text)
     }
 }
 
@@ -130,16 +83,6 @@ fn civil_from_days(days: i64) -> (i64, i64, i64) {
     let d = doy - (153 * mp + 2) / 5 + 1;
     let m = if mp < 10 { mp + 3 } else { mp - 9 };
     (if m <= 2 { y + 1 } else { y }, m, d)
-}
-
-fn days_from_civil(year: i64, month: i64, day: i64) -> i64 {
-    let y = if month <= 2 { year - 1 } else { year };
-    let era = y.div_euclid(400);
-    let yoe = y.rem_euclid(400);
-    let mp = if month > 2 { month - 3 } else { month + 9 };
-    let doy = (153 * mp + 2) / 5 + day - 1;
-    let doe = yoe * 365 + yoe / 4 - yoe / 100 + doy;
-    era * 146_097 + doe - 719_468
 }
 
 #[cfg(test)]

@@ -19,11 +19,11 @@ dispatch2 = "0.3.1"
 libc = "0.2"
 sha2 = "0.10"
 objc2-foundation = { workspace = true, features = [
-    "NSArray", "NSAttributedString", "NSBundle", "NSCharacterSet", "NSData", "NSDate", "NSDateFormatter",
+    "NSAppleEventDescriptor", "NSAppleScript", "NSArray", "NSAttributedString", "NSBundle", "NSCharacterSet", "NSData", "NSDate", "NSDateFormatter",
     "NSDictionary", "NSEnumerator", "NSError", "NSFileCoordinator", "NSFileManager", "NSFilePresenter",
     "NSFileVersion", "NSFileWrapper", "NSFormatter", "NSISO8601DateFormatter", "NSIndexSet", "NSJSONSerialization",
     "NSLocale", "NSLock", "NSNotification", "NSNull", "NSObjCRuntime", "NSObject", "NSOperation", "NSPathUtilities",
-    "NSProcessInfo", "NSRange", "NSRegularExpression", "NSString", "NSTextCheckingResult", "NSThread", "NSTimer",
+    "NSProcessInfo", "NSRange", "NSRegularExpression", "NSRunLoop", "NSString", "NSTextCheckingResult", "NSThread", "NSTimer",
     "NSUndoManager", "NSURL", "NSURLRequest", "NSURLResponse", "NSURLSession", "NSUserDefaults", "NSUUID",
     "NSValue", "NSXMLDocument", "NSXMLElement", "NSXMLNode", "NSXMLParser", "block2",
 ] }
