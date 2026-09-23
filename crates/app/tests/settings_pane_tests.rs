@@ -192,10 +192,15 @@ fn real_preferences_file(domain: &str) -> Option<PathBuf> {
     Some(Path::new(&home).join("Library/Preferences").join(format!("{domain}.plist")))
 }
 
-/// Removes this test binary's own `UserDefaults` domain.
+/// Removes this test binary's own `UserDefaults` domain, and waits for
+/// `cfprefsd` to write the (now empty) domain out, so a file deleted after
+/// this stays deleted.
 fn remove_standard_domain() {
     let domain = standard_domain_name();
-    NSUserDefaults::standardUserDefaults().removePersistentDomainForName(&NSString::from_str(&domain));
+    let defaults = NSUserDefaults::standardUserDefaults();
+    defaults.removePersistentDomainForName(&NSString::from_str(&domain));
+    #[allow(deprecated)]
+    defaults.synchronize();
 }
 
 /// The parent: runs this binary again inside a fresh sandbox and cleans up
