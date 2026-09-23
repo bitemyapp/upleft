@@ -52,3 +52,45 @@ harness = false
 [[test]]
 name = "main_thread_objects"
 harness = false
+
+# Suites whose Swift originals run on the main actor own the main thread
+# (tests/main_thread/mod.rs).
+[[test]]
+name = "local_ai_tests"
+harness = false
+
+[[test]]
+name = "app_intents_tests"
+harness = false
+
+[[test]]
+name = "file_watcher_tests"
+harness = false
+
+[[test]]
+name = "async_parse_tests"
+harness = false
+
+[[test]]
+name = "document_trust_state_tests"
+harness = false
+
+[[test]]
+name = "review_baseline_document_tests"
+harness = false
+
+[[test]]
+name = "app_layer_document_tests"
+harness = false
+
+[[test]]
+name = "autosave_lifecycle_tests"
+harness = false
+
+[[test]]
+name = "document_edit_projection_tests"
+harness = false
+
+[[test]]
+name = "markdown_document_tests"
+harness = false
