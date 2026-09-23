@@ -1,8 +1,10 @@
 //! Rust counterparts of the Swift oracle's dumps (`oracle/Sources/downright-oracle`).
 //! Each submodule mirrors one Swift file and must emit the same JSON shape.
 
+pub mod core_text;
 pub mod json;
 pub mod markup;
+pub mod parse;
 
 use std::path::PathBuf;
 
@@ -77,6 +79,9 @@ impl From<std::io::Error> for Failure {
 pub fn run(request: &Request) -> Result<(), Failure> {
     match request.command.as_str() {
         "markup" => markup::run(&request.input, &request.output),
+        "parse" => parse::run(&request.input, &request.output),
+        "core-text" => core_text::run(&request.input, &request.output),
+        "bench-core-text" => core_text::bench(&request.input, &request.output),
         _ => Err(Failure::NotPorted),
     }
 }

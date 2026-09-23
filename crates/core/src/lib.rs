@@ -11,9 +11,8 @@
 //!   `NSString` semantics, with Unicode tables generated from the Swift
 //!   runtime.
 //!
-//! Parser.swift, Inlines.swift and the swift-markdown half of
-//! SourcePositions.swift wait for `upleft-markup`; [`parser`] holds the entry
-//! points meanwhile.
+//! [`parser`] and [`inlines`] drive `upleft-markup`, the port of the
+//! swift-markdown converter Downright parses with.
 
 pub mod ns_range;
 pub mod swift_text;
@@ -23,6 +22,7 @@ pub mod contracts;
 pub mod derived;
 pub mod document_io;
 pub mod hashing;
+pub mod inlines;
 pub mod list_editing;
 pub mod metrics;
 pub mod model;
