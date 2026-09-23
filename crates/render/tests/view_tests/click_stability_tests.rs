@@ -1,6 +1,6 @@
 //! Port of `ClickStabilityTests.swift`: clicking must never move the
-//! document under the pointer. `checkboxDoubleClickDoesNotToggleTwice` needs
-//! `ListOrnamentFragment.taskHitRect` and moves with the list fragment port.
+//! document under the pointer, and a double click on a checkbox toggles it
+//! once.
 
 use objc2::rc::Retained;
 use objc2::MainThreadMarker;
@@ -23,6 +23,7 @@ pub const TESTS: &[Test] = &[
     ("point_hit_testing_uses_text_kit_two_geometry", point_hit_testing_uses_text_kit_two_geometry),
     ("point_hit_testing_resolves_rendered_link", point_hit_testing_resolves_rendered_link),
     ("whitespace_after_link_is_not_interactive", whitespace_after_link_is_not_interactive),
+    ("checkbox_double_click_does_not_toggle_twice", checkbox_double_click_does_not_toggle_twice),
 ];
 
 fn document() -> String {
@@ -193,4 +194,76 @@ fn whitespace_after_link_is_not_interactive(mtm: MainThreadMarker) {
     let gap = view.rect_for_offset(link.upper_bound()).expect("gap");
     let point = NSPoint::new(gap.min_x() + (gap.width() * 0.5).max(1.0), gap.mid_y());
     expect!(view.attribute_at_point(attribute_keys::dr_link(), point).is_none());
+}
+
+struct ToggleDelegate {
+    toggled_offsets: std::cell::RefCell<Vec<isize>>,
+}
+
+impl upleft_render::view::markdown_text_view_delegate::MarkdownTextViewDelegate for ToggleDelegate {
+    fn did_toggle_checkbox_at_mark_offset(&self, _view: &MarkdownTextView, offset: isize) {
+        self.toggled_offsets.borrow_mut().push(offset);
+    }
+}
+
+fn checkbox_double_click_does_not_toggle_twice(mtm: MainThreadMarker) {
+    use objc2_app_kit::{NSBackingStoreType, NSEvent, NSEventModifierFlags, NSEventType, NSWindow, NSWindowStyleMask};
+    use objc2::MainThreadOnly;
+
+    let text = "- [ ] First task\n- [x] Second task\n";
+    let storage = text_storage(text);
+    let container = MarkdownContainerView::with_storage(&storage, mtm);
+    container.setFrame(rect(0.0, 0.0, 900.0, 600.0));
+    container.layoutSubtreeIfNeeded();
+    let view = container.text_view().clone();
+    view.set_mode(RenderMode::Live);
+    view.update(parse(text), &wholesale(), true);
+    view.resize_to_fit_content();
+    container.layoutSubtreeIfNeeded();
+
+    let delegate: std::rc::Rc<ToggleDelegate> = std::rc::Rc::new(ToggleDelegate { toggled_offsets: Default::default() });
+    let as_dyn: std::rc::Rc<dyn upleft_render::view::markdown_text_view_delegate::MarkdownTextViewDelegate> = delegate.clone();
+    view.set_markdown_delegate(Some(std::rc::Rc::downgrade(&as_dyn)));
+    let task = view.parsed_document().tasks.first().cloned().expect("a task");
+    let text_rect = view.rect_for_offset(task.content_range.location).expect("task rect");
+    let centre_y = text_rect.min_y() + view.style_sheet().line_height.min(text_rect.height()) * 0.44;
+    let target = upleft_render::fragments::list_ornament_fragment::task_hit_rect(
+        text_rect.min_x(),
+        centre_y,
+        view.style_sheet().body_font().pointSize(),
+    );
+
+    let window = unsafe {
+        NSWindow::initWithContentRect_styleMask_backing_defer(
+            NSWindow::alloc(mtm),
+            rect(0.0, 0.0, 900.0, 600.0),
+            NSWindowStyleMask::Borderless,
+            NSBackingStoreType::Buffered,
+            false,
+        )
+    };
+    unsafe { window.setReleasedWhenClosed(false) };
+    window.setContentView(Some(&container));
+    window.makeKeyAndOrderFront(None);
+    let location = view.convertPoint_toView(NSPoint::new(target.mid_x(), target.mid_y()), None);
+
+    for click_count in [1isize, 2] {
+        let event = NSEvent::mouseEventWithType_location_modifierFlags_timestamp_windowNumber_context_eventNumber_clickCount_pressure(
+            NSEventType::LeftMouseDown,
+            location,
+            NSEventModifierFlags::empty(),
+            objc2_foundation::NSProcessInfo::processInfo().systemUptime(),
+            window.windowNumber(),
+            None,
+            click_count,
+            click_count,
+            1.0,
+        )
+        .expect("mouse event");
+        view.mouseDown(&event);
+    }
+    window.orderOut(None);
+
+    let toggled = delegate.toggled_offsets.borrow().clone();
+    expect!(toggled == vec![task.mark_range.location], "toggled {toggled:?}, expected [{}]", task.mark_range.location);
 }

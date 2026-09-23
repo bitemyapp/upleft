@@ -22,6 +22,7 @@ mod layout_filler_tests;
 mod list_ornament_tests;
 mod smart_paste_integration_tests;
 mod speech_accessibility_tests;
+mod typing_invalidation_tests;
 
 use std::panic::{AssertUnwindSafe, catch_unwind};
 
@@ -64,6 +65,7 @@ fn main() {
     tests.extend(list_ornament_tests::TESTS);
     tests.extend(callout_geometry_tests::TESTS);
     tests.extend(code_block_geometry_tests::TESTS);
+    tests.extend(typing_invalidation_tests::TESTS);
 
     let selected: Vec<&Test> = tests
         .iter()
