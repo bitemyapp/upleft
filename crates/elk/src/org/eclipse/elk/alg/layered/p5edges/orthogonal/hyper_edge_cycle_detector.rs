@@ -11,6 +11,7 @@ use std::collections::VecDeque;
 
 use super::hyper_edge_segment::{DependencyId, HyperEdgeSegmentGraph, SegmentId};
 use super::hyper_edge_segment_dependency::DependencyType;
+use crate::swift;
 
 /// Per-run bookkeeping (`markBySegment`, `inWeightBySegment`, …).
 struct Weights {
@@ -30,8 +31,15 @@ impl Weights {
 pub struct HyperEdgeCycleDetector;
 
 impl HyperEdgeCycleDetector {
-    /// `detectCycles(_:_:_:)`. Every caller passes no `random`.
+    /// `detectCycles(_:_:_:)` with no `random` (what every caller passes).
     pub fn detect_cycles(graph: &HyperEdgeSegmentGraph, segments: &[SegmentId], critical_only: bool) -> Vec<DependencyId> {
+        Self::detect_cycles_with_random(graph, segments, critical_only, None)
+    }
+
+    /// `detectCycles(_:_:_:)`. `random` is the Swift `random: Any?` already
+    /// converted by `seed(from:)` (see [`HyperEdgeCycleDetector::seed_from_u64`]
+    /// and friends); no caller in elk-swift passes one.
+    pub fn detect_cycles_with_random(graph: &HyperEdgeSegmentGraph, segments: &[SegmentId], critical_only: bool, random: Option<u64>) -> Vec<DependencyId> {
         let mut result: Vec<DependencyId> = Vec::new();
         let mut sources: VecDeque<SegmentId> = VecDeque::new();
         let mut sinks: VecDeque<SegmentId> = VecDeque::new();
@@ -40,7 +48,7 @@ impl HyperEdgeCycleDetector {
 
         Self::initialize(graph, segments, &mut sources, &mut sinks, critical_only, &mut w);
 
-        Self::compute_linear_ordering_marks(graph, segments, &mut sources, &mut sinks, critical_only, &mut w);
+        Self::compute_linear_ordering_marks(graph, segments, &mut sources, &mut sinks, critical_only, random, &mut w);
 
         for &source in segments {
             let source_mark = w.mark[source.index()];
@@ -117,6 +125,7 @@ impl HyperEdgeCycleDetector {
         sources: &mut VecDeque<SegmentId>,
         sinks: &mut VecDeque<SegmentId>,
         critical_only: bool,
+        random: Option<u64>,
         w: &mut Weights,
     ) {
         // Sorted by the initial (distinct) marks -1, -2, …: the reverse of `segments`.
@@ -130,6 +139,8 @@ impl HyperEdgeCycleDetector {
         let mark_base = segments.len() as i64;
         let mut next_sink_mark = mark_base - 1;
         let mut next_source_mark = mark_base + 1;
+        // `random.map(seed(from:))`
+        let mut seeded_random_state: Option<u64> = random;
 
         while !unprocessed.is_empty() {
             while let Some(sink) = sinks.pop_front() {
@@ -169,7 +180,7 @@ impl HyperEdgeCycleDetector {
             }
 
             if !max_segments.is_empty() {
-                let index = Self::next_random_int(max_segments.len());
+                let index = Self::next_random_int(max_segments.len(), random, &mut seeded_random_state);
                 let max_node = max_segments[index];
                 Self::remove_from_unprocessed(max_node, &mut unprocessed);
                 w.mark[max_node.index()] = next_source_mark;
@@ -245,17 +256,50 @@ impl HyperEdgeCycleDetector {
         }
     }
 
-    /// `nextRandomInt(_:_:_:)` without a `random` (all callers pass none).
+    /// `nextRandomInt(_:_:_:)`.
     ///
     /// NONDETERMINISTIC IN SWIFT: with no `random` and no seeded state the
-    /// Swift falls through to `Int.random(in: 0..<bound)` — the system RNG —
-    /// whenever several segments tie for the maximal outflow. (Java ELK draws
-    /// from the layout's seeded `Random`.) The port always takes the first
-    /// candidate, i.e. index 0.
-    fn next_random_int(bound: usize) -> usize {
+    /// Swift falls through to `Int.random(in: 0..<bound)` — the system RNG,
+    /// different on every run — whenever several segments tie for the maximal
+    /// outflow (every elk-swift caller passes no `random`; Java ELK draws from
+    /// the layout's seeded `Random`). The port takes the first candidate
+    /// (index 0) in that branch and never draws from the graph's `Random`; the
+    /// seeded branches are ported as written.
+    pub fn next_random_int(bound: usize, random: Option<u64>, seeded_state: &mut Option<u64>) -> usize {
         if bound <= 1 {
             return 0;
         }
+
+        if let Some(mut state) = *seeded_state {
+            state = 2862933555777941757u64.wrapping_mul(state).wrapping_add(3037000493);
+            *seeded_state = Some(state);
+            let upper53 = state >> 11;
+            let unit = upper53 as f64 / (1u64 << 53) as f64;
+            let index = (unit * bound as f64) as i64;
+            return swift::min(index, bound as i64 - 1) as usize;
+        }
+
+        if let Some(rng) = random {
+            *seeded_state = Some(rng);
+            return Self::next_random_int(bound, Some(rng), seeded_state);
+        }
+
         0
+    }
+
+    /// `seed(from:)` for a `UInt64` (`UInt32`/`UInt` widen the same way).
+    pub fn seed_from_u64(v: u64) -> u64 {
+        v
+    }
+
+    /// `seed(from:)` for an `Int64`/`Int32`/`Int`: the bit pattern.
+    pub fn seed_from_i64(v: i64) -> u64 {
+        v as u64
+    }
+
+    /// `seed(from:)` for a `Double`: the bit pattern. (Strings and other
+    /// values seed from `hashValue`, which Swift randomises per process.)
+    pub fn seed_from_f64(v: f64) -> u64 {
+        v.to_bits()
     }
 }
