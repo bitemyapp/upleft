@@ -1,0 +1,76 @@
+{
+ "panel": "DocumentHealthView",
+ "theme": "Paper Light",
+ "width": 336,
+ "height": 560,
+ "document": "corpus/panel-documents/diagnostics-health.md",
+ "state": {},
+ "states": [
+  {
+   "name": "all findings"
+  },
+  {
+   "name": "select skipped level",
+   "select": 2
+  },
+  {
+   "name": "select repeated word",
+   "select": 15
+  },
+  {
+   "name": "select a group row (ignored)",
+   "select": 0
+  },
+  {
+   "name": "select out of range",
+   "select": 99
+  },
+  {
+   "name": "select without a fix",
+   "select": 6
+  },
+  {
+   "name": "apply safe fixes",
+   "apply": true
+  },
+  {
+   "name": "select then apply",
+   "select": 2,
+   "apply": true
+  },
+  {
+   "name": "ignore selection",
+   "select": 6,
+   "ignore": true
+  },
+  {
+   "name": "ignore without a selection",
+   "ignore": true
+  },
+  {
+   "name": "ignore then reset",
+   "select": 9,
+   "ignore": true,
+   "reset": true
+  },
+  {
+   "name": "first finding only",
+   "limit": 1
+  },
+  {
+   "name": "every finding ignored",
+   "limit": 1,
+   "select": 1,
+   "ignore": true
+  },
+  {
+   "name": "no findings",
+   "limit": 0
+  },
+  {
+   "name": "restyled",
+   "select": 2,
+   "restyle": true
+  }
+ ]
+}

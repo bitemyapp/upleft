@@ -1,0 +1,30 @@
+{
+ "panel": "ChangeSummaryBarView",
+ "theme": "Paper Light",
+ "width": 330,
+ "height": 38,
+ "state": {"documentLength": 100},
+ "states": [
+  {"name": "default"},
+  {"name": "current", "current": true},
+  {"name": "empty marks", "marks": []},
+  {"name": "counts by kind", "marks": [["inserted", 0, 10], ["inserted", 20, 10], ["modified", 40, 10], ["deleted", 60, 10]]},
+  {"name": "one added", "marks": [["inserted", 0, 10]]},
+  {"name": "two rewritten", "marks": [["modified", 0, 10], ["modified", 10, 10]]},
+  {"name": "mixed", "marks": [["inserted", 0, 10], ["modified", 10, 10], ["deleted", 20, 10]]},
+  {"name": "sorted positions", "marks": [["inserted", 80, 10], ["modified", 10, 10], ["deleted", 45, 10]]},
+  {"name": "clamped", "marks": [["modified", 500, 10]]},
+  {"name": "no length", "documentLength": 0, "marks": [["modified", 0, 10]]},
+  {"name": "negative length", "documentLength": -1, "marks": [["modified", 0, 10]]},
+  {"name": "clustered start", "marks": [["modified", 0, 2], ["modified", 8, 2]]},
+  {"name": "clustered end", "marks": [["modified", 90, 2], ["modified", 96, 2]]},
+  {"name": "clustered middle", "marks": [["modified", 46, 2], ["modified", 52, 2]]},
+  {"name": "spread", "marks": [["modified", 0, 2], ["modified", 96, 2]]},
+  {"name": "message override", "message": "Renamed to notes.md", "marks": [["inserted", 90, 2], ["inserted", 96, 2]]},
+  {"name": "count only", "changeCount": 4},
+  {"name": "count negative", "message": "Reloaded", "changeCount": -3},
+  {"name": "walk forward", "marks": [["inserted", 0, 10], ["modified", 50, 10], ["deleted", 90, 1]], "press": ["Next change", "Next change", "Next change", "Next change"]},
+  {"name": "walk backward", "changeCount": 3, "press": ["Previous change", "Previous change", "Mark changes as reviewed", "Dismiss"]},
+  {"name": "walk nothing", "press": ["Next change", "Previous change"]}
+ ]
+}

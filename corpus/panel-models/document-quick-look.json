@@ -1,0 +1,169 @@
+{
+ "panel": "DocumentQuickLook",
+ "theme": "Paper Light",
+ "width": 100,
+ "height": 100,
+ "document": "corpus/panel-documents/diagnostics-lens.md",
+ "state": {},
+ "states": [
+  {
+   "name": "images",
+   "targets": [
+    {
+     "kind": "image",
+     "value": "diagram.png"
+    },
+    {
+     "kind": "image",
+     "value": ""
+    },
+    {
+     "kind": "image",
+     "value": "https://example.com/a.png"
+    }
+   ]
+  },
+  {
+   "name": "path tokens",
+   "targets": [
+    {
+     "kind": "pathToken",
+     "value": "diagnostics-health.md"
+    },
+    {
+     "kind": "pathToken",
+     "value": "Cargo.toml",
+     "line": 3
+    },
+    {
+     "kind": "pathToken",
+     "value": "src/gone.ts"
+    },
+    {
+     "kind": "pathToken",
+     "value": "corpus"
+    },
+    {
+     "kind": "pathToken",
+     "value": "../render-images/img/tiny.png"
+    }
+   ]
+  },
+  {
+   "name": "relative links",
+   "targets": [
+    {
+     "kind": "link",
+     "value": "diagnostics-health.md"
+    },
+    {
+     "kind": "link",
+     "value": "missing.md"
+    },
+    {
+     "kind": "link",
+     "value": "../render-images/img/tiny.png"
+    },
+    {
+     "kind": "link",
+     "value": "../panel-documents/./diagnostics-clean.md"
+    },
+    {
+     "kind": "link",
+     "value": "diagnostics%20health.md"
+    },
+    {
+     "kind": "link",
+     "value": "../render-images"
+    }
+   ]
+  },
+  {
+   "name": "file URLs",
+   "targets": [
+    {
+     "kind": "link",
+     "value": "file:///etc/hosts"
+    },
+    {
+     "kind": "link",
+     "value": "file:///nope/gone.pdf"
+    },
+    {
+     "kind": "link",
+     "value": "FILE:///etc/hosts"
+    },
+    {
+     "kind": "link",
+     "value": "file:///etc/../etc/hosts"
+    },
+    {
+     "kind": "link",
+     "value": "file://"
+    }
+   ]
+  },
+  {
+   "name": "never previewed",
+   "targets": [
+    {
+     "kind": "link",
+     "value": "https://example.com"
+    },
+    {
+     "kind": "link",
+     "value": "HTTP://example.com"
+    },
+    {
+     "kind": "link",
+     "value": "mailto:someone@example.com"
+    },
+    {
+     "kind": "link",
+     "value": "#a-heading"
+    },
+    {
+     "kind": "link",
+     "value": "#"
+    },
+    {
+     "kind": "link",
+     "value": "x-downright://run"
+    },
+    {
+     "kind": "link",
+     "value": ""
+    },
+    {
+     "kind": "link",
+     "value": "javascript:alert(1)"
+    }
+   ]
+  },
+  {
+   "name": "no file behind them",
+   "targets": [
+    {
+     "kind": "heading",
+     "heading": 0
+    },
+    {
+     "kind": "codeBlock",
+     "location": 0,
+     "length": 4
+    },
+    {
+     "kind": "table",
+     "location": 0,
+     "length": 4
+    },
+    {
+     "kind": "selection"
+    },
+    {
+     "kind": "plain"
+    }
+   ]
+  }
+ ]
+}

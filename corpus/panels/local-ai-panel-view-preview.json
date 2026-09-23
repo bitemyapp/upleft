@@ -1,0 +1,1 @@
+{"panel": "LocalAIPanelView", "theme": "Paper Light", "width": 336, "height": 420, "state": {"availability": "available", "task": "improveClarity", "source": "Downright opens ordinary Markdown files. We rebuilt the parser in order to make incremental edits cheap. It never uploads anything.\n\nNext: in order to ship, finish the timeline."}}
