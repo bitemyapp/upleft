@@ -11,6 +11,7 @@ pub mod markup;
 pub mod math;
 pub mod math_bench;
 pub mod parse;
+pub mod render;
 pub mod style_sheet;
 
 use std::path::PathBuf;
@@ -117,6 +118,10 @@ pub fn run(request: &Request) -> Result<(), Failure> {
             Ok(json::write(&highlight::vscode_theme(&data, &request.input), &request.output)?)
         }
         "probe" => crate::capture::run(request.capture(), Box::new(crate::capture::ProbeScene)),
+        "render" => crate::capture::run(
+            request.capture(),
+            Box::new(render::MarkdownScene::new(&request.mode, &request.theme)),
+        ),
         _ => Err(Failure::NotPorted),
     }
 }

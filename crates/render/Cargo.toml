@@ -131,3 +131,8 @@ objc2-app-kit = { workspace = true, features = ["NSImage"] }
 [[test]]
 name = "directory_watcher"
 harness = false
+
+[[test]]
+name = "view_tests"
+path = "tests/view_tests/main.rs"
+harness = false

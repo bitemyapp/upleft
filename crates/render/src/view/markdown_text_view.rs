@@ -3201,6 +3201,12 @@ impl MarkdownTextView {
     }
 
     /// The caret moved, so the reveal set may have.
+    /// `handleSelectionChanged(allowTypewriterScrolling:)` with no explicit
+    /// viewport anchor, for tests that model a click.
+    pub fn handle_selection_changed_for_testing(&self, allow_typewriter_scrolling: bool) {
+        self.handle_selection_changed(allow_typewriter_scrolling, None);
+    }
+
     pub(crate) fn handle_selection_changed(&self, allow_typewriter_scrolling: bool, requested_viewport_anchor: Option<ViewportAnchor>) {
         let ivars = self.ivars();
         if requested_viewport_anchor.is_none() {
