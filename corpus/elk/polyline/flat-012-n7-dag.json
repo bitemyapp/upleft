@@ -1,0 +1,317 @@
+{
+ "id": "root",
+ "layoutOptions": {
+  "elk.algorithm": "layered",
+  "elk.direction": "DOWN",
+  "elk.spacing.nodeNode": "28",
+  "elk.spacing.edgeEdge": "12",
+  "elk.layered.spacing.nodeNodeBetweenLayers": "48",
+  "elk.layered.spacing.edgeEdgeBetweenLayers": "12",
+  "elk.layered.spacing.edgeNodeBetweenLayers": "12",
+  "elk.padding": "[top=40,left=40,bottom=40,right=40]",
+  "elk.edgeRouting": "POLYLINE",
+  "elk.contentAlignment": "H_CENTER V_CENTER",
+  "elk.layered.nodePlacement.bk.fixedAlignment": "BALANCED",
+  "elk.layered.considerModelOrder.strategy": "NODES_AND_EDGES",
+  "elk.layered.thoroughness": "3",
+  "elk.layered.compaction.postCompaction.strategy": "LEFT_RIGHT_CONSTRAINT_LOCKING",
+  "elk.layered.highDegreeNodes.treatment": "true",
+  "elk.layered.highDegreeNodes.threshold": "8",
+  "elk.layered.wrapping.strategy": "OFF",
+  "elk.hierarchyHandling": "INCLUDE_CHILDREN",
+  "elk.spacing.componentComponent": "20"
+ },
+ "children": [
+  {
+   "id": "n0",
+   "width": 164.515,
+   "height": 36.900000000000006,
+   "labels": [
+    {
+     "text": "Node 0"
+    }
+   ]
+  },
+  {
+   "id": "n1",
+   "width": 145.94299999999998,
+   "height": 36.900000000000006,
+   "labels": [
+    {
+     "text": "Node 1"
+    }
+   ]
+  },
+  {
+   "id": "n2",
+   "width": 96.0,
+   "height": 96.0,
+   "labels": [
+    {
+     "text": "Node 2"
+    }
+   ]
+  },
+  {
+   "id": "n3",
+   "width": 119.079,
+   "height": 53.80000000000001,
+   "labels": [
+    {
+     "text": "Node 3"
+    }
+   ]
+  },
+  {
+   "id": "n4",
+   "width": 160.541,
+   "height": 36.900000000000006,
+   "labels": [
+    {
+     "text": "Node 4"
+    }
+   ]
+  },
+  {
+   "id": "n5",
+   "width": 68.367,
+   "height": 36.900000000000006,
+   "labels": [
+    {
+     "text": "Node 5"
+    }
+   ]
+  },
+  {
+   "id": "n6",
+   "width": 197.601,
+   "height": 36.900000000000006,
+   "labels": [
+    {
+     "text": "Node 6"
+    }
+   ]
+  }
+ ],
+ "edges": [
+  {
+   "id": "e0",
+   "sources": [
+    "n0"
+   ],
+   "targets": [
+    "n3"
+   ]
+  },
+  {
+   "id": "e1",
+   "sources": [
+    "n0"
+   ],
+   "targets": [
+    "n1"
+   ]
+  },
+  {
+   "id": "e2",
+   "sources": [
+    "n1"
+   ],
+   "targets": [
+    "n4"
+   ]
+  },
+  {
+   "id": "e3",
+   "sources": [
+    "n2"
+   ],
+   "targets": [
+    "n6"
+   ],
+   "labels": [
+    {
+     "text": "label",
+     "width": 143.842,
+     "height": 26.300000000000004,
+     "layoutOptions": {
+      "elk.edgeLabels.inline": "true",
+      "elk.edgeLabels.placement": "CENTER"
+     }
+    }
+   ]
+  },
+  {
+   "id": "e4",
+   "sources": [
+    "n3"
+   ],
+   "targets": [
+    "n6"
+   ]
+  },
+  {
+   "id": "e5",
+   "sources": [
+    "n3"
+   ],
+   "targets": [
+    "n6"
+   ]
+  },
+  {
+   "id": "e6",
+   "sources": [
+    "n0"
+   ],
+   "targets": [
+    "n4"
+   ]
+  },
+  {
+   "id": "e7",
+   "sources": [
+    "n1"
+   ],
+   "targets": [
+    "n2"
+   ]
+  },
+  {
+   "id": "e8",
+   "sources": [
+    "n2"
+   ],
+   "targets": [
+    "n4"
+   ],
+   "labels": [
+    {
+     "text": "label",
+     "width": 36.147,
+     "height": 43.20000000000001,
+     "layoutOptions": {
+      "elk.edgeLabels.inline": "true",
+      "elk.edgeLabels.placement": "CENTER"
+     }
+    }
+   ]
+  },
+  {
+   "id": "e9",
+   "sources": [
+    "n1"
+   ],
+   "targets": [
+    "n2"
+   ]
+  },
+  {
+   "id": "e10",
+   "sources": [
+    "n0"
+   ],
+   "targets": [
+    "n1"
+   ]
+  },
+  {
+   "id": "e11",
+   "sources": [
+    "n0"
+   ],
+   "targets": [
+    "n6"
+   ],
+   "labels": [
+    {
+     "text": "label",
+     "width": 49.035,
+     "height": 26.300000000000004,
+     "layoutOptions": {
+      "elk.edgeLabels.inline": "true",
+      "elk.edgeLabels.placement": "CENTER"
+     }
+    }
+   ]
+  },
+  {
+   "id": "e12",
+   "sources": [
+    "n0"
+   ],
+   "targets": [
+    "n6"
+   ],
+   "labels": [
+    {
+     "text": "label",
+     "width": 55.842,
+     "height": 26.300000000000004,
+     "layoutOptions": {
+      "elk.edgeLabels.inline": "true",
+      "elk.edgeLabels.placement": "CENTER"
+     }
+    }
+   ]
+  },
+  {
+   "id": "e13",
+   "sources": [
+    "n2"
+   ],
+   "targets": [
+    "n6"
+   ]
+  },
+  {
+   "id": "e14",
+   "sources": [
+    "n0"
+   ],
+   "targets": [
+    "n6"
+   ],
+   "labels": [
+    {
+     "text": "label",
+     "width": 167.734,
+     "height": 26.300000000000004,
+     "layoutOptions": {
+      "elk.edgeLabels.inline": "true",
+      "elk.edgeLabels.placement": "CENTER"
+     }
+    }
+   ]
+  },
+  {
+   "id": "e15",
+   "sources": [
+    "n0"
+   ],
+   "targets": [
+    "n1"
+   ]
+  },
+  {
+   "id": "e16",
+   "sources": [
+    "n0"
+   ],
+   "targets": [
+    "n3"
+   ],
+   "labels": [
+    {
+     "text": "label",
+     "width": 111.233,
+     "height": 60.100000000000016,
+     "layoutOptions": {
+      "elk.edgeLabels.inline": "true",
+      "elk.edgeLabels.placement": "CENTER"
+     }
+    }
+   ]
+  }
+ ]
+}

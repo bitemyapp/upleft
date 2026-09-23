@@ -11,6 +11,7 @@ objc2.workspace = true
 serde_json.workspace = true
 upleft-render.workspace = true
 upleft-swift-text.workspace = true
+upleft-elk = { workspace = true, optional = true }
 objc2-foundation = { workspace = true, features = [
     "NSArray",
     "NSAttributedString",
@@ -67,8 +68,11 @@ objc2-core-text = { workspace = true, features = [
 ] }
 
 [features]
-# Link the ELK engine (`upleft-elk`) for flowchart, state, class and ER layouts.
-elk = []
+default = ["elk"]
+# Link the ELK engine (`upleft-elk`) for flowchart, state, class and ER
+# layouts. Without it those layouts fail (or, in tests and the conformance
+# oracle, replay Swift's recorded ELK answers).
+elk = ["dep:upleft-elk"]
 
 [dev-dependencies]
 objc2-app-kit = { workspace = true, features = ["NSAppearance", "NSBitmapImageRep", "NSImage", "NSImageRep"] }

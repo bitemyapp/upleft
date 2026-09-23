@@ -1,0 +1,337 @@
+{
+ "children": [
+  {
+   "height": 48.0,
+   "id": "Base",
+   "width": 120.0
+  },
+  {
+   "height": 48.0,
+   "id": "Derived0",
+   "width": 120.0
+  },
+  {
+   "height": 48.0,
+   "id": "Derived1",
+   "width": 120.0
+  },
+  {
+   "height": 48.0,
+   "id": "Derived2",
+   "width": 120.0
+  },
+  {
+   "height": 48.0,
+   "id": "Derived3",
+   "width": 120.0
+  },
+  {
+   "height": 48.0,
+   "id": "Derived4",
+   "width": 120.0
+  },
+  {
+   "height": 48.0,
+   "id": "Derived5",
+   "width": 120.0
+  },
+  {
+   "height": 48.0,
+   "id": "Derived6",
+   "width": 120.0
+  },
+  {
+   "height": 48.0,
+   "id": "Derived7",
+   "width": 120.0
+  },
+  {
+   "height": 48.0,
+   "id": "Derived8",
+   "width": 120.0
+  },
+  {
+   "height": 48.0,
+   "id": "Derived9",
+   "width": 120.0
+  },
+  {
+   "height": 48.0,
+   "id": "Helper0",
+   "width": 120.0
+  },
+  {
+   "height": 48.0,
+   "id": "Helper1",
+   "width": 120.0
+  },
+  {
+   "height": 48.0,
+   "id": "Helper2",
+   "width": 120.0
+  }
+ ],
+ "edges": [
+  {
+   "id": "e0",
+   "sources": [
+    "Base"
+   ],
+   "targets": [
+    "Derived0"
+   ]
+  },
+  {
+   "id": "e1",
+   "sources": [
+    "Base"
+   ],
+   "targets": [
+    "Derived1"
+   ]
+  },
+  {
+   "id": "e2",
+   "sources": [
+    "Base"
+   ],
+   "targets": [
+    "Derived2"
+   ]
+  },
+  {
+   "id": "e3",
+   "sources": [
+    "Base"
+   ],
+   "targets": [
+    "Derived3"
+   ]
+  },
+  {
+   "id": "e4",
+   "sources": [
+    "Base"
+   ],
+   "targets": [
+    "Derived4"
+   ]
+  },
+  {
+   "id": "e5",
+   "sources": [
+    "Base"
+   ],
+   "targets": [
+    "Derived5"
+   ]
+  },
+  {
+   "id": "e6",
+   "sources": [
+    "Base"
+   ],
+   "targets": [
+    "Derived6"
+   ]
+  },
+  {
+   "id": "e7",
+   "sources": [
+    "Base"
+   ],
+   "targets": [
+    "Derived7"
+   ]
+  },
+  {
+   "id": "e8",
+   "sources": [
+    "Base"
+   ],
+   "targets": [
+    "Derived8"
+   ]
+  },
+  {
+   "id": "e9",
+   "sources": [
+    "Base"
+   ],
+   "targets": [
+    "Derived9"
+   ]
+  },
+  {
+   "id": "e10",
+   "labels": [
+    {
+     "height": 20.3,
+     "text": "uses",
+     "width": 33.41
+    }
+   ],
+   "sources": [
+    "Derived0"
+   ],
+   "targets": [
+    "Helper0"
+   ]
+  },
+  {
+   "id": "e11",
+   "labels": [
+    {
+     "height": 20.3,
+     "text": "uses",
+     "width": 33.41
+    }
+   ],
+   "sources": [
+    "Derived1"
+   ],
+   "targets": [
+    "Helper1"
+   ]
+  },
+  {
+   "id": "e12",
+   "labels": [
+    {
+     "height": 20.3,
+     "text": "uses",
+     "width": 33.41
+    }
+   ],
+   "sources": [
+    "Derived2"
+   ],
+   "targets": [
+    "Helper2"
+   ]
+  },
+  {
+   "id": "e13",
+   "labels": [
+    {
+     "height": 20.3,
+     "text": "uses",
+     "width": 33.41
+    }
+   ],
+   "sources": [
+    "Derived3"
+   ],
+   "targets": [
+    "Helper0"
+   ]
+  },
+  {
+   "id": "e14",
+   "labels": [
+    {
+     "height": 20.3,
+     "text": "uses",
+     "width": 33.41
+    }
+   ],
+   "sources": [
+    "Derived4"
+   ],
+   "targets": [
+    "Helper1"
+   ]
+  },
+  {
+   "id": "e15",
+   "labels": [
+    {
+     "height": 20.3,
+     "text": "uses",
+     "width": 33.41
+    }
+   ],
+   "sources": [
+    "Derived5"
+   ],
+   "targets": [
+    "Helper2"
+   ]
+  },
+  {
+   "id": "e16",
+   "labels": [
+    {
+     "height": 20.3,
+     "text": "uses",
+     "width": 33.41
+    }
+   ],
+   "sources": [
+    "Derived6"
+   ],
+   "targets": [
+    "Helper0"
+   ]
+  },
+  {
+   "id": "e17",
+   "labels": [
+    {
+     "height": 20.3,
+     "text": "uses",
+     "width": 33.41
+    }
+   ],
+   "sources": [
+    "Derived7"
+   ],
+   "targets": [
+    "Helper1"
+   ]
+  },
+  {
+   "id": "e18",
+   "labels": [
+    {
+     "height": 20.3,
+     "text": "uses",
+     "width": 33.41
+    }
+   ],
+   "sources": [
+    "Derived8"
+   ],
+   "targets": [
+    "Helper2"
+   ]
+  },
+  {
+   "id": "e19",
+   "labels": [
+    {
+     "height": 20.3,
+     "text": "uses",
+     "width": 33.41
+    }
+   ],
+   "sources": [
+    "Derived9"
+   ],
+   "targets": [
+    "Helper0"
+   ]
+  }
+ ],
+ "id": "root",
+ "layoutOptions": {
+  "elk.algorithm": "layered",
+  "elk.direction": "DOWN",
+  "elk.edgeLabels.placement": "CENTER",
+  "elk.edgeRouting": "POLYLINE",
+  "elk.layered.edgeLabels.sideSelection": "ALWAYS_DOWN",
+  "elk.layered.spacing.nodeNodeBetweenLayers": "60.0",
+  "elk.padding": "[top=40.0,left=40.0,bottom=40.0,right=40.0]",
+  "elk.spacing.nodeNode": "40.0"
+ }
+}

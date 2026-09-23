@@ -3,6 +3,7 @@
 
 pub mod core_text;
 pub mod attribute_dump;
+pub mod elk;
 pub mod highlight;
 pub mod json;
 pub mod markup;
@@ -120,6 +121,7 @@ pub fn run(request: &Request) -> Result<(), Failure> {
         "mermaid" => mermaid::image(&request.input, &request.output, &request.theme, request.dark),
         "mermaid-bench" => mermaid::bench(&request.input, &request.output),
         "mermaid-replay" => mermaid::replay_record(&request.input, &request.output),
+        "elk" => elk::run(&request.input, &request.output),
         "probe" => crate::capture::run(request.capture(), Box::new(crate::capture::ProbeScene)),
         _ => Err(Failure::NotPorted),
     }

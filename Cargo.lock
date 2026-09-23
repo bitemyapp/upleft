@@ -545,6 +545,7 @@ dependencies = [
  "png",
  "serde_json",
  "upleft-core",
+ "upleft-elk",
  "upleft-markup",
  "upleft-math",
  "upleft-mermaid",
@@ -565,6 +566,13 @@ dependencies = [
  "upleft-markup",
  "upleft-swift-text",
  "uuid",
+]
+
+[[package]]
+name = "upleft-elk"
+version = "0.1.0"
+dependencies = [
+ "serde_json",
 ]
 
 [[package]]
@@ -600,6 +608,7 @@ dependencies = [
  "objc2-core-text",
  "objc2-foundation",
  "serde_json",
+ "upleft-elk",
  "upleft-render",
  "upleft-swift-text",
 ]

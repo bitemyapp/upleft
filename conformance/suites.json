@@ -269,6 +269,18 @@
       ]
     },
     {
+      "name": "elk",
+      "command": "elk",
+      "output": "json",
+      "input": "json",
+      "only": [
+        "corpus/elk/"
+      ],
+      "variants": [
+        []
+      ]
+    },
+    {
       "name": "math-image",
       "command": "math",
       "output": "png",

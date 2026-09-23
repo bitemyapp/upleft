@@ -1,0 +1,89 @@
+{
+ "id": "root",
+ "layoutOptions": {
+  "elk.algorithm": "layered",
+  "elk.edgeRouting": "ORTHOGONAL",
+  "elk.edgeLabels.placement": "CENTER"
+ },
+ "children": [
+  {
+   "id": "A",
+   "width": 60.0,
+   "height": 40.0
+  },
+  {
+   "id": "B",
+   "width": 60.0,
+   "height": 40.0
+  },
+  {
+   "id": "C",
+   "width": 60.0,
+   "height": 40.0
+  },
+  {
+   "id": "D",
+   "width": 60.0,
+   "height": 40.0
+  }
+ ],
+ "edges": [
+  {
+   "id": "e1",
+   "sources": [
+    "A"
+   ],
+   "targets": [
+    "B"
+   ],
+   "labels": [
+    {
+     "text": "connects",
+     "width": 60.0,
+     "height": 14.0
+    }
+   ]
+  },
+  {
+   "id": "e2",
+   "sources": [
+    "A"
+   ],
+   "targets": [
+    "C"
+   ],
+   "labels": [
+    {
+     "text": "also",
+     "width": 30.0,
+     "height": 14.0
+    }
+   ]
+  },
+  {
+   "id": "e3",
+   "sources": [
+    "B"
+   ],
+   "targets": [
+    "D"
+   ],
+   "labels": [
+    {
+     "text": "leads to",
+     "width": 50.0,
+     "height": 14.0
+    }
+   ]
+  },
+  {
+   "id": "e4",
+   "sources": [
+    "C"
+   ],
+   "targets": [
+    "D"
+   ]
+  }
+ ]
+}

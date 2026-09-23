@@ -322,9 +322,31 @@ fn compare_files(swift: &Path, rust: &Path, limit: usize) -> Vec<String> {
         serde_json::from_str(&text).map_err(|error| format!("{}: {error}", path.display()))
     };
     match (load(swift), load(rust)) {
-        (Ok(swift), Ok(rust)) => compare_json(&swift, &rust, limit).iter().map(ToString::to_string).collect(),
+        (Ok(swift), Ok(rust)) => match alternatives(&swift) {
+            // A nondeterministic Swift result (see ElkDump.swift): the Rust
+            // output must equal one of the outputs the Swift produced.
+            Some(alternatives) => {
+                if alternatives.iter().any(|alternative| compare_json(alternative, &rust, 1).is_empty()) {
+                    return Vec::new();
+                }
+                let mut report = vec![format!("matches none of {} Swift alternatives; differences from the first:", alternatives.len())];
+                report.extend(compare_json(&alternatives[0], &rust, limit).iter().map(ToString::to_string));
+                report
+            }
+            None => compare_json(&swift, &rust, limit).iter().map(ToString::to_string).collect(),
+        },
         (Err(error), _) | (_, Err(error)) => vec![format!("unreadable: {error}")],
     }
+}
+
+/// `{"alternatives": [...]}`: the distinct results of a nondeterministic
+/// Swift computation.
+fn alternatives(value: &Value) -> Option<&Vec<Value>> {
+    let object = value.as_object()?;
+    if object.len() != 1 {
+        return None;
+    }
+    object.get("alternatives")?.as_array()
 }
 
 fn main() -> ExitCode {

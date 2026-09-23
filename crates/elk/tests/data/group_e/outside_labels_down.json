@@ -1,0 +1,854 @@
+{
+ "graph": {
+  "props": [
+   [
+    "org.eclipse.elk.direction",
+    "Direction",
+    "DOWN"
+   ],
+   [
+    "org.eclipse.elk.spacing.labelNode",
+    "Double",
+    4.0
+   ],
+   [
+    "org.eclipse.elk.spacing.labelLabel",
+    "Double",
+    2.0
+   ]
+  ]
+ },
+ "nodes": [
+  {
+   "id": "O1",
+   "size": [
+    20,
+    20
+   ],
+   "props": [
+    [
+     "org.eclipse.elk.nodeSize.constraints",
+     "SizeConstraint",
+     4
+    ],
+    [
+     "org.eclipse.elk.nodeSize.options",
+     "SizeOptions",
+     1
+    ],
+    [
+     "org.eclipse.elk.nodeLabels.placement",
+     "NodeLabelPlacement",
+     138
+    ]
+   ],
+   "labels": [
+    {
+     "text": "Oa",
+     "size": [
+      50,
+      10
+     ]
+    },
+    {
+     "text": "Ob",
+     "size": [
+      30,
+      10
+     ],
+     "props": [
+      [
+       "org.eclipse.elk.nodeLabels.placement",
+       "NodeLabelPlacement",
+       161
+      ]
+     ]
+    },
+    {
+     "text": "Oc",
+     "size": [
+      20,
+      14
+     ],
+     "props": [
+      [
+       "org.eclipse.elk.nodeLabels.placement",
+       "NodeLabelPlacement",
+       148
+      ]
+     ]
+    },
+    {
+     "text": "Od",
+     "size": [
+      10,
+      8
+     ],
+     "props": [
+      [
+       "org.eclipse.elk.nodeLabels.placement",
+       "NodeLabelPlacement",
+       145
+      ]
+     ]
+    },
+    {
+     "text": "Oe",
+     "size": [
+      12,
+      6
+     ],
+     "props": [
+      [
+       "org.eclipse.elk.nodeLabels.placement",
+       "NodeLabelPlacement",
+       73
+      ]
+     ]
+    },
+    {
+     "text": "Of",
+     "size": [
+      14,
+      8
+     ],
+     "props": [
+      [
+       "org.eclipse.elk.nodeLabels.placement",
+       "NodeLabelPlacement",
+       82
+      ]
+     ]
+    },
+    {
+     "text": "Og",
+     "size": [
+      16,
+      9
+     ],
+     "props": [
+      [
+       "org.eclipse.elk.nodeLabels.placement",
+       "NodeLabelPlacement",
+       98
+      ]
+     ]
+    },
+    {
+     "text": "Oh",
+     "size": [
+      9,
+      5
+     ],
+     "props": [
+      [
+       "org.eclipse.elk.nodeLabels.placement",
+       "NodeLabelPlacement",
+       82
+      ]
+     ]
+    },
+    {
+     "text": "Oi",
+     "size": [
+      7,
+      7
+     ],
+     "props": [
+      [
+       "org.eclipse.elk.nodeLabels.placement",
+       "NodeLabelPlacement",
+       132
+      ]
+     ]
+    },
+    {
+     "text": "Oj",
+     "size": [
+      8,
+      3
+     ],
+     "props": [
+      [
+       "org.eclipse.elk.nodeLabels.placement",
+       "NodeLabelPlacement",
+       196
+      ]
+     ]
+    }
+   ]
+  },
+  {
+   "id": "O2",
+   "size": [
+    20,
+    20
+   ],
+   "props": [
+    [
+     "org.eclipse.elk.nodeSize.constraints",
+     "SizeConstraint",
+     4
+    ],
+    [
+     "org.eclipse.elk.nodeSize.options",
+     "SizeOptions",
+     265
+    ],
+    [
+     "org.eclipse.elk.nodeLabels.placement",
+     "NodeLabelPlacement",
+     138
+    ]
+   ],
+   "labels": [
+    {
+     "text": "Pa",
+     "size": [
+      50,
+      10
+     ]
+    },
+    {
+     "text": "Pb",
+     "size": [
+      30,
+      10
+     ],
+     "props": [
+      [
+       "org.eclipse.elk.nodeLabels.placement",
+       "NodeLabelPlacement",
+       161
+      ]
+     ]
+    },
+    {
+     "text": "Pc",
+     "size": [
+      20,
+      14
+     ],
+     "props": [
+      [
+       "org.eclipse.elk.nodeLabels.placement",
+       "NodeLabelPlacement",
+       148
+      ]
+     ]
+    },
+    {
+     "text": "Pd",
+     "size": [
+      10,
+      8
+     ],
+     "props": [
+      [
+       "org.eclipse.elk.nodeLabels.placement",
+       "NodeLabelPlacement",
+       145
+      ]
+     ]
+    },
+    {
+     "text": "Pe",
+     "size": [
+      12,
+      6
+     ],
+     "props": [
+      [
+       "org.eclipse.elk.nodeLabels.placement",
+       "NodeLabelPlacement",
+       73
+      ]
+     ]
+    },
+    {
+     "text": "Pf",
+     "size": [
+      14,
+      8
+     ],
+     "props": [
+      [
+       "org.eclipse.elk.nodeLabels.placement",
+       "NodeLabelPlacement",
+       82
+      ]
+     ]
+    },
+    {
+     "text": "Pg",
+     "size": [
+      16,
+      9
+     ],
+     "props": [
+      [
+       "org.eclipse.elk.nodeLabels.placement",
+       "NodeLabelPlacement",
+       98
+      ]
+     ]
+    },
+    {
+     "text": "Ph",
+     "size": [
+      9,
+      5
+     ],
+     "props": [
+      [
+       "org.eclipse.elk.nodeLabels.placement",
+       "NodeLabelPlacement",
+       82
+      ]
+     ]
+    },
+    {
+     "text": "Pi",
+     "size": [
+      7,
+      7
+     ],
+     "props": [
+      [
+       "org.eclipse.elk.nodeLabels.placement",
+       "NodeLabelPlacement",
+       132
+      ]
+     ]
+    },
+    {
+     "text": "Pj",
+     "size": [
+      8,
+      3
+     ],
+     "props": [
+      [
+       "org.eclipse.elk.nodeLabels.placement",
+       "NodeLabelPlacement",
+       196
+      ]
+     ]
+    }
+   ]
+  },
+  {
+   "id": "O3",
+   "size": [
+    20,
+    20
+   ],
+   "props": [
+    [
+     "org.eclipse.elk.nodeSize.constraints",
+     "SizeConstraint",
+     12
+    ],
+    [
+     "org.eclipse.elk.nodeSize.options",
+     "SizeOptions",
+     133
+    ],
+    [
+     "org.eclipse.elk.nodeLabels.placement",
+     "NodeLabelPlacement",
+     138
+    ],
+    [
+     "org.eclipse.elk.nodeSize.minimum",
+     "KVector",
+     [
+      100,
+      10
+     ]
+    ]
+   ],
+   "labels": [
+    {
+     "text": "Qa",
+     "size": [
+      50,
+      10
+     ]
+    },
+    {
+     "text": "Qb",
+     "size": [
+      30,
+      10
+     ],
+     "props": [
+      [
+       "org.eclipse.elk.nodeLabels.placement",
+       "NodeLabelPlacement",
+       161
+      ]
+     ]
+    },
+    {
+     "text": "Qc",
+     "size": [
+      20,
+      14
+     ],
+     "props": [
+      [
+       "org.eclipse.elk.nodeLabels.placement",
+       "NodeLabelPlacement",
+       148
+      ]
+     ]
+    },
+    {
+     "text": "Qd",
+     "size": [
+      10,
+      8
+     ],
+     "props": [
+      [
+       "org.eclipse.elk.nodeLabels.placement",
+       "NodeLabelPlacement",
+       145
+      ]
+     ]
+    },
+    {
+     "text": "Qe",
+     "size": [
+      12,
+      6
+     ],
+     "props": [
+      [
+       "org.eclipse.elk.nodeLabels.placement",
+       "NodeLabelPlacement",
+       73
+      ]
+     ]
+    },
+    {
+     "text": "Qf",
+     "size": [
+      14,
+      8
+     ],
+     "props": [
+      [
+       "org.eclipse.elk.nodeLabels.placement",
+       "NodeLabelPlacement",
+       82
+      ]
+     ]
+    },
+    {
+     "text": "Qg",
+     "size": [
+      16,
+      9
+     ],
+     "props": [
+      [
+       "org.eclipse.elk.nodeLabels.placement",
+       "NodeLabelPlacement",
+       98
+      ]
+     ]
+    },
+    {
+     "text": "Qh",
+     "size": [
+      9,
+      5
+     ],
+     "props": [
+      [
+       "org.eclipse.elk.nodeLabels.placement",
+       "NodeLabelPlacement",
+       82
+      ]
+     ]
+    },
+    {
+     "text": "Qi",
+     "size": [
+      7,
+      7
+     ],
+     "props": [
+      [
+       "org.eclipse.elk.nodeLabels.placement",
+       "NodeLabelPlacement",
+       132
+      ]
+     ]
+    },
+    {
+     "text": "Qj",
+     "size": [
+      8,
+      3
+     ],
+     "props": [
+      [
+       "org.eclipse.elk.nodeLabels.placement",
+       "NodeLabelPlacement",
+       196
+      ]
+     ]
+    }
+   ]
+  },
+  {
+   "id": "O4",
+   "size": [
+    80,
+    70
+   ],
+   "props": [
+    [
+     "org.eclipse.elk.nodeSize.constraints",
+     "SizeConstraint",
+     0
+    ],
+    [
+     "org.eclipse.elk.nodeSize.options",
+     "SizeOptions",
+     4
+    ],
+    [
+     "org.eclipse.elk.nodeLabels.placement",
+     "NodeLabelPlacement",
+     138
+    ]
+   ],
+   "labels": [
+    {
+     "text": "Ra",
+     "size": [
+      50,
+      10
+     ]
+    },
+    {
+     "text": "Rb",
+     "size": [
+      30,
+      10
+     ],
+     "props": [
+      [
+       "org.eclipse.elk.nodeLabels.placement",
+       "NodeLabelPlacement",
+       161
+      ]
+     ]
+    },
+    {
+     "text": "Rc",
+     "size": [
+      20,
+      14
+     ],
+     "props": [
+      [
+       "org.eclipse.elk.nodeLabels.placement",
+       "NodeLabelPlacement",
+       148
+      ]
+     ]
+    },
+    {
+     "text": "Rd",
+     "size": [
+      10,
+      8
+     ],
+     "props": [
+      [
+       "org.eclipse.elk.nodeLabels.placement",
+       "NodeLabelPlacement",
+       145
+      ]
+     ]
+    },
+    {
+     "text": "Re",
+     "size": [
+      12,
+      6
+     ],
+     "props": [
+      [
+       "org.eclipse.elk.nodeLabels.placement",
+       "NodeLabelPlacement",
+       73
+      ]
+     ]
+    },
+    {
+     "text": "Rf",
+     "size": [
+      14,
+      8
+     ],
+     "props": [
+      [
+       "org.eclipse.elk.nodeLabels.placement",
+       "NodeLabelPlacement",
+       82
+      ]
+     ]
+    },
+    {
+     "text": "Rg",
+     "size": [
+      16,
+      9
+     ],
+     "props": [
+      [
+       "org.eclipse.elk.nodeLabels.placement",
+       "NodeLabelPlacement",
+       98
+      ]
+     ]
+    },
+    {
+     "text": "Rh",
+     "size": [
+      9,
+      5
+     ],
+     "props": [
+      [
+       "org.eclipse.elk.nodeLabels.placement",
+       "NodeLabelPlacement",
+       82
+      ]
+     ]
+    },
+    {
+     "text": "Ri",
+     "size": [
+      7,
+      7
+     ],
+     "props": [
+      [
+       "org.eclipse.elk.nodeLabels.placement",
+       "NodeLabelPlacement",
+       132
+      ]
+     ]
+    },
+    {
+     "text": "Rj",
+     "size": [
+      8,
+      3
+     ],
+     "props": [
+      [
+       "org.eclipse.elk.nodeLabels.placement",
+       "NodeLabelPlacement",
+       196
+      ]
+     ]
+    }
+   ]
+  },
+  {
+   "id": "O5",
+   "size": [
+    20,
+    20
+   ],
+   "props": [
+    [
+     "org.eclipse.elk.nodeSize.constraints",
+     "SizeConstraint",
+     12
+    ],
+    [
+     "org.eclipse.elk.nodeSize.options",
+     "SizeOptions",
+     3
+    ],
+    [
+     "org.eclipse.elk.nodeLabels.placement",
+     "NodeLabelPlacement",
+     138
+    ],
+    [
+     "org.eclipse.elk.nodeSize.minimum",
+     "KVector",
+     [
+      0,
+      90
+     ]
+    ]
+   ],
+   "labels": [
+    {
+     "text": "Sa",
+     "size": [
+      50,
+      10
+     ]
+    },
+    {
+     "text": "Sb",
+     "size": [
+      30,
+      10
+     ],
+     "props": [
+      [
+       "org.eclipse.elk.nodeLabels.placement",
+       "NodeLabelPlacement",
+       161
+      ]
+     ]
+    },
+    {
+     "text": "Sc",
+     "size": [
+      20,
+      14
+     ],
+     "props": [
+      [
+       "org.eclipse.elk.nodeLabels.placement",
+       "NodeLabelPlacement",
+       148
+      ]
+     ]
+    },
+    {
+     "text": "Sd",
+     "size": [
+      10,
+      8
+     ],
+     "props": [
+      [
+       "org.eclipse.elk.nodeLabels.placement",
+       "NodeLabelPlacement",
+       145
+      ]
+     ]
+    },
+    {
+     "text": "Se",
+     "size": [
+      12,
+      6
+     ],
+     "props": [
+      [
+       "org.eclipse.elk.nodeLabels.placement",
+       "NodeLabelPlacement",
+       73
+      ]
+     ]
+    },
+    {
+     "text": "Sf",
+     "size": [
+      14,
+      8
+     ],
+     "props": [
+      [
+       "org.eclipse.elk.nodeLabels.placement",
+       "NodeLabelPlacement",
+       82
+      ]
+     ]
+    },
+    {
+     "text": "Sg",
+     "size": [
+      16,
+      9
+     ],
+     "props": [
+      [
+       "org.eclipse.elk.nodeLabels.placement",
+       "NodeLabelPlacement",
+       98
+      ]
+     ]
+    },
+    {
+     "text": "Sh",
+     "size": [
+      9,
+      5
+     ],
+     "props": [
+      [
+       "org.eclipse.elk.nodeLabels.placement",
+       "NodeLabelPlacement",
+       82
+      ]
+     ]
+    },
+    {
+     "text": "Si",
+     "size": [
+      7,
+      7
+     ],
+     "props": [
+      [
+       "org.eclipse.elk.nodeLabels.placement",
+       "NodeLabelPlacement",
+       132
+      ]
+     ]
+    },
+    {
+     "text": "Sj",
+     "size": [
+      8,
+      3
+     ],
+     "props": [
+      [
+       "org.eclipse.elk.nodeLabels.placement",
+       "NodeLabelPlacement",
+       196
+      ]
+     ]
+    }
+   ]
+  }
+ ],
+ "layers": [
+  [
+   "O1",
+   "O2"
+  ],
+  [
+   "O3",
+   "O4",
+   "O5"
+  ]
+ ],
+ "run": [
+  "LabelAndNodeSizeProcessor",
+  "Dump:sized",
+  "InnermostNodeMarginCalculator",
+  "Dump:margins",
+  "InsidePadding:O3:RIGHT",
+  "InsidePadding:O3:UP",
+  "InsidePadding:O4:LEFT"
+ ]
+}

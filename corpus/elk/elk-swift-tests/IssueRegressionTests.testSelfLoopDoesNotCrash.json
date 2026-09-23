@@ -1,0 +1,36 @@
+{
+ "id": "root",
+ "layoutOptions": {
+  "elk.algorithm": "layered"
+ },
+ "children": [
+  {
+   "id": "n1",
+   "width": 50.0,
+   "height": 50.0,
+   "ports": [
+    {
+     "id": "p1",
+     "width": 5.0,
+     "height": 5.0
+    },
+    {
+     "id": "p2",
+     "width": 5.0,
+     "height": 5.0
+    }
+   ]
+  }
+ ],
+ "edges": [
+  {
+   "id": "e1",
+   "sources": [
+    "p1"
+   ],
+   "targets": [
+    "p2"
+   ]
+  }
+ ]
+}

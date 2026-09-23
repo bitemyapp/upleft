@@ -1,0 +1,69 @@
+{
+ "id": "root_0_POLYLINE",
+ "layoutOptions": {
+  "elk.algorithm": "layered",
+  "elk.direction": "RIGHT",
+  "elk.edgeRouting": "POLYLINE",
+  "elk.spacing.nodeNode": "20"
+ },
+ "children": [
+  {
+   "id": "A",
+   "width": 50,
+   "height": 30
+  },
+  {
+   "id": "B",
+   "width": 50,
+   "height": 30
+  },
+  {
+   "id": "C",
+   "width": 50,
+   "height": 30
+  },
+  {
+   "id": "D",
+   "width": 50,
+   "height": 30
+  }
+ ],
+ "edges": [
+  {
+   "id": "e1",
+   "sources": [
+    "A"
+   ],
+   "targets": [
+    "B"
+   ]
+  },
+  {
+   "id": "e2",
+   "sources": [
+    "A"
+   ],
+   "targets": [
+    "C"
+   ]
+  },
+  {
+   "id": "e3",
+   "sources": [
+    "B"
+   ],
+   "targets": [
+    "D"
+   ]
+  },
+  {
+   "id": "e4",
+   "sources": [
+    "C"
+   ],
+   "targets": [
+    "D"
+   ]
+  }
+ ]
+}

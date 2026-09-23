@@ -1,0 +1,45 @@
+{
+ "id": "root",
+ "layoutOptions": {
+  "elk.algorithm": "layered",
+  "elk.direction": "RIGHT",
+  "elk.edgeRouting": "POLYLINE"
+ },
+ "children": [
+  {
+   "id": "A",
+   "width": 50.0,
+   "height": 30.0
+  },
+  {
+   "id": "B",
+   "width": 50.0,
+   "height": 30.0
+  },
+  {
+   "id": "C",
+   "width": 50.0,
+   "height": 30.0
+  }
+ ],
+ "edges": [
+  {
+   "id": "e1",
+   "sources": [
+    "A"
+   ],
+   "targets": [
+    "B"
+   ]
+  },
+  {
+   "id": "e2",
+   "sources": [
+    "B"
+   ],
+   "targets": [
+    "C"
+   ]
+  }
+ ]
+}
