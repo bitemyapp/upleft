@@ -39,6 +39,35 @@ struct Suite {
     /// Input file extension; Markdown unless the suite says otherwise
     /// (ELK graphs are `.json`, LaTeX expressions `.tex`).
     input: String,
+    /// Which Swift oracle answers: `downright-oracle` by default, or
+    /// `downright-app-oracle` (`"oracle": "app"`, built by `just app-oracle`)
+    /// for the app-layer suites.
+    oracle: SwiftOracle,
+    /// Further binaries the Swift result depends on (`"stamps"`, paths from
+    /// the repository root), folded into the cache key.
+    stamps: Vec<String>,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+enum SwiftOracle {
+    Core,
+    App,
+}
+
+impl SwiftOracle {
+    fn path(self, root: &Path) -> PathBuf {
+        match self {
+            SwiftOracle::Core => root.join("target/oracle/release/downright-oracle"),
+            SwiftOracle::App => root.join("target/app-oracle/release/downright-app-oracle"),
+        }
+    }
+
+    fn hint(self) -> &'static str {
+        match self {
+            SwiftOracle::Core => "just oracle",
+            SwiftOracle::App => "just app-oracle",
+        }
+    }
 }
 
 struct Options {
@@ -104,7 +133,7 @@ fn usage(message: &str) -> ! {
     std::process::exit(64)
 }
 
-fn load_suites(root: &Path) -> (Vec<PathBuf>, Vec<Suite>) {
+fn load_suites(root: &Path) -> (Vec<PathBuf>, Vec<String>, Vec<Suite>) {
     let path = root.join("conformance/suites.json");
     let text = fs::read_to_string(&path).unwrap_or_else(|error| panic!("{}: {error}", path.display()));
     let json: Value = serde_json::from_str(&text).unwrap_or_else(|error| panic!("{}: {error}", path.display()));
@@ -114,6 +143,9 @@ fn load_suites(root: &Path) -> (Vec<PathBuf>, Vec<Suite>) {
         })
     };
     let corpus = strings(&json["corpus"]).into_iter().map(|dir| root.join(dir)).collect();
+    // Corpus paths only the suites that name them in `only` read (the sample
+    // workspace's documents, for example, are not parse or render inputs).
+    let exclude = strings(&json["exclude"]);
     let suites = json["suites"]
         .as_array()
         .expect("suites array")
@@ -128,9 +160,15 @@ fn load_suites(root: &Path) -> (Vec<PathBuf>, Vec<Suite>) {
             serial: suite["serial"].as_bool().unwrap_or(false),
             only: strings(&suite["only"]),
             input: suite["input"].as_str().unwrap_or("md").to_owned(),
+            oracle: match suite["oracle"].as_str() {
+                None | Some("core") => SwiftOracle::Core,
+                Some("app") => SwiftOracle::App,
+                Some(other) => panic!("{}: unknown oracle {other}", path.display()),
+            },
+            stamps: strings(&suite["stamps"]),
         })
         .collect();
-    (corpus, suites)
+    (corpus, exclude, suites)
 }
 
 fn corpus_files(directories: &[PathBuf], input: &str) -> Vec<PathBuf> {
@@ -153,6 +191,11 @@ fn corpus_files(directories: &[PathBuf], input: &str) -> Vec<PathBuf> {
     files
 }
 
+/// Like [`binary_stamp`], but a missing file stamps as absent.
+fn optional_stamp(path: &Path) -> Option<u64> {
+    path.exists().then(|| binary_stamp(path))
+}
+
 fn binary_stamp(path: &Path) -> u64 {
     let metadata = fs::metadata(path).unwrap_or_else(|error| panic!("{}: {error}", path.display()));
     let mut hasher = DefaultHasher::new();
@@ -163,8 +206,11 @@ fn binary_stamp(path: &Path) -> u64 {
 
 /// Runs one oracle. Returns its exit code (or None if killed) and stderr.
 fn run_oracle(binary: &Path, home: &Path, command: &str, input: &Path, output: &Path, flags: &[String]) -> (Option<i32>, String) {
+    // `NSHomeDirectory()` ignores `HOME` and honours `CFFIXED_USER_HOME`, so
+    // both are set: neither oracle may read or write the real home.
     let result = Command::new(binary)
         .env("HOME", home)
+        .env("CFFIXED_USER_HOME", home)
         .arg(command)
         .arg(input)
         .arg(output)
@@ -184,9 +230,7 @@ fn case_directory(out: &Path, case: &Case, root: &Path) -> PathBuf {
 
 struct Context {
     root: PathBuf,
-    swift_oracle: PathBuf,
     rust_oracle: PathBuf,
-    swift_stamp: u64,
     home: PathBuf,
     cache: Option<PathBuf>,
     out: PathBuf,
@@ -213,9 +257,13 @@ fn run_case(context: &Context, case: &Case) -> (Outcome, String) {
     };
 
     // Swift side, from cache when possible.
+    let swift_oracle = suite.oracle.path(&context.root);
     let input_bytes = fs::read(&case.input).unwrap_or_default();
     let mut hasher = DefaultHasher::new();
-    (context.swift_stamp, &input_bytes, &suite.command, flags).hash(&mut hasher);
+    (binary_stamp(&swift_oracle), &input_bytes, &suite.command, flags).hash(&mut hasher);
+    for stamp in &suite.stamps {
+        optional_stamp(&context.root.join(stamp)).hash(&mut hasher);
+    }
     let key = format!("{:016x}", hasher.finish());
     let (swift_output, swift_layout) = match &context.cache {
         Some(cache) => (cache.join(format!("{key}.{extension}")), cache.join(format!("{key}.layout.json"))),
@@ -223,7 +271,7 @@ fn run_case(context: &Context, case: &Case) -> (Outcome, String) {
     };
     if !swift_output.exists() {
         let (code, stderr) = run_oracle(
-            &context.swift_oracle,
+            &swift_oracle,
             &context.home,
             &suite.command,
             &case.input,
@@ -352,10 +400,22 @@ fn alternatives(value: &Value) -> Option<&Vec<Value>> {
 fn main() -> ExitCode {
     let options = parse_options();
     let root = root();
-    let (corpus, suites) = load_suites(&root);
-    let swift_oracle = root.join("target/oracle/release/downright-oracle");
+    let (corpus, exclude, suites) = load_suites(&root);
     let rust_oracle = root.join("target/release/upleft-oracle");
-    for (binary, hint) in [(&swift_oracle, "just oracle"), (&rust_oracle, "cargo build --release -p upleft-conformance")] {
+    let selected: Vec<&Suite> = suites
+        .iter()
+        .filter(|suite| options.suites.is_empty() || options.suites.contains(&suite.name))
+        .collect();
+    if selected.is_empty() {
+        usage("no suite matches");
+    }
+    let mut needed = vec![(rust_oracle.clone(), "cargo build --release -p upleft-conformance")];
+    for oracle in [SwiftOracle::Core, SwiftOracle::App] {
+        if selected.iter().any(|suite| suite.oracle == oracle) {
+            needed.push((oracle.path(&root), oracle.hint()));
+        }
+    }
+    for (binary, hint) in &needed {
         if !binary.exists() {
             eprintln!("conform: {} is missing; run `{hint}`", binary.display());
             return ExitCode::from(2);
@@ -368,22 +428,12 @@ fn main() -> ExitCode {
         fs::create_dir_all(cache).unwrap();
     }
     let context = Context {
-        swift_stamp: binary_stamp(&swift_oracle),
         root: root.clone(),
-        swift_oracle,
         rust_oracle,
         home,
         cache,
         out: root.join("conformance-out"),
     };
-
-    let selected: Vec<&Suite> = suites
-        .iter()
-        .filter(|suite| options.suites.is_empty() || options.suites.contains(&suite.name))
-        .collect();
-    if selected.is_empty() {
-        usage("no suite matches");
-    }
 
     let mut any_failure = false;
     for suite in selected {
@@ -393,7 +443,9 @@ fn main() -> ExitCode {
             .iter()
             .filter(|file| {
                 let text = file.to_string_lossy();
-                (suite.only.is_empty() || suite.only.iter().any(|only| text.contains(only.as_str())))
+                let named = suite.only.iter().any(|only| text.contains(only.as_str()));
+                (named || !exclude.iter().any(|excluded| text.contains(excluded.as_str())))
+                    && (suite.only.is_empty() || named)
                     && options.filter.as_ref().is_none_or(|filter| text.contains(filter.as_str()))
             })
             .flat_map(|file| (0..suite.variants.len()).map(move |variant| Case { suite, input: file.clone(), variant }))

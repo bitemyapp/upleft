@@ -14,6 +14,20 @@ oracle:
     cd oracle && swift build -c release -Xswiftc -enable-testing --scratch-path {{scratch}}/oracle
     just stamp {{scratch}}/oracle/release/downright-oracle
 
+# Build downright-app-oracle, the Swift reference for the app-layer suites
+# (oracle/app: Downright's own module sources compiled as libraries, see its
+# Package.swift). Separate from `just oracle` so the core suites never need
+# the whole app or Sparkle.
+app-oracle:
+    swift build --package-path oracle/app -c release -Xswiftc -enable-testing --scratch-path {{scratch}}/app-oracle
+    just stamp {{scratch}}/app-oracle/release/downright-app-oracle
+
+# Build Downright's real `down` command-line tool from the submodule, stamped,
+# for the `down-cli` suite.
+downright-cli:
+    cd vendor/downright && swift build -c release --scratch-path ../../target/downright-cli --product down
+    just stamp {{scratch}}/downright-cli/release/down
+
 # Stamp a Swift binary with the canonical LC_BUILD_VERSION (minos 14.0, the
 # installed SDK) and re-sign it ad hoc. SwiftPM records sdk 14.0; an Xcode
 # build of Downright records the real SDK, and AppKit keys behaviour off it.
@@ -55,5 +69,5 @@ corpus:
 
 # Compare Upleft with Downright on the corpus. Pass suite filters through, e.g. `just conform --suite parse`.
 conform *args: corpus
-    cargo build --release -p upleft-conformance
+    cargo build --release -p upleft-conformance -p upleft-cli
     target/release/conform {{args}}

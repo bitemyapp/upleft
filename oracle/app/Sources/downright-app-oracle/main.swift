@@ -1,0 +1,63 @@
+import AppKit
+@testable import DownrightApp
+
+// downright-app-oracle — the Swift reference for Upleft's app-layer suites.
+//
+//   downright-app-oracle <command> <input> <out.json> [flags…]
+//
+//   html-export  <file.md>        HTMLExporter output (HTMLExportDump.swift)
+//   spotlight    <file.md>        Spotlight metadata (SpotlightDump.swift)
+//   down-cli     <scenario.json>  runs the real `down` in a sandbox (DownCLIDump.swift)
+//   workspace    <queries.json>   WorkspaceIndex / LinkGraph / Search (WorkspaceDump.swift)
+//   find         <queries.json>   FindEngine (FindDump.swift)
+//   palette      <queries.json>   CommandPaletteModel / QuickOpenProviders (PaletteDump.swift)
+//   formats      <script.json>    persisted formats (FormatsDump.swift)
+//   updater      <case.json>      UpdateStateMachine and appcast parsing (UpdaterDump.swift)
+//   local-ai     <case.json>      LocalAI prompt and result shaping (LocalAIDump.swift)
+//
+// Each command parses its own flags. `upleft-oracle` (crates/conformance)
+// takes identical arguments and writes identical formats. The runner selects
+// this binary for suites marked `"oracle": "app"` in conformance/suites.json.
+
+func usage() -> Never {
+    FileHandle.standardError.write("usage: downright-app-oracle <command> <input> <out.json> [flags…]\n".data(using: .utf8)!)
+    exit(64)
+}
+
+func write(_ json: JSON, to path: String) throws {
+    try json.text.write(toFile: path, atomically: true, encoding: .utf8)
+}
+
+/// The repository root, found from this binary's location
+/// (`target/app-oracle/release/downright-app-oracle`).
+let repositoryRoot: URL = URL(fileURLWithPath: CommandLine.arguments[0]).resolvingSymlinksInPath()
+    .deletingLastPathComponent().deletingLastPathComponent().deletingLastPathComponent().deletingLastPathComponent()
+
+struct AppOracleError: Error, CustomStringConvertible {
+    var description: String
+}
+
+let arguments = CommandLine.arguments
+guard arguments.count >= 4 else { usage() }
+let command = arguments[1]
+let input = URL(fileURLWithPath: arguments[2])
+let output = arguments[3]
+let flags = Array(arguments.dropFirst(4))
+
+do {
+    switch command {
+    case "html-export": try write(HTMLExportDump.run(input: input, flags: flags), to: output)
+    case "spotlight": try write(SpotlightDump.run(input: input, flags: flags), to: output)
+    case "down-cli": try write(DownCLIDump.run(input: input, flags: flags), to: output)
+    case "workspace": try write(WorkspaceDump.run(input: input, flags: flags), to: output)
+    case "find": try write(FindDump.run(input: input, flags: flags), to: output)
+    case "palette": try write(PaletteDump.run(input: input, flags: flags), to: output)
+    case "formats": try write(FormatsDump.run(input: input, flags: flags), to: output)
+    case "updater": try write(UpdaterDump.run(input: input, flags: flags), to: output)
+    case "local-ai": try write(LocalAIDump.run(input: input, flags: flags), to: output)
+    default: usage()
+    }
+} catch {
+    FileHandle.standardError.write("\(error)\n".data(using: .utf8)!)
+    exit(1)
+}

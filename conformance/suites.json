@@ -2,6 +2,9 @@
   "corpus": [
     "corpus"
   ],
+  "exclude": [
+    "corpus/workspace/"
+  ],
   "suites": [
     {
       "name": "probe",
@@ -345,6 +348,84 @@
         ["--theme", "System"],
         ["--theme", "System", "--dark"]
       ]
+    },
+    {
+      "name": "html-export",
+      "command": "html-export",
+      "oracle": "app",
+      "output": "json",
+      "variants": [[]]
+    },
+    {
+      "name": "spotlight",
+      "command": "spotlight",
+      "oracle": "app",
+      "output": "json",
+      "variants": [[]]
+    },
+    {
+      "name": "down-cli",
+      "command": "down-cli",
+      "oracle": "app",
+      "output": "json",
+      "input": "json",
+      "only": ["corpus/down-cli/"],
+      "stamps": ["target/downright-cli/release/down"],
+      "variants": [[]]
+    },
+    {
+      "name": "workspace",
+      "command": "workspace",
+      "oracle": "app",
+      "output": "json",
+      "input": "json",
+      "only": ["corpus/workspace-queries/"],
+      "variants": [[]]
+    },
+    {
+      "name": "find",
+      "command": "find",
+      "oracle": "app",
+      "output": "json",
+      "input": "json",
+      "only": ["corpus/find/"],
+      "variants": [[]]
+    },
+    {
+      "name": "palette",
+      "command": "palette",
+      "oracle": "app",
+      "output": "json",
+      "input": "json",
+      "only": ["corpus/palette/"],
+      "variants": [[]]
+    },
+    {
+      "name": "formats",
+      "command": "formats",
+      "oracle": "app",
+      "output": "json",
+      "input": "json",
+      "only": ["corpus/formats/"],
+      "variants": [[]]
+    },
+    {
+      "name": "updater",
+      "command": "updater",
+      "oracle": "app",
+      "output": "json",
+      "input": "json",
+      "only": ["corpus/updater/"],
+      "variants": [[]]
+    },
+    {
+      "name": "local-ai",
+      "command": "local-ai",
+      "oracle": "app",
+      "output": "json",
+      "input": "json",
+      "only": ["corpus/local-ai/"],
+      "variants": [[]]
     }
   ]
 }

@@ -1,0 +1,16 @@
+[package]
+name = "upleft-foundation"
+description = "Foundation behaviours Downright's app layer and command-line tools depend on: JSONEncoder output, JSONSerialization through objc2, ISO 8601 dates"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+publish.workspace = true
+
+[dependencies]
+upleft-swift-text.workspace = true
+objc2.workspace = true
+objc2-foundation = { workspace = true, features = [
+    "NSArray", "NSData", "NSDictionary", "NSEnumerator", "NSError", "NSFileManager", "NSJSONSerialization", "NSNull", "NSPathUtilities", "NSURL",
+    "NSObjCRuntime", "NSObject", "NSString", "NSValue",
+] }
+objc2-core-foundation = { workspace = true, features = ["CFNumber"] }
