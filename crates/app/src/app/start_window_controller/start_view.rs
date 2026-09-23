@@ -2,6 +2,7 @@
 //! `App/StartWindowController.swift`): `StartView`, with its drop overlay
 //! (`StartDropOverlay`) and its focusable canvas (`StartCanvasView`).
 
+use crate::panels::update_status_pill::{Presentation, UpdateStatusPill};
 use std::cell::{Cell, RefCell};
 use std::rc::Rc;
 
@@ -55,6 +56,10 @@ pub(super) struct StartViewIvars {
     hero: Retained<StartHeroView>,
     drop_overlay: Retained<StartDropOverlay>,
     content_stack: Retained<NSStackView>,
+    /// The start surface has enough context to make an icon-only warning
+    /// discoverable through its tooltip and accessibility label. Keep the
+    /// titlebar warning from becoming a second hero CTA.
+    update_pill: Retained<UpdateStatusPill>,
     sheet: RefCell<Rc<StyleSheet>>,
     did_play_entrance: Cell<bool>,
     key_observer: RefCell<Option<ObserverToken>>,
@@ -208,6 +213,7 @@ impl StartView {
     ) -> Retained<StartView> {
         let drop_overlay = StartDropOverlay::new(mtm);
         let content_stack = NSStackView::new(mtm);
+        let update_pill = UpdateStatusPill::new(Presentation::CompactWarning, mtm);
         let sheet = Rc::new(StartTheme::make_sheet(None, mtm));
         let recent_panel = RecentDocumentsPanel::new(recents, owner, sheet.clone(), mtm);
         let hero = StartHeroView::new(owner, guide, !recents.is_empty(), sheet.clone(), mtm);
@@ -217,6 +223,7 @@ impl StartView {
             hero,
             drop_overlay,
             content_stack,
+            update_pill,
             sheet: RefCell::new(sheet),
             did_play_entrance: Cell::new(false),
             key_observer: RefCell::new(None),
@@ -500,39 +507,21 @@ fn dropped_urls(pasteboard: &NSPasteboard) -> Vec<FileUrl> {
         .collect()
 }
 
-// PANELS: UpdateStatusPill
-/// The start window's update pill: Swift's `private let updatePill =
-/// UpdateStatusPill(presentation: .compactWarning)` and the lines of
-/// `init(recents:guide:owner:)` that place it. The start surface has enough
-/// context to make an icon-only warning discoverable through its tooltip
-/// and accessibility label. Keep the titlebar warning from becoming a second
-/// hero CTA.
-///
-/// `UpdateStatusPill` is ported on `port/panels` and is still a stub on this
-/// branch, so this does nothing yet. Once it lands, the body is:
-///
-/// ```ignore
-/// use crate::panels::update_status_pill::{UpdateStatusPill, UpdateStatusPillPresentation};
-/// let update_pill = UpdateStatusPill::new(UpdateStatusPillPresentation::CompactWarning, mtm);
-/// // The update pill sits in the transparent titlebar strip, clear of the
-/// // hero and the traffic lights, and stays collapsed to zero width until
-/// // the coordinator has something to say.
-/// update_pill.setTranslatesAutoresizingMaskIntoConstraints(false);
-/// view.addSubview(&update_pill);
-/// activate(&[
-///     // Give the warning its own titlebar lane: the extra inset keeps the
-///     // pill off the window edge and visually separates it from the
-///     // traffic-light/titlebar chrome at small capture sizes.
-///     update_pill.trailingAnchor().constraintEqualToAnchor_constant(&view.trailingAnchor(), -18.0),
-///     update_pill.topAnchor().constraintEqualToAnchor_constant(&view.topAnchor(), 10.0),
-/// ]);
-/// ```
-///
-/// Nothing else in the start window reads the pill (Swift's stored property
-/// is never read again), so the view hierarchy's reference is the only one
-/// needed.
-fn install_update_pill(view: &StartView, mtm: MainThreadMarker) {
-    let _ = (view, mtm);
+/// The lines of `init(recents:guide:owner:)` that place the update pill.
+fn install_update_pill(view: &StartView, _mtm: MainThreadMarker) {
+    let update_pill = &view.ivars().update_pill;
+    // The update pill sits in the transparent titlebar strip, clear of the
+    // hero and the traffic lights, and stays collapsed to zero width until
+    // the coordinator has something to say.
+    update_pill.setTranslatesAutoresizingMaskIntoConstraints(false);
+    view.addSubview(update_pill);
+    activate(&[
+        // Give the warning its own titlebar lane: the extra inset keeps the
+        // pill off the window edge and visually separates it from the
+        // traffic-light/titlebar chrome at small capture sizes.
+        update_pill.trailingAnchor().constraintEqualToAnchor_constant(&view.trailingAnchor(), -18.0),
+        update_pill.topAnchor().constraintEqualToAnchor_constant(&view.topAnchor(), 10.0),
+    ]);
 }
 
 // MARK: - StartDropOverlay
