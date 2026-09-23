@@ -1,0 +1,350 @@
+{
+ "panel": "LightboxWindow",
+ "theme": "Paper Light",
+ "width": 800,
+ "height": 600,
+ "state": {
+  "image": "corpus/render-images/img/photo.jpg",
+  "caption": "Caption"
+ },
+ "states": [
+  {
+   "name": "fit"
+  },
+  {
+   "name": "no caption",
+   "caption": ""
+  },
+  {
+   "name": "reduce transparency",
+   "reduceTransparency": true
+  },
+  {
+   "name": "zoom in",
+   "keys": [
+    {
+     "characters": "+",
+     "keyCode": 24
+    }
+   ]
+  },
+  {
+   "name": "zoom in with =",
+   "keys": [
+    {
+     "characters": "=",
+     "keyCode": 24
+    }
+   ]
+  },
+  {
+   "name": "zoom out",
+   "keys": [
+    {
+     "characters": "-",
+     "keyCode": 27
+    }
+   ]
+  },
+  {
+   "name": "zoom out with _",
+   "keys": [
+    {
+     "characters": "_",
+     "keyCode": 27
+    }
+   ]
+  },
+  {
+   "name": "actual size",
+   "keys": [
+    {
+     "characters": "1",
+     "keyCode": 18
+    }
+   ]
+  },
+  {
+   "name": "actual size then fit",
+   "keys": [
+    {
+     "characters": "1",
+     "keyCode": 18
+    },
+    {
+     "characters": "0",
+     "keyCode": 29
+    }
+   ]
+  },
+  {
+   "name": "pan",
+   "keys": [
+    {
+     "characters": "",
+     "keyCode": 123
+    },
+    {
+     "characters": "",
+     "keyCode": 126
+    },
+    {
+     "characters": "",
+     "keyCode": 126
+    },
+    {
+     "characters": "",
+     "keyCode": 125
+    },
+    {
+     "characters": "",
+     "keyCode": 124
+    },
+    {
+     "characters": "",
+     "keyCode": 124
+    }
+   ]
+  },
+  {
+   "name": "zoom to the limit",
+   "keys": [
+    {
+     "characters": "+",
+     "keyCode": 24
+    },
+    {
+     "characters": "+",
+     "keyCode": 24
+    },
+    {
+     "characters": "+",
+     "keyCode": 24
+    },
+    {
+     "characters": "+",
+     "keyCode": 24
+    },
+    {
+     "characters": "+",
+     "keyCode": 24
+    },
+    {
+     "characters": "+",
+     "keyCode": 24
+    },
+    {
+     "characters": "+",
+     "keyCode": 24
+    },
+    {
+     "characters": "+",
+     "keyCode": 24
+    },
+    {
+     "characters": "+",
+     "keyCode": 24
+    },
+    {
+     "characters": "+",
+     "keyCode": 24
+    },
+    {
+     "characters": "+",
+     "keyCode": 24
+    },
+    {
+     "characters": "+",
+     "keyCode": 24
+    },
+    {
+     "characters": "+",
+     "keyCode": 24
+    },
+    {
+     "characters": "+",
+     "keyCode": 24
+    },
+    {
+     "characters": "+",
+     "keyCode": 24
+    },
+    {
+     "characters": "+",
+     "keyCode": 24
+    },
+    {
+     "characters": "+",
+     "keyCode": 24
+    },
+    {
+     "characters": "+",
+     "keyCode": 24
+    },
+    {
+     "characters": "+",
+     "keyCode": 24
+    },
+    {
+     "characters": "+",
+     "keyCode": 24
+    }
+   ]
+  },
+  {
+   "name": "zoom out to the limit",
+   "keys": [
+    {
+     "characters": "-",
+     "keyCode": 27
+    },
+    {
+     "characters": "-",
+     "keyCode": 27
+    },
+    {
+     "characters": "-",
+     "keyCode": 27
+    },
+    {
+     "characters": "-",
+     "keyCode": 27
+    },
+    {
+     "characters": "-",
+     "keyCode": 27
+    },
+    {
+     "characters": "-",
+     "keyCode": 27
+    },
+    {
+     "characters": "-",
+     "keyCode": 27
+    },
+    {
+     "characters": "-",
+     "keyCode": 27
+    },
+    {
+     "characters": "-",
+     "keyCode": 27
+    },
+    {
+     "characters": "-",
+     "keyCode": 27
+    },
+    {
+     "characters": "-",
+     "keyCode": 27
+    },
+    {
+     "characters": "-",
+     "keyCode": 27
+    },
+    {
+     "characters": "-",
+     "keyCode": 27
+    },
+    {
+     "characters": "-",
+     "keyCode": 27
+    },
+    {
+     "characters": "-",
+     "keyCode": 27
+    },
+    {
+     "characters": "-",
+     "keyCode": 27
+    },
+    {
+     "characters": "-",
+     "keyCode": 27
+    },
+    {
+     "characters": "-",
+     "keyCode": 27
+    },
+    {
+     "characters": "-",
+     "keyCode": 27
+    },
+    {
+     "characters": "-",
+     "keyCode": 27
+    },
+    {
+     "characters": "-",
+     "keyCode": 27
+    },
+    {
+     "characters": "-",
+     "keyCode": 27
+    },
+    {
+     "characters": "-",
+     "keyCode": 27
+    },
+    {
+     "characters": "-",
+     "keyCode": 27
+    },
+    {
+     "characters": "-",
+     "keyCode": 27
+    },
+    {
+     "characters": "-",
+     "keyCode": 27
+    },
+    {
+     "characters": "-",
+     "keyCode": 27
+    },
+    {
+     "characters": "-",
+     "keyCode": 27
+    },
+    {
+     "characters": "-",
+     "keyCode": 27
+    },
+    {
+     "characters": "-",
+     "keyCode": 27
+    }
+   ]
+  },
+  {
+   "name": "unbound key",
+   "keys": [
+    {
+     "characters": "q",
+     "keyCode": 12
+    }
+   ]
+  },
+  {
+   "name": "escape",
+   "keys": [
+    {
+     "characters": "\u001b",
+     "keyCode": 53
+    }
+   ]
+  },
+  {
+   "name": "tiny image",
+   "image": "corpus/render-images/img/tiny.png"
+  },
+  {
+   "name": "tall image",
+   "image": "corpus/render-images/img/tall.png"
+  },
+  {
+   "name": "wide image",
+   "image": "corpus/render-images/img/wide.png"
+  }
+ ]
+}
