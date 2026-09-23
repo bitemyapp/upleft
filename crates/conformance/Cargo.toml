@@ -36,6 +36,7 @@ objc2-app-kit = { workspace = true, features = [
     "NSAttributedString", "NSParagraphStyle", "NSShadow", "NSTextAttachment", "NSTextList", "NSTextStorage",
     "NSTextTable", "NSEvent", "NSTableView", "NSTableCellView", "NSControl", "NSTextField", "NSPanel",
     "NSAccessibility", "NSAccessibilityProtocols",
+    "NSButton", "NSButtonCell", "NSToolbar", "NSToolbarItem", "NSWindowController", "NSMenu", "NSMenuItem",
     # The panel suites.
     "NSButton", "NSButtonCell", "NSImageView", "NSStackView", "NSTextView", "NSText", "NSUserInterfaceLayout",
     "NSVisualEffectView", "NSGlassEffectView", "NSProgressIndicator", "NSSegmentedControl", "NSPopUpButton", "NSMenu",

@@ -20,9 +20,10 @@ import AppKit
 //   app-window       <scenario.json> <out.png> [--layout out.json]
 //                                 a real app window, captured off-screen (AppWindowCapture.swift)
 //   bench-app-window <scenario.json> document open and mode-switch timings (AppWindowCapture.swift)
+//   app-menu         <scenario.json> the main menu, every submenu refreshed (AppWindowCapture.swift)
 //   panel        <scenario.json>  a panel built off-screen and captured (Panels/PanelHarness.swift)
 //   panel-model  <scenario.json>  panels built windowless, laid out and dumped (Panels/PanelHarness.swift)
-//   bench-panel  <scenario.json>  panel build and layout timings (Panels/PanelBench.swift)
+//   bench-panel  <scenario.json>  panel build, layout and draw timings (Panels/PanelBench.swift)
 //
 // Each command parses its own flags. `upleft-oracle` (crates/conformance)
 // takes identical arguments and writes identical formats. The runner selects
@@ -82,12 +83,15 @@ do {
         try MainActor.assumeIsolated {
             try AppWindowSession.run(input: input, output: output, flags: flags, repositoryRoot: repositoryRoot)
         }
+    case "app-menu":
+        try write(MainActor.assumeIsolated { try AppMenuDump.run(input: input, repositoryRoot: repositoryRoot) }, to: output)
     case "bench-app-window":
         try MainActor.assumeIsolated {
             try AppWindowBench.run(input: input, output: output, repositoryRoot: repositoryRoot)
         }
     case "panel": try MainActor.assumeIsolated { try PanelCaptureSession.run(input: input, output: output, flags: flags) }
     case "panel-model": try write(MainActor.assumeIsolated { try PanelModelDump.run(input: input, flags: flags) }, to: output)
+    case "bench-panel": try write(MainActor.assumeIsolated { try PanelBench.run(input: input) }, to: output)
     default: usage()
     }
 } catch {

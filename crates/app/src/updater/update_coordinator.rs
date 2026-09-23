@@ -343,9 +343,11 @@ impl UpdateCoordinator {
     }
 
     /// `{ [weak self] version in … self?.backgroundDownloadCompleted(version) }`.
-    /// Swift hops to the main actor when Sparkle calls from another thread;
-    /// the port's handler is not `Send`, so it only ever runs on the
-    /// coordinator's own (main) thread and calls straight through.
+    /// Swift hops to the main actor when Sparkle calls from another thread.
+    /// The port's handler is not `Send`: it only ever runs on the main
+    /// thread and calls straight through, because the `SPUUpdaterDelegate`
+    /// (`super::sparkle::BackgroundDownloadNotifierObject`) makes that hop
+    /// before it calls the notifier.
     fn background_download_handler(&self) -> BackgroundDownloadHandler {
         let weak = self.weak_self.clone();
         Rc::new(move |version: &str| {

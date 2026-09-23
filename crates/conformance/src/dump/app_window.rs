@@ -34,27 +34,30 @@ use super::json::{self, Object};
 use super::{Failure, Request};
 
 /// `AppWindowScenario`.
-struct Scenario {
-    window: String,
-    document: Option<String>,
-    mode: String,
-    dark: bool,
-    size: Option<NSSize>,
-    preferences: Option<Vec<u8>>,
-    pane: Option<String>,
-    guide: String,
-    commands: Vec<String>,
-    settle_timeout: Duration,
+pub(crate) struct Scenario {
+    pub(crate) window: String,
+    pub(crate) document: Option<String>,
+    pub(crate) mode: String,
+    pub(crate) dark: bool,
+    pub(crate) size: Option<NSSize>,
+    pub(crate) preferences: Option<Vec<u8>>,
+    pub(crate) keybindings: Option<Vec<u8>>,
+    pub(crate) pane: Option<String>,
+    pub(crate) guide: String,
+    /// Recent documents seeded into the sandbox (`sandbox::seed_recents`).
+    pub(crate) recents: Vec<Value>,
+    pub(crate) commands: Vec<String>,
+    pub(crate) settle_timeout: Duration,
 }
 
 impl Scenario {
-    fn load(path: &Path) -> Result<Scenario, Failure> {
+    pub(crate) fn load(path: &Path) -> Result<Scenario, Failure> {
         let text = std::fs::read_to_string(path)?;
         let object: Value = serde_json::from_str(&text).map_err(|error| Failure::Error(error.to_string()))?;
-        let window = object["window"]
-            .as_str()
-            .ok_or_else(|| Failure::Error("scenario needs a \"window\"".into()))?
-            .to_owned();
+        if !object.is_object() {
+            return Err(Failure::Error("a scenario is a JSON object".into()));
+        }
+        let window = object["window"].as_str().unwrap_or("").to_owned();
         let mode = object["mode"].as_str().unwrap_or("live").to_owned();
         if !matches!(mode.as_str(), "read" | "live" | "source") {
             return Err(Failure::Error(format!("unknown mode {mode}")));
@@ -68,8 +71,13 @@ impl Scenario {
             Some(value) => Some(serde_json::to_vec_pretty(value).map_err(|error| Failure::Error(error.to_string()))?),
             None => None,
         };
+        let keybindings = match object.get("keybindings") {
+            Some(value) => Some(serde_json::to_vec_pretty(value).map_err(|error| Failure::Error(error.to_string()))?),
+            None => None,
+        };
         Ok(Scenario {
             window,
+            keybindings,
             document: object["document"].as_str().map(str::to_owned),
             mode,
             dark: object["appearance"].as_str() == Some("dark"),
@@ -77,6 +85,7 @@ impl Scenario {
             preferences,
             pane: object["pane"].as_str().map(str::to_owned),
             guide: object["guide"].as_str().unwrap_or("unavailable").to_owned(),
+            recents: object["recents"].as_array().cloned().unwrap_or_default(),
             commands: object["commands"]
                 .as_array()
                 .map(|commands| commands.iter().filter_map(|command| command.as_str().map(str::to_owned)).collect())
@@ -89,13 +98,13 @@ impl Scenario {
 /// Window kinds this oracle can build yet. Anything else is "not ported",
 /// reported before the application starts.
 fn is_ported(window: &str) -> bool {
-    matches!(window, "probe" | "setup" | "preferences" | "document")
+    matches!(window, "probe" | "start" | "setup" | "preferences" | "document")
 }
 
 // MARK: - Sandbox
 
 /// `AppWindowSandbox`.
-mod sandbox {
+pub(crate) mod sandbox {
     use super::*;
 
     pub fn prepare(scenario: &Scenario) -> Result<PathBuf, Failure> {
@@ -115,8 +124,44 @@ mod sandbox {
         if let Some(preferences) = &scenario.preferences {
             std::fs::write(support.join("preferences.json"), preferences)?;
         }
+        if let Some(keybindings) = &scenario.keybindings {
+            std::fs::write(support.join("keybindings.json"), keybindings)?;
+        }
+        seed_recents(&scenario.recents, &root, &support)?;
         clear_own_defaults();
         Ok(root)
+    }
+
+    /// `AppWindowSandbox.seedRecents`: each recent's file under
+    /// `<root>/recents/` and `recents.json` in the support folder, in the
+    /// scenario's order.
+    fn seed_recents(recents: &[Value], root: &Path, support: &Path) -> Result<(), Failure> {
+        if recents.is_empty() {
+            return Ok(());
+        }
+        let folder = root.join("recents");
+        let mut entries = Vec::new();
+        for recent in recents {
+            let (Some(relative), Some(opened)) = (recent["path"].as_str(), recent["opened"].as_str()) else {
+                return Err(Failure::Error("a recent needs \"path\" and \"opened\"".into()));
+            };
+            let heading = recent["heading"].as_str().unwrap_or("");
+            let file = folder.join(relative);
+            if let Some(parent) = file.parent() {
+                std::fs::create_dir_all(parent)?;
+            }
+            std::fs::write(&file, format!("# {heading}\n"))?;
+            entries.push(serde_json::json!({
+                "path": file.to_string_lossy(),
+                "displayName": file.file_stem().map(|stem| stem.to_string_lossy().into_owned()).unwrap_or_default(),
+                "firstHeading": heading,
+                "lastOpened": opened,
+                "wordCount": recent["words"].as_i64().unwrap_or(0),
+            }));
+        }
+        let data = serde_json::to_vec(&Value::Array(entries)).map_err(|error| Failure::Error(error.to_string()))?;
+        std::fs::write(support.join("recents.json"), data)?;
+        Ok(())
     }
 
     /// This process's own defaults domain, never the user's app domain.
@@ -231,7 +276,7 @@ pub(crate) mod window_server {
 }
 
 /// The machine-wide window-capture lock (see `capture.rs`). Held until exit.
-fn acquire_window_capture_lock() {
+pub(crate) fn acquire_window_capture_lock() {
     let file = std::fs::OpenOptions::new()
         .create(true)
         .truncate(false)
@@ -255,7 +300,7 @@ fn appearance(dark: bool) -> Retained<NSAppearance> {
 /// `applyScenarioAppearance`: `AppDelegate.applySelectedTheme`, with the
 /// system appearance taken from the scenario, and the bundle's icon as the
 /// application icon.
-fn apply_scenario_appearance(scenario: &Scenario, root: &Path, mtm: MainThreadMarker) {
+pub(crate) fn apply_scenario_appearance(scenario: &Scenario, root: &Path, mtm: MainThreadMarker) {
     let icon_path = NSString::from_str(&root.join("vendor/downright/Resources/AppIcon.icns").to_string_lossy());
     let icon = objc2_app_kit::NSImage::initWithContentsOfFile(objc2_app_kit::NSImage::alloc(), &icon_path);
     unsafe { NSApplication::sharedApplication(mtm).setApplicationIconImage(icon.as_deref()) };
@@ -340,6 +385,26 @@ impl Scene {
                 content.addSubview(&label);
                 content.addSubview(&button);
                 let scene = Scene { window: probe, pending_commands: None, _retained: None, document_controller: None };
+                scene.show(mtm);
+                Ok(scene)
+            }
+            "start" => {
+                use upleft_app::ai::document_state_store::DocumentStateStore;
+                use upleft_app::app::start_window_controller::{StartGuideOffer, StartWindowController};
+                let guide = match scenario.guide.as_str() {
+                    "primary" => StartGuideOffer::Primary,
+                    "secondary" => StartGuideOffer::Secondary,
+                    _ => StartGuideOffer::Unavailable,
+                };
+                let recents = DocumentStateStore::shared().recents(StartWindowController::RECENT_DISPLAY_LIMIT);
+                let controller = StartWindowController::new(recents, guide, mtm);
+                let window = controller.window().ok_or_else(|| Failure::Error("start controller has no window".into()))?;
+                let scene = Scene {
+                    window,
+                    pending_commands: None,
+                    _retained: Some(Retained::into_super(Retained::into_super(Retained::into_super(controller)))),
+                    document_controller: None,
+                };
                 scene.show(mtm);
                 Ok(scene)
             }
@@ -481,11 +546,19 @@ mod geometry {
         }
     }
 
+    /// See `AppWindowGeometry.view` in the Swift harness: a view with an
+    /// ambiguous Auto Layout solution, and its subtree, report "ambiguous".
     pub fn view(view: &NSView) -> Value {
+        view_in(view, false)
+    }
+
+    fn view_in(view: &NSView, ambiguous_ancestor: bool) -> Value {
+        let ambiguous = ambiguous_ancestor || view.hasAmbiguousLayout();
+        let geometry = |value: NSRect| if ambiguous { Value::String("ambiguous".into()) } else { rect(value) };
         let mut object = Object::new()
             .with("class", class_name(view.class()))
-            .with("frame", rect(view.frame()))
-            .with("bounds", rect(view.bounds()))
+            .with("frame", geometry(view.frame()))
+            .with("bounds", geometry(view.bounds()))
             .with("hidden", view.isHidden())
             .with("alpha", json::double(view.alphaValue()));
         if let Some(field) = view.downcast_ref::<NSTextField>() {
@@ -493,7 +566,7 @@ mod geometry {
         } else if let Some(button) = view.downcast_ref::<NSButton>() {
             object = object.with("title", button.title().to_string()).with("state", button.state());
         }
-        let subviews: Vec<Value> = view.subviews().iter().map(|subview| self::view(&subview)).collect();
+        let subviews: Vec<Value> = view.subviews().iter().map(|subview| view_in(&subview, ambiguous)).collect();
         object.with("subviews", Value::Array(subviews)).build()
     }
 
@@ -647,7 +720,7 @@ fn check_settled() {
     }
 }
 
-fn repository_root() -> PathBuf {
+pub(crate) fn repository_root() -> PathBuf {
     Path::new(env!("CARGO_MANIFEST_DIR")).join("../..").canonicalize().expect("repository root")
 }
 
@@ -688,92 +761,62 @@ pub fn run(request: &Request) -> Result<(), Failure> {
     std::process::exit(0)
 }
 
-/// `bench-app-window <scenario.json> <out.json>` (`AppWindowBench`): document
-/// open to the first displayed frame, and a Live → Source → Live mode switch
-/// to its next frame, over the scenario's document. Windows are off-screen,
-/// as in `app-window`.
-pub fn bench(request: &Request) -> Result<(), Failure> {
-    use upleft_app::app::document_window_controller::DocumentWindowController;
-    use upleft_render::render_contracts::RenderMode;
-    const WARMUP: usize = 3;
-    const RUNS: usize = 15;
 
+// MARK: - The main menu
+
+/// `AppMenuDump`: `app-menu <scenario.json> <out.json>`.
+pub fn menu(request: &Request) -> Result<(), Failure> {
+    use objc2_app_kit::{NSMenu, NSMenuItem};
     let scenario = Scenario::load(&request.input)?;
-    let mtm = MainThreadMarker::new().ok_or_else(|| Failure::Error("bench-app-window runs on the main thread".into()))?;
-    acquire_window_capture_lock();
-    off_screen::install();
+    let mtm = MainThreadMarker::new().ok_or_else(|| Failure::Error("app-menu runs on the main thread".into()))?;
     let sandbox = sandbox::prepare(&scenario)?;
     let app = NSApplication::sharedApplication(mtm);
     app.setActivationPolicy(NSApplicationActivationPolicy::Accessory);
-    let root = repository_root();
-    apply_scenario_appearance(&scenario, &root, mtm);
-    let path = scenario.document.as_ref().ok_or_else(|| Failure::Error("bench needs a document".into()))?;
-    let url = upleft_foundation::url::FileUrl::from_path(&root.join(path).to_string_lossy());
+    apply_scenario_appearance(&scenario, &repository_root(), mtm);
+    let menu = upleft_app::app::main_menu::MainMenu::build(mtm);
+    app.setMainMenu(Some(&menu));
 
-    let mut open: Vec<f64> = Vec::new();
-    let mut to_source: Vec<f64> = Vec::new();
-    let mut to_live: Vec<f64> = Vec::new();
-    for iteration in 0..(WARMUP + RUNS) {
-        let start = Instant::now();
-        let controller = DocumentWindowController::new(mtm);
-        if let (Some(size), Some(window)) = (scenario.size, controller.window()) {
-            window.setContentSize(size);
-        }
-        controller.open(&url, RenderMode::Live).map_err(|error| Failure::Error(error.localized_description()))?;
-        let window = controller.window().ok_or_else(|| Failure::Error("document controller has no window".into()))?;
-        window.setFrameOrigin(NSPoint::new(-30000.0, -30000.0));
-        window.orderFrontRegardless();
-        off_screen::verify(std::slice::from_ref(&window), mtm);
-        // The first frame is the one the deferred restore paints: it makes
-        // the document's text view first responder.
-        let text_view: Retained<AnyObject> =
-            Retained::into_super(Retained::into_super(Retained::into_super(Retained::into_super(Retained::into_super(
-                controller.primary_container().text_view().clone(),
-            )))));
-        loop {
-            let first = window.firstResponder().map(|responder| Retained::as_ptr(&responder) as *const AnyObject);
-            if first == Some(Retained::as_ptr(&text_view)) {
-                break;
+    fn dump(menu: &NSMenu) -> Value {
+        if let Some(delegate) = menu.delegate() {
+            let responds: bool = unsafe { msg_send![&*delegate, respondsToSelector: sel!(menuNeedsUpdate:)] };
+            if responds {
+                let _: () = unsafe { msg_send![&*delegate, menuNeedsUpdate: menu] };
             }
-            let until = objc2_foundation::NSDate::dateWithTimeIntervalSinceNow(0.001);
-            objc2_foundation::NSRunLoop::mainRunLoop()
-                .runMode_beforeDate(unsafe { objc2_foundation::NSDefaultRunLoopMode }, &until);
         }
-        window.displayIfNeeded();
-        let opened = Instant::now();
-
-        controller.apply_mode(RenderMode::Source);
-        window.displayIfNeeded();
-        let sourced = Instant::now();
-        controller.apply_mode(RenderMode::Live);
-        window.displayIfNeeded();
-        let lived = Instant::now();
-
-        if iteration >= WARMUP {
-            open.push((opened - start).as_secs_f64() * 1e3);
-            to_source.push((sourced - opened).as_secs_f64() * 1e3);
-            to_live.push((lived - sourced).as_secs_f64() * 1e3);
-        }
-        controller.close();
-        let until = objc2_foundation::NSDate::dateWithTimeIntervalSinceNow(0.05);
-        objc2_foundation::NSRunLoop::mainRunLoop().runMode_beforeDate(unsafe { objc2_foundation::NSDefaultRunLoopMode }, &until);
+        let items: Vec<Value> = menu.itemArray().iter().map(|entry| dump_item(&entry)).collect();
+        Object::new().with("title", menu.title().to_string()).with("items", Value::Array(items)).build()
     }
+
+    fn dump_item(item: &NSMenuItem) -> Value {
+        let represented = match item.representedObject() {
+            None => Value::Null,
+            Some(object) => match object.downcast::<NSString>() {
+                Ok(string) => Value::String(string.to_string()),
+                Err(other) => Value::String(format!("<{}>", geometry::class_name(other.class()))),
+            },
+        };
+        let target = item.target();
+        Object::new()
+            .with("title", item.title().to_string())
+            .with("separator", item.isSeparatorItem())
+            .with("keyEquivalent", item.keyEquivalent().to_string())
+            .with("modifiers", item.keyEquivalentModifierMask().0 as i64)
+            .with("action", item.action().map_or(Value::Null, |action| Value::String(action.name().to_string_lossy().into_owned())))
+            .with("target", target.map_or(Value::Null, |target| Value::String(geometry::class_name(target.class()))))
+            .with("tag", item.tag() as i64)
+            .with("representedObject", represented)
+            .with("enabled", item.isEnabled())
+            .with("state", item.state() as i64)
+            .with("hidden", item.isHidden())
+            .with("alternate", item.isAlternate())
+            .with("indentation", item.indentationLevel() as i64)
+            .with("image", item.image().is_some())
+            .with("toolTip", item.toolTip().map_or(Value::Null, |tip| Value::String(tip.to_string())))
+            .with("submenu", item.submenu().map_or(Value::Null, |submenu| dump(&submenu)))
+            .build()
+    }
+
+    let value = dump(&menu);
     sandbox::remove(&sandbox);
-    fn stage(name: &str, samples: &[f64]) -> Value {
-        let mut sorted = samples.to_vec();
-        sorted.sort_by(|a, b| a.total_cmp(b));
-        serde_json::json!({
-            "stage": name,
-            "p50": sorted[sorted.len() / 2],
-            "min": sorted[0],
-            "runs": sorted.len(),
-        })
-    }
-    let json = Value::Array(vec![
-        stage("open to first frame", &open),
-        stage("mode switch Live to Source", &to_source),
-        stage("mode switch Source to Live", &to_live),
-    ]);
-    json::write(&json, &request.output)?;
-    std::process::exit(0)
+    Ok(json::write(&value, &request.output)?)
 }

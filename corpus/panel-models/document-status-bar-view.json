@@ -1,0 +1,24 @@
+{
+ "panel": "DocumentStatusBarView",
+ "theme": "Paper Light",
+ "width": 640,
+ "height": 34,
+ "document": "corpus/generated/docs/README.md",
+ "state": {},
+ "states": [
+  {"name": "fresh"},
+  {"name": "first line", "cursor": [1, 1]},
+  {"name": "caret at start", "caretOffset": 0},
+  {"name": "caret mid document", "caretOffset": 6000},
+  {"name": "caret at end", "caretOffset": 13426},
+  {"name": "unsaved", "cursor": [12, 4], "unsaved": true},
+  {"name": "unsaved then saved", "cursor": [12, 4], "unsaved": true, "saved": true},
+  {"name": "unsaved without cursor", "unsaved": true},
+  {"name": "cleared", "cursor": [3, 9], "clearCursor": true},
+  {"name": "invisible", "cursor": [3, 9], "invisible": true},
+  {"name": "invisible then shown", "cursor": [3, 9], "invisible": true, "reshow": true},
+  {"name": "restyled", "cursor": [40, 2], "restyle": true},
+  {"name": "huge numbers", "cursor": [9999999, 123456]},
+  {"name": "zero and negative", "cursor": [0, -1]}
+ ]
+}
