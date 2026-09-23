@@ -602,6 +602,8 @@ impl KeybindingsPane {
             NSFont::systemFontOfSize(12.0)
         };
         field.setFont(Some(&font));
+        // Two branches with one body, as in the Swift.
+        #[allow(clippy::if_same_then_else)]
         if recording_row == Some(row) && identifier.as_deref() == Some("binding") {
             field.setTextColor(Some(&NSColor::controlAccentColor()));
         } else if KeybindingStore::shared().is_overridden(command) {

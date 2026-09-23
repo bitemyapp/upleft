@@ -125,6 +125,49 @@ fn filtering_returns_the_pane_to_its_first_row() {
     assert_eq!(form.frame().origin.y, 0.0);
 }
 
+/// Not in SettingsPaneTests: every pane's rows build (selecting a tab loads
+/// its pane), and a search lands on the first pane with a match.
+fn every_pane_loads_and_a_search_selects_the_first_matching_pane() {
+    let controller = PreferencesWindowController::new(mtm());
+    struct Close<'a>(&'a PreferencesWindowController);
+    impl Drop for Close<'_> {
+        fn drop(&mut self) {
+            self.0.close();
+        }
+    }
+    let _close = Close(&controller);
+    let window = controller.window().expect("the controller owns its window");
+    let tabs = window
+        .contentViewController()
+        .and_then(|content| content.downcast::<objc2_app_kit::NSTabViewController>().ok())
+        .expect("the content is a tab view controller");
+
+    for pane in SettingsPane::ALL_CASES {
+        controller.select(pane);
+        let index = tabs.selectedTabViewItemIndex();
+        assert_eq!(SettingsPane::ALL_CASES[index as usize], pane);
+        let item = tabs.tabViewItems().objectAtIndex(index as usize);
+        let pane_controller = item.viewController(mtm()).expect("every tab has a pane");
+        assert!(pane_controller.isViewLoaded(), "{pane:?} did not load when selected");
+    }
+    let saved = NSUserDefaults::standardUserDefaults().integerForKey(&NSString::from_str("settings.selectedPane"));
+    assert_eq!(saved, 6, "the last selected pane is remembered");
+    assert_eq!(window.contentRectForFrameRect(window.frame()).size.height, 680.0, "the keys pane is 680pt tall");
+
+    let accessory = window.titlebarAccessoryViewControllers().objectAtIndex(0);
+    let search_field = accessory
+        .view()
+        .subviews()
+        .firstObject()
+        .and_then(|view| view.downcast::<objc2_app_kit::NSSearchField>().ok())
+        .expect("the title bar accessory holds the search field");
+    search_field.setStringValue(&NSString::from_str("  light theme "));
+    // SAFETY: sends the field's own action to its own target.
+    unsafe { search_field.sendAction_to(search_field.action(), search_field.target().as_deref()) };
+    assert_eq!(tabs.selectedTabViewItemIndex(), 1, "\"light theme\" lives on the Appearance pane");
+    assert_eq!(window.contentRectForFrameRect(window.frame()).size.height, 460.0);
+}
+
 // MARK: - Sandbox
 
 /// The persistent domain `UserDefaults.standard` writes: the bundle
@@ -191,6 +234,9 @@ fn main() {
     if std::env::var_os(SANDBOX_VARIABLE).is_none() {
         std::process::exit(run_in_sandbox());
     }
+    let root = std::env::var(SANDBOX_VARIABLE).expect("the sandbox root");
+    let home = objc2_foundation::NSHomeDirectory().to_string();
+    assert!(home.starts_with(&root), "Foundation's home ({home}) must be the sandbox's, under {root}");
     let mtm = mtm();
     // Windows want the shared application to exist; it is never activated.
     let _ = NSApplication::sharedApplication(mtm);
@@ -198,7 +244,7 @@ fn main() {
     let support = std::env::var("DOWNRIGHT_SUPPORT_DIRECTORY").expect("the sandbox sets the support folder");
     let preferences_file = FileUrl::from_path(&format!("{support}/preferences.json"));
     assert!(
-        Preferences::install_shared(Preferences::for_testing(preferences_file, None)).is_ok(),
+        Preferences::install_shared(Preferences::for_testing(preferences_file, None)),
         "nothing may read Preferences.shared before the sandbox installs it"
     );
     main_thread::run(&[
@@ -206,6 +252,10 @@ fn main() {
         ("settings_tabs_are_labelled_with_pane_names", settings_tabs_are_labelled_with_pane_names),
         ("a_short_pane_sits_at_the_top_of_its_scroll_view", a_short_pane_sits_at_the_top_of_its_scroll_view),
         ("filtering_returns_the_pane_to_its_first_row", filtering_returns_the_pane_to_its_first_row),
+        (
+            "every_pane_loads_and_a_search_selects_the_first_matching_pane",
+            every_pane_loads_and_a_search_selects_the_first_matching_pane,
+        ),
     ]);
     remove_standard_domain();
 }
