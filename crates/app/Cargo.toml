@@ -325,9 +325,33 @@ harness = false
 name = "export_snapshot_tests"
 harness = false
 
+# `DocumentWindowController`'s `+Actions`, `+Commands` and `+Delegates`
+# (`App/DocumentWindowController+….swift`): `@MainActor` suites over a real
+# controller whose window is never ordered in (tests/controller_support).
+[[test]]
+name = "editing_key_repro_tests"
+harness = false
+
+[[test]]
+name = "window_chrome_tests_controller"
+harness = false
+
+[[test]]
+name = "document_chrome_layout_tests_commands"
+harness = false
+
+[[test]]
+name = "document_quick_look_tests_controller"
+harness = false
+
+[[test]]
+name = "presentation_swipe_tests_controller"
+harness = false
+
 # Window-level cases of the DocumentWindowController panel extensions
-# (`+AssetInsertion`, `+ContinuityCamera`, `+CommandPalette`): main-thread
-# suites over a real controller whose window is never ordered in.
+# (`+AssetInsertion`, `+ContinuityCamera`, `+CommandPalette`): `@MainActor`
+# suites over a real controller whose window is never ordered in
+# (tests/controller_support).
 [[test]]
 name = "document_drop_tests_window"
 harness = false

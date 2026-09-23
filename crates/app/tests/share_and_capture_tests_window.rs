@@ -3,8 +3,9 @@
 //! capture through `DocumentWindowController` (`+ContinuityCamera` reads the
 //! pasteboard; `+AssetInsertion` inserts the reference).
 //!
-//! Runs on the main thread (`harness = false`, `main_thread`), inside the
-//! support-directory sandbox, with a test `Preferences.shared`.
+//! The Swift cases are `@MainActor`: this binary owns the main thread
+//! (`harness = false`), in `controller_support`'s sandbox. The window is
+//! never ordered in.
 //!
 //! `imageRequestsReachTheWindowControllerThroughTheTextView` calls
 //! `controller.showWindow(nil)` in Swift. Tests never order a titled window
@@ -14,48 +15,21 @@
 //! The assertions are Swift's.
 
 mod asset_support;
-mod common;
-mod document_support;
-mod main_thread;
+mod controller_support;
 
 use asset_support::{Board, bitmap, named_pasteboard, representation, set_data};
-use common::temporary_directory;
+use controller_support::{Closing, Removing, make_controller, new_controller, temporary_directory, utf16_length};
+use objc2::msg_send;
 use objc2::rc::Retained;
 use objc2::runtime::AnyObject;
-use objc2::{MainThreadMarker, msg_send};
 use objc2_app_kit::{NSBitmapImageFileType, NSPasteboardType, NSPasteboardTypePNG};
-use upleft_app::ai::snapshot_store::SnapshotStore;
-use upleft_app::app::document_window_controller::DocumentWindowController;
-use upleft_app::support::preferences::Preferences;
 use upleft_core::NSRange;
-use upleft_foundation::url::FileUrl;
 use upleft_render::render_contracts::RenderMode;
 use upleft_swift_text as swift;
-
-fn mtm() -> MainThreadMarker {
-    MainThreadMarker::new().expect("window tests run on the main thread")
-}
-
-/// `defer { controller.close() }`.
-struct Closing(Retained<DocumentWindowController>);
-
-impl Drop for Closing {
-    fn drop(&mut self) {
-        self.0.close();
-    }
-}
 
 fn png_type() -> &'static NSPasteboardType {
     // SAFETY: an AppKit constant.
     unsafe { NSPasteboardTypePNG }
-}
-
-/// `makeController(text:at:)`.
-fn make_controller(text: &str, url: &FileUrl) -> Retained<DocumentWindowController> {
-    std::fs::write(url.path(), text).unwrap();
-    let controller = DocumentWindowController::new(mtm());
-    controller.open(url, RenderMode::Live).expect("the document opens");
-    controller
 }
 
 /// `makePasteboard(_:type:)`; released globally when dropped.
@@ -73,10 +47,10 @@ fn png() -> Vec<u8> {
 /// image return types and the question reaches the controller. If it ever
 /// stops reaching it, Continuity Camera silently vanishes from the menu.
 fn image_requests_reach_the_window_controller_through_the_text_view() {
-    let (directory, _directory) = temporary_directory("ShareAndCaptureTests");
+    let directory = temporary_directory("ShareAndCaptureTests");
+    let _remove = Removing(directory.clone());
     let url = directory.appending_path_component("notes.md");
-    let controller = make_controller("# Title\n", &url);
-    let _closing = Closing(controller.clone());
+    let controller = Closing(make_controller("# Title\n", &url, RenderMode::Live));
     // Swift calls `controller.showWindow(nil)` here; see the module comment.
 
     let text_view = controller.primary_container().text_view().clone();
@@ -85,19 +59,19 @@ fn image_requests_reach_the_window_controller_through_the_text_view() {
     let requestor: Option<Retained<AnyObject>> = unsafe {
         msg_send![&*text_view, validRequestorForSendType: None::<&NSPasteboardType>, returnType: Some(png_type())]
     };
-    let controller_object: *const AnyObject = Retained::as_ptr(&controller).cast();
+    let controller_object: *const AnyObject = Retained::as_ptr(&controller.0).cast();
     assert!(requestor.as_ref().is_some_and(|requestor| Retained::as_ptr(requestor) == controller_object));
     // A service that also wants to read a selection out of us gets nothing.
     assert!(controller.valid_requestor(Some(png_type()), Some(png_type())).is_none());
 }
 
 fn capture_writes_next_to_the_document_and_inserts_one_undoable_reference() {
-    let (directory, _directory) = temporary_directory("ShareAndCaptureTests");
+    let directory = temporary_directory("ShareAndCaptureTests");
+    let _remove = Removing(directory.clone());
     let url = directory.appending_path_component("meeting notes.md");
     let source = "# Title\n\nBody text.\n";
-    let controller = make_controller(source, &url);
-    let _closing = Closing(controller.clone());
-    controller.container_text_view().set_source_selected_ranges(&[NSRange::new(swift::utf16_count(source), 0)]);
+    let controller = Closing(make_controller(source, &url, RenderMode::Live));
+    controller.container_text_view().set_source_selected_ranges(&[NSRange::new(utf16_length(source), 0)]);
 
     let png = png();
     let pasteboard = make_pasteboard(&png, png_type());
@@ -120,11 +94,11 @@ fn capture_writes_next_to_the_document_and_inserts_one_undoable_reference() {
 /// The capture is triggered on a phone; whatever was selected here is out of
 /// sight by the time it lands, so it must survive.
 fn capture_never_consumes_the_selection() {
-    let (directory, _directory) = temporary_directory("ShareAndCaptureTests");
+    let directory = temporary_directory("ShareAndCaptureTests");
+    let _remove = Removing(directory.clone());
     let url = directory.appending_path_component("notes.md");
     let source = "# Title\n\nBody text.\n";
-    let controller = make_controller(source, &url);
-    let _closing = Closing(controller.clone());
+    let controller = Closing(make_controller(source, &url, RenderMode::Live));
     let selection = NSRange::new(9, 4); // "Body"
     controller.container_text_view().set_source_selected_ranges(&[selection]);
 
@@ -139,8 +113,7 @@ fn capture_never_consumes_the_selection() {
 /// The never-saved window: nothing is advertised, so AppKit never offers a
 /// capture there, and the write path refuses it a second time.
 fn an_untitled_window_neither_advertises_nor_accepts_a_capture() {
-    let controller = DocumentWindowController::new(mtm());
-    let _closing = Closing(controller.clone());
+    let controller = Closing(new_controller());
     assert!(controller.markdown_document().url().is_none());
     assert!(controller.valid_requestor(None, Some(png_type())).is_none());
 
@@ -152,13 +125,8 @@ fn an_untitled_window_neither_advertises_nor_accepts_a_capture() {
 }
 
 fn main() {
-    let sandbox = document_support::sandbox();
-    // `Preferences.shared` inside the sandbox, publishing nothing.
-    Preferences::install_shared(Preferences::for_testing(
-        sandbox.appending_path_component("preferences.json"),
-        Some(SnapshotStore::shared().clone()),
-    ));
-    main_thread::run(&[
+    controller_support::prepare();
+    controller_support::main_thread::run(&[
         (
             "image_requests_reach_the_window_controller_through_the_text_view",
             image_requests_reach_the_window_controller_through_the_text_view,
@@ -173,5 +141,5 @@ fn main() {
             an_untitled_window_neither_advertises_nor_accepts_a_capture,
         ),
     ]);
-    document_support::remove_sandbox();
+    controller_support::finish();
 }
