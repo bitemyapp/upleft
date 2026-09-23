@@ -38,7 +38,10 @@ Upleft must behave exactly like the Swift original: byte-identical output wherev
 - **`Date` in `.iso8601`.** Whole seconds, floored, in UTC with a `Z` suffix.
 - **Swift `String` semantics.** `upleft-swift-text` covers graphemes, `lowercased`, `trimmingCharacters`, `components(separatedBy:)`, `<` (`str_less`), `==` and `contains`. Use it for every string operation whose Swift semantics matter. Downright's positions are UTF-16 offsets (`NSRange`).
 - **Clocks.** Where Swift reads the clock (`Date()`) and the code has no injection point, a conformance dump must normalise only the timestamp fields, and must say which fields in the dump's doc comment. Where the Swift API takes a `now:` or clock parameter, inject the same value on both sides.
-- **`UserDefaults`.** In dumps and tests, use a unique `UserDefaults(suiteName:)` and remove its persistent domain afterwards. Never use `.standard`.
+- **`UserDefaults` and CFPreferences.** They are not sandboxed by `HOME`, `CFFIXED_USER_HOME` or `__CFPREFERENCES_AVOID_DAEMON`. Anything touching `UserDefaults.standard`, `Preferences.shared` or the CFPreferences global domain writes the user's real `~/Library/Preferences`. In dumps and tests:
+  - Use only a unique `UserDefaults(suiteName: "upleft.conformance.<unique>")`, or an in-memory seam where the Swift code offers one.
+  - Afterwards, remove its persistent domain and delete its plist.
+  - Never use `.standard`.
 
 ## Working rules
 
