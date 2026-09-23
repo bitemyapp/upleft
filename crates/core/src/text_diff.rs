@@ -6,13 +6,12 @@
 //! insertions that touch are merged into one `.modified` hunk, because a
 //! paragraph the agent rewrote reads as one change.
 
-use unicode_normalization::UnicodeNormalization;
 
 use crate::contracts::{ChangeHunk, ChangeKind};
 use crate::hashing::FNV;
 use crate::myers::{Myers, Step};
 use crate::ns_range::NSRange;
-use crate::swift_text::ns::NSStringExt;
+use crate::swift_text::{self, ns::NSStringExt};
 
 pub struct TextDiff;
 
@@ -296,43 +295,16 @@ fn utf16_units(s: &str) -> Vec<u16> {
     out
 }
 
-/// Swift `String ==` (canonical equivalence), without normalising the shared
-/// prefix. Byte-identical text up to the first difference is canonically
-/// identical, and an ASCII byte is always a normalisation boundary (ccc 0, no
-/// composition with what precedes it), so the NFC comparison can start at the
-/// last ASCII byte before the first difference. Same answer as
-/// `swift_text::str_eq`; that one normalises from the start, which on a
-/// non-ASCII document costs a full NFC pass over the shared prefix. (Also
-/// used by `ASTDiff`; belongs in `swift_text`.)
+/// Swift `String ==` (canonical equivalence); see `swift_text::str_eq`.
+#[inline]
 pub(crate) fn string_eq(a: &str, b: &str) -> bool {
-    // The same storage is equal without reading it, as Swift's `==` answers
-    // for two references to one string buffer.
-    if std::ptr::eq(a, b) || a == b {
-        return true;
-    }
-    let (x, y) = (a.as_bytes(), b.as_bytes());
-    let first_difference = common_prefix_length(x, y);
-    // An ASCII byte both strings share (so a char boundary in each), or 0.
-    let start = x[..first_difference].iter().rposition(u8::is_ascii).unwrap_or(0);
-    a[start..].nfc().eq(b[start..].nfc())
-}
-
-fn common_prefix_length(x: &[u8], y: &[u8]) -> usize {
-    let limit = x.len().min(y.len());
-    let mut i = 0;
-    while i + 16 <= limit && x[i..i + 16] == y[i..i + 16] {
-        i += 16;
-    }
-    while i < limit && x[i] == y[i] {
-        i += 1;
-    }
-    i
+    swift_text::str_eq(a, b)
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::swift_text;
+
 
     #[test]
     fn fused_line_hashes_match_lines_then_hash() {

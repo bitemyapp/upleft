@@ -15,7 +15,6 @@ use std::borrow::Cow;
 
 use objc2::rc::Retained;
 use objc2_foundation::{NSString, NSStringCompareOptions, NSURLComponents};
-use unicode_normalization::UnicodeNormalization;
 
 use crate::model::TableAlignment;
 use crate::ns_range::NSRange;
@@ -194,7 +193,7 @@ fn first_index_of_ascii(s: &str, from: usize, b: u8) -> Option<usize> {
 /// A lowercased tag name as Swift's `switch`/`==` sees it: canonical
 /// equivalence against ASCII literals is equality of the NFC form.
 fn match_key(name: &str) -> Cow<'_, str> {
-    if name.is_ascii() { Cow::Borrowed(name) } else { Cow::Owned(name.nfc().collect()) }
+    if name.is_ascii() { Cow::Borrowed(name) } else { Cow::Owned(swift_text::nfc(name)) }
 }
 
 /// `String((closing ? raw.dropFirst() : raw).prefix { $0.isLetter || $0.isNumber }).lowercased()`.

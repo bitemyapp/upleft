@@ -19,7 +19,6 @@ use objc2::{ClassType, msg_send};
 use objc2_foundation::{
     NSMatchingOptions, NSRange as FRange, NSRegularExpression, NSRegularExpressionOptions, NSString, NSTextCheckingResult,
 };
-use unicode_normalization::UnicodeNormalization;
 
 use crate::contracts::TextEdit;
 use crate::model::{BlockContent, HeadingNode, InlineKind, InlineSpan, ParsedDocument};
@@ -938,7 +937,7 @@ fn word_count(text: &str) -> isize {
 /// A Swift `String` dictionary key: `String` hashes and compares by canonical
 /// equivalence, which is equality of the NFC forms.
 fn swift_key(s: &str) -> String {
-    if s.is_ascii() { s.to_owned() } else { s.nfc().collect() }
+    swift_text::string_key(s)
 }
 
 /// `[String: Definition]` with a deterministic (insertion) order.

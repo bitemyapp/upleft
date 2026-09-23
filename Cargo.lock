@@ -563,12 +563,11 @@ dependencies = [
  "block2",
  "libc",
  "objc2",
- "objc2-core-foundation",
  "objc2-foundation",
  "objc2-natural-language",
  "sha2",
- "unicode-normalization",
  "upleft-markup",
+ "upleft-swift-text",
  "uuid",
 ]
 
@@ -612,6 +611,16 @@ dependencies = [
  "serde_json",
  "unicode-normalization",
  "unicode-segmentation",
+]
+
+[[package]]
+name = "upleft-swift-text"
+version = "0.1.0"
+dependencies = [
+ "objc2",
+ "objc2-core-foundation",
+ "objc2-foundation",
+ "unicode-normalization",
 ]
 
 [[package]]
