@@ -1,0 +1,60 @@
+{
+ "store": {
+  "file": "{\n  \"overrides\" : {\n    \"save\" : [\n      {\n        \"key\" : \"s\",\n        \"modifiers\" : [\n          \"option\",\n          \"command\"\n        ]\n      }\n    ],\n    \"find\" : [\n\n    ]\n  },\n  \"vimKeysEnabled\" : true\n}",
+  "events": [
+   {
+    "keyCode": 1,
+    "characters": "s",
+    "modifiers": [
+     "command",
+     "capsLock"
+    ]
+   },
+   {
+    "keyCode": 1,
+    "characters": "S",
+    "modifiers": [
+     "command",
+     "shift"
+    ]
+   },
+   {
+    "keyCode": 1,
+    "characters": "s",
+    "modifiers": [
+     "command",
+     "function",
+     "help"
+    ]
+   },
+   {
+    "keyCode": 42,
+    "characters": "\\",
+    "modifiers": [
+     "command"
+    ]
+   }
+  ],
+  "operations": [
+   {
+    "vim": true
+   },
+   {
+    "set": "open",
+    "binding": {
+     "key": "o",
+     "modifiers": [
+      "command",
+      "shift"
+     ]
+    }
+   },
+   {
+    "vim": false
+   },
+   {
+    "reset": true
+   }
+  ]
+ }
+}

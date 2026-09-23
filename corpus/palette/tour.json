@@ -1,0 +1,126 @@
+{
+ "tour": [
+  {
+   "file": "../../vendor/downright/Resources/Welcome.md"
+  },
+  {
+   "file": "../../vendor/downright/Resources/Welcome.md",
+   "bindings": "none"
+  },
+  {
+   "file": "../../vendor/downright/Resources/Welcome.md",
+   "bindings": {
+    "documentLens": {
+     "key": "o",
+     "modifiers": [
+      "command",
+      "shift"
+     ]
+    },
+    "zoomLevel1": {
+     "key": "space",
+     "modifiers": []
+    }
+   }
+  },
+  {
+   "source": "Use {{shortcut:documentLens}} to open {{command:documentLens}}.",
+   "bindings": {
+    "documentLens": {
+     "key": "o",
+     "modifiers": [
+      "command",
+      "shift"
+     ]
+    }
+   }
+  },
+  {
+   "source": "{{shortcut:missing}}",
+   "bindings": "none"
+  },
+  {
+   "source": "{{shortcut:documentLens}}",
+   "bindings": "none"
+  },
+  {
+   "source": "{{shortcut:documentLens",
+   "bindings": "none"
+  },
+  {
+   "source": "before {{shortcut:documentLens}} middle {{ after"
+  },
+  {
+   "source": "{{}}"
+  },
+  {
+   "source": "{{:}}"
+  },
+  {
+   "source": "{{shortcut}}"
+  },
+  {
+   "source": "{{shortcut:}}"
+  },
+  {
+   "source": "{{:find}}"
+  },
+  {
+   "source": "{{Shortcut:find}}"
+  },
+  {
+   "source": "{{shortcut:find:extra}}"
+  },
+  {
+   "source": "{{command:find}}{{command:save}}"
+  },
+  {
+   "source": "{{{shortcut:find}}}"
+  },
+  {
+   "source": "{{shortcut:find}}}}"
+  },
+  {
+   "source": "}}{{command:open}}"
+  },
+  {
+   "source": "no tokens at all"
+  },
+  {
+   "source": ""
+  },
+  {
+   "source": "{{"
+  },
+  {
+   "source": "}}"
+  },
+  {
+   "source": "Café {{command:find}} 日本 {{shortcut:increaseTextSize}} 👍"
+  },
+  {
+   "source": "{{shortcut:showKeybindings}}"
+  },
+  {
+   "source": "{́{shortcut:find}}"
+  },
+  {
+   "source": "{{́shortcut:find}}"
+  },
+  {
+   "source": "{{shortcut:find}́}"
+  },
+  {
+   "source": "é{{command:splitView}}é {{shortcut:splitView}}"
+  },
+  {
+   "source": "{{ shortcut:find }}"
+  },
+  {
+   "source": "{{shortcut::find}}"
+  },
+  {
+   "source": "{{shortcut:splitView}} {{shortcut:pageUp}} {{shortcut:indentList}} {{shortcut:followLinkAtCaret}} {{shortcut:moveBlockUp}}"
+  }
+ ]
+}

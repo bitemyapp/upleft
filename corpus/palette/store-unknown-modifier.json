@@ -1,0 +1,14 @@
+{
+ "store": {
+  "file": "{\"overrides\":{\"save\":[{\"key\":\"s\",\"modifiers\":[\"hyper\"]}]},\"vimKeysEnabled\":false}",
+  "onLoadFailure": true,
+  "operations": [
+   {
+    "reset": true
+   },
+   {
+    "vim": true
+   }
+  ]
+ }
+}

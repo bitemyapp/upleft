@@ -1,0 +1,386 @@
+{
+ "fuzzy": [
+  [
+   "dpl",
+   "Document pipeline"
+  ],
+  [
+   "zzz",
+   "Document pipeline"
+  ],
+  [
+   "",
+   "anything"
+  ],
+  [
+   "a",
+   ""
+  ],
+  [
+   "find",
+   "Find…"
+  ],
+  [
+   "fm",
+   "Front Matter…"
+  ],
+  [
+   "fm",
+   "Find in Sibling Files…"
+  ],
+  [
+   "e",
+   "Edit Table…"
+  ],
+  [
+   "cells",
+   "cells"
+  ],
+  [
+   "ct",
+   "copyText"
+  ],
+  [
+   "cT",
+   "copyText"
+  ],
+  [
+   "CT",
+   "copyText"
+  ],
+  [
+   "gtl",
+   "Go to Line…"
+  ],
+  [
+   "pdf",
+   "Export PDF…"
+  ],
+  [
+   "xp",
+   "Export PDF…"
+  ],
+  [
+   "tog",
+   "Toggle Light/Dark Theme"
+  ],
+  [
+   "ld",
+   "Toggle Light/Dark Theme"
+  ],
+  [
+   "abc",
+   "a-b_c"
+  ],
+  [
+   "abc",
+   "a b c"
+  ],
+  [
+   "abc",
+   "aXbXc"
+  ],
+  [
+   "abc",
+   "abcabc"
+  ],
+  [
+   "aaa",
+   "aaaa"
+  ],
+  [
+   "aa",
+   "aXaaXa"
+  ],
+  [
+   "head",
+   "Heading 1"
+  ],
+  [
+   "h1",
+   "Heading 1"
+  ],
+  [
+   "1",
+   "Heading 1"
+  ],
+  [
+   "12",
+   "1 2 12"
+  ],
+  [
+   "v2",
+   "Version 2.0"
+  ],
+  [
+   "cafe",
+   "Café"
+  ],
+  [
+   "café",
+   "Café"
+  ],
+  [
+   "café",
+   "Café"
+  ],
+  [
+   "é",
+   "É"
+  ],
+  [
+   "ÉT",
+   "été"
+  ],
+  [
+   "σ",
+   "ΣΑΣ"
+  ],
+  [
+   "ß",
+   "Straße"
+  ],
+  [
+   "ss",
+   "Straße"
+  ],
+  [
+   "i",
+   "İstanbul"
+  ],
+  [
+   "İ",
+   "istanbul"
+  ],
+  [
+   "日本",
+   "日本語のテキスト"
+  ],
+  [
+   "テキ",
+   "日本語のテキスト"
+  ],
+  [
+   "👍",
+   "Thumbs 👍 up"
+  ],
+  [
+   "🇺🇸",
+   "Flag 🇺🇸 here"
+  ],
+  [
+   "k",
+   "Kelvin"
+  ],
+  [
+   "K",
+   "kelvin"
+  ],
+  [
+   "x",
+   "a\r\nx"
+  ],
+  [
+   "\r\n",
+   "a\r\nb"
+  ],
+  [
+   "ab",
+   "a‍b"
+  ],
+  [
+   "dog",
+   "The quick brown fox jumps over the lazy dog while the Document Pipeline hums; The quick brown fox jumps over the lazy dog while the Document Pipeline hums; The quick brown fox jumps over the lazy dog while the Document Pipeline hums; The quick brown fox jumps over the lazy dog while the Document Pipeline hums; The quick brown fox jumps over the lazy dog while the Document Pipeline hums; The quick brown fox jumps over the lazy dog while the Document Pipeline hums; "
+  ],
+  [
+   "tqbf",
+   "The quick brown fox jumps over the lazy dog while the Document Pipeline hums; The quick brown fox jumps over the lazy dog while the Document Pipeline hums; The quick brown fox jumps over the lazy dog while the Document Pipeline hums; The quick brown fox jumps over the lazy dog while the Document Pipeline hums; The quick brown fox jumps over the lazy dog while the Document Pipeline hums; The quick brown fox jumps over the lazy dog while the Document Pipeline hums; "
+  ],
+  [
+   "pipeline",
+   "The quick brown fox jumps over the lazy dog while the Document Pipeline hums; The quick brown fox jumps over the lazy dog while the Document Pipeline hums; The quick brown fox jumps over the lazy dog while the Document Pipeline hums; The quick brown fox jumps over the lazy dog while the Document Pipeline hums; The quick brown fox jumps over the lazy dog while the Document Pipeline hums; The quick brown fox jumps over the lazy dog while the Document Pipeline hums; "
+  ],
+  [
+   "abcdefghijklmnop",
+   "a b c d e f g h i j k l m n o p q r s t"
+  ],
+  [
+   "zzzzzzzz",
+   "zzzzzzz"
+  ],
+  [
+   "md",
+   "README.md"
+  ],
+  [
+   "rm",
+   "README.md"
+  ],
+  [
+   "read",
+   "docs/README.md"
+  ],
+  [
+   "dr",
+   "docs/README.md"
+  ],
+  [
+   "a",
+   "(a)"
+  ],
+  [
+   "x",
+   "[x]"
+  ],
+  [
+   "q",
+   "\"q\""
+  ],
+  [
+   "b",
+   "`b`"
+  ],
+  [
+   "c",
+   "a*c"
+  ],
+  [
+   "d",
+   "#d"
+  ],
+  [
+   "e",
+   "<e>"
+  ],
+  [
+   "camel",
+   "CamelCase"
+  ],
+  [
+   "cc",
+   "CamelCase"
+  ],
+  [
+   "cc",
+   "camelCase"
+  ],
+  [
+   "mc",
+   "myCamel"
+  ],
+  [
+   "HTML",
+   "exportHTML"
+  ]
+ ],
+ "search": [
+  {
+   "query": "",
+   "candidates": [
+    "Find…"
+   ]
+  },
+  {
+   "query": "   ",
+   "candidates": [
+    "Find…"
+   ]
+  },
+  {
+   "query": "find",
+   "candidates": []
+  },
+  {
+   "query": "find",
+   "candidates": [
+    ""
+   ]
+  },
+  {
+   "query": "yaml",
+   "candidates": [
+    "Front Matter…",
+    "metadata",
+    "yaml"
+   ]
+  },
+  {
+   "query": "edit cells",
+   "candidates": [
+    "Edit Table…",
+    "grid",
+    "cells"
+   ]
+  },
+  {
+   "query": "edit\tcells",
+   "candidates": [
+    "Edit Table…",
+    "grid",
+    "cells"
+   ]
+  },
+  {
+   "query": "edit  cells",
+   "candidates": [
+    "Edit Table…",
+    "grid",
+    "cells"
+   ]
+  },
+  {
+   "query": "edit zzz",
+   "candidates": [
+    "Edit Table…",
+    "grid",
+    "cells"
+   ]
+  },
+  {
+   "query": "FIND",
+   "candidates": [
+    "Find…",
+    "search"
+   ]
+  },
+  {
+   "query": "Find",
+   "candidates": [
+    "find"
+   ]
+  },
+  {
+   "query": "search replace",
+   "candidates": [
+    "Find and Replace…",
+    "search and replace",
+    "substitute"
+   ]
+  },
+  {
+   "query": "é",
+   "candidates": [
+    "É"
+   ]
+  },
+  {
+   "query": "é",
+   "candidates": [
+    "été"
+   ]
+  },
+  {
+   "query": "a b",
+   "candidates": [
+    "a b",
+    "a b"
+   ]
+  },
+  {
+   "query": " ́x",
+   "candidates": [
+    "x"
+   ]
+  }
+ ]
+}

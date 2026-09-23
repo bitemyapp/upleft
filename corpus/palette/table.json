@@ -1,0 +1,226 @@
+{
+ "table": true,
+ "contexts": [
+  {},
+  {
+   "canCheckForUpdates": true
+  },
+  {
+   "hasDocument": true
+  },
+  {
+   "hasDocument": true,
+   "documentHasFile": true,
+   "hasSelection": true
+  },
+  {
+   "hasDocument": true,
+   "documentHasFile": true,
+   "hasUnsavedChanges": true
+  },
+  {
+   "hasDocument": true,
+   "hasChangeMarks": true
+  },
+  {
+   "hasDocument": false,
+   "hasQuickLookTarget": true,
+   "hasChangeMarks": true,
+   "isSpeaking": true
+  },
+  {
+   "hasDocument": true,
+   "hasFindQuery": true,
+   "canGoBack": true,
+   "isSpeaking": true,
+   "caretIsInTable": true
+  },
+  {
+   "hasDocument": true,
+   "canGoForward": true,
+   "hasQuickLookTarget": true
+  },
+  {
+   "hasDocument": true,
+   "documentHasFile": true,
+   "hasSelection": true,
+   "canCheckForUpdates": true,
+   "hasUnsavedChanges": true,
+   "hasFindQuery": true,
+   "canGoBack": true,
+   "canGoForward": true,
+   "isSpeaking": true,
+   "caretIsInTable": true,
+   "hasChangeMarks": true,
+   "hasQuickLookTarget": true
+  }
+ ],
+ "parse": [
+  "cmd+e",
+  "cmd+shift+o",
+  "opt+down",
+  "space",
+  "shift+space",
+  "ctrl+opt+shift+cmd+k",
+  "[",
+  "cmd++",
+  "+",
+  "shift+cmd++",
+  "++",
+  "cmd+",
+  "",
+  "cmd",
+  "CMD+S",
+  "Command+Shift+Z",
+  "alt+control+x",
+  "hyper+k",
+  "cmd+shift",
+  "cmd+shift+",
+  "a+b",
+  "cmd+é",
+  "cmd+É",
+  "cmd+Key",
+  "ćmd+s",
+  "opt+cmd+s",
+  "ctrl+backslash",
+  "cmd+return",
+  "cmd+left",
+  "tab",
+  "shift+tab",
+  "cmd+ß",
+  "cmd+İ",
+  "cmd+/",
+  "cmd+\"",
+  "cmd+\\",
+  "ctrl+opt+ctrl+a",
+  "cmd+ +x",
+  " cmd+x"
+ ],
+ "decodeBinding": [
+  "\"cmd+s\"",
+  "\"cmd++\"",
+  "\"hyper+s\"",
+  "\"\"",
+  "{\"key\":\"s\",\"modifiers\":[\"command\"]}",
+  "{\"key\":\"+\",\"modifiers\":[\"command\",\"shift\"]}",
+  "{\"key\":\"s\"}",
+  "{\"key\":\"s\",\"modifiers\":null}",
+  "{\"key\":\"s\",\"modifiers\":[]}",
+  "{\"key\":\"\",\"modifiers\":[]}",
+  "{\"modifiers\":[\"command\"]}",
+  "{\"key\":null}",
+  "{\"key\":5}",
+  "{\"key\":\"s\",\"modifiers\":[\"hyper\"]}",
+  "{\"key\":\"s\",\"modifiers\":[null]}",
+  "{\"key\":\"s\",\"modifiers\":[1]}",
+  "{\"key\":\"s\",\"modifiers\":\"command\"}",
+  "{\"key\":\"s\",\"modifiers\":[\"numericPad\",\"control\",\"option\",\"shift\",\"command\"]}",
+  "{\"key\":\"s\",\"modifiers\":[\"command\",\"command\"]}",
+  "{\"key\":\"s\",\"key\":\"t\"}",
+  "{\"key\":\"s\",\"modifiers\":[\"command\"],}",
+  "5",
+  "null",
+  "[]",
+  "{",
+  "{\"key\":\"\\u00e9\"}",
+  "{\"key\":\"e\\u0301\"}",
+  "{\"key\":\"s\",\"extra\":{\"deep\":[1,2,{}]}}",
+  "{\"key\":\"\\ud83d\\ude00\",\"modifiers\":[\"control\"]}",
+  "{\"key\":\"s\",\"modifiers\":[\"Command\"]}",
+  "{\"key\":\"/\",\"modifiers\":[\"command\"]}"
+ ],
+ "encodeStored": [
+  {
+   "vimKeysEnabled": false,
+   "overrides": {}
+  },
+  {
+   "vimKeysEnabled": true,
+   "overrides": {
+    "save": [
+     {
+      "key": "s",
+      "modifiers": [
+       "command"
+      ]
+     }
+    ],
+    "increaseTextSize": [
+     {
+      "key": "+",
+      "modifiers": [
+       "command",
+       "shift"
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "vimKeysEnabled": false,
+   "overrides": {
+    "find": [],
+    "zoomIn": [
+     {
+      "key": "=",
+      "modifiers": [
+       "command",
+       "control",
+       "option"
+      ]
+     },
+     {
+      "key": "/",
+      "modifiers": [
+       "numericPad"
+      ]
+     }
+    ],
+    "Zeta": [],
+    "alpha": [
+     {
+      "key": "\"q\"",
+      "modifiers": []
+     }
+    ],
+    "été": [
+     {
+      "key": "é",
+      "modifiers": [
+       "option"
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "vimKeysEnabled": true,
+   "overrides": {
+    "b": [
+     {
+      "key": "\\",
+      "modifiers": [
+       "control"
+      ]
+     }
+    ],
+    "á": [
+     {
+      "key": "\t",
+      "modifiers": []
+     }
+    ],
+    "B": [],
+    "a": [
+     {
+      "key": "\u0000",
+      "modifiers": [
+       "shift"
+      ]
+     }
+    ],
+    "áb": []
+   }
+  }
+ ]
+}

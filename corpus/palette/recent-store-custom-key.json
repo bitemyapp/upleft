@@ -1,0 +1,12 @@
+{
+ "recentStore": {
+  "key": "custom.key",
+  "initial": "not an array",
+  "limit": -3,
+  "record": [
+   "zoomIn",
+   "zoomOut",
+   "zoomIn"
+  ]
+ }
+}
