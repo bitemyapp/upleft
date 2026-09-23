@@ -14,3 +14,6 @@ objc2-foundation = { workspace = true, features = [
     "NSObjCRuntime", "NSObject", "NSString", "NSValue",
 ] }
 objc2-core-foundation = { workspace = true, features = ["CFNumber"] }
+
+[dev-dependencies]
+serde_json.workspace = true

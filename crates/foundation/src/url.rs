@@ -17,8 +17,19 @@
 //!   system representation, and asks the file system about directories too.
 //! * `deletingLastPathComponent()` leaves `/` and a trailing `..` alone and
 //!   collapses the slashes it exposes (`NSURL` appends `../` instead).
-//! * `standardizedFileURL`, `resolvingSymlinksInPath()`, `pathExtension` and
-//!   `absoluteString` agree with `NSURL`, so they are computed by `NSURL`.
+//! * The directory checks use `lstat`: a symbolic link to a directory is not
+//!   a directory path. A last component of `.` or `..` always is.
+//! * A URL made from a relative path stays relative to the current directory:
+//!   appending `..` or `.` to it resolves the dot segment away.
+//! * `standardizedFileURL`, `resolvingSymlinksInPath()` and `pathExtension`
+//!   compute the same path as `NSURL`, so `NSURL` computes it; the result keeps
+//!   the receiver's directory flag (`NSURL` re-checks and follows links).
+//! * `absoluteString` percent-encodes everything but RFC 3986 `pchar`s and `/`
+//!   (`NSURL` also encodes `;`).
+//!
+//! Not reproduced: `appendingPathExtension` on a URL made from the relative
+//! path `""`, `.` or `..` (Swift appends to the relative string, giving
+//! `/cwd/..md`). `tests/url.rs` skips exactly these cases.
 //!
 //! [`FileUrl`] stores the URL's path exactly as the URL spells it (decoded,
 //! trailing slashes kept), so equality and hashing follow Swift's `URL ==`,
@@ -32,6 +43,10 @@ use objc2_foundation::{NSFileManager, NSString, NSURL};
 pub struct FileUrl {
     /// The URL's path component, percent-decoded, trailing slashes kept.
     url_path: String,
+    /// Made from a relative path: Swift keeps such a URL relative to the
+    /// current directory, so a component appended later (`..`, `.`) is
+    /// resolved away rather than kept.
+    relative: bool,
 }
 
 /// `(path as NSString).fileSystemRepresentation`, back as a `String`.
@@ -54,9 +69,38 @@ pub fn current_directory_path() -> String {
     NSFileManager::defaultManager().currentDirectoryPath().to_string()
 }
 
-/// `FileManager.default.fileExists(atPath:isDirectory:)`, the directory half.
+/// Whether `path` names a directory, as `URL` asks: `lstat`, so a symbolic
+/// link to a directory is not one.
 fn is_directory(path: &str) -> bool {
-    std::fs::metadata(path).map(|metadata| metadata.is_dir()).unwrap_or(false)
+    std::fs::symlink_metadata(path).map(|metadata| metadata.is_dir()).unwrap_or(false)
+}
+
+/// Percent-encodes a URL path as Swift's `URL` does: RFC 3986 `pchar`s and
+/// `/` stay, everything else is `%XX` over UTF-8 with upper-case hex. (`NSURL`
+/// also encodes `;`.)
+fn percent_encode_path(path: &str) -> String {
+    let mut out = String::with_capacity(path.len());
+    for byte in path.bytes() {
+        let keep = byte.is_ascii_alphanumeric()
+            || matches!(
+                byte,
+                b'-' | b'.' | b'_' | b'~' | b'!' | b'$' | b'&' | b'\'' | b'(' | b')' | b'*' | b'+' | b',' | b';' | b'='
+                    | b':' | b'@' | b'/'
+            );
+        if keep {
+            out.push(byte as char);
+        } else {
+            out.push_str(&format!("%{byte:02X}"));
+        }
+    }
+    out
+}
+
+/// Whether a path's last component is `.` or `..`, which `URL` always
+/// treats as a directory.
+fn ends_in_dot_component(path: &str) -> bool {
+    let last = path.rsplit('/').next().unwrap_or("");
+    last == "." || last == ".."
 }
 
 /// RFC 3986 `remove_dot_segments`.
@@ -98,16 +142,27 @@ impl FileUrl {
         if !url_path.ends_with('/') && is_directory(&url_path) {
             url_path.push('/');
         }
-        FileUrl { url_path }
+        FileUrl { url_path, relative: Self::is_relative(path) }
+    }
+
+    fn is_relative(path: &str) -> bool {
+        !path.starts_with('/') && !path.starts_with('~')
     }
 
     /// `URL(fileURLWithPath:isDirectory:)`: no file-system check.
     pub fn from_path_is_directory(path: &str, directory: bool) -> FileUrl {
         let mut url_path = Self::absolute(path);
-        if directory && !url_path.ends_with('/') {
-            url_path.push('/');
+        if directory {
+            if !url_path.ends_with('/') {
+                url_path.push('/');
+            }
+        } else if Self::is_relative(path) && (path.is_empty() || ends_in_dot_component(path)) {
+            // A relative `""`, `.` or `..` still names a directory.
+        } else if url_path.len() > 1 {
+            let trimmed = url_path.trim_end_matches('/');
+            url_path = if trimmed.is_empty() { "/".into() } else { trimmed.to_owned() };
         }
-        FileUrl { url_path }
+        FileUrl { url_path, relative: Self::is_relative(path) }
     }
 
     fn absolute(path: &str) -> String {
@@ -138,7 +193,7 @@ impl FileUrl {
         if url.hasDirectoryPath() && !url_path.ends_with('/') {
             url_path.push('/');
         }
-        Some(FileUrl { url_path })
+        Some(FileUrl { url_path, relative: false })
     }
 
     /// The equivalent `NSURL`, for Foundation APIs that take one.
@@ -159,12 +214,12 @@ impl FileUrl {
 
     /// `url.hasDirectoryPath`.
     pub fn has_directory_path(&self) -> bool {
-        self.url_path.ends_with('/')
+        self.url_path.ends_with('/') || ends_in_dot_component(&self.url_path)
     }
 
     /// `url.absoluteString`.
     pub fn absolute_string(&self) -> String {
-        self.to_nsurl().absoluteString().map(|text| text.to_string()).unwrap_or_default()
+        format!("file://{}", percent_encode_path(&self.url_path))
     }
 
     /// `url.lastPathComponent`.
@@ -212,21 +267,27 @@ impl FileUrl {
             url_path.push('/');
         }
         url_path.push_str(&file_system_representation(component.trim_start_matches('/')));
-        FileUrl { url_path }
+        if self.relative && ends_in_dot_component(&url_path) {
+            url_path = remove_dot_segments(&url_path);
+            if !url_path.ends_with('/') {
+                url_path.push('/');
+            }
+        }
+        FileUrl { url_path, relative: self.relative }
     }
 
     /// `url.deletingLastPathComponent()`.
     pub fn deleting_last_path_component(&self) -> FileUrl {
         let trimmed = self.url_path.trim_end_matches('/');
         if trimmed.is_empty() {
-            return FileUrl { url_path: "/".into() };
+            return FileUrl { url_path: "/".into(), relative: self.relative };
         }
         let last = trimmed.rsplit('/').next().unwrap_or("");
         if last == ".." {
             return self.clone();
         }
         let parent = trimmed[..trimmed.len() - last.len()].trim_end_matches('/');
-        FileUrl { url_path: format!("{parent}/") }
+        FileUrl { url_path: format!("{parent}/"), relative: self.relative }
     }
 
     /// `url.deletingPathExtension()`.
@@ -241,33 +302,45 @@ impl FileUrl {
         if directory {
             url_path.push('/');
         }
-        FileUrl { url_path }
+        FileUrl { url_path, relative: false }
     }
 
     /// `url.appendingPathExtension(_:)`.
     pub fn appending_path_extension(&self, extension: &str) -> FileUrl {
-        let directory = self.has_directory_path();
+        let directory = self.has_directory_path() && self.url_path != "/";
         let mut url_path = format!("{}.{}", self.path(), file_system_representation(extension));
         if directory {
             url_path.push('/');
         }
-        FileUrl { url_path }
+        FileUrl { url_path, relative: false }
     }
 
     /// `url.standardizedFileURL` (`standardized` for a file URL).
+    ///
+    /// The path comes from `NSURL`, which agrees with Swift on it; the
+    /// result keeps this URL's directory flag, as Swift's does (`NSURL`
+    /// re-asks the file system and follows symbolic links).
     pub fn standardized_file_url(&self) -> FileUrl {
-        self.to_nsurl()
-            .URLByStandardizingPath()
-            .and_then(|url| FileUrl::from_nsurl(&url))
-            .unwrap_or_else(|| self.clone())
+        match self.to_nsurl().URLByStandardizingPath().and_then(|url| url.path()) {
+            Some(path) => self.with_path_keeping_flag(&path.to_string()),
+            None => self.clone(),
+        }
     }
 
-    /// `url.resolvingSymlinksInPath()`.
+    /// `url.resolvingSymlinksInPath()`; see [`FileUrl::standardized_file_url`].
     pub fn resolving_symlinks_in_path(&self) -> FileUrl {
-        self.to_nsurl()
-            .URLByResolvingSymlinksInPath()
-            .and_then(|url| FileUrl::from_nsurl(&url))
-            .unwrap_or_else(|| self.clone())
+        match self.to_nsurl().URLByResolvingSymlinksInPath().and_then(|url| url.path()) {
+            Some(path) => self.with_path_keeping_flag(&path.to_string()),
+            None => self.clone(),
+        }
+    }
+
+    fn with_path_keeping_flag(&self, path: &str) -> FileUrl {
+        let mut url_path = path.to_owned();
+        if self.has_directory_path() && !url_path.ends_with('/') && !ends_in_dot_component(&url_path) {
+            url_path.push('/');
+        }
+        FileUrl { url_path, relative: false }
     }
 }
 
@@ -284,7 +357,7 @@ mod tests {
 
     #[test]
     fn deleting_last_component_matches_swift() {
-        let url = |path: &str| FileUrl { url_path: path.to_owned() };
+        let url = |path: &str| FileUrl { url_path: path.to_owned(), relative: false };
         assert_eq!(url("/tmp/urlprobe//double//slash.md").deleting_last_path_component().url_path(), "/tmp/urlprobe//double/");
         assert_eq!(url("/").deleting_last_path_component().url_path(), "/");
         assert_eq!(url("/tmp/urlprobe/../").deleting_last_path_component().url_path(), "/tmp/urlprobe/../");
