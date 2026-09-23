@@ -210,6 +210,66 @@
   {
    "op": "remove",
    "path": "exact.md.downright-reviews.json"
+  },
+  {
+   "op": "mkdir",
+   "path": "dir.md.downright-reviews.json"
+  },
+  {
+   "op": "review.load",
+   "doc": "dir.md"
+  },
+  {
+   "op": "write",
+   "path": "locked.md.downright-reviews.json",
+   "text": "{}"
+  },
+  {
+   "op": "chmod",
+   "path": "locked.md.downright-reviews.json",
+   "mode": 0
+  },
+  {
+   "op": "review.load",
+   "doc": "locked.md"
+  },
+  {
+   "op": "chmod",
+   "path": "locked.md.downright-reviews.json",
+   "mode": 420
+  },
+  {
+   "op": "write",
+   "path": "blocker",
+   "text": "a file where a directory should be"
+  },
+  {
+   "op": "review.save",
+   "doc": "blocker/note.md",
+   "reviews": [
+    "c1"
+   ]
+  },
+  {
+   "op": "mkdir",
+   "path": "readonly"
+  },
+  {
+   "op": "chmod",
+   "path": "readonly",
+   "mode": 365
+  },
+  {
+   "op": "review.save",
+   "doc": "readonly/note.md",
+   "reviews": [
+    "c1"
+   ]
+  },
+  {
+   "op": "chmod",
+   "path": "readonly",
+   "mode": 493
   }
  ]
 }

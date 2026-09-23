@@ -1030,7 +1030,7 @@ impl Runner {
                 let document = self.path(step, "doc")?;
                 Ok(match LocalReviewSidecarStore::new().save(&sidecar, &document) {
                     Ok(()) => Value::String("saved".into()),
-                    Err(error) => error_code(error.code().unwrap_or(0)),
+                    Err(error) => error_code(error.code()),
                 })
             }
             "review.load" => {
@@ -1040,7 +1040,7 @@ impl Runner {
                         .with("version", sidecar.version)
                         .with("reviews", sidecar.reviews.iter().map(|item| Self::review(Some(item))).collect::<Vec<_>>())
                         .build(),
-                    Err(error) => error_code(error.code().unwrap_or(0)),
+                    Err(error) => error_code(error.code()),
                 })
             }
             "review.sidecarURL" => {

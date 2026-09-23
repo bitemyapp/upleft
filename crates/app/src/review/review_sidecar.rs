@@ -4,13 +4,12 @@
 //! (`note.md.downright-reviews.json`), written by a `JSONEncoder` with
 //! `[.prettyPrinted, .sortedKeys]`, so the port's bytes equal Swift's.
 
-use std::io::Read;
-
 use objc2_foundation::{NSMatchingOptions, NSRange as FRange, NSRegularExpression, NSRegularExpressionOptions, NSString};
 use upleft_core::contracts::{TextEdit, Uuid};
 use upleft_core::ns_range::NSRange;
 use upleft_foundation::decodable::{self, DecodableValue, DecodingError, Value};
 use upleft_foundation::file_manager;
+use upleft_foundation::foundation_io::{self, FoundationError};
 use upleft_foundation::json_encoder::{self, JsonValue, OutputFormatting};
 use upleft_foundation::url::FileUrl;
 
@@ -209,25 +208,23 @@ impl ReviewSidecar {
     }
 }
 
-/// Why a sidecar could not be read or written.
+/// Why a sidecar could not be read or written: the error Swift throws.
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub enum ReviewSidecarError {
     /// `CocoaError(.fileReadTooLarge)`.
     FileReadTooLarge,
-    /// The file handle could not be opened or read.
-    Read(String),
+    /// An `NSError` from `FileHandle`, `FileManager` or `Data.write`.
+    Foundation(FoundationError),
     Decoding(DecodingError),
-    Write(String),
 }
 
 impl ReviewSidecarError {
-    /// `(error as NSError).code` where the port knows it: 263 for
-    /// `fileReadTooLarge`, the decoding error's code. `None` otherwise.
-    pub fn code(&self) -> Option<isize> {
+    /// `(error as NSError).code`.
+    pub fn code(&self) -> isize {
         match self {
-            ReviewSidecarError::FileReadTooLarge => Some(263),
-            ReviewSidecarError::Decoding(error) => Some(error.code()),
-            _ => None,
+            ReviewSidecarError::FileReadTooLarge => 263,
+            ReviewSidecarError::Foundation(error) => error.code,
+            ReviewSidecarError::Decoding(error) => error.code(),
         }
     }
 }
@@ -269,11 +266,7 @@ impl ReviewSidecarStore for LocalReviewSidecarStore {
             return Ok(ReviewSidecar::default());
         }
         // `FileHandle(forReadingFrom:)` then `read(upToCount: max + 1)`.
-        let file = std::fs::File::open(url.path()).map_err(|error| ReviewSidecarError::Read(error.to_string()))?;
-        let mut data = Vec::new();
-        file.take(Self::MAXIMUM_BYTES as u64 + 1)
-            .read_to_end(&mut data)
-            .map_err(|error| ReviewSidecarError::Read(error.to_string()))?;
+        let data = foundation_io::read_up_to_count(&url, Self::MAXIMUM_BYTES + 1).map_err(ReviewSidecarError::Foundation)?;
         if data.len() > Self::MAXIMUM_BYTES {
             return Err(ReviewSidecarError::FileReadTooLarge);
         }
@@ -282,8 +275,8 @@ impl ReviewSidecarStore for LocalReviewSidecarStore {
 
     fn save(&self, sidecar: &ReviewSidecar, document_url: &FileUrl) -> Result<(), ReviewSidecarError> {
         let url = Self::sidecar_url(document_url);
-        file_manager::create_directory(&url.deleting_last_path_component(), true).map_err(ReviewSidecarError::Write)?;
-        file_manager::write_atomic(&Self::encoded(sidecar), &url).map_err(ReviewSidecarError::Write)
+        foundation_io::create_directory(&url.deleting_last_path_component(), true).map_err(ReviewSidecarError::Foundation)?;
+        foundation_io::write_atomically(&Self::encoded(sidecar), &url).map_err(ReviewSidecarError::Foundation)
     }
 }
 
