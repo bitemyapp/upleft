@@ -89,7 +89,7 @@ impl Scenario {
 /// Window kinds this oracle can build yet. Anything else is "not ported",
 /// reported before the application starts.
 fn is_ported(window: &str) -> bool {
-    matches!(window, "probe" | "setup" | "preferences")
+    matches!(window, "probe" | "start" | "setup" | "preferences")
 }
 
 // MARK: - Sandbox
@@ -308,6 +308,21 @@ impl Scene {
                 content.addSubview(&label);
                 content.addSubview(&button);
                 let scene = Scene { window: probe, pending_commands: None, _retained: None };
+                scene.show(mtm);
+                Ok(scene)
+            }
+            "start" => {
+                use upleft_app::ai::document_state_store::DocumentStateStore;
+                use upleft_app::app::start_window_controller::{StartGuideOffer, StartWindowController};
+                let guide = match scenario.guide.as_str() {
+                    "primary" => StartGuideOffer::Primary,
+                    "secondary" => StartGuideOffer::Secondary,
+                    _ => StartGuideOffer::Unavailable,
+                };
+                let recents = DocumentStateStore::shared().recents(StartWindowController::RECENT_DISPLAY_LIMIT);
+                let controller = StartWindowController::new(recents, guide, mtm);
+                let window = controller.window().ok_or_else(|| Failure::Error("start controller has no window".into()))?;
+                let scene = Scene { window, pending_commands: None, _retained: Some(Retained::into_super(Retained::into_super(Retained::into_super(controller)))) };
                 scene.show(mtm);
                 Ok(scene)
             }
