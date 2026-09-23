@@ -66,7 +66,7 @@ impl TidyDocument {
         let mut edits: Vec<TextEdit> =
             edits.into_iter().filter(|edit| edit.range.length > 0 || !edit.replacement.is_empty()).collect();
         // Swift's `sorted(by:)` is stable.
-        edits.sort_by(|a, b| a.range.location.cmp(&b.range.location));
+        edits.sort_by_key(|edit| edit.range.location);
         edits
     }
 
@@ -360,7 +360,7 @@ impl<'a> TidyContext<'a> {
             | BlockContent::FrontMatter(_) => protected.push(block.range),
             _ => {}
         });
-        protected.sort_by(|a, b| a.location.cmp(&b.location));
+        protected.sort_by_key(|range| range.location);
         TidyContext { doc, map, text: &doc.utf16, rules, tables, protected_ranges: protected }
     }
 
