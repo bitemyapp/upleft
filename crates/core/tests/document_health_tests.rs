@@ -13,7 +13,6 @@ use upleft_core::{
 };
 
 #[test]
-#[ignore = "needs parser (upleft-markup)"]
 fn reports_stable_ids_and_utf16_ranges() {
     let text = "# Title\n\n#### Café\n";
     let first = DocumentHealth::analyze(text);
@@ -26,7 +25,6 @@ fn reports_stable_ids_and_utf16_ranges() {
 }
 
 #[test]
-#[ignore = "needs parser (upleft-markup)"]
 fn ignores_code_and_front_matter() {
     let text = "---\ntitle: the the\n---\n\n# Title\n\n```\n# Fake\n[bad](javascript:alert(1))\n```\n";
     let findings = DocumentHealth::analyze(text);
@@ -35,7 +33,6 @@ fn ignores_code_and_front_matter() {
 }
 
 #[test]
-#[ignore = "needs parser (upleft-markup)"]
 fn finds_references_footnotes_and_images() {
     let text = "[x][missing]\n\n[^a]: one\n[^a]: two\n\n![](missing.png)\n";
     let findings = DocumentHealth::analyze_with(text, DocumentHealthOptions::DEFAULT, Some(&DocumentHealthResolver::new(|_| false)));
@@ -46,7 +43,6 @@ fn finds_references_footnotes_and_images() {
 }
 
 #[test]
-#[ignore = "needs parser (upleft-markup)"]
 fn does_not_flag_external_links_as_missing_assets() {
     let findings = DocumentHealth::analyze_with(
         "[site](https://example.com)\n",
@@ -58,7 +54,6 @@ fn does_not_flag_external_links_as_missing_assets() {
 }
 
 #[test]
-#[ignore = "needs parser (upleft-markup)"]
 fn catches_unclosed_fence_and_ignores_its_contents() {
     let text = "# Title\n\n```swift\nlet x = 1\n\n![diagram](/tmp/diagram.png)\n";
     let findings = DocumentHealth::analyze(text);
@@ -67,14 +62,12 @@ fn catches_unclosed_fence_and_ignores_its_contents() {
 }
 
 #[test]
-#[ignore = "needs parser (upleft-markup)"]
 fn catches_absolute_path_outside_code() {
     let findings = DocumentHealth::analyze("![diagram](/assets/diagram.png)\n");
     assert!(findings.iter().any(|d| d.id == "asset.absolute-path"));
 }
 
 #[test]
-#[ignore = "needs parser (upleft-markup)"]
 fn catches_unsafe_url_and_duplicate_anchor() {
     let findings = DocumentHealth::analyze("# Same\n\n# Same\n\n[run](javascript:alert(1))\n");
     assert!(findings.iter().any(|d| d.id == "heading.duplicate-anchor"));
@@ -82,7 +75,6 @@ fn catches_unsafe_url_and_duplicate_anchor() {
 }
 
 #[test]
-#[ignore = "needs parser (upleft-markup)"]
 fn resolver_only_checks_local_targets() {
     let findings = DocumentHealth::analyze_with(
         "[missing](docs/missing.md)\n",
@@ -93,7 +85,6 @@ fn resolver_only_checks_local_targets() {
 }
 
 #[test]
-#[ignore = "needs parser (upleft-markup)"]
 fn reports_dense_paragraph_and_invalid_table_row() {
     let text = format!("| A | B |\n| --- | --- |\n| only |\n\n{}\n", "word ".repeat(130));
     let findings = DocumentHealth::analyze(&text);

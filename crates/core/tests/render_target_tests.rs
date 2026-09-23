@@ -22,7 +22,6 @@ fn built_in_profiles_have_intentional_differences() {
 }
 
 #[test]
-#[ignore = "needs parser (upleft-markup)"]
 fn every_capability_is_detected_from_parsed_ranges() {
     let source = "---\ntitle: Demo\n---\n\n# Heading {#demo}\n\n| A | B |\n|---|---|\n| 1 | 2 |\n\n- [ ] task\n~~strike~~ and $x^2$ and [[Notes]].\n\n[^one] and <span>HTML</span>\n\n[^one]: Footnote\n\n> [!NOTE] Alert\n\n```mermaid\ngraph TD\n```";
     let document = MarkdownParser::parse(source);
@@ -34,7 +33,6 @@ fn every_capability_is_detected_from_parsed_ranges() {
 }
 
 #[test]
-#[ignore = "needs parser (upleft-markup)"]
 fn diagnostics_use_exact_extension_ranges_and_stable_order() {
     let source = "---\ntitle: Demo\n---\n\n# Heading {#demo}\n\n> [!NOTE] Heads up\n> Body\n\nSee [[Notes]] and ~~old~~.\n\n| A | B |\n|---|---|\n| 1 | 2 |\n";
     let document = MarkdownParser::parse(source);
@@ -53,7 +51,6 @@ fn diagnostics_use_exact_extension_ranges_and_stable_order() {
 }
 
 #[test]
-#[ignore = "needs parser (upleft-markup)"]
 fn wikilink_proposal_is_byte_local_and_reversible() {
     let source = "See [[Design Notes|the notes]].\n";
     let document = MarkdownParser::parse(source);
@@ -79,7 +76,7 @@ fn custom_profile_round_trips_through_codable() {
 }
 
 #[test]
-#[ignore = "needs parser (upleft-markup); the Codable half is not ported"]
+
 fn report_and_proposal_codable_round_trip() {
     let source = "é [[Design Notes]]\n";
     let document = MarkdownParser::parse(source);
@@ -99,7 +96,6 @@ fn report_and_proposal_codable_round_trip() {
 }
 
 #[test]
-#[ignore = "needs parser (upleft-markup)"]
 fn duplicate_findings_are_deterministic_and_range_ordered() {
     let source = "~~one~~ and [[A]] and ~~two~~ and [[B]]\n";
     let document = MarkdownParser::parse(source);
@@ -114,7 +110,6 @@ fn duplicate_findings_are_deterministic_and_range_ordered() {
 }
 
 #[test]
-#[ignore = "needs parser (upleft-markup)"]
 fn side_by_side_comparison_exposes_capability_delta() {
     let source = MarkdownParser::parse("# H\n\n- [ ] task\n");
     let result = MarkdownCompatibility::compare(&source, &RenderTargetProfile::downright(), &RenderTargetProfile::common_mark());
