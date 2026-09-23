@@ -37,3 +37,14 @@ objc2-core-foundation = { workspace = true, features = ["CFArray", "CFBase", "CF
 
 [dev-dependencies]
 serde_json.workspace = true
+objc2-foundation = { workspace = true, features = ["NSURLProtocol"] }
+
+# The updater's main-actor objects hop through the main dispatch queue, so
+# these tests own the main thread (no libtest harness) and run its run loop.
+[[test]]
+name = "update_coordinator_tests"
+harness = false
+
+[[test]]
+name = "release_watch_probe_tests"
+harness = false
