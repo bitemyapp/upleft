@@ -1,6 +1,6 @@
 # upleft-app porting notes
 
-This file covers the whole app-core port on `port/app-core`: Downright's app layer (everything in `Sources/DownrightApp` that computes, not what draws) and its command-line tools. The binding rules are in `AGENTS.md`, and the Foundation facts the port depends on are in `docs/APP-CORE-BRIEF.md`.
+This file covers the app port: the app-core port on `port/app-core` (everything in `Sources/DownrightApp` that computes, and the command-line tools) and the app shell on `port/app-shell` (the windows, the app binary, the bundle; the panels are ported on `port/panels`). The binding rules are in `AGENTS.md`, and the Foundation facts the port depends on are in `docs/APP-CORE-BRIEF.md`.
 
 ## Crates
 
@@ -9,15 +9,21 @@ This file covers the whole app-core port on `port/app-core`: Downright's app lay
 | `upleft-foundation` | none (Foundation itself) | `JSONEncoder` output; `JSONDecoder`'s scanner (`json_decoder`) and value rules (`decodable`); `JSONSerialization` through objc2; Swift `URL` for file URLs (`url::FileUrl`, checked against a recorded 46-path Swift fixture); `Date` and `.iso8601`; `FileManager`/`Data` calls through Foundation (`file_manager`, `foundation_io`) |
 | `upleft-cli` | `Sources/drdownright`, `Sources/down` | `markdown_cli`, `agent_bridge`, `agent_watcher` (FSEvents), `doctor`; the `down` binary (`src/bin/down/main.rs`) |
 | `upleft-spotlight-metadata` | `Sources/DownrightSpotlightMetadata` | `spotlight_metadata`, including the C entry point for the importer; no AppKit |
-| `upleft-quicklook` | `Sources/DownrightQL` | `quick_look_policy`, `quick_look_loader`, and the pure helpers of `preview_view_controller`; the view controller is left to the UI port |
-| `upleft-app` | `Sources/DownrightApp` (non-UI) | one module per Swift file, grouped by folder (below) |
+| `upleft-quicklook` | `Sources/DownrightQL` | `quick_look_policy`, `quick_look_loader`, `preview_view_controller` (the `PreviewViewController` view controller), and the extension executable `upleft-ql` (see "Quick Look extensions" below) |
+| `upleft-thumb` | `Sources/DownrightThumb` | `thumbnail_provider` (`ThumbnailProvider`) and the extension executable `upleft-thumb` |
+| `upleft-app` | `Sources/DownrightApp` | one module per Swift file, grouped by folder (below): the model layer, the windows, the panels (`panels/`, port/panels) |
+| `upleft` | `Sources/DownrightApp/main.swift` | the app binary (`Contents/MacOS/Upleft`), linking Sparkle.framework; `UPLEFT_HEADLESS_SMOKE` launch check |
+| `upleft-spotlight-importer` | `Sources/DownrightSpotlightImporter` | the MDImporter CFPlugIn ABI over `upleft-spotlight-metadata`, linked into the importer bundle with `clang -bundle` |
 
 ## File mapping (`upleft-app`, `src/<folder>/<file>.rs`)
 
 | Folder | Swift files → modules |
 |---|---|
 | `AI/` | ChangeTracker, DocumentStateStore, FileWatcher, LocalAI (with the Swift shim), MarkdownDocument, MarkdownParseWorker, PathResolver, SiblingScanner, SnapshotStore |
-| `App/` | DocumentTypes |
+| `App/` | AppDelegate, CompareWindowController, DocumentScrollGestures, DocumentTypes, DocumentWindow, DocumentWindowController (with `document_window_controller/`: construction, opening, presentation, derived UI, floating surface, find, navigation, lifecycle, views) and every `+Extension` as `document_window_controller_<extension>.rs`, HistorySwipe, MainMenu, PreferencesWindowController (with `preferences_window_controller/`), PresentationDrag, PresentationSwipe, ScrollZoom, SetupWindowController, StartWindowController (with `start_window_controller/`), ThemedSplitView, ThemedWindowAppearance, ToolbarControls, ToolbarGlassBand, VersionTimelineWindowController |
+| `Assets/` | AssetDoctor, AssetResolver, CapturedImage, DroppedAsset |
+| `Debugging/` | VisualDebuggerModel |
+| `Lens/` | DocumentLensModel |
 | `Export/` | DocumentShare, HTMLExporter (with `NativeFragmentImageProvider` from `App/DocumentWindowController+Support.swift`) |
 | `Integrations/` | AgentIntegration, AppIntents (with the Swift shim), NativeIntegration, SpotlightMetadata (`SpotlightIndexer`) |
 | `Panels/` | FuzzyMatcher (the palette's ranking) |
@@ -42,34 +48,39 @@ The Swift side is `oracle/app`, a separate package whose `Sources/<Module>` dire
 | `formats` | `corpus/formats/` (scripts) | every persisted file: byte for byte where Swift's output is deterministic, as parsed JSON where Swift's `JSONEncoder` randomises key order (index, state, recents, reader profiles), with only sandbox paths, random UUIDs, clock timestamps and `Set` order normalised |
 | `updater` | `corpus/updater/` | the state machine's full (state, event) table, the coordinator's (setup, action) table, scripted sessions, and the feed probe over 18 feeds |
 | `local-ai` | `corpus/local-ai/` | prompt construction, result shaping and validation through the deterministic provider; the real model is never called |
+| `app-window` | `corpus/app-window/` (42 scenarios) | the window server's image of a real window built as the app builds it, plus every view's geometry (see "App shell" below) |
+| `app-menu` | `corpus/app-menu/` | the main menu, every submenu refreshed |
+| `quicklook-preview`, `quicklook-thumbnail`, `quicklook-thumbnail-sizes` | corpus documents, `corpus/quicklook*` | the Quick Look preview controller's window and the thumbnail provider's bitmaps (see "Quick Look extensions") |
 
 Run them with `just app-oracle`, `just downright-cli` (for `down-cli`), then `just conform --suite NAME`. `just app-bench` compares HTML export, workspace indexing and find against Swift.
 
 ## Done
 
-Every Swift file in scope is ported. The two exceptions are `LocalAI.swift` and `AppIntents.swift`, which are split between Rust and the Swift shim below, as the owner decided.
+Every Swift file of `Sources/DownrightApp` is ported, with `main.swift` as the `upleft` binary; `LocalAI.swift` and `AppIntents.swift` are split between Rust and the Swift shim below, as the owner decided. The Spotlight importer and both Quick Look extensions are ported and bundled.
 
 ## Left
 
-- **UI-bound code** goes to the UI port: `DocumentWindowController`, `MainMenu` and the Settings window. The panels, the update panel, `UpdateNotesSummary` and the release-notes reduction are ported (`src/panels/PORTING.md`). About 90 window-bound Swift tests wait with it; each area's list is in the commit messages and the section notes below.
-- **Sparkle in the app binary.** `updater::sparkle` reaches Sparkle 2.9.6 at run time. The app binary still has to link and embed the framework and call `updater::sparkle::install(mtm)` at start-up (see "Sparkle" below). A real update cycle is unverified.
+- **Window-level coverage.** `app-window` covers the document window (both modes, light and dark, three sizes, find, find and replace, split, focus, status bar, Source Focus, structural zoom, fold all, and the floating inspector with tasks, contents, health, render targets and the visual debugger), the start window, the setup panel and every Settings pane. Not covered, because each would put a window or panel on a display from inside the app (they are centred, sheets, or modal): the command palette (`addChildWindow` before it is moved over the parent), the version timeline and compare windows, the Go to Line alert, sheets (tidy, table editor, save recovery), the update window, and the share picker. The floating surface's spring does not run off-screen (no display link), so those scenarios compare its settled pre-animation frame on both sides.
+- **Panels one by one.** Every `Panels/` view, including those `app-window` cannot show (the command palette, the tidy and table editor sheets' views, the update window), is built off-screen from scenarios by the `panel` and `panel-model` suites; see `src/panels/PORTING.md`.
 - **Behaviour that is ported but unverified**, because exercising it would launch apps, change system state or write the real Spotlight index:
   - the success paths of `down open`, `--reveal`, `watch` and `notify`;
   - `ExternalEditor.open`;
-  - `SystemIntegration`'s install, default-handler and move-to-Applications actions;
-  - `SpotlightIndexer`;
+  - `SystemIntegration`'s install, default-handler and move-to-Applications actions, and the setup panel's buttons;
+  - `SpotlightIndexer`, and Spotlight actually loading the importer (it was checked in-process through CFPlugIn, 99 documents, same attributes as Downright's importer);
+  - macOS loading the Quick Look extensions;
+  - a real Sparkle update cycle;
   - speaking aloud;
-  - the release watch's system-event observers.
-- **Names.** Upleft still uses Downright's names: the bundle id `com.ezzy.downright`, the support folder `Downright`, and the app `down` looks for (`Downright.app`). Renaming is the coordinator's decision.
-- **Main-thread I/O.** The model layer does its I/O on the same threads as Swift. The sites that block the main thread in the app are listed under "Document layer" below, as candidates for the UI port to call off-main. Swift's window controller also runs the HTML export on the main thread.
-- **Cleanups.** `upleft-foundation`'s `file_manager` and `foundation_io` overlap (atomic writes, directory creation, existence checks) and should be merged into one module. The save-failure text in `MarkdownDocument` is Rust's error text, because upleft-core's document I/O does not return Foundation's `localizedDescription`.
+  - the release watch's system-event observers;
+  - the running app itself: it is built and its launch path is checked with `UPLEFT_HEADLESS_SMOKE`, but it has never been launched on screen, by rule.
+- **Main-thread I/O.** The model layer and the windows do their I/O on the same threads as Swift, except where a row in `docs/KNOWN-DIFFERENCES.md` says otherwise. The sites that block the main thread are listed under "Document layer", "Document window" and "Document window panel extensions" below.
+- **Cleanups.** `upleft-foundation`'s `file_manager` and `foundation_io` overlap and should be merged into one module. The save-failure text in `MarkdownDocument` is Rust's error text.
 - **Known differences** are all in `docs/KNOWN-DIFFERENCES.md`.
 
 ## How to continue
 
 1. Read `docs/APP-CORE-BRIEF.md` first. It lists the Foundation behaviour the port depends on, such as `JSONEncoder` key order, `CFFIXED_USER_HOME`, the fact that preferences are not sandboxed, and URL semantics.
 2. Add each new check to the relevant suite. Where Swift has a seam (an injectable store, clock or URL), drive both sides through it. Never touch `UserDefaults.standard`, `Preferences.shared` or the real home.
-3. `cargo test --workspace`, the nine suites above and `just app-bench` must stay green.
+3. `cargo test --workspace`, the suites above, `just app-bench` and `just app-window-bench` must stay green. Window checks follow "App shell: status and window-level conformance" below: never order a titled window in outside the app-window harness or `tests/main_thread`'s `keep_windows_off_screen`/`assert_off_screen`.
 
 
 ## Sparkle (`updater::sparkle`)
@@ -241,3 +252,93 @@ A scenario names the window and its sandbox: `preferences` (written as `preferen
 Run: `just app-oracle && cargo build --release -p upleft-conformance -p upleft-cli && target/release/conform --suite app-window` (and `--suite app-menu`). `bench-app-window <scenario.json>` times document open to first frame and a mode switch in either oracle.
 
 **Bundle.** `just upleft-app` → `target/upleft-app/Upleft.app` (see `scripts/bundle-upleft-app.sh`): `Contents/MacOS/{Upleft,down}`, `Contents/Resources/{mathFonts.bundle,AppIcon.icns,AppIcon.png,Welcome.md,PrivacyInfo.xcprivacy}`, `Contents/Frameworks/Sparkle.framework` (2.9.6, `scripts/sparkle-framework.sh`), `Contents/Library/Spotlight/DownrightSpotlight.mdimporter` (Rust `upleft-spotlight-importer` static library linked with `clang -bundle`), `Info.plist` from the rebranded `Config/Downright-Info.plist` without the Sparkle keys unless `PRODUCTION=1`, ad-hoc signature, verified layout. Never registered with Launch Services, never launched. The themes are compiled into the binary; there is no MarkdownRender resource bundle.
+
+**Results (2026-09-23, `port/app-shell` after merging every sub-branch and `port/panels`).**
+
+| Check | Result |
+|---|---|
+| `app-window` | 42/42: document window 23 (Live, Source, dark, 1400×1000, 640×520, find, find dark, find and replace, split, split dark, focus, status bar, Source Focus, structural zoom, fold all, tasks, contents, health, render targets dark, visual debugger, Source dark wide, agent-40 Live, agent-40 Source dark), start 6, setup 2, Settings 9, probe 2 |
+| `app-menu` | 4/4 |
+| `quicklook-preview` / `-thumbnail` / `-thumbnail-sizes` | 16/16, 2745/2745, 154/154 |
+| `updater`, `palette`, `formats` (re-run after the merges) | 10/10, 23/23, 30/30 |
+| Spotlight importer, loaded in-process through CFPlugIn (`scripts/probes/load-mdimporter.swift`) | 99/99 corpus documents give Downright's importer's attributes |
+| `just upleft-app` | builds and verifies (Sparkle 2.9.6, rpaths, stamps `minos 14.0`/SDK on the app, `down`, importer and both extensions, Info.plists, signatures) |
+| `UPLEFT_HEADLESS_SMOKE` on the bundled binary | bundle id `com.bitemyapp.upleft`, Sparkle loaded from `Contents/Frameworks`, math fonts from `Contents/Resources`, Welcome.md found, document window built over Docs__sample |
+| `cargo test --workspace` | 1977 passed, 0 failed |
+| `just bench` | all 21 drbench stages as fast or faster |
+| `just app-window-bench` (3 rounds, median p50, ms) | agent-5000 open to first frame 218.8 vs Swift 276.2, Live→Source 76.5 vs 125.7, Source→Live 95.3 vs 142.8; README open 102.1 vs 114.5; Docs__sample open 69.3 vs 80.1; every stage 0.61–0.89× Swift |
+
+## Document window (`port/app-shell-dwc`)
+
+`App/DocumentWindowController.swift` and its `+Support`, `+Trust`, `+Speech`, `+CommandLine` and `+ContinuityCamera` extensions. The other extensions (`+Actions`, `+Commands`, `+Delegates`, then the panel-heavy ones) are ported on top of this class; until they are, the methods the class calls on them are placeholders marked `// PORT: DocumentWindowController+X.swift` in their modules.
+
+**Layout.** `document_window_controller.rs` holds the `define_class!` (Objective-C name `DocumentWindowController`, superclass `NSWindowController`), the ivars, the accessor contract (the table at the top of the file) and every Objective-C entry point of the class, extensions included. Its bodies are split by Swift `MARK` into `document_window_controller/`: `construction` (`init`, `buildInterface`, the floating overlay host, the toolbar, `wireDocument`, `observeTheme`, the lazy gesture coordinators, `deinit`), `opening` (`open`, the first-frame restore, `resetTransientChrome`, `dumpLayoutIfRequested`, `adopt`), `presentation` (theme/preference observation, `applyStyleSheet`, modes, pane synchronisation), `derived_ui` (derived UI, density bands, breadcrumb, external changes, the change-summary and conflict bars and their Core Animation), `floating` (the floating inspector surface, Tasks, the inspector host, auxiliary windows), `find`, `navigation` (jumps, split view, focus dimming), `lifecycle` (save prompt, close, pin, focus mode, the window delegate) and `views` (`FloatingOverlayHostView`, `FocusDimmingView`, `DocumentRootView`).
+
+**Extension state.** Each extension that keeps associated objects in Swift owns one `<ext>_state: RefCell<…State>` ivar, its `State` struct defined in the extension's module.
+
+**Delegates.** Views hold their delegate as `Weak<dyn …Delegate>`; the controller owns an `Rc<DocumentWindowControllerDelegates>` proxy (a weak `controller()` back-reference) and hands out downgrades of it. Each delegate trait is implemented on the proxy in the module where Swift declares the conformance.
+
+**`[weak self]` across queues.** Callbacks that must be `Send` (the theme observation, `PathResolver.warm`'s completion, the sibling-search result hop) capture a `ControllerHandle`: an id that a main-thread registry resolves to the controller, so no Objective-C object crosses threads.
+
+**Main thread.** As in Swift: `open` (the document layer's reads, listed above), `saveAs`/export/print (modal panels, the HTML export and the HTML-to-attributed-string import), `presentTidySheet`, the Continuity Camera write, and `folderScopeURL`'s `isDirectory` read run on the main thread. Sibling search reads files on its own user-initiated queue (`com.bitemyapp.upleft.sibling-search`), as in Swift.
+
+**Tests.** `window_chrome_tests_document`, `document_chrome_layout_tests`, `autosave_lifecycle_tests_window`, `export_snapshot_tests`: main-thread binaries in a sandbox (`tests/document_window_support`: re-run with their own `HOME`, `CFFIXED_USER_HOME` and support folder, a sandboxed `Preferences.shared`, the Mermaid hook installed). No test orders a window in. Each file lists the Swift cases it skips and why.
+
+**Conformance.** `app-window`'s `document` scenarios build the controller as `AppWindowCapture.swift` does; `bench-app-window` times open-to-first-frame and a mode switch (`crates/conformance/src/dump/app_window_bench.rs`).
+
+## Document window panel extensions (`port/app-shell-dwc-c`)
+
+`+AssetDoctor`, `+AssetInsertion`, `+CommandPalette`, `+Diagnostics`, `+DocumentLens`, `+FrontMatter`, `+LocalAI`, `+ReaderProfiles`, `+Review`, `+Share`, `+TableEditor`, `+VisualDebugger` and `+Workspace` (`app/document_window_controller_<ext>.rs`), and `VersionTimelineWindowController` (`app/version_timeline_window_controller.rs`).
+
+**Objective-C classes.** `CommandPaletteWindowDelegate` (the palette panel's `NSWindowDelegate`, kept alive as an associated object of the panel, as in Swift) and `VersionTimelineWindowController` (an `NSWindowController`). `ReaderProfileControllerState` is a plain struct behind an `Rc` (see KNOWN-DIFFERENCES).
+
+**State.** Each extension's associated objects are fields of its `<Ext>State`, created lazily where Swift's getters create them (`localAIProvider`, `localAICoordinator`, `reviewStore`, `readerProfileState`). A panel's theme observation (`+DocumentLens`, `+VisualDebugger`) is a `ThemeObservation` in the state, dropped (cancelled) outside the borrow; its closure captures `MainThreadBound<(Weak controller, Weak panel)>`.
+
+**Delegates.** Every panel delegate trait is implemented on `DocumentWindowControllerDelegates` and forwards to an inherent method named after the Swift one (`asset_doctor_view_did_select`, `command_palette_did_choose`, …). The two `MarkdownTextViewDelegate` drop methods are inherent `markdown_text_view_can_accept_drop` / `markdown_text_view_did_accept_drop`, which `+Delegates`' trait impl calls. `VersionTimelineWindowController` owns its own proxy for `VersionTimelineDelegate`.
+
+**Main thread.** As in Swift: a drop's file writes and copies (AppKit needs the answer synchronously; through `NSData`/`NSFileManager` so the errors are Foundation's), the review sidecar's reads and writes (≤ 8 MiB), the share copy and the share PDF, the asset probe's resource-value reads during `AssetDoctor.diagnose`, the version timeline's snapshot reads, and the workspace link graph built when a scan lands. The workspace scan and searches and the on-device model call run off the main thread (`WorkspaceIndex`, `WorkspaceSearchSession`, `LocalAILatestWinsController`).
+
+**Tests.** `document_drop_tests_window`, `share_and_capture_tests_window`, `command_palette_navigation_regression_tests` (on `tests/controller_support`). Skipped: `aFailedWriteInsertsNothingAndLeavesNoDebris` (its error is an alert sheet on a titled window). `imageRequestsReachTheWindowControllerThroughTheTextView` runs without Swift's `showWindow(nil)`.
+**Bundle.** `just upleft-app` → `target/upleft-app/Upleft.app` (see `scripts/bundle-upleft-app.sh`): `Contents/MacOS/{Upleft,down}`, `Contents/Resources/{mathFonts.bundle,AppIcon.icns,AppIcon.png,Welcome.md,PrivacyInfo.xcprivacy}`, `Contents/Frameworks/Sparkle.framework` (2.9.6, `scripts/sparkle-framework.sh`), `Contents/Library/Spotlight/DownrightSpotlight.mdimporter` (Rust `upleft-spotlight-importer` static library linked with `clang -bundle`), `Contents/PlugIns/{DownrightQL,DownrightThumb}.appex` (`scripts/bundle-upleft-quicklook.sh`, below), `Info.plist` from the rebranded `Config/Downright-Info.plist` without the Sparkle keys unless `PRODUCTION=1`, ad-hoc signature, verified layout. Never registered with Launch Services, never launched. The themes are compiled into the binary; there is no MarkdownRender resource bundle.
+
+## Quick Look extensions (`port/app-shell-ql`)
+
+**File mapping.**
+
+| Swift | Rust | Objective-C name |
+|---|---|---|
+| `Sources/DownrightQL/PreviewViewController.swift` (with its `DensityGutterDelegate` extension) | `upleft-quicklook` `preview_view_controller` (`PreviewGutterDelegate` is the delegate proxy) | `PreviewViewController` (an `NSViewController` conforming to `QLPreviewingController`) |
+| `Sources/DownrightQL/QuickLookLoader.swift`, `QuickLookPolicy.swift` | `quick_look_loader`, `quick_look_policy` (ported earlier) | none |
+| `Sources/DownrightThumb/ThumbnailProvider.swift` | `upleft-thumb` `thumbnail_provider` | `ThumbnailProvider` (a `QLThumbnailProvider` subclass) |
+| the `main.swift` bundle-quicklook.sh generates | `crates/quicklook/src/main.rs` (`upleft-ql`), `crates/thumb/src/main.rs` (`upleft-thumb`) | none |
+| `Scripts/bundle-quicklook.sh` | `scripts/bundle-upleft-quicklook.sh` | none |
+| `Scripts/verify-bundle.sh`, Quick Look section | `scripts/verify-upleft-quicklook.sh` (sourced by both bundle scripts) | none |
+
+There is no objc2 crate for QuickLookUI or QuickLookThumbnailing at 0.3.2, so the crates declare what they use: `QLPreviewingController` (`extern_protocol!`, `preparePreviewOfFileAtURL:completionHandler:`), `QLThumbnailProvider`, `QLFileThumbnailRequest` and `QLThumbnailReply` (`extern_class!`). Each crate links its framework (`#[link(kind = "framework")]`), which is what makes the protocol and the superclass exist at run time.
+
+**Objective-C creation.** Quick Look instantiates the principal class from Objective-C, so `PreviewViewController` sets its ivars in its `initWithNibName:bundle:` override (NSViewController's `init` forwards there); `ThumbnailProvider` has no ivars. objc2 registers a class on first use, so each `main` calls `class()` before `NSExtensionMain` looks the principal class up by name. The executables are `#![no_main]` C `main`s: install the Mermaid hook (preview only), register the class, `NSExtensionMain(argc, argv)`. They are `test = false`: outside an extension host `NSExtensionMain` aborts ("An XPC Service cannot be run directly").
+
+**Threading.** Swift's main-actor `Task`, its detached user-initiated load and the `MainActor.run` hop are a main-queue block, a user-initiated global-queue block and a hop back, sharing one cancellation flag (`PreviewTask`). The completion handler is always called on the main thread, with the same `CocoaError` codes (4866 released controller, 3072 cancelled or superseded, 259 unreadable). The parses Swift runs on the main actor run at the end of the load instead (docs/KNOWN-DIFFERENCES.md). The thumbnail provider runs on whatever thread Quick Look calls it on, as in Swift.
+
+**Bundles.** `scripts/bundle-upleft-quicklook.sh [APP=…]` (or `just upleft-quicklook`) builds `upleft-ql` and `upleft-thumb` in release and assembles flat bundles in `$APP/Contents/PlugIns`:
+
+```
+DownrightQL.appex/     DownrightQL (the upleft-ql binary), Info.plist, mathFonts.bundle/, PrivacyInfo.xcprivacy, _CodeSignature/
+DownrightThumb.appex/  DownrightThumb (upleft-thumb), Info.plist, mathFonts.bundle/, PrivacyInfo.xcprivacy, _CodeSignature/
+```
+
+The Info.plists are the rebranded `Config/DownrightQL-Info.plist` and `DownrightThumb-Info.plist` with bundle-quicklook.sh's substitutions (the host's `CFBundleShortVersionString` and `CFBundleVersion`, `com.bitemyapp.upleft.quicklook` / `.thumbnail`), except that `NSExtensionPrincipalClass` drops the Swift module prefix (`PreviewViewController`, `ThumbnailProvider`). Each bundle is signed ad hoc with the rebranded `Config/QuickLook.entitlements` (App Sandbox, user-selected read-only) and its bundle id as identifier; then the host is re-signed. `bundle-upleft-app.sh` calls the script before its own signing step with `SIGN_HOST=0 VERIFY=0` and verifies the extensions with the rest of the bundle. Nothing is registered (`pluginkit`, `qlmanage`, `lsregister`) or launched. Checked against a scratch app skeleton under `target/ql-scratch`, since removed (39 checks, including `codesign --verify --strict` of each `.appex` and the host, and the `SIGN_HOST=0 VERIFY=0` path followed by a host signature and the shared checks); the full `bundle-upleft-app.sh` run waits for the app binary.
+
+**Tests.** `crates/quicklook/tests/quick_look_policy_tests.rs` (DownrightQLTests: all 8, plus an empty-file case), `crates/quicklook/tests/preview_view_controller_tests.rs` (11, main-thread harness, the view in a borderless window at (-30000, -30000) that is never ordered in), `crates/thumb/tests/thumbnail_provider_tests.rs` (9, windowless; `TestThumbnailRequest` stands in for Quick Look's request, and the reply is drawn through its own `contextSize` and `drawingBlock` getters). Not tested: the n/p heading jumps and the gutter's scroll requests (animated scrolls and `NSBeep`), `openInApp:` (would open the app).
+
+**Conformance.** Both oracles; `just app-oracle && cargo build --release -p upleft-conformance && target/release/conform --suite …`:
+
+| Suite | Inputs | Result |
+|---|---|---|
+| `quicklook-preview` | `corpus/quicklook-preview/*.json`, through the panel harness (scene `PreviewViewController`) | 16/16, window-server pixels and view tree |
+| `quicklook-thumbnail` | the generated corpus and `corpus/quicklook-thumbnail/` × 256@2x, 64@2x, 1024@1x | 2745/2745 |
+| `quicklook-thumbnail-sizes` | `corpus/quicklook-thumbnail/` and four corpus documents × 7 more sizes | 154/154 |
+
+The preview scene drives `preparePreviewOfFile(at:completionHandler:)` and pumps the run loop until the handler runs, retires the memory watch (`previewGeneration &+= 1`: its malloc sample would make the capture depend on the oracle's footprint), and before every settle check lays the document out and calls `resizeToFitContent()`, since the text view's height otherwise depends on which layout pass ran last, in Swift as in Rust. A window wider than the text column (1200pt) is left out: there the column is fractional and Swift itself settles on one of two clip-view origins (−232 or −231.62) from run to run.
+
+**Unverified.** That the system's extension hosts load these bundles, find the principal classes by the bare names, and honour the sandbox; that previews and thumbnails appear in Finder. That needs registering the extensions, which is not done here.

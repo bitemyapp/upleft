@@ -24,6 +24,7 @@ pub mod inspector_host_view;
 pub mod lightbox_window;
 pub mod local_ai_panel_view;
 pub mod panel_chrome;
+pub mod preview_view_controller;
 pub mod reader_profile_picker_view;
 pub mod render_targets_view;
 pub mod review_panel_view;
@@ -64,6 +65,7 @@ pub fn make(name: &str) -> Result<Box<dyn PanelScene>, Failure> {
         "LightboxWindow" => Box::new(lightbox_window::LightboxWindowScene::default()),
         "LocalAIPanelView" => Box::new(local_ai_panel_view::LocalAIPanelViewScene::default()),
         "PanelChrome" => Box::new(panel_chrome::PanelChromeScene::default()),
+        "PreviewViewController" => Box::new(preview_view_controller::PreviewViewControllerScene::default()),
         "ReaderProfilePickerView" => Box::new(reader_profile_picker_view::ReaderProfilePickerViewScene::default()),
         "RenderTargetsView" => Box::new(render_targets_view::RenderTargetsViewScene::default()),
         "ReviewPanelView" => Box::new(review_panel_view::ReviewPanelViewScene::default()),

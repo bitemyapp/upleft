@@ -26,7 +26,7 @@ enum PanelTree {
     /// unqualified Swift name is the Objective-C name the port registers.
     static func className(_ object: AnyObject) -> String {
         let runtime = NSStringFromClass(type(of: object))
-        for module in ["DownrightApp", "MarkdownRender", "MarkdownCore", "downright_app_oracle"] where runtime.contains(module) {
+        for module in ["DownrightApp", "MarkdownRender", "MarkdownCore", "DownrightQL", "DownrightThumb", "downright_app_oracle"] where runtime.contains(module) {
             return String(describing: type(of: object))
         }
         return runtime

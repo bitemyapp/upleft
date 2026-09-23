@@ -98,7 +98,7 @@ impl Scenario {
 /// Window kinds this oracle can build yet. Anything else is "not ported",
 /// reported before the application starts.
 fn is_ported(window: &str) -> bool {
-    matches!(window, "probe" | "start" | "setup" | "preferences")
+    matches!(window, "probe" | "start" | "setup" | "preferences" | "document")
 }
 
 // MARK: - Sandbox
@@ -203,9 +203,13 @@ pub(crate) mod off_screen {
         }
     }
 
-    /// Refuses to go on if a window touches any display.
+    /// Refuses to go on if a window touches any display: the windows the
+    /// scene captures, and every other visible window of this process (an
+    /// alert, a sheet, a panel some code path opens).
     pub fn verify(windows: &[Retained<NSWindow>], mtm: MainThreadMarker) {
-        for window in windows {
+        let mut windows: Vec<Retained<NSWindow>> = windows.to_vec();
+        windows.extend(NSApplication::sharedApplication(mtm).windows().iter().filter(|window| window.isVisible()));
+        for window in &windows {
             let frame = window.frame();
             let touches = NSScreen::screens(mtm).iter().any(|screen| intersects(screen.frame(), frame));
             if touches {
@@ -318,11 +322,43 @@ struct Scene {
     pending_commands: Option<Vec<String>>,
     /// Keeps the window's controller alive (`retained` in Swift).
     _retained: Option<Retained<NSObject>>,
+    /// `documentController`: the document window's controller, which also
+    /// performs the scenario's commands.
+    document_controller: Option<Retained<upleft_app::app::document_window_controller::DocumentWindowController>>,
 }
 
 impl Scene {
-    fn build(scenario: &Scenario, _root: &Path, mtm: MainThreadMarker) -> Result<Scene, Failure> {
+    fn build(scenario: &Scenario, root: &Path, mtm: MainThreadMarker) -> Result<Scene, Failure> {
         match scenario.window.as_str() {
+            "document" => {
+                use upleft_app::app::document_window_controller::DocumentWindowController;
+                use upleft_render::render_contracts::RenderMode;
+                let path = scenario
+                    .document
+                    .as_ref()
+                    .ok_or_else(|| Failure::Error("document scenario needs \"document\"".into()))?;
+                let url = upleft_foundation::url::FileUrl::from_path(&root.join(path).to_string_lossy());
+                let mode = match scenario.mode.as_str() {
+                    "read" => RenderMode::Read,
+                    "source" => RenderMode::Source,
+                    _ => RenderMode::Live,
+                };
+                let controller = DocumentWindowController::new(mtm);
+                if let (Some(size), Some(window)) = (scenario.size, controller.window()) {
+                    window.setContentSize(size);
+                }
+                controller.open(&url, mode).map_err(|error| Failure::Error(error.localized_description()))?;
+                let window = controller.window().ok_or_else(|| Failure::Error("document controller has no window".into()))?;
+                let scene = Scene {
+                    window,
+                    pending_commands: None,
+                    _retained: None,
+                    document_controller: Some(controller.clone()),
+                };
+                scene.show(mtm);
+                controller.apply_command_line_open(None, false);
+                Ok(scene)
+            }
             "probe" => {
                 let probe = unsafe {
                     NSWindow::initWithContentRect_styleMask_backing_defer(
@@ -352,7 +388,7 @@ impl Scene {
                 let content = probe.contentView().expect("content view");
                 content.addSubview(&label);
                 content.addSubview(&button);
-                let scene = Scene { window: probe, pending_commands: None, _retained: None };
+                let scene = Scene { window: probe, pending_commands: None, _retained: None, document_controller: None };
                 scene.show(mtm);
                 Ok(scene)
             }
@@ -367,7 +403,12 @@ impl Scene {
                 let recents = DocumentStateStore::shared().recents(StartWindowController::RECENT_DISPLAY_LIMIT);
                 let controller = StartWindowController::new(recents, guide, mtm);
                 let window = controller.window().ok_or_else(|| Failure::Error("start controller has no window".into()))?;
-                let scene = Scene { window, pending_commands: None, _retained: Some(Retained::into_super(Retained::into_super(Retained::into_super(controller)))) };
+                let scene = Scene {
+                    window,
+                    pending_commands: None,
+                    _retained: Some(Retained::into_super(Retained::into_super(Retained::into_super(controller)))),
+                    document_controller: None,
+                };
                 scene.show(mtm);
                 Ok(scene)
             }
@@ -377,7 +418,12 @@ impl Scene {
                     Failure::Error("SetupWindowController.makeIfNeeded() returned nil on this machine".into())
                 })?;
                 let window = controller.window().ok_or_else(|| Failure::Error("setup controller has no window".into()))?;
-                let scene = Scene { window, pending_commands: None, _retained: Some(Retained::into_super(Retained::into_super(Retained::into_super(controller)))) };
+                let scene = Scene {
+                    window,
+                    pending_commands: None,
+                    _retained: Some(Retained::into_super(Retained::into_super(Retained::into_super(controller)))),
+                    document_controller: None,
+                };
                 scene.show(mtm);
                 Ok(scene)
             }
@@ -390,7 +436,12 @@ impl Scene {
                     controller.select(pane);
                 }
                 let window = controller.window().ok_or_else(|| Failure::Error("Settings has no window".into()))?;
-                let scene = Scene { window, pending_commands: None, _retained: Some(Retained::into_super(Retained::into_super(Retained::into_super(controller)))) };
+                let scene = Scene {
+                    window,
+                    pending_commands: None,
+                    _retained: Some(Retained::into_super(Retained::into_super(Retained::into_super(controller)))),
+                    document_controller: None,
+                };
                 scene.show(mtm);
                 Ok(scene)
             }
@@ -412,7 +463,13 @@ impl Scene {
             return Ok(false);
         }
         let name = commands.remove(0);
-        Err(Failure::Error(format!("commands need a document window (got {name})")))
+        let Some(controller) = &self.document_controller else {
+            return Err(Failure::Error(format!("commands need a document window (got {name})")));
+        };
+        let command = upleft_app::support::commands::Command::from_raw_value(&name)
+            .ok_or_else(|| Failure::Error(format!("unknown command {name}")))?;
+        let _ = controller.perform(command);
+        Ok(true)
     }
 
     fn captured_windows(&self) -> Vec<Retained<NSWindow>> {
@@ -512,9 +569,48 @@ mod geometry {
             object = object.with("text", field.stringValue().to_string());
         } else if let Some(button) = view.downcast_ref::<NSButton>() {
             object = object.with("title", button.title().to_string()).with("state", button.state());
+        } else if let Some(text_view) = view.downcast_ref::<objc2_app_kit::NSTextView>()
+            && let Some(layout) = text_view.textLayoutManager()
+        {
+            object = object.with("fragments", fragments(&layout));
         }
         let subviews: Vec<Value> = view.subviews().iter().map(|subview| view_in(&subview, ambiguous)).collect();
         object.with("subviews", Value::Array(subviews)).build()
+    }
+
+    /// See `AppWindowGeometry.fragments`: the fragments TextKit has made so
+    /// far, without laying out anything more.
+    fn fragments(layout: &objc2_app_kit::NSTextLayoutManager) -> Value {
+        use objc2_app_kit::{NSTextElementProvider, NSTextLayoutFragment, NSTextLayoutFragmentEnumerationOptions};
+        let Some(content) = layout.textContentManager() else { return Value::Null };
+        let start = content.documentRange().location();
+        let fragments = std::rc::Rc::new(std::cell::RefCell::new(Vec::new()));
+        let collected = fragments.clone();
+        let content_for_block = content.clone();
+        let start_for_block = start.clone();
+        let block = block2::RcBlock::new(move |fragment: std::ptr::NonNull<NSTextLayoutFragment>| -> objc2::runtime::Bool {
+            let fragment = unsafe { fragment.as_ref() };
+            let range = fragment.rangeInElement();
+            let location = content_for_block.offsetFromLocation_toLocation(&start_for_block, &range.location());
+            let end = content_for_block.offsetFromLocation_toLocation(&start_for_block, &range.endLocation());
+            collected.borrow_mut().push(
+                Object::new()
+                    .with("class", class_name(fragment.class()))
+                    .with("range", Value::Array(vec![location.into(), (end - location).into()]))
+                    .with("frame", rect(fragment.layoutFragmentFrame()))
+                    .with("state", fragment.state().0 as i64)
+                    .build(),
+            );
+            objc2::runtime::Bool::YES
+        });
+        layout.enumerateTextLayoutFragmentsFromLocation_options_usingBlock(
+            Some(&start),
+            NSTextLayoutFragmentEnumerationOptions::empty(),
+            &block,
+        );
+        drop(block);
+        let fragments = fragments.borrow().clone();
+        Value::Array(fragments)
     }
 
     pub fn window(window: &NSWindow) -> Value {
