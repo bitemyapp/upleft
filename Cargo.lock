@@ -389,8 +389,16 @@ dependencies = [
  "objc2-screen-capture-kit",
  "png",
  "serde_json",
+ "upleft-elk",
  "upleft-markup",
  "upleft-render",
+]
+
+[[package]]
+name = "upleft-elk"
+version = "0.1.0"
+dependencies = [
+ "serde_json",
 ]
 
 [[package]]

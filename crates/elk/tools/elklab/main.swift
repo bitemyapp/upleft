@@ -28,6 +28,11 @@ func dump(_ n: [String: Any]) -> String {
     return s
 }
 let args = CommandLine.arguments
+if args.count == 3 {
+    // lab <graph.json> <out.json>: the oracle's dump format.
+    try! ElkDump.layout(URL(fileURLWithPath: args[1])).text.write(toFile: args[2], atomically: true, encoding: .utf8)
+    exit(0)
+}
 let data = try! Data(contentsOf: URL(fileURLWithPath: args[1]))
 let graph = native(try! JSONSerialization.jsonObject(with: data)) as! [String: Any]
 let result = try! ELK().layout(graph: graph)

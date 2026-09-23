@@ -102,6 +102,9 @@ do {
         try write(AttributeDump.storage(storage), to: output)
 
     case "elk":
+        try ElkDump.sampled(input, to: output)
+
+    case "elk-once":
         try write(ElkDump.layout(input), to: output)
 
     case "render", "probe":

@@ -11,6 +11,7 @@ serde_json.workspace = true
 png = "0.18"
 upleft-markup.workspace = true
 upleft-render.workspace = true
+upleft-elk.workspace = true
 objc2.workspace = true
 objc2-foundation = { workspace = true, features = ["NSArray", "NSData", "NSDictionary", "NSEnumerator", "NSError", "NSGeometry", "NSNotification", "NSString", "NSValue"] }
 objc2-app-kit = { workspace = true, features = [

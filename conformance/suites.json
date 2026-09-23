@@ -194,6 +194,18 @@
       "variants": [
         []
       ]
+    },
+    {
+      "name": "elk",
+      "command": "elk",
+      "output": "json",
+      "input": "json",
+      "only": [
+        "corpus/elk/"
+      ],
+      "variants": [
+        []
+      ]
     }
   ]
 }

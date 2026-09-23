@@ -11,6 +11,76 @@ import Foundation
 /// (`String`, `Double`, `Bool`, `[Any]`, `[String: Any]`), never `NSNumber`,
 /// so the importer's dynamic casts behave as they do in Downright.
 enum ElkDump {
+    /// How many independent processes lay the graph out. elk-swift's output
+    /// is not deterministic: `NetworkSimplex.treeEdges` is a `Set<NEdge>`
+    /// hashed by object address and iterated in hash order, so the layering
+    /// of graphs with several optimal layerings varies from run to run (and
+    /// hashing is seeded per process). Each process sees a different order.
+    static let samples = 16
+
+    /// `downright-oracle elk`: the distinct outputs of `samples` runs, in
+    /// order of first appearance. One output is written as is; several as
+    /// `{"alternatives": [...]}`, which `conform` accepts if the Rust output
+    /// equals any of them.
+    ///
+    /// When the instrumented copy of elk-swift is built
+    /// (`crates/elk/tools/elklab.sh` → `target/elklab`), its output is one
+    /// more candidate: elk-swift with its two nondeterministic choices made
+    /// deterministically (NetworkSimplex tree edges in insertion order,
+    /// HyperEdgeCycleDetector ties to the first candidate) — the choices
+    /// upleft-elk makes. On every graph where elk-swift is deterministic it is
+    /// byte-identical to the real output.
+    static func sampled(_ input: URL, to output: String) throws {
+        var outputs: [String] = []
+        let executable = URL(fileURLWithPath: Bundle.main.executablePath ?? CommandLine.arguments[0])
+        let scratch = FileManager.default.temporaryDirectory
+            .appendingPathComponent("downright-oracle-elk-\(getpid())-\(UUID().uuidString)")
+        try FileManager.default.createDirectory(at: scratch, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: scratch) }
+        for sample in 0..<samples {
+            let file = scratch.appendingPathComponent("\(sample).json")
+            let process = Process()
+            process.executableURL = executable
+            process.arguments = ["elk-once", input.path, file.path]
+            try process.run()
+            process.waitUntilExit()
+            guard process.terminationStatus == 0 else {
+                throw OracleError.usage("elk layout exited with status \(process.terminationStatus) (sample \(sample))")
+            }
+            let text = try String(contentsOf: file, encoding: .utf8)
+            if !outputs.contains(text) { outputs.append(text) }
+        }
+        if let lab = labExecutable() {
+            let file = scratch.appendingPathComponent("lab.json")
+            let process = Process()
+            process.executableURL = lab
+            process.arguments = [input.path, file.path]
+            try process.run()
+            process.waitUntilExit()
+            guard process.terminationStatus == 0 else {
+                throw OracleError.usage("elklab exited with status \(process.terminationStatus)")
+            }
+            let text = try String(contentsOf: file, encoding: .utf8)
+            if !outputs.contains(text) { outputs.append(text) }
+        }
+        let text = outputs.count == 1 ? outputs[0] : "{\"alternatives\":[" + outputs.joined(separator: ",") + "]}"
+        try text.write(toFile: output, atomically: true, encoding: .utf8)
+    }
+
+    /// `target/elklab/.build/release/lab`, found by walking up from this
+    /// executable (which lives under `target/oracle`).
+    static func labExecutable() -> URL? {
+        var directory = URL(fileURLWithPath: Bundle.main.executablePath ?? CommandLine.arguments[0])
+            .resolvingSymlinksInPath().deletingLastPathComponent()
+        while directory.path != "/" {
+            let candidate = directory.appendingPathComponent("elklab/.build/release/lab")
+            if FileManager.default.isExecutableFile(atPath: candidate.path) { return candidate }
+            directory = directory.deletingLastPathComponent()
+        }
+        return nil
+    }
+
+    /// `downright-oracle elk-once`: one layout in this process.
     static func layout(_ input: URL) throws -> JSON {
         let data = try Data(contentsOf: input)
         guard let graph = native(try JSONSerialization.jsonObject(with: data)) as? [String: Any] else {

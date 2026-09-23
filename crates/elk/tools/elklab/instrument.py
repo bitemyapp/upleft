@@ -3,8 +3,10 @@
 
 * ELKLAB_TRACE=1 prints the layered graph after every processor, in the same
   format as upleft-elk's UPLEFT_ELK_TRACE=1.
-* NetworkSimplex.treeEdges iterates in insertion order (upleft-elk's choice);
-  ELKLAB_HASHSET=1 restores Swift's hash order.
+* NetworkSimplex.treeEdges iterates in insertion order and
+  HyperEdgeCycleDetector breaks ties by taking the first candidate
+  (upleft-elk's choices); ELKLAB_HASHSET=1 restores Swift's hash order and
+  random tie-breaking.
 
 Usage: instrument.py <copy of Sources/ElkSwift>"""
 import os, sys
@@ -103,4 +105,11 @@ package final class _LabOrderedSet: Sequence {
     package func makeIterator() -> IndexingIterator<[NEdge]> { _labHashOrder ? Array(hashed).makeIterator() : items.makeIterator() }
 }
 ''')
+# HyperEdgeCycleDetector ties: elk-swift passes no random generator, so
+# nextRandomInt falls back to Int.random (system RNG). upleft-elk takes the
+# first candidate; ELKLAB_HASHSET=1 restores Swift's randomness.
+hecd = os.path.join(root, "ELK/org/eclipse/elk/alg/layered/p5edges/orthogonal/org_eclipse_elk_alg_layered_p5edges_orthogonal_HyperEdgeCycleDetector.swift")
+edit(hecd, [
+    ("        return Int.random(in: 0..<bound)", "        return ProcessInfo.processInfo.environment[\"ELKLAB_HASHSET\"] != nil ? Int.random(in: 0..<bound) : 0"),
+])
 print("instrumented", root)
