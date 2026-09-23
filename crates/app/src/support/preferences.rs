@@ -410,6 +410,12 @@ impl Preferences {
         self.state.lock().unwrap().values.clone()
     }
 
+    /// `values.textSizeAdjustment` without copying the whole `Values`
+    /// (`PanelFont` reads it for every label a panel builds).
+    pub fn text_size_adjustment(&self) -> f64 {
+        self.state.lock().unwrap().values.text_size_adjustment
+    }
+
     /// What happened when the settings file was read.
     pub fn load(&self) -> Load {
         self.state.lock().unwrap().load.clone()

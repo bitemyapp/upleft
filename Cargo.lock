@@ -266,6 +266,7 @@ dependencies = [
  "objc2",
  "objc2-core-foundation",
  "objc2-core-graphics",
+ "objc2-core-text",
  "objc2-foundation",
  "objc2-quartz-core",
  "objc2-uniform-type-identifiers",
@@ -323,6 +324,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "0cde0dfb48d25d2b4862161a4d5fcc0e3c24367869ad306b0c9ec0073bfed92d"
 dependencies = [
  "bitflags",
+ "objc2",
  "objc2-core-foundation",
  "objc2-core-graphics",
 ]
@@ -590,7 +592,10 @@ dependencies = [
  "objc2-app-kit",
  "objc2-avf-audio",
  "objc2-core-foundation",
+ "objc2-core-graphics",
+ "objc2-core-text",
  "objc2-foundation",
+ "objc2-quartz-core",
  "objc2-uniform-type-identifiers",
  "serde_json",
  "sha2",

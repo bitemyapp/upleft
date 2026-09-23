@@ -27,13 +27,37 @@ objc2-foundation = { workspace = true, features = [
     "NSLocale", "NSLock", "NSNotification", "NSNull", "NSObjCRuntime", "NSObject", "NSOperation", "NSPathUtilities",
     "NSProcessInfo", "NSRange", "NSRegularExpression", "NSRunLoop", "NSString", "NSTextCheckingResult", "NSThread", "NSTimer", "NSURL", "NSURLCache", "NSURLRequest", "NSURLResponse", "NSURLSession", "NSUUID", "NSUndoManager", "NSUserDefaults",
     "NSValue", "NSXMLDocument", "NSXMLElement", "NSXMLNode", "NSXMLParser", "block2",
+    "NSGeometry", "NSSet", "NSRelativeDateTimeFormatter", "NSNumberFormatter", "NSByteCountFormatter", "NSItemProvider",
+    "NSKeyValueCoding", "NSKeyValueObserving", "NSOrderedSet", "NSSortDescriptor", "NSCalendar", "NSTimeZone", "NSDistributedNotificationCenter",
 ] }
 objc2-app-kit = { workspace = true, features = [
     "NSAlert", "NSAppearance", "NSApplication", "NSAttributedString", "NSBitmapImageRep", "NSColor", "NSColorSpace", "NSEvent", "NSFont", "NSGraphics", "NSImage", "NSImageRep", "NSParagraphStyle", "NSPasteboard", "NSResponder", "NSRunningApplication", "NSSpeechSynthesizer", "NSText", "NSTextStorage", "NSWorkspace", "block2", "objc2-core-foundation", "objc2-uniform-type-identifiers",
+    # The panels (Panels/): views, controls, tables, windows and layers.
+    "NSAccessibility", "NSAccessibilityConstants", "NSAccessibilityCustomAction", "NSAccessibilityElement", "NSAccessibilityProtocols",
+    "NSAnimation", "NSAnimationContext", "NSBezierPath", "NSBox", "NSButton", "NSButtonCell", "NSCell", "NSClipView", "NSColorList",
+    "NSControl", "NSCursor", "NSDragging", "NSDraggingItem", "NSDraggingSession", "NSFontDescriptor", "NSFontManager", "NSGlassEffectView",
+    "NSGraphicsContext", "NSHapticFeedback", "NSImageCell", "NSImageView", "NSLayoutAnchor", "NSLayoutConstraint", "NSLayoutGuide",
+    "NSMenu", "NSMenuItem", "NSPanel", "NSPopUpButton", "NSPopUpButtonCell", "NSPopover", "NSProgressIndicator", "NSScreen", "NSScrollView",
+    "NSScroller", "NSSearchField", "NSSearchFieldCell", "NSSegmentedControl", "NSSegmentedCell", "NSShadow", "NSSplitView", "NSStackView",
+    "NSStringDrawing", "NSSwitch", "NSTableCellView", "NSTableColumn", "NSTableHeaderView", "NSTableRowView", "NSTableView",
+    "NSTableViewDiffableDataSource", "NSTextAttachment", "NSTextContainer", "NSTextField", "NSTextFieldCell", "NSTextLayoutManager",
+    "NSTextContentManager", "NSTextView", "NSTextCheckingClient", "NSTextInputClient", "NSTrackingArea", "NSUserInterfaceCompression",
+    "NSUserInterfaceItemIdentification", "NSUserInterfaceLayout", "NSUserInterfaceValidation", "NSView", "NSViewController",
+    "NSVisualEffectView", "NSWindow", "NSWindowController", "NSSpellProtocol", "NSKeyValueBinding", "NSLayoutManager", "NSSharingService",
+    "NSPasteboardItem", "NSItemProvider", "NSTextList", "NSTextTable", "NSGestureRecognizer", "NSClickGestureRecognizer", "NSToolbar",
+    "NSToolbarItem", "NSTitlebarAccessoryViewController", "NSWindowScripting", "NSSound", "NSTextFinder", "NSSecureTextField",
+    "objc2-core-graphics", "objc2-quartz-core", "objc2-core-text",
 ] }
+objc2-quartz-core = { version = "0.3.2", default-features = false, features = [
+    "std", "objc2-core-foundation", "objc2-core-graphics", "CABase", "CAAnimation", "CADisplayLink", "CAMediaTiming",
+    "CAMediaTimingFunction", "CATransform3D", "CALayer", "CATransaction", "CAShapeLayer", "CATextLayer", "CAGradientLayer",
+    "CAReplicatorLayer", "CAScrollLayer",
+] }
+objc2-core-graphics = { workspace = true, features = ["CGContext", "CGPath", "CGColor", "CGColorSpace", "CGImage", "CGAffineTransform", "CGGeometry"] }
+objc2-core-text = { workspace = true, features = ["CTFont", "CTFontDescriptor", "objc2-core-graphics"] }
 objc2-avf-audio = { version = "0.3.2", default-features = false, features = ["std", "AVSpeechSynthesis"] }
 objc2-uniform-type-identifiers = { version = "0.3.2", default-features = false, features = ["std", "UTType", "UTCoreTypes"] }
-objc2-core-foundation = { workspace = true, features = ["CFArray", "CFBase", "CFDate", "CFRunLoop", "CFString", "CFURL"] }
+objc2-core-foundation = { workspace = true, features = ["CFArray", "CFBase", "CFCGTypes", "CFDate", "CFRunLoop", "CFString", "CFURL"] }
 
 [dev-dependencies]
 serde_json.workspace = true
