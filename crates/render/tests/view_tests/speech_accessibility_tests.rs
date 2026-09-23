@@ -1,5 +1,4 @@
-//! Port of `SpeechAccessibilityTests.swift`. The `DensityGutterView` half of
-//! `rendererAccessibilitySurface` moves with the density gutter port.
+//! Port of `SpeechAccessibilityTests.swift`.
 
 use std::cell::Cell;
 use std::rc::Rc;
@@ -11,6 +10,7 @@ use objc2_foundation::NSString;
 use upleft_core::NSRange;
 use upleft_render::engine::render_metrics;
 use upleft_render::render_contracts::RenderMode;
+use upleft_render::view::density_gutter_view::DensityGutterView;
 use upleft_render::view::gutter_rail_view::GutterRailView;
 use upleft_render::view::markdown_text_view::MarkdownTextView;
 use upleft_render::view::markdown_text_view_delegate::MarkdownTextViewDelegate;
@@ -47,6 +47,7 @@ fn action_names(names: Option<objc2::rc::Retained<objc2_foundation::NSArray<objc
 fn renderer_accessibility_surface(mtm: MainThreadMarker) {
     let (view, _storage) = view_with("# Heading\n", rect(0.0, 0.0, 640.0, 300.0), mtm);
     let rail = GutterRailView::new(&view, mtm);
+    let density = DensityGutterView::new(view.style_sheet(), mtm);
 
     expect!(rail.accessibilityRole().map(|role| role.to_string()) == Some("AXGroup".to_owned()));
     expect!(rail.accessibilityLabel().map(|label| label.to_string()) == Some("Document margin".to_owned()));
@@ -54,6 +55,8 @@ fn renderer_accessibility_surface(mtm: MainThreadMarker) {
         action_names(rail.accessibilityCustomActions())
             == vec!["Choose current heading level".to_owned(), "Toggle current section fold".to_owned()]
     );
+    expect!(density.accessibilityRole().map(|role| role.to_string()) == Some("AXScrollBar".to_owned()));
+    expect!(action_names(density.accessibilityCustomActions()) == vec!["Show document outline".to_owned()]);
     expect!(view.accessibilityRole().map(|role| role.to_string()) == Some("AXTextArea".to_owned()));
     expect!(
         action_names(view.accessibilityCustomActions())

@@ -3,7 +3,7 @@
 
 use objc2::MainThreadMarker;
 use objc2::rc::Retained;
-use objc2_app_kit::{NSAppearance, NSApplication, NSColor, NSFont, NSFontWeightSemibold};
+use objc2_app_kit::{NSAnimationContext, NSAppearance, NSApplication, NSColor, NSFont, NSFontWeightSemibold};
 
 use crate::swift_compat::smin;
 use crate::theme::style_sheet::StyleSheet;
@@ -32,9 +32,6 @@ impl StyleSheet {
 }
 
 /// Small chrome constants the density gutter needs.
-///
-/// `GutterChrome.animate` wraps `Motion.run`, which belongs to `Motion.swift`
-/// and is ported with it.
 pub struct GutterChrome;
 
 impl GutterChrome {
@@ -45,6 +42,17 @@ impl GutterChrome {
 
     pub fn body_font() -> Retained<NSFont> {
         NSFont::systemFontOfSize(11.0)
+    }
+
+    /// Full respect for Reduce Motion (§11.4): `Motion.run` with its default
+    /// curve.
+    pub fn animate(
+        reduce_motion: bool,
+        duration: f64,
+        body: impl Fn(&NSAnimationContext) + 'static,
+        completion: Option<Box<dyn Fn() + 'static>>,
+    ) {
+        crate::motion::run(reduce_motion, duration, crate::motion::Curve::Decelerate, body, completion);
     }
 }
 

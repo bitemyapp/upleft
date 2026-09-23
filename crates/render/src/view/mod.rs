@@ -1,11 +1,9 @@
 //! Port of `Sources/MarkdownRender/View`.
-//!
-//! The density gutter and outline windows (`DensityGutterView`,
-//! `DensityGutterPreviewWindow`, `DensityOutlineWindow`) are not ported yet;
-//! `MarkdownContainerView` recognises a `DensityGutterView` accessory by
-//! its Objective-C class name, as the Swift does by type.
 
 pub mod base_display_map;
+pub mod density_gutter_preview_window;
+pub mod density_gutter_view;
+pub mod density_outline_window;
 pub mod footnote_margin_view;
 pub mod fragment_provider;
 pub mod gutter_rail_view;

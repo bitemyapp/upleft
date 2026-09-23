@@ -1,10 +1,11 @@
 //! Port of `Tests/MarkdownRenderTests/MotionSystemTests.swift`.
 //!
 //! The motion system's own arithmetic, separate from any surface that uses
-//! it. `delayedSpringsReleaseOnTheirOwn` exercises
-//! `DensityGutterView.PipSimulation` and moves with the density gutter port.
+//! it.
 
 use objc2_app_kit::{NSColor, NSColorSpace};
+use objc2_core_foundation::CGPoint;
+use upleft_render::view::density_gutter_view::PipSimulation;
 use upleft_render::motion::{
     self, SpringColor, SpringScalar, morph_cut, oklab, scroll_duration, SPRING_DELIBERATE, SPRING_QUICK,
     SPRING_STANDARD,
@@ -105,6 +106,31 @@ fn handoff_is_mid_flight() {
     const { assert!(morph_cut::HANDOFF < 1.0) };
     assert!(!morph_cut::in_flight(0.0));
     assert!(!morph_cut::in_flight(1.0));
+}
+
+/// A delayed spring releases from elapsed frames, not from an event
+/// (`delayedSpringsReleaseOnTheirOwn`).
+#[test]
+fn delayed_springs_release_on_their_own() {
+    let red = NSColor::systemRedColor().CGColor();
+    let mut pip = PipSimulation::new(CGPoint::new(0.0, 0.0), 4.0, &red);
+    pip.retarget(CGPoint::new(0.0, 0.0), 4.0, &red, motion::PREVIEW_STAGGER * 3.0, false);
+    assert!(!pip.engaged);
+
+    // Nothing but frames — no retarget, no event, no clock.
+    let mut frames = 0;
+    while !pip.engaged && frames < 600 {
+        let _ = pip.advance(1.0 / 120.0);
+        frames += 1;
+    }
+    assert!(pip.engaged, "a scheduled step never joined the cascade");
+
+    // And having joined, it must eventually settle so the driver can park.
+    let mut settling = 0;
+    while pip.advance(1.0 / 120.0) && settling < 2000 {
+        settling += 1;
+    }
+    assert!(settling < 2000, "the driver would spin for ever on this pip");
 }
 
 // MARK: - Colour
