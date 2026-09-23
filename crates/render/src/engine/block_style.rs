@@ -196,7 +196,7 @@ pub struct BlockStyleFactory {
 }
 
 /// `NSAttributedString(string:attributes: [.font: font]).size().width`.
-pub(crate) fn string_width(string: &str, font: &NSFont) -> f64 {
+pub fn string_width(string: &str, font: &NSFont) -> f64 {
     let dictionary = NSDictionary::from_slices(&[keys::font()], &[font.as_ref() as &AnyObject]);
     // SAFETY: the dictionary maps an attribute key to a font.
     let attributed =

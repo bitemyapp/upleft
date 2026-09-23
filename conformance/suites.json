@@ -136,6 +136,12 @@
       ]
     },
     {
+      "name": "clipboard",
+      "command": "clipboard",
+      "output": "json",
+      "variants": [[]]
+    },
+    {
       "name": "render",
       "command": "render",
       "output": "png",

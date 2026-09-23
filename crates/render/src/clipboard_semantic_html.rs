@@ -138,8 +138,8 @@ impl ClipboardSemanticHTML {
 }
 
 fn heading_parts(line: &str) -> Option<(usize, String)> {
-    let hashes = swift_text::graphemes(line).take_while(|g| *g == "#").count();
-    if !(1..=6).contains(&hashes) || swift_text::first(swift_text::drop_first(line, hashes)) != Some(" ") {
+    let hashes = swift_text::graphemes(line).take_while(|g| is(g, '#')).count();
+    if !(1..=6).contains(&hashes) || !swift_text::first(swift_text::drop_first(line, hashes)).is_some_and(|g| is(g, ' ')) {
         return None;
     }
     Some((hashes, swift_text::trim_whitespaces(swift_text::drop_first(line, hashes)).to_owned()))
@@ -149,10 +149,12 @@ fn list_part(line: &str) -> Option<ListEntry> {
     let mut indent = 0isize;
     let mut consumed = 0usize;
     for g in swift_text::graphemes(line) {
-        match g {
-            " " => indent += 1,
-            "\t" => indent += 4,
-            _ => break,
+        if is(g, ' ') {
+            indent += 1;
+        } else if is(g, '\t') {
+            indent += 4;
+        } else {
+            break;
         }
         consumed += 1;
     }
@@ -222,7 +224,7 @@ fn is_table_delimiter(line: &str) -> bool {
     }
     cells.iter().all(|cell| {
         let value = swift_text::trim_whitespaces(cell);
-        swift_text::count(value) >= 3 && swift_text::graphemes(value).all(|g| g == "-" || g == ":")
+        swift_text::count(value) >= 3 && swift_text::graphemes(value).all(|g| is(g, '-') || is(g, ':'))
     })
 }
 
@@ -254,12 +256,23 @@ fn find_graphemes(characters: &[&str], from: usize, needle: &[&str]) -> Option<(
         return None;
     }
     (from..characters.len().saturating_sub(needle.len() - 1))
-        .find(|&start| characters[start..start + needle.len()] == *needle)
+        .find(|&start| same(&characters[start..start + needle.len()], needle))
         .map(|start| (start, start + needle.len()))
 }
 
 fn has_prefix_at(characters: &[&str], index: usize, prefix: &[&str]) -> bool {
-    characters.len() >= index + prefix.len() && characters[index..index + prefix.len()] == *prefix
+    characters.len() >= index + prefix.len() && same(&characters[index..index + prefix.len()], prefix)
+}
+
+/// `Character == Character` for a one-scalar ASCII right-hand side.
+#[inline]
+fn is(g: &str, c: char) -> bool {
+    swift_text::char_is(g, c)
+}
+
+/// Character-wise equality of two runs whose right-hand side is ASCII.
+fn same(a: &[&str], b: &[&str]) -> bool {
+    a.len() == b.len() && a.iter().zip(b).all(|(x, y)| swift_text::char_eq(x, y))
 }
 
 fn inline(input: &str) -> String {
@@ -269,13 +282,13 @@ fn inline(input: &str) -> String {
     let mut index = 0usize;
     while index < end {
         let character = characters[index];
-        if character == "<" {
+        if is(character, '<') {
             // Raw HTML is source text from the document, not trusted markup.
             output += "&lt;";
             index += 1;
             continue;
         }
-        if character == "\\" {
+        if is(character, '\\') {
             let next = index + 1;
             if next < end {
                 output += &escape(characters[next]);
@@ -284,7 +297,7 @@ fn inline(input: &str) -> String {
             }
         }
         if has_prefix_at(&characters, index, &["*", "*"]) || has_prefix_at(&characters, index, &["_", "_"]) {
-            let marker = [characters[index], characters[index + 1]];
+            let marker = if is(characters[index], '*') { ["*", "*"] } else { ["_", "_"] };
             if let Some((found, after)) = find_graphemes(&characters, index + 2, &marker) {
                 output += &format!("<strong>{}</strong>", inline(&characters[index + 2..found].concat()));
                 index = after;
@@ -298,19 +311,19 @@ fn inline(input: &str) -> String {
             index = after;
             continue;
         }
-        if character == "`"
-            && let Some(close) = (index + 1..end).find(|&i| characters[i] == "`")
+        if is(character, '`')
+            && let Some(close) = (index + 1..end).find(|&i| is(characters[i], '`'))
         {
             output += &format!("<code>{}</code>", escape(&characters[index + 1..close].concat()));
             index = close + 1;
             continue;
         }
         if has_prefix_at(&characters, index, &["!", "["])
-            && let Some(close) = (index + 2..end).find(|&i| characters[i] == "]")
+            && let Some(close) = (index + 2..end).find(|&i| is(characters[i], ']'))
             && has_prefix_at(&characters, close + 1, &["("])
         {
             let destination_start = close + 1;
-            if let Some(destination_end) = (destination_start..end).find(|&i| characters[i] == ")") {
+            if let Some(destination_end) = (destination_start..end).find(|&i| is(characters[i], ')')) {
                 let alt = characters[index + 2..close].concat();
                 let destination = characters[destination_start + 1..destination_end].concat();
                 let source = escape_attribute(&destination);
@@ -323,12 +336,12 @@ fn inline(input: &str) -> String {
                 continue;
             }
         }
-        if character == "["
-            && let Some(close) = (index + 1..end).find(|&i| characters[i] == "]")
+        if is(character, '[')
+            && let Some(close) = (index + 1..end).find(|&i| is(characters[i], ']'))
             && has_prefix_at(&characters, close + 1, &["("])
         {
             let destination_start = close + 1;
-            if let Some(destination_end) = (destination_start..end).find(|&i| characters[i] == ")") {
+            if let Some(destination_end) = (destination_start..end).find(|&i| is(characters[i], ')')) {
                 let label = characters[index + 1..close].concat();
                 let destination = characters[destination_start + 1..destination_end].concat();
                 output += &format!("<a href=\"{}\">{}</a>", escape_attribute(&destination), inline(&label));
