@@ -35,8 +35,10 @@ use super::update_state_machine::{UpdateEvent, UpdatePhase, UpdateStage, UpdateS
 /// retry closure). The entire contract of the update UI lives here: call it
 /// or discard it, but never twice, and never leak it past dismissal.
 pub struct Capability<T> {
-    body: RefCell<Option<Box<dyn FnOnce(T)>>>,
+    body: RefCell<Option<CapabilityBody<T>>>,
 }
+
+type CapabilityBody<T> = Box<dyn FnOnce(T)>;
 
 impl<T> Capability<T> {
     pub fn new(body: impl FnOnce(T) + 'static) -> Capability<T> {

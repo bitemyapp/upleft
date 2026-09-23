@@ -701,6 +701,7 @@ fn renders_every_updater_phase_without_throwing() {
 
 // MARK: - Release watch policy
 
+#[allow(clippy::field_reassign_with_default)] // the Swift test's shape: default, then set
 fn frontmost_checks_far_more_often_than_backgrounded() {
     let mut policy = ReleaseWatchPolicy::default();
     policy.is_app_active = true;
