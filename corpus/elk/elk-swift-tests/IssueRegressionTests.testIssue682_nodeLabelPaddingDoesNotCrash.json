@@ -1,0 +1,27 @@
+{
+ "id": "root",
+ "layoutOptions": {
+  "elk.algorithm": "layered",
+  "elk.direction": "RIGHT"
+ },
+ "children": [
+  {
+   "id": "n1",
+   "width": 0.0,
+   "height": 0.0,
+   "layoutOptions": {
+    "elk.nodeSize.constraints": "NODE_LABELS",
+    "elk.nodeLabels.placement": "INSIDE V_TOP H_CENTER",
+    "elk.nodeLabels.padding": "[top=21,left=54,bottom=43,right=32]"
+   },
+   "labels": [
+    {
+     "id": "l1",
+     "text": "foobar",
+     "width": 23.0,
+     "height": 22.0
+    }
+   ]
+  }
+ ]
+}

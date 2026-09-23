@@ -22,6 +22,11 @@ stamp binary:
     mv "{{binary}}.stamped" "{{binary}}"
     codesign --force --sign - "{{binary}}"
 
+# Build the instrumented elk-swift copy that settles the graphs on which
+# elk-swift itself is nondeterministic (see crates/elk/PORTING.md).
+elklab:
+    crates/elk/tools/elklab.sh
+
 # Build the original Downright.app from the submodule (for window-level conformance).
 downright-app:
     cd vendor/downright && SCRATCH=../../target/downright-app Scripts/bundle-app.sh
