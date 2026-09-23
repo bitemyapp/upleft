@@ -1864,7 +1864,9 @@ impl PanelSegmentedControl {
         this.setAccessibilityElement(true);
         set_role(&*this, role::radio_group());
         set_label(&*this, &ivars.items.join("/"));
-        set_value(&*this, &ivars.items[selected as usize]);
+        // Swift reads the *parameter* here (it shadows the clamped
+        // property), so an out-of-range index traps; so does this.
+        set_value(&*this, &ivars.items[selected_index as usize]);
         this
     }
 

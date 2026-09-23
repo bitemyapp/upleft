@@ -24,6 +24,7 @@ pub mod unicode;
 // App-layer suites (Swift side: oracle/app, `downright-app-oracle`).
 pub mod app_bench;
 pub mod app_window;
+pub mod panel;
 pub mod down_cli;
 pub mod find;
 pub mod formats;
@@ -52,6 +53,9 @@ pub const APP_COMMANDS: &[&str] = &[
     "bench-find",
     "app-window",
     "bench-app-window",
+    "panel",
+    "panel-model",
+    "bench-panel",
 ];
 
 use std::path::PathBuf;
@@ -220,6 +224,8 @@ pub fn run(request: &Request) -> Result<(), Failure> {
         "bench-find" => app_bench::find(request),
         "app-window" => app_window::run(request),
         "bench-app-window" => app_window::bench(request),
+        "panel" => panel::run_capture(request),
+        "panel-model" => panel::run_model(request),
         _ => Err(Failure::NotPorted),
     }
 }

@@ -245,3 +245,39 @@ harness = false
 [[test]]
 name = "settings_pane_tests"
 harness = false
+
+# The panels' view-level tests (DownrightAppTests), one binary per group of
+# panels; each runs on the main thread (tests/main_thread/mod.rs) and puts any
+# window it needs off-screen, never activated.
+
+[[test]]
+name = "panels_chrome_tests"
+harness = false
+
+[[test]]
+name = "panels_toolbar_tests"
+harness = false
+
+[[test]]
+name = "panels_find_tests"
+harness = false
+
+[[test]]
+name = "panels_task_tests"
+harness = false
+
+[[test]]
+name = "panels_update_tests"
+harness = false
+
+[[test]]
+name = "panels_editor_tests"
+harness = false
+
+[[test]]
+name = "panels_diagnostics_tests"
+harness = false
+
+[[test]]
+name = "panels_sidebar_tests"
+harness = false

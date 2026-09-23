@@ -19,7 +19,7 @@ use objc2_core_graphics::CGColor;
 use objc2_foundation::{NSArray, NSDictionary, NSNull, NSString};
 use objc2_quartz_core::{CALayer, CATransaction};
 
-pub use upleft_render::appkit_compat::{RECT_ZERO, RectExt, main_after, main_async, ns_string, rect, rect_fill};
+pub use upleft_render::appkit_compat::{RECT_ZERO, RectExt, WorkItem, main_after, main_async, ns_string, rect, rect_fill};
 pub use upleft_render::swift_compat::{smax, smin};
 
 /// `CGAffineTransform.identity`, for the `transform:` argument the Swift
