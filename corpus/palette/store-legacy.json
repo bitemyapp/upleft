@@ -1,0 +1,17 @@
+{
+ "store": {
+  "file": "{\"overrides\":{\"save\":[\"opt+cmd+s\"],\"increaseTextSize\":[\"cmd++\",\"shift+cmd+=\"],\"noSuchCommand\":[\"cmd+x\"],\"showKeybindings\":[\"CMD+/\"]},\"vimKeysEnabled\":false}",
+  "operations": [
+   {
+    "set": "close",
+    "binding": {
+     "key": "w",
+     "modifiers": [
+      "command",
+      "shift"
+     ]
+    }
+   }
+  ]
+ }
+}

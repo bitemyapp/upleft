@@ -1,0 +1,11 @@
+{
+ "store": {
+  "file": "",
+  "onLoadFailure": true,
+  "operations": [
+   {
+    "vim": true
+   }
+  ]
+ }
+}

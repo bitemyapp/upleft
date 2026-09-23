@@ -1,0 +1,21 @@
+{
+ "store": {
+  "file": "{\"overrides\":{}}",
+  "onLoadFailure": true,
+  "operations": [
+   {
+    "conflicts": {
+     "key": "s",
+     "modifiers": [
+      "command"
+     ]
+    },
+    "excluding": "saveAs"
+   },
+   {
+    "set": "save",
+    "binding": null
+   }
+  ]
+ }
+}

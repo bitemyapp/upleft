@@ -1,0 +1,16 @@
+{
+ "store": {
+  "fileHex": "efbbbf7b2276696d4b657973456e61626c6564223a66616c73652c226f7665727269646573223a7b227a6f6f6d496e223a5b5d2c227a6f6f6d4f7574223a5b226374726c2b6f70742b636d642b2d225d7d7d",
+  "operations": [
+   {
+    "set": "zoomIn",
+    "binding": {
+     "key": "=",
+     "modifiers": [
+      "command"
+     ]
+    }
+   }
+  ]
+ }
+}

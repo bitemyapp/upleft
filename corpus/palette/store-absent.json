@@ -1,0 +1,262 @@
+{
+ "store": {
+  "events": [
+   {
+    "keyCode": 1,
+    "characters": "s",
+    "modifiers": [
+     "command",
+     "capsLock"
+    ]
+   },
+   {
+    "keyCode": 1,
+    "characters": "S",
+    "modifiers": [
+     "command",
+     "shift"
+    ]
+   },
+   {
+    "keyCode": 1,
+    "characters": "s",
+    "modifiers": [
+     "command",
+     "function",
+     "help"
+    ]
+   },
+   {
+    "keyCode": 42,
+    "characters": "\\",
+    "modifiers": [
+     "command"
+    ]
+   },
+   {
+    "keyCode": 36,
+    "characters": "\r",
+    "modifiers": [
+     "command"
+    ]
+   },
+   {
+    "keyCode": 76,
+    "characters": "\u0003",
+    "modifiers": [
+     "command"
+    ]
+   },
+   {
+    "keyCode": 49,
+    "characters": " ",
+    "modifiers": [
+     "option"
+    ]
+   },
+   {
+    "keyCode": 48,
+    "characters": "\t",
+    "modifiers": []
+   },
+   {
+    "keyCode": 48,
+    "characters": "\t",
+    "modifiers": [
+     "shift",
+     "numericPad"
+    ]
+   },
+   {
+    "keyCode": 24,
+    "characters": "+",
+    "modifiers": [
+     "command",
+     "shift"
+    ]
+   },
+   {
+    "keyCode": 24,
+    "characters": "=",
+    "modifiers": [
+     "command"
+    ]
+   },
+   {
+    "keyCode": 7,
+    "characters": "",
+    "modifiers": [
+     "command"
+    ]
+   },
+   {
+    "keyCode": 125,
+    "characters": "",
+    "modifiers": [
+     "option",
+     "shift",
+     "numericPad",
+     "function"
+    ]
+   },
+   {
+    "keyCode": 0,
+    "characters": "É",
+    "modifiers": [
+     "command"
+    ]
+   },
+   {
+    "keyCode": 0,
+    "characters": "k",
+    "modifiers": 1179648
+   },
+   {
+    "keyCode": 0,
+    "characters": "k",
+    "modifiers": 4294967295
+   }
+  ],
+  "operations": [
+   {
+    "conflicts": {
+     "key": "f",
+     "modifiers": [
+      "command"
+     ]
+    },
+    "excluding": "findNext"
+   },
+   {
+    "conflicts": {
+     "key": "f",
+     "modifiers": [
+      "command"
+     ]
+    },
+    "excluding": "find"
+   },
+   {
+    "conflicts": {
+     "key": "b",
+     "modifiers": [
+      "command"
+     ]
+    },
+    "excluding": "save"
+   },
+   {
+    "conflicts": {
+     "key": "tab",
+     "modifiers": []
+    },
+    "excluding": "pageUp"
+   },
+   {
+    "vim": false
+   },
+   {
+    "vim": true
+   },
+   {
+    "vim": true
+   },
+   {
+    "set": "save",
+    "binding": {
+     "key": "s",
+     "modifiers": [
+      "command",
+      "option"
+     ]
+    }
+   },
+   {
+    "set": "find",
+    "binding": null
+   },
+   {
+    "set": "increaseTextSize",
+    "binding": {
+     "key": "+",
+     "modifiers": [
+      "command",
+      "shift"
+     ]
+    }
+   },
+   {
+    "set": "splitView",
+    "binding": {
+     "key": "/",
+     "modifiers": [
+      "command"
+     ]
+    }
+   },
+   {
+    "set": "zoomIn",
+    "binding": {
+     "key": "\"",
+     "modifiers": [
+      "control",
+      "numericPad",
+      "capsLock"
+     ]
+    }
+   },
+   {
+    "set": "open",
+    "binding": {
+     "key": "f",
+     "modifiers": [
+      "command"
+     ]
+    }
+   },
+   {
+    "conflicts": {
+     "key": "f",
+     "modifiers": [
+      "command"
+     ]
+    },
+    "excluding": "save"
+   },
+   {
+    "set": "goToLine",
+    "binding": {
+     "key": "é",
+     "modifiers": [
+      "option"
+     ]
+    }
+   },
+   {
+    "set": "toggleBold",
+    "binding": {
+     "key": "é",
+     "modifiers": [
+      "option"
+     ]
+    }
+   },
+   {
+    "vim": false
+   },
+   {
+    "reset": true
+   },
+   {
+    "set": "commandPalette",
+    "binding": {
+     "key": "p",
+     "modifiers": [
+      "command",
+      "shift"
+     ]
+    }
+   }
+  ]
+ }
+}
