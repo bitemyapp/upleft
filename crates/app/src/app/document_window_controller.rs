@@ -141,6 +141,9 @@ mod opening;
 mod presentation;
 mod views;
 
+/// For the extension modules: a `Send` stand-in for `[weak self]`
+/// (`handle()`), resolved on the main thread.
+#[allow(unused_imports)]
 pub(crate) use construction::ControllerHandle;
 
 use std::cell::{Cell, OnceCell, RefCell};

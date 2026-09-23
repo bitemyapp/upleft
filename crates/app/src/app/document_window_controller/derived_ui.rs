@@ -25,10 +25,8 @@ use upleft_render::view::density_gutter_view::DensityGutterView;
 use upleft_render::view::density_outline_window::DensityOutlineEntry;
 
 use objc2::DefinedClass as _;
-use objc2::MainThreadOnly as _;
 use objc2_app_kit::NSAnimatablePropertyContainer as _;
 use objc2_quartz_core::NSValueCATransform3DAdditions as _;
-use upleft_render::appkit_compat::RectExt as _;
 use super::DocumentWindowController;
 use crate::ai::markdown_document::{ExternalEvent, Phase, PresentationState};
 use crate::panels::appkit_support::activate;
@@ -418,7 +416,7 @@ impl DocumentWindowController {
             let changes = self.markdown_document().changes();
             bar.configure(
                 message,
-                Summary::new(&changes.unread_marks(), self.markdown_document().storage().length() as isize),
+                Summary::from_marks(&changes.unread_marks(), self.markdown_document().storage().length() as isize),
             );
         }
         root.setNeedsLayout(true);
@@ -527,7 +525,7 @@ impl DocumentWindowController {
             let changes = RcBlock::new(move |context: std::ptr::NonNull<NSAnimationContext>| {
                 let context = unsafe { context.as_ref() };
                 context.setDuration(0.16);
-                let animator = unsafe { animated.animator() };
+                let animator = animated.animator();
                 animator.setAlphaValue(0.0);
             });
             let weak = ObjcWeak::new(self);

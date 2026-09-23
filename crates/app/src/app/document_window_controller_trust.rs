@@ -267,7 +267,7 @@ impl DocumentWindowController {
 }
 
 impl TrustPromptViewDelegate for DocumentWindowControllerDelegates {
-    fn trust_prompt(&self, view: &TrustPromptView, decision: TrustPromptDecision, request: &TrustRequest) {
+    fn trust_prompt_did_choose(&self, view: &TrustPromptView, decision: TrustPromptDecision, request: &TrustRequest) {
         if let Some(controller) = self.controller() {
             controller.trust_prompt_did_choose(view, decision, request);
         }

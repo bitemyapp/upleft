@@ -21,7 +21,6 @@ use upleft_render::motion::{self, Curve, MorphAnchor};
 use objc2::DefinedClass as _;
 use objc2::MainThreadOnly as _;
 use objc2_app_kit::{NSAnimatablePropertyContainer as _, NSAppearanceCustomization as _};
-use upleft_render::appkit_compat::RectExt as _;
 use super::DocumentWindowController;
 use crate::app::document_window::DocumentWindow;
 use crate::panels::appkit_support::{activate, downcast};
@@ -252,7 +251,7 @@ impl DocumentWindowController {
             let context = unsafe { context.as_ref() };
             context.setDuration(motion::QUICK);
             context.setTimingFunction(Some(&motion::timing(Curve::EaseOut)));
-            let animator = unsafe { ring.animator() };
+            let animator = ring.animator();
             animator.setAlphaValue(1.0);
         });
         NSAnimationContext::runAnimationGroup(&changes);

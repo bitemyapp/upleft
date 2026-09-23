@@ -14,8 +14,6 @@ use upleft_render::view::markdown_text_view::MarkdownTextView;
 use upleft_render::view::markdown_text_view_delegate::{MarkdownTextViewDelegate, ScrollPosition};
 
 use objc2::DefinedClass as _;
-use objc2::MainThreadOnly as _;
-use upleft_render::appkit_compat::RectExt as _;
 use super::{DocumentWindowController, FocusDimmingView};
 use crate::app::themed_split_view::ThemedSplitView;
 use crate::panels::appkit_support::{activate, downcast};

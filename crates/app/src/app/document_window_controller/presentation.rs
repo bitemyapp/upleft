@@ -17,7 +17,6 @@ use upleft_render::view::markdown_text_view::MarkdownTextView;
 use upleft_render::view::markdown_text_view_delegate::ScrollPosition;
 
 use objc2::DefinedClass as _;
-use objc2::MainThreadOnly as _;
 use objc2_app_kit::NSAppearanceCustomization as _;
 use super::{DocumentRootView, DocumentWindowController};
 use crate::ai::path_resolver::PathResolver;
