@@ -1,7 +1,57 @@
-{"panel": "PanelChrome", "theme": "Paper Light", "width": 336, "height": 400, "runs": 150, "warmup": 20,
+{
+ "panel": "PanelChrome",
+ "theme": "Paper Light",
+ "width": 336,
+ "height": 400,
+ "runs": 1000,
+ "warmup": 50,
  "state": {},
  "states": [
-  {"name": "segmented", "kind": "segmented", "items": ["Tasks", "History", "Document"], "selectedIndex": 1, "frame": [10, 10, 300, 26], "draw": true},
-  {"name": "empty state", "kind": "emptyState", "symbol": "checklist", "title": "No tasks", "subtitle": "Add a task with - [ ] in the document.", "draw": true},
-  {"name": "message bar", "kind": "messageBar", "message": "3 changes since you last read this", "actions": ["Review", "Accept All"], "symbols": ["chevron.up", "chevron.down"], "status": "1 of 3", "frame": [0, 0, 336, 32], "draw": true}
- ]}
+  {
+   "name": "segmented",
+   "kind": "segmented",
+   "items": [
+    "Tasks",
+    "History",
+    "Document"
+   ],
+   "selectedIndex": 1,
+   "frame": [
+    10,
+    10,
+    300,
+    26
+   ],
+   "draw": true
+  },
+  {
+   "name": "empty state",
+   "kind": "emptyState",
+   "symbol": "checklist",
+   "title": "No tasks",
+   "subtitle": "Add a task with - [ ] in the document.",
+   "draw": true
+  },
+  {
+   "name": "message bar",
+   "kind": "messageBar",
+   "message": "3 changes since you last read this",
+   "actions": [
+    "Review",
+    "Accept All"
+   ],
+   "symbols": [
+    "chevron.up",
+    "chevron.down"
+   ],
+   "status": "1 of 3",
+   "frame": [
+    0,
+    0,
+    336,
+    32
+   ],
+   "draw": true
+  }
+ ]
+}

@@ -132,6 +132,103 @@ rust.json` localises a dump difference.
   `ToolbarInteractiveButton` default to `StyleSheet.current` (the system
   setting) and only animate on hover and press, which no scene drives.
 
-## Status
+`just panel-bench` (`scripts/panel-bench-compare.py`) times `bench-panel`
+over `corpus/panel-bench/` on both oracles: each state is a panel built and
+laid out (and drawn into a bitmap with `"draw": true`), windowless; reading
+and parsing the scenario document is cached per process and not timed.
 
-See the table at the end of this file (kept current by each commit).
+Checks that catch what release builds do not:
+- `python3 scripts/check-protocol-selectors.py` verifies every protocol
+  method a `define_class!` block declares against the objc2 bindings (a
+  misspelt delegate selector is never called in release and panics in
+  debug).
+- A debug `upleft-oracle` run over `corpus/panel-models/` (`cargo build -p
+  upleft-conformance`, then `target/debug/upleft-oracle panel-model …`)
+  registers every panel class under objc2's debug checks.
+
+## Status (2026-09-23)
+
+All 37 Swift files are ported. Conformance: `panel` 228/228 and
+`panel-model` 39/39 (589 states), 0 fail, 0 error, uncached, against a
+clean Swift build. Tests: 113/113 in the eight `panels_*_tests` binaries.
+
+| Swift (`Panels/`) | Rust (`panels/`) | `panel` | `panel-model` states | tests |
+|---|---|---:|---:|---|
+| PanelChrome | panel_chrome | 19 | 20 | panels_chrome |
+| ChromeGlass | chrome_glass | 4 | 8 | panels_chrome |
+| FloatingPanelSurface (+ FloatingPanelWindow) | floating_panel_surface | 4 | 6 | — |
+| InspectorHostView | inspector_host_view | 6 | 16 | panels_chrome |
+| ConflictBarView | conflict_bar_view | 4 | 4 | panels_chrome |
+| ActivityIndicatorView | activity_indicator_view | 2 | 4 | — |
+| BreadcrumbView | breadcrumb_view | 7 | 19 | panels_toolbar |
+| DocumentStatusBarView | document_status_bar_view | 6 | 14 | panels_toolbar |
+| TaskProgressRing | task_progress_ring | 8 | 20 | panels_toolbar |
+| CommandPaletteView | command_palette_view | 9 | 26 | panels_toolbar |
+| FindBarView | find_bar_view | 8 | 22 | panels_find |
+| ChangeSummaryBarView | change_summary_bar_view | 6 | 21 | panels_find |
+| SearchResultsPanelView | search_results_panel_view | 7 | 19 | panels_find |
+| SearchInspectorView | search_inspector_view | 6 | 11 | panels_find |
+| TaskPanelView | task_panel_view | 11 | 30 | panels_task |
+| TaskSectionBarView | task_section_bar_view | 4 | 13 | panels_task |
+| UpdateWindowController | update_window_controller | 12 | 23 | panels_update |
+| UpdateNotesPopover (+ UpdateNotesSummary) | update_notes_popover | 6 | 18 | panels_update |
+| UpdateStatusPill | update_status_pill | 8 | 19 | panels_update |
+| TableEditorView | table_editor_view | 8 | 36 | panels_editor |
+| TidySheetView | tidy_sheet_view | 7 | 20 | panels_editor |
+| FrontMatterEditorView | front_matter_editor_view | 9 | 39 | panels_editor |
+| DocumentHealthView | document_health_view | 6 | 15 | panels_diagnostics |
+| RenderTargetsView | render_targets_view | 6 | 17 | panels_diagnostics |
+| AssetDoctorView | asset_doctor_view | 5 | 5 | panels_diagnostics |
+| DocumentLensView | document_lens_view | 7 | 17 | panels_diagnostics |
+| LightboxWindow | lightbox_window | 5 | 17 | panels_diagnostics |
+| DocumentQuickLook | document_quick_look | — (draws nothing) | 6 | panels_diagnostics |
+| ReviewPanelView | review_panel_view | 5 | 14 | panels_sidebar |
+| WorkspaceSidebarView | workspace_sidebar_view | 6 | 19 | panels_sidebar |
+| VersionTimelineView | version_timeline_view | 5 | 12 | panels_sidebar |
+| HistoryInspectorView | history_inspector_view | 4 | 7 | panels_sidebar |
+| TrustPromptView | trust_prompt_view | 5 | 12 | panels_sidebar |
+| ReaderProfilePickerView | reader_profile_picker_view | 5 | 17 | panels_sidebar |
+| LocalAIPanelView | local_ai_panel_view | 4 | 14 | panels_sidebar |
+| VisualDebuggerView | visual_debugger_view | 4 | 9 | panels_sidebar |
+| FuzzyMatcher | fuzzy_matcher | (palette suite) | | |
+
+### How the app shell hooks in
+
+- `DocumentQuickLook.swift`'s `extension DocumentWindowController` is the
+  `QuickLookHost` trait (`document_quick_look.rs`): the controller implements
+  six accessors (`quick_look_owner`, `container_text_view`,
+  `markdown_document_url`, `resolve_path_token`, `present_lightbox`,
+  `authorize_read_local_asset`) and forwards the `QLPreviewPanel` data-source
+  selectors to the trait's provided methods, which carry the Swift bodies.
+  The module holds a private copy of `MarkdownLinkDestination.classify` until
+  `DocumentWindowController+Delegates.swift` is ported.
+- `UpdateWindowController` implements the updater's `UpdatePanelController`
+  seam, and every `UpdateCoordinator` is created with that factory, as
+  Swift's `showPanel()` builds the controller: `showPanel()` now shows a real
+  titled window unless `suppress_ui_for_testing` is set.
+- `UpdateStatusPill::new(Presentation::CompactWarning, mtm)` is the start
+  window's pill.
+
+### Main-thread I/O (as in Swift)
+
+- `DocumentQuickLook.present_quick_look`: `FileManager.fileExists` and the
+  host's `PathResolver.resolve`.
+- `ReaderProfilePickerView::new_default`: the JSON profile store in the
+  support folder.
+
+### Unverified
+
+Paths no scene or test can drive without a key window or real pointer:
+hover washes and press feedback, drag and drop in the task panel, context
+menus, the path and zoom pop-up menus, the lightbox's `present(over:)`,
+scroll, magnify and drag, the update notes popover's pointer poll and link
+click, and every animated branch with Reduce Motion off (the harness forces
+it on; a few task-panel animations are checked by tests for consistency, not
+pixels).
+
+### Left
+
+Nothing in `Panels/`. The `DocumentWindowController`-driven cases of
+WindowChromeTests, DocumentChromeLayoutTests, CommandPaletteNavigation-
+RegressionTests, SiblingSearchTests and DocumentQuickLookTests wait for the
+app shell's controller (each group's test file lists them).

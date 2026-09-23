@@ -61,6 +61,7 @@ Every Swift file of `Sources/DownrightApp` is ported, with `main.swift` as the `
 ## Left
 
 - **Window-level coverage.** `app-window` covers the document window (both modes, light and dark, three sizes, find, find and replace, split, focus, status bar, Source Focus, structural zoom, fold all, and the floating inspector with tasks, contents, health, render targets and the visual debugger), the start window, the setup panel and every Settings pane. Not covered, because each would put a window or panel on a display from inside the app (they are centred, sheets, or modal): the command palette (`addChildWindow` before it is moved over the parent), the version timeline and compare windows, the Go to Line alert, sheets (tidy, table editor, save recovery), the update window, and the share picker. The floating surface's spring does not run off-screen (no display link), so those scenarios compare its settled pre-animation frame on both sides.
+- **Panels one by one.** Every `Panels/` view, including those `app-window` cannot show (the command palette, the tidy and table editor sheets' views, the update window), is built off-screen from scenarios by the `panel` and `panel-model` suites; see `src/panels/PORTING.md`.
 - **Behaviour that is ported but unverified**, because exercising it would launch apps, change system state or write the real Spotlight index:
   - the success paths of `down open`, `--reveal`, `watch` and `notify`;
   - `ExternalEditor.open`;

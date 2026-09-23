@@ -1089,7 +1089,7 @@ fn main() {
         "ReleaseWatchTriggerTests" / "aStoppedEngineIsNeverTriggered" => a_stopped_engine_is_never_triggered,
         "ReleaseWatchSettingTests" / "turningAutomaticChecksOffSilencesTheWatch" => turning_automatic_checks_off_silences_the_watch,
     ];
-    let panels = "its subject lives in Sources/DownrightApp/Panels (UI port), not in Updater/";
+    let panels = "ported with its subject, in Sources/DownrightApp/Panels: tests/panels_update_tests.rs";
     let skipped = [
         Skipped { name: "UpdatePanelFooterTests/rebuildsAfterCheckIntoAvailableState (footer view)", reason: "UpdatePanelFooter is a view (UI port); the coordinator part runs above" },
         Skipped { name: "UpdatePanelTransitionTests/rendersEveryUpdaterPhaseWithoutThrowing (panel renders)", reason: "UpdatePanelView is a view (UI port); the coordinator part runs above" },
