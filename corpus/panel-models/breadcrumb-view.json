@@ -1,0 +1,138 @@
+{
+ "panel": "BreadcrumbView",
+ "theme": "Paper Light",
+ "width": 720,
+ "height": 28,
+ "document": "corpus/generated/docs/CHANGELOG.md",
+ "state": {},
+ "states": [
+  {
+   "name": "empty"
+  },
+  {
+   "name": "empty presented",
+   "present": true
+  },
+  {
+   "name": "root",
+   "heading": 0
+  },
+  {
+   "name": "root presented",
+   "heading": 0,
+   "present": true
+  },
+  {
+   "name": "nested presented",
+   "heading": 10,
+   "present": true
+  },
+  {
+   "name": "deepest long title",
+   "heading": 11,
+   "present": true
+  },
+  {
+   "name": "section change",
+   "heading": 10,
+   "present": true,
+   "next": 12
+  },
+  {
+   "name": "hidden again",
+   "heading": 9,
+   "present": true,
+   "hide": true
+  },
+  {
+   "name": "cleared",
+   "heading": 9,
+   "present": true,
+   "clear": true
+  },
+  {
+   "name": "zoom h1",
+   "heading": 2,
+   "zoom": 1
+  },
+  {
+   "name": "zoom h2 presented",
+   "heading": 2,
+   "present": true,
+   "zoom": 2
+  },
+  {
+   "name": "zoom headings",
+   "heading": 3,
+   "present": true,
+   "zoom": 3
+  },
+  {
+   "name": "zoom skeleton",
+   "heading": 4,
+   "present": true,
+   "zoom": 4
+  },
+  {
+   "name": "zoom everything",
+   "heading": 4,
+   "present": true,
+   "zoom": 5
+  },
+  {
+   "name": "explicit trail",
+   "trail": [
+    [
+     0,
+     "Root",
+     1
+    ],
+    [
+     4,
+     "Section",
+     3
+    ],
+    [
+     7,
+     "Leaf",
+     4
+    ]
+   ],
+   "present": true
+  },
+  {
+   "name": "current sheet",
+   "current": true,
+   "heading": 8,
+   "present": true
+  },
+  {
+   "name": "out of range",
+   "heading": 99,
+   "present": true
+  },
+  {
+   "name": "short title",
+   "trail": [
+    [
+     2,
+     "A",
+     2
+    ]
+   ],
+   "present": true,
+   "zoom": 3
+  },
+  {
+   "name": "unicode title",
+   "trail": [
+    [
+     0,
+     "Café ☕️ — naïve 🇫🇷",
+     1
+    ]
+   ],
+   "present": true
+  }
+ ]
+}
