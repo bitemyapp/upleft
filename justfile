@@ -83,3 +83,10 @@ corpus:
 conform *args: corpus
     cargo build --release -p upleft-conformance -p upleft-cli
     target/release/conform {{args}}
+
+# Assemble target/upleft-app/Upleft.app (Scripts/bundle-app.sh's layout with the
+# Upleft identity: Info.plist from the rebranded template, `down`, the math
+# fonts, Welcome.md, Sparkle.framework 2.9.6, the Spotlight importer, ad-hoc
+# signature). Builds it; never registers or launches it.
+upleft-app: rebrand
+    scripts/bundle-upleft-app.sh
