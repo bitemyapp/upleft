@@ -1,0 +1,50 @@
+{
+  "originHash" : "71d17c29f228323223d6b264d2aedf5f005e9a089b1c37ce04c2c346d6b04879",
+  "pins" : [
+    {
+      "identity" : "beautiful-mermaid-swift",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/lukilabs/beautiful-mermaid-swift.git",
+      "state" : {
+        "revision" : "6a23a29e91af8f5b3e9fc09945332ca193bd69ec",
+        "version" : "1.0.4"
+      }
+    },
+    {
+      "identity" : "elk-swift",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/lukilabs/elk-swift",
+      "state" : {
+        "revision" : "32f8042e3509a4819f00ff9cd46e829ec2b26da0",
+        "version" : "1.0.2"
+      }
+    },
+    {
+      "identity" : "sparkle",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/sparkle-project/Sparkle.git",
+      "state" : {
+        "revision" : "ac2def288cbff5cfc7df3ffef6abdf45b72bcb0a",
+        "version" : "2.9.6"
+      }
+    },
+    {
+      "identity" : "swift-cmark",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/swiftlang/swift-cmark.git",
+      "state" : {
+        "branch" : "gfm",
+        "revision" : "0c8947bbd58c491c54aae114aca40621cddc8357"
+      }
+    },
+    {
+      "identity" : "swift-markdown",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/apple/swift-markdown.git",
+      "state" : {
+        "revision" : "27b7fc1a19068bcea3d2072db0ce86360d1400ed"
+      }
+    }
+  ],
+  "version" : 3
+}

@@ -1,0 +1,15 @@
+[submodule "vendor/downright"]
+	path = vendor/downright
+	url = https://github.com/ezzy1630/Downright
+[submodule "vendor/swift-cmark"]
+	path = vendor/swift-cmark
+	url = https://github.com/swiftlang/swift-cmark
+[submodule "vendor/swift-markdown"]
+	path = vendor/swift-markdown
+	url = https://github.com/apple/swift-markdown
+[submodule "vendor/beautiful-mermaid-swift"]
+	path = vendor/beautiful-mermaid-swift
+	url = https://github.com/lukilabs/beautiful-mermaid-swift
+[submodule "vendor/elk-swift"]
+	path = vendor/elk-swift
+	url = https://github.com/lukilabs/elk-swift

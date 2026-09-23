@@ -1,0 +1,29 @@
+[workspace]
+resolver = "3"
+members = ["crates/*"]
+
+[workspace.package]
+version = "0.1.0"
+edition = "2024"
+license = "MIT"
+publish = false
+repository = "https://github.com/bitemyapp/upleft"
+
+[workspace.dependencies]
+upleft-cmark-gfm-sys = { path = "crates/cmark-gfm-sys" }
+block2 = "0.6"
+objc2 = "0.6.4"
+objc2-foundation = { version = "0.3.2", default-features = false, features = ["std"] }
+objc2-app-kit = { version = "0.3.2", default-features = false, features = ["std"] }
+objc2-core-foundation = { version = "0.3.2", default-features = false, features = ["std"] }
+objc2-core-graphics = { version = "0.3.2", default-features = false, features = ["std"] }
+objc2-core-text = { version = "0.3.2", default-features = false, features = ["std"] }
+serde_json = { version = "1.0.151", features = ["float_roundtrip", "preserve_order"] }
+
+[profile.release]
+lto = "thin"
+panic = "abort"
+debug = "line-tables-only"
+
+[profile.dev.package."*"]
+opt-level = 2

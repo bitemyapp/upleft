@@ -1,0 +1,55 @@
+# Upleft
+
+Upleft is a Rust rewrite of [Downright](https://github.com/ezzy1630/Downright), the native macOS Markdown reader and editor. It uses AppKit and TextKit 2 through [objc2](https://github.com/madsmtm/objc2), the way [Omperor](https://github.com/bitemyapp/omperor) does.
+
+The goal is strict: **the same output as Downright, pixel for pixel, at the same speed or faster.** Every layer is checked against the Swift original, which is built from source out of `vendor/downright`.
+
+## Status
+
+The port is at the start. The conformance harness and the cmark-gfm build are in place. The layers below are ported in this order, and a layer only counts as done when the harness agrees with the original on it:
+
+| Layer | Swift source | Rust crate | Conformance gate |
+|---|---|---|---|
+| cmark-gfm (C, not rewritten) | `swiftlang/swift-cmark` @ `7898f1b` | `upleft-cmark-gfm-sys` | links the identical C sources |
+| swift-markdown converter | `apple/swift-markdown` @ `27b7fc1` | `upleft-markup` | syntax-tree dump identical |
+| MarkdownCore | `Sources/MarkdownCore` | `upleft-core` | `parse` dump identical |
+| MarkdownRender | `Sources/MarkdownRender` | `upleft-render` | `decorate` dump and `render` pixels identical |
+| SwiftMath | `Vendor/SwiftMath` | `upleft-math` | math pixels identical |
+| beautiful-mermaid + ELK | `lukilabs/*` | `upleft-mermaid`, `upleft-elk` | diagram pixels identical |
+| DownrightApp and the command-line tools | `Sources/DownrightApp`, `down`, … | `upleft` | window captures identical |
+
+## Layout
+
+```text
+vendor/downright            the Swift original (git submodule, pinned)
+vendor/swift-cmark          cmark-gfm at the revision Downright resolves
+vendor/swift-markdown       swift-markdown at the revision Downright resolves
+vendor/beautiful-mermaid-swift, vendor/elk-swift   Mermaid dependencies
+oracle/                     downright-oracle: the Swift reference for conformance
+crates/                     the Rust port
+corpus/                     documents the conformance runner checks
+```
+
+## Conformance
+
+`oracle/` is a small Swift package that links Downright's own `MarkdownCore` and `MarkdownRender`. It writes three outputs for a document:
+
+- `parse` dumps the parsed document tree: every block, inline span, range, hash, and derived structure.
+- `decorate` dumps every attribute run on the decorated `NSTextStorage`. Fonts, colors, and paragraph styles are compared bit for bit.
+- `render` captures a PNG of the real `MarkdownContainerView` in an activated app, along with a dump of the layout fragments.
+
+`upleft-oracle` takes the same arguments and writes the same formats. The runner compares the two outputs structurally and decodes the PNGs to compare pixels exactly. A render request can also be sent to the full app. Downright's `DOWNRIGHT_DEBUG_LAYOUT` and `DOWNRIGHT_DEBUG_CAPTURE` hooks capture the whole window, and Upleft implements the same hooks.
+
+```sh
+git submodule update --init
+just oracle          # build downright-oracle
+just conform         # run the corpus through both and compare
+```
+
+## Licensing
+
+Upleft is MIT-licensed and keeps Downright's copyright notice. Ports of third-party code keep their upstream license:
+
+- `upleft-markup` (from swift-markdown) is Apache-2.0.
+- `upleft-elk` (from elk-swift) is EPL-2.0.
+- `upleft-math` (from SwiftMath) and `upleft-mermaid` (from beautiful-mermaid-swift) are MIT.
