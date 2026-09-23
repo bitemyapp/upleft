@@ -612,6 +612,7 @@ dependencies = [
  "serde_json",
  "unicode-normalization",
  "unicode-segmentation",
+ "upleft-core",
 ]
 
 [[package]]

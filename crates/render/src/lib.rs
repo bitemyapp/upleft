@@ -11,9 +11,9 @@
 //! | `Theme/*.swift` | [`theme`] |
 //! | `View/StyleSheetDefaults.swift` | [`view::style_sheet_defaults`] |
 //!
-//! [`core_types`] holds the few MarkdownCore types the contracts name until
-//! `upleft-core` lands; [`swift_compat`] reproduces the Swift standard
-//! library and Foundation behaviours the port depends on.
+//! [`core_types`] re-exports the MarkdownCore types from `upleft-core`;
+//! [`swift_compat`] reproduces the Swift standard library and Foundation
+//! behaviours the port depends on.
 
 pub mod core_types;
 pub mod engine;

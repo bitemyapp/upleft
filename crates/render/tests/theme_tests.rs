@@ -511,7 +511,7 @@ fn every_style_sheet_colour_resolves() {
                     .map(|kind| sheet.callout_color(*kind)),
             );
             colors.extend(
-                ChangeKind::ALL_KINDS
+                upleft_render::core_types::CHANGE_KINDS
                     .iter()
                     .map(|kind| sheet.change_color(*kind)),
             );
