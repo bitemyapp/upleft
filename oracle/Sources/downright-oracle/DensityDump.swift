@@ -519,3 +519,65 @@ enum DensityModelDump {
         ])
     }
 }
+
+/// `bench-density <file.md> <out.json>`: times the gutter's mark computation
+/// and a redraw, windowless, `DENSITY_BENCH_RUNS` times each (default 200,
+/// after 20 warm-up runs). `upleft-oracle bench-density` runs the same stages.
+@MainActor
+enum DensityBench {
+    static func now() -> UInt64 { DispatchTime.now().uptimeNanoseconds }
+
+    static func run(text: String, flags: Flags) throws -> JSON {
+        _ = NSApplication.shared
+        let document = MarkdownParser.parse(text)
+        let (changes, hits) = DensityModelDump.overlays(document)
+        let appearance = NSAppearance(named: flags.dark ? .darkAqua : .aqua)!
+        guard let theme = ThemeStore.shared.themes.first(where: { $0.name == flags.theme }) else {
+            throw OracleError.unknownTheme(flags.theme, ThemeStore.shared.themes.map(\.name))
+        }
+        let styleSheet = StyleSheet(theme: theme, appearance: appearance, reduceMotionOverride: true)
+        let runs = Int(ProcessInfo.processInfo.environment["DENSITY_BENCH_RUNS"] ?? "") ?? 200
+        let plain = DensityGutterView.bands(for: document, changes: [], searchHits: [])
+        let overlaid = DensityGutterView.bands(for: document, changes: changes, searchHits: hits)
+        let capacity = DensityGutterView.stackCapacity(track: 1000 - 56)
+        let gutter = DensityGutterView(styleSheet: styleSheet)
+        gutter.performHapticFeedback = {}
+        gutter.frame = NSRect(x: 0, y: 0, width: DensityGutterView.width, height: 1000)
+        gutter.bands = plain
+        let positions = gutter.markPositionsForTesting
+        var hoverIndex = 0
+
+        var stages: [(String, () -> Void)] = [
+            ("bands", { _ = DensityGutterView.bands(for: document, changes: [], searchHits: []) }),
+            ("bandsWithOverlays", { _ = DensityGutterView.bands(for: document, changes: changes, searchHits: hits) }),
+            ("selection", { _ = DensityGutterView.selection(for: plain, capacity: capacity) }),
+            ("selectionWithPips", { _ = DensityGutterView.selection(for: overlaid, capacity: capacity) }),
+            ("assignBands", { gutter.bands = plain }),
+            ("redraw", { gutter.layout() }),
+        ]
+        if positions.count > 9 {
+            stages.append(("hover", {
+                hoverIndex += 1
+                gutter.driveHoverForTesting(toY: positions[hoverIndex % 2 == 0 ? 3 : 9])
+            }))
+        }
+        var results: [(String, JSON)] = []
+        for (name, body) in stages {
+            for _ in 0..<20 { body() }
+            var samples: [Double] = []
+            samples.reserveCapacity(runs)
+            for _ in 0..<runs {
+                let start = now()
+                body()
+                samples.append(Double(now() - start) / 1_000_000)
+            }
+            samples.sort()
+            results.append((name, .object([
+                ("p50", .double(samples[samples.count / 2])),
+                ("min", .double(samples.first ?? 0)),
+                ("mean", .double(samples.reduce(0, +) / Double(max(1, samples.count)))),
+            ])))
+        }
+        return .object([("bands", .int(plain.count)), ("marks", .int(positions.count)), ("stagesMs", .object(results))])
+    }
+}

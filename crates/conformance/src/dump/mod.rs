@@ -154,6 +154,7 @@ pub fn run(request: &Request) -> Result<(), Failure> {
             Box::new(render::MarkdownScene::new(&request.mode, &request.theme).with_density(request.density.clone())),
         ),
         "density-model" => density::model(request),
+        "bench-density" => density::bench(request),
         "density-hover" => crate::capture::run(
             request.capture(),
             Box::new(density::DensityHoverScene::new(

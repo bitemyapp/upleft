@@ -179,6 +179,10 @@ do {
         let text = try String(contentsOf: input, encoding: .utf8)
         try write(MainActor.assumeIsolated { try DensityModelDump.run(text: text, flags: flags) }, to: output)
 
+    case "bench-density":
+        let text = try String(contentsOf: input, encoding: .utf8)
+        try write(MainActor.assumeIsolated { try DensityBench.run(text: text, flags: flags) }, to: output)
+
     case "density-hover":
         let request = RenderRequest(
             input: input, outputPNG: URL(fileURLWithPath: output), outputLayout: nil, mode: flags.mode,

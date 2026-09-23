@@ -755,3 +755,82 @@ fn outline(document: &ParsedDocument, style_sheet: Rc<StyleSheet>, mtm: MainThre
 
 #[allow(dead_code)]
 fn _in_scope(_: &dyn NSAccessibility) {}
+
+// MARK: - bench-density
+
+/// `bench-density`: see `DensityBench` in the Swift oracle.
+pub fn bench(request: &Request) -> Result<(), Failure> {
+    let text = super::markup::read_text(&request.input).map_err(|error| Failure::Error(format!("{error:?}")))?;
+    let mtm = MainThreadMarker::new().expect("bench-density runs on the main thread");
+    let _ = NSApplication::sharedApplication(mtm);
+    let document = MarkdownParser::parse(&text);
+    let (changes, hits) = overlays(&document);
+    let appearance: Retained<NSAppearance> = appearance_named(request.dark);
+    let themes = ThemeStore::shared().themes();
+    let Some(theme) = themes.iter().find(|theme| theme.name == request.theme).cloned() else {
+        return Err(Failure::Error(format!("unknown theme {}", request.theme)));
+    };
+    let style_sheet = Rc::new(StyleSheet::new(theme, &appearance, Some(true)));
+    let runs: usize = std::env::var("DENSITY_BENCH_RUNS").ok().and_then(|value| value.parse().ok()).unwrap_or(200);
+    let plain = DensityGutterView::bands_for(&document, &[], &[]);
+    let overlaid = DensityGutterView::bands_for(&document, &changes, &hits);
+    let capacity = DensityGutterView::stack_capacity(1000.0 - 56.0);
+    let gutter = DensityGutterView::new(style_sheet, mtm);
+    gutter.set_perform_haptic_feedback(Rc::new(|| {}));
+    gutter.setFrame(NSRect::new(NSPoint::new(0.0, 0.0), objc2_foundation::NSSize::new(DensityGutterView::WIDTH, 1000.0)));
+    gutter.set_bands(plain.clone());
+    let positions = gutter.mark_positions_for_testing();
+    let hover_index = Cell::new(0usize);
+
+    let mut stages: Vec<(&str, Box<dyn Fn()>)> = vec![
+        ("bands", Box::new(|| drop(std::hint::black_box(DensityGutterView::bands_for(&document, &[], &[]))))),
+        (
+            "bandsWithOverlays",
+            Box::new(|| drop(std::hint::black_box(DensityGutterView::bands_for(&document, &changes, &hits)))),
+        ),
+        ("selection", Box::new(|| drop(std::hint::black_box(DensityGutterView::selection_for(&plain, capacity, true))))),
+        (
+            "selectionWithPips",
+            Box::new(|| drop(std::hint::black_box(DensityGutterView::selection_for(&overlaid, capacity, true)))),
+        ),
+        ("assignBands", Box::new(|| gutter.set_bands(plain.clone()))),
+        ("redraw", Box::new(|| unsafe { msg_send![&*gutter, layout] })),
+    ];
+    if positions.len() > 9 {
+        stages.push((
+            "hover",
+            Box::new(|| {
+                hover_index.set(hover_index.get() + 1);
+                gutter.drive_hover_for_testing(positions[if hover_index.get() % 2 == 0 { 3 } else { 9 }]);
+            }),
+        ));
+    }
+    let mut results = Object::new();
+    for (name, body) in &stages {
+        for _ in 0..20 {
+            body();
+        }
+        let mut samples: Vec<f64> = Vec::with_capacity(runs);
+        for _ in 0..runs {
+            let start = Instant::now();
+            body();
+            samples.push(start.elapsed().as_secs_f64() * 1000.0);
+        }
+        samples.sort_by(|a, b| a.partial_cmp(b).unwrap());
+        let mean = samples.iter().sum::<f64>() / samples.len().max(1) as f64;
+        results = results.with(
+            name,
+            Object::new()
+                .with("p50", double(samples[samples.len() / 2]))
+                .with("min", double(samples.first().copied().unwrap_or(0.0)))
+                .with("mean", double(mean))
+                .build(),
+        );
+    }
+    let value = Object::new()
+        .with("bands", plain.len() as i64)
+        .with("marks", positions.len() as i64)
+        .with("stagesMs", results.build())
+        .build();
+    Ok(super::json::write(&value, &request.output)?)
+}
