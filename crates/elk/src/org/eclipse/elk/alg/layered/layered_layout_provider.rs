@@ -8,7 +8,8 @@
 
 use std::cell::RefCell;
 
-use super::elk_layered::ElkLayered;
+use super::elk_layered::{ElkLayered, TestExecutionState};
+use super::graph::l_graph::LGraphArena;
 use super::graph::transform::elk_graph_transformer::ElkGraphTransformer;
 use crate::bridge::elk::ElkError;
 use crate::bridge::elk_graph_impl::{ElkGraph, ElkNodeId};
@@ -41,6 +42,29 @@ impl LayeredLayoutProvider {
             transformer.apply_layout(graph, &mut lg, layered_graph);
         }
         Ok(())
+    }
+}
+
+impl LayeredLayoutProvider {
+    /// `startLayoutTest(_:)`: imports the graph and prepares a stepped
+    /// layout test (an empty graph if the import yields none).
+    pub fn start_layout_test(&mut self, graph: &mut ElkGraph, elkgraph: ElkNodeId) -> Result<(LGraphArena, TestExecutionState), ElkError> {
+        let mut transformer = ElkGraphTransformer::new();
+        let (mut lg, layered_graph) = match transformer.import_graph(graph, elkgraph)? {
+            Some(imported) => imported,
+            None => {
+                let mut lg = LGraphArena::new();
+                let empty = lg.new_graph();
+                (lg, empty)
+            }
+        };
+        let state = self.elk_layered.prepare_layout_test(&mut lg, layered_graph);
+        Ok((lg, state))
+    }
+
+    /// `getLayoutAlgorithm()`.
+    pub fn get_layout_algorithm(&mut self) -> &mut ElkLayered {
+        &mut self.elk_layered
     }
 }
 

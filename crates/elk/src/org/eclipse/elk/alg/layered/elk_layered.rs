@@ -1,7 +1,6 @@
-//! Port of `alg/layered/ElkLayered.swift`.
-//!
-//! The layout-test API (`prepareLayoutTest`, `runLayoutTestUntil`, …) is only
-//! used by elk-swift's own tests and is not ported.
+//! Port of `alg/layered/ElkLayered.swift`, including the layout-test API
+//! (`prepareLayoutTest`, `runLayoutTestStep`, …) that elk-swift's own tests
+//! use to step through the processors.
 
 use std::rc::Rc;
 
@@ -75,6 +74,24 @@ fn trace(lg: &LGraphArena, graph: LGraphId, what: &str) {
         s += "\n";
     }
     eprint!("{s}");
+}
+
+/// `ElkLayered.TestExecutionState`: the graphs of a stepped layout test and
+/// the index of the next processor to run.
+#[derive(Debug, Default)]
+pub struct TestExecutionState {
+    pub graphs: Vec<LGraphId>,
+    pub step: usize,
+}
+
+impl TestExecutionState {
+    pub fn get_graphs(&self) -> &[LGraphId] {
+        &self.graphs
+    }
+
+    pub fn get_step(&self) -> usize {
+        self.step
+    }
 }
 
 impl ElkLayered {
@@ -209,6 +226,78 @@ impl ElkLayered {
         }
     }
 
+    // MARK: - Layout Testing
+
+    /// `prepareLayoutTest(_:)`: configures the graph and splits it into
+    /// components, without running any processor.
+    pub fn prepare_layout_test(&mut self, lg: &mut LGraphArena, lgraph: LGraphId) -> TestExecutionState {
+        self.graph_configurator.prepare_graph_for_layout(lg, lgraph);
+        let graphs = self.components_processor.split(lg, lgraph);
+        TestExecutionState { graphs, step: 0 }
+    }
+
+    /// `isLayoutTestFinished(_:)`.
+    pub fn is_layout_test_finished(&self, lg: &LGraphArena, state: &TestExecutionState) -> bool {
+        match state.graphs.first().and_then(|&g| Self::processors_of(lg, g)) {
+            Some(algorithm) => state.step >= algorithm.borrow().len(),
+            None => true,
+        }
+    }
+
+    /// `runLayoutTestUntil(_:_:_:)`: runs the processors up to (and, if
+    /// `inclusive`, including) the next one named `phase`, or all remaining
+    /// ones if there is none.
+    ///
+    /// Swift compares `type(of: processor)` with a class, but the list holds
+    /// `AnyGraphProcessor` wrappers, so in elk-swift no phase ever matches and
+    /// every remaining processor runs. The port matches by processor name,
+    /// which is what the API means.
+    pub fn run_layout_test_until(&mut self, lg: &mut LGraphArena, phase: &str, inclusive: bool, state: &mut TestExecutionState) {
+        let Some(algorithm) = state.graphs.first().and_then(|&g| Self::processors_of(lg, g)) else { return };
+        let mut phase_index = state.step;
+        for processor in algorithm.borrow()[state.step..].iter() {
+            if processor.name() == phase {
+                if inclusive {
+                    phase_index += 1;
+                }
+                break;
+            }
+            phase_index += 1;
+        }
+        for i in state.step..phase_index {
+            Self::layout_test(lg, &state.graphs, &algorithm, i);
+            state.step += 1;
+        }
+    }
+
+    /// `runLayoutTestStep(_:)`: runs the next processor on every graph.
+    pub fn run_layout_test_step(&mut self, lg: &mut LGraphArena, state: &mut TestExecutionState) {
+        if self.is_layout_test_finished(lg, state) {
+            // assertionFailure("Current layout test run has finished.") — a no-op in release builds.
+            return;
+        }
+        let Some(algorithm) = state.graphs.first().and_then(|&g| Self::processors_of(lg, g)) else { return };
+        Self::layout_test(lg, &state.graphs, &algorithm, state.step);
+        state.step += 1;
+    }
+
+    /// `getLayoutTestConfiguration(_:)`: the processors of the test run (by
+    /// name).
+    pub fn get_layout_test_configuration(&self, lg: &LGraphArena, state: &TestExecutionState) -> Vec<&'static str> {
+        state
+            .graphs
+            .first()
+            .and_then(|&g| Self::processors_of(lg, g))
+            .map_or_else(Vec::new, |algorithm| algorithm.borrow().iter().map(|p| p.name()).collect())
+    }
+
+    /// `layoutTest(_:_:)`: runs one processor on each graph.
+    fn layout_test(lg: &mut LGraphArena, graphs: &[LGraphId], algorithm: &ProcessorList, index: usize) {
+        for &graph in graphs {
+            algorithm.borrow_mut()[index].process(lg, graph, &mut BasicProgressMonitor::new());
+        }
+    }
+
     /// `layout(_:_:)`: runs one graph's processors, then moves every node back
     /// into the layerless list.
     pub fn layout(&mut self, lg: &mut LGraphArena, lgraph: LGraphId, monitor: &mut dyn IElkProgressMonitor) {
@@ -315,4 +404,4 @@ impl ElkLayered {
 }
 
 #[allow(dead_code)]
-fn _unused(_: Rc<()>, _: BasicProgressMonitor) {}
+fn _unused(_: Rc<()>) {}
