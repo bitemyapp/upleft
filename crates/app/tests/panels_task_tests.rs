@@ -311,7 +311,7 @@ fn task_panel_builds_agent_5000_within_budget() {
 }
 
 fn main() {
-    main_thread::run(&[
+    main_thread::run_off_screen(&[
         ("task_checkbox_hit_target_uses_local_coordinates", task_checkbox_hit_target_uses_local_coordinates),
         ("narrow_task_panel_measures_wrapped_rows_at_live_width", narrow_task_panel_measures_wrapped_rows_at_live_width),
         ("task_panel_summarises_a_finished_plan", task_panel_summarises_a_finished_plan),

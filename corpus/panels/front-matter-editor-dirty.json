@@ -1,0 +1,1 @@
+{"panel": "FrontMatterEditorView", "theme": "Warm Dark", "dark": true, "width": 336, "height": 480, "state": {"text": "---\ntitle: Release Plan\ncount: 3\ndraft: false\ntags: [alpha, beta]\n---\n\nBody\n", "changes": [{"key": "title", "value": "Release Plan v2"}, {"key": "count", "value": "three", "end": true}]}}

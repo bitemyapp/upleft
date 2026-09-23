@@ -52,6 +52,9 @@ use upleft_app::ai::change_tracker::Mark;
 use upleft_app::panels::appkit_support::{accessibility_label, ns_string};
 use upleft_app::panels::change_summary_bar_view::{ChangeSummaryBarView, Summary};
 use upleft_app::panels::find_bar_view::{FindBarDelegate, FindBarDensity, FindBarView, Presentation};
+use upleft_app::panels::panel_chrome::PanelMetrics;
+use upleft_app::panels::search_inspector_view::SearchInspectorView;
+use upleft_app::panels::search_results_panel_view::SearchResultsPanelView;
 use upleft_app::support::find_engine::FindQuery;
 use upleft_core::NSRange;
 use upleft_core::contracts::ChangeKind;
@@ -525,14 +528,58 @@ fn change_summary_uses_compact_counted_navigation() {
     assert!(bar.position_status_for_testing().is_empty());
 }
 
+// MARK: - SearchResultsPanelView and SearchInspectorView
+
+/// `view.accessibilityValue() as? String`.
+fn accessibility_value(view: &NSView) -> Option<String> {
+    let value: Option<Retained<AnyObject>> = unsafe { objc2::msg_send![view, accessibilityValue] };
+    value.and_then(|value| value.downcast::<objc2_foundation::NSString>().ok()).map(|value| value.to_string())
+}
+
+/// `PanelAccessibilityTests.searchResultsExposeSearchingAndEmptyStates`.
+fn search_results_expose_searching_and_empty_states() {
+    let view = SearchResultsPanelView::new_current(mtm());
+    view.set_is_searching(true);
+    assert_eq!(accessibility_value(&view).as_deref(), Some("Searching…"));
+    view.set_is_searching(false);
+    assert_eq!(accessibility_value(&view).as_deref(), Some("No matches"));
+}
+
+/// `WindowChromeTests.searchInspectorKeepsFindAndReplaceInOneSurface`.
+fn search_inspector_keeps_find_and_replace_in_one_surface() {
+    let inspector = SearchInspectorView::new_current(mtm());
+    assert!(!inspector.shows_replace());
+    inspector.set_shows_replace(true);
+    assert!(inspector.find_bar().shows_replace());
+}
+
+/// `WindowChromeTests.searchInspectorLaysOutItsFindFieldInsideTheVisibleHeader`.
+fn search_inspector_lays_out_its_find_field_inside_the_visible_header() {
+    let inspector = SearchInspectorView::new_current(mtm());
+    inspector.setFrame(rect(0.0, 0.0, PanelMetrics::DETAIL_WIDTH, 600.0));
+    inspector.layoutSubtreeIfNeeded();
+
+    assert!(inspector.find_bar().wantsLayer());
+
+    let field = descendants(&inspector)
+        .into_iter()
+        .find_map(|view| view.downcast::<NSSearchField>().ok())
+        .expect("a search field");
+    let field_frame = inspector.convertRect_fromView(field.bounds(), Some(&field));
+    assert!(field_frame.width() > 100.0);
+    assert!(field_frame.height() > 0.0);
+    assert!(inspector.bounds().intersects(field_frame));
+}
+
 fn main() {
     let _ = NSApplication::sharedApplication(mtm());
-    main_thread::run(&[
+    main_thread::run_off_screen(&[
         // PanelAccessibilityTests
         (
             "find_accent_glyph_does_not_duplicate_the_search_field_announcement",
             find_accent_glyph_does_not_duplicate_the_search_field_announcement,
         ),
+        ("search_results_expose_searching_and_empty_states", search_results_expose_searching_and_empty_states),
         // WindowChromeTests
         ("replace_bar_settled_layout", replace_bar_settled_layout),
         ("replace_bar_rapid_toggle_settles_visible", replace_bar_rapid_toggle_settles_visible),
@@ -548,6 +595,11 @@ fn main() {
             find_bar_parks_its_match_actions_until_there_is_something_to_walk,
         ),
         ("change_summary_uses_compact_counted_navigation", change_summary_uses_compact_counted_navigation),
+        ("search_inspector_keeps_find_and_replace_in_one_surface", search_inspector_keeps_find_and_replace_in_one_surface),
+        (
+            "search_inspector_lays_out_its_find_field_inside_the_visible_header",
+            search_inspector_lays_out_its_find_field_inside_the_visible_header,
+        ),
         // ChangeReviewTests
         ("counts_by_kind", counts_by_kind),
         ("empty_summary", empty_summary),
@@ -570,6 +622,3 @@ fn main() {
         ("review_bars_never_take_the_keyboard", review_bars_never_take_the_keyboard),
     ]);
 }
-
-#[allow(unused)]
-fn _unused(_: &NSSearchField) {}

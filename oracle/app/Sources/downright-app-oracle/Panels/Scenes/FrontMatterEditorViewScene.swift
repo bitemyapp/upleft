@@ -12,6 +12,9 @@ import MarkdownRender
 /// - `edits`: `{"key", "value"?, "kind"?, "send": "value" | "kind"}` — the
 ///   row's value field and kind pop-up are set, and the chosen control's
 ///   action is sent (the row commits);
+/// - `changes`: `{"key", "value"?, "end"?}` — the row's value field is set
+///   and its text-did-change (then, with `end`, did-end-editing)
+///   notification posted; the row, its delegate, observes them;
 /// - `remove`: keys whose row's remove button action is sent;
 /// - `add`: `{"key", "value", "kind"}` typed into the add form, then the Add
 ///   button's action is sent;
@@ -85,6 +88,17 @@ final class FrontMatterEditorViewScene: PanelScene {
                 if let popup { Self.send(popup) }
             } else if let field {
                 Self.send(field)
+            }
+        }
+        for case let change as [String: Any] in scenario.array("changes") {
+            guard let key = change["key"] as? String, let row = Self.row(key, in: editor),
+                  let field = TableEditorViewScene.descendants(of: row, as: NSTextField.self)
+                    .first(where: { $0.accessibilityLabel() == "Value for \(key)" })
+            else { continue }
+            if let value = change["value"] as? String { field.stringValue = value }
+            NotificationCenter.default.post(name: NSControl.textDidChangeNotification, object: field)
+            if change["end"] as? Bool ?? false {
+                NotificationCenter.default.post(name: NSControl.textDidEndEditingNotification, object: field)
             }
         }
         for key in scenario.strings("remove") {

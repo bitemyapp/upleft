@@ -1,0 +1,22 @@
+{
+ "panel": "SearchInspectorView",
+ "theme": "Nord",
+ "dark": true,
+ "width": 336,
+ "height": 600,
+ "document": "corpus/generated/agent/agent-400.md",
+ "state": {"directory": "corpus/generated/agent"},
+ "states": [
+  {"name": "empty"},
+  {"name": "current", "current": true},
+  {"name": "query", "query": "section"},
+  {"name": "replace", "query": "section", "showsReplace": true, "replacement": "part"},
+  {"name": "results", "query": "task", "results": true},
+  {"name": "results twice", "query": "task", "results": true, "resultsTwice": true},
+  {"name": "cleared", "query": "task", "results": true, "clearResults": true},
+  {"name": "regex results", "options": ["Regular Expression"], "query": "module\\d+", "results": true, "limitPerFile": 2},
+  {"name": "invalid regex results", "options": ["Regular Expression"], "query": "[x", "results": true},
+  {"name": "scope", "selectionScope": [0, 500], "options": ["In Selection"], "query": "task", "results": true},
+  {"name": "replace with results", "query": "path", "showsReplace": true, "results": true, "limitPerFile": 1}
+ ]
+}

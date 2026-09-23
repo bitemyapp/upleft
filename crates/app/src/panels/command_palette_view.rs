@@ -175,7 +175,7 @@ define_class!(
             }
         }
 
-        #[unsafe(method(tableView:shouldTypeSelectForEvent:withCurrentSearch:))]
+        #[unsafe(method(tableView:shouldTypeSelectForEvent:withCurrentSearchString:))]
         fn __should_type_select(
             &self,
             _table_view: &NSTableView,

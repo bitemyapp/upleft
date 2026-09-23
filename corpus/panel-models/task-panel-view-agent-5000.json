@@ -1,0 +1,53 @@
+{
+ "panel": "TaskPanelView",
+ "theme": "Warm Dark",
+ "dark": true,
+ "width": 336,
+ "height": 560,
+ "document": "corpus/generated/agent/agent-5000.md",
+ "state": {},
+ "states": [
+  {
+   "name": "default"
+  },
+  {
+   "name": "first-pile-expanded",
+   "actions": [
+    [
+     "expandPile",
+     0
+    ]
+   ]
+  },
+  {
+   "name": "first-section-collapsed",
+   "actions": [
+    [
+     "select",
+     0
+    ],
+    [
+     "key",
+     123
+    ]
+   ]
+  },
+  {
+   "name": "scrolled-to-row-800",
+   "actions": [
+    [
+     "scrollRow",
+     800
+    ]
+   ]
+  },
+  {
+   "name": "quick-add",
+   "actions": [
+    [
+     "beginNewTask"
+    ]
+   ]
+  }
+ ]
+}

@@ -239,6 +239,97 @@
   {
    "name": "unicode cells",
    "text": "| Café | 名前 | 🧪 |\n|:--|:-:|--:|\n| é | 日本 | 👩‍🔬 |\n"
+  },
+  {
+   "name": "tab to next cell",
+   "text": "| Name | Count |\n| :--- | ---: |\n| Ada | 3 |\n| Grace | 4 |\n",
+   "keys": [
+    {
+     "row": 1,
+     "column": 0,
+     "keyCode": 48
+    }
+   ]
+  },
+  {
+   "name": "shift-tab to previous row",
+   "text": "| Name | Count |\n| :--- | ---: |\n| Ada | 3 |\n| Grace | 4 |\n",
+   "keys": [
+    {
+     "row": 1,
+     "column": 0,
+     "keyCode": 48,
+     "shift": true
+    }
+   ]
+  },
+  {
+   "name": "tab past last cell (host)",
+   "text": "| Name | Count |\n| :--- | ---: |\n| Ada | 3 |\n| Grace | 4 |\n",
+   "host": true,
+   "keys": [
+    {
+     "row": 2,
+     "column": 1,
+     "keyCode": 48
+    }
+   ]
+  },
+  {
+   "name": "return moves down",
+   "text": "| Name | Count |\n| :--- | ---: |\n| Ada | 3 |\n| Grace | 4 |\n",
+   "keys": [
+    {
+     "row": 1,
+     "column": 1,
+     "keyCode": 36
+    }
+   ]
+  },
+  {
+   "name": "keypad enter at last row (host)",
+   "text": "| Name | Count |\n| :--- | ---: |\n| Ada | 3 |\n| Grace | 4 |\n",
+   "host": true,
+   "keys": [
+    {
+     "row": 2,
+     "column": 0,
+     "keyCode": 76
+    }
+   ]
+  },
+  {
+   "name": "end editing a changed cell (host)",
+   "text": "| Name | Count |\n| :--- | ---: |\n| Ada | 3 |\n| Grace | 4 |\n",
+   "host": true,
+   "endEditing": [
+    {
+     "row": 1,
+     "column": 0,
+     "text": "Ada Lovelace"
+    }
+   ]
+  },
+  {
+   "name": "end editing an unchanged cell",
+   "text": "| Name | Count |\n| :--- | ---: |\n| Ada | 3 |\n| Grace | 4 |\n",
+   "endEditing": [
+    {
+     "row": 1,
+     "column": 0,
+     "text": "Ada"
+    }
+   ]
+  },
+  {
+   "name": "begin editing selects the column",
+   "text": "| Name | Count |\n| :--- | ---: |\n| Ada | 3 |\n| Grace | 4 |\n",
+   "beginEditing": [
+    [
+     2,
+     1
+    ]
+   ]
   }
  ]
 }
