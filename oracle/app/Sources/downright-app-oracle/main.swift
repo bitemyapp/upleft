@@ -17,6 +17,9 @@ import AppKit
 //   bench-export    <file.md>     HTMLExporter timings (AppBench.swift)
 //   bench-workspace <folder>      WorkspaceIndex, graph and search timings (AppBench.swift)
 //   bench-find      <file.md>     FindEngine and FindSession timings (AppBench.swift)
+//   panel        <scenario.json>  a panel built off-screen and captured (Panels/PanelHarness.swift)
+//   panel-model  <scenario.json>  panels built windowless, laid out and dumped (Panels/PanelHarness.swift)
+//   bench-panel  <scenario.json>  panel build and layout timings (Panels/PanelBench.swift)
 //
 // Each command parses its own flags. `upleft-oracle` (crates/conformance)
 // takes identical arguments and writes identical formats. The runner selects
@@ -72,6 +75,8 @@ do {
     case "bench-export": try write(AppBench.export(input: input), to: output)
     case "bench-workspace": try write(MainActor.assumeIsolated { try AppBench.workspace(folder: input) }, to: output)
     case "bench-find": try write(AppBench.find(input: input), to: output)
+    case "panel": try MainActor.assumeIsolated { try PanelCaptureSession.run(input: input, output: output, flags: flags) }
+    case "panel-model": try write(MainActor.assumeIsolated { try PanelModelDump.run(input: input, flags: flags) }, to: output)
     default: usage()
     }
 } catch {
