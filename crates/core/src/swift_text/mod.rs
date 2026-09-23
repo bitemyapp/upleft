@@ -555,12 +555,21 @@ pub fn contains_with(s: &str, needle: &str, bridged: bool) -> bool {
 ///
 /// Swift's `contains` answers differently depending on how the string was
 /// made. On a native Swift string it is Character-wise ([`contains`]). On a
-/// string bridged from an `NSString` — in Downright, any
-/// `(text as NSString).substring(with:)` (and anything Foundation derives
-/// from it: `trimmingCharacters`, `replacingOccurrences`, `components`) when
-/// the document holds a non-ASCII character — it is Foundation's non-literal
-/// search: `"é\r\nb"`-derived text contains `"\n"`, and `"<\u{200D}"`
-/// contains `"<"`. `lowercased()` always returns a native string.
+/// string bridged from an `NSString` it is Foundation's non-literal search:
+/// `"é\r\nb"`-derived text contains `"\n"`, and `"<\u{200D}"` contains
+/// `"<"`. Provenance, probed on Swift 6.4:
+///
+/// * `(text as NSString).substring(with:)` is bridged exactly when the
+///   document holds a non-ASCII character ([`bridges_substrings`]).
+/// * `trimmingCharacters(in:)` and `replacingOccurrences` return the bridged
+///   receiver when they change nothing, a native string otherwise.
+/// * `components(separatedBy: String)` parts stay bridged;
+///   `components(separatedBy: CharacterSet)` parts are native once it splits.
+/// * `lowercased()`, `uppercased()`, `String(s.dropFirst())`,
+///   `String(s.prefix(n))` and `s + "!"` are native; `String(s)`, `"\(s)"`
+///   and `s + ""` stay bridged.
+/// * Strings from the parser (swift-markdown, via `String(cString:)`) are
+///   native.
 pub fn contains_bridged(s: &str, needle: &str) -> bool {
     if needle.is_empty() {
         return false;
