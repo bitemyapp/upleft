@@ -20,98 +20,87 @@ struct RenderRequest {
     var captureFromScreen = true
 }
 
-/// Renders a document through Downright's real `MarkdownContainerView` in an
-/// on-screen borderless window of a running, activated application, then
-/// captures it with `cacheDisplay`. TextKit 2 draws only inside a real display
-/// cycle, so a headless capture would be blank (Downright's
-/// `RenderSmokeTests` documents the same constraint).
-final class RenderSession: NSObject, NSApplicationDelegate {
+/// What a capture shows. `CaptureSession` owns the window, the settle loop
+/// and the capture; a scene owns the content. `upleft-oracle` mirrors both.
+protocol CaptureScene: AnyObject {
+    /// Builds the content in `window` and returns the view whose cached
+    /// display decides when the scene has settled.
+    func build(in window: NSWindow, request: RenderRequest) throws -> NSView
+    /// Runs once, after the window is ordered on screen.
+    func afterShow(window: NSWindow)
+    /// Runs before every settle check.
+    func beforeSettleCheck()
+    /// Writes any extra outputs once the scene has settled.
+    func writeExtras(bitmap: NSBitmapImageRep, request: RenderRequest) throws
+}
+
+/// Shows a scene in an on-screen borderless window of a running, activated
+/// application, waits until three consecutive `cacheDisplay` captures are
+/// byte-identical (late image decodes and fragment caches have landed), then
+/// captures the composited window with ScreenCaptureKit. TextKit 2 draws only
+/// inside a real display cycle, so a headless capture would be blank
+/// (Downright's `RenderSmokeTests` documents the same constraint).
+final class CaptureSession: NSObject, NSApplicationDelegate {
     let request: RenderRequest
+    let scene: CaptureScene
     private var window: NSWindow!
-    private var container: MarkdownContainerView!
+    private var settleView: NSView!
     private var previousCapture: Data?
     private var stableCaptures = 0
     private var deadline = Date.distantFuture
 
-    init(request: RenderRequest) {
+    init(request: RenderRequest, scene: CaptureScene) {
         self.request = request
+        self.scene = scene
+    }
+
+    static func run(request: RenderRequest, scene: CaptureScene) -> Never {
+        let app = NSApplication.shared
+        app.setActivationPolicy(.accessory)
+        let session = CaptureSession(request: request, scene: scene)
+        app.delegate = session
+        app.run()
+        exit(0)
     }
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         do {
             try start()
         } catch {
-            FileHandle.standardError.write("render failed: \(error)\n".data(using: .utf8)!)
-            exit(2)
+            fail("\(error)")
         }
     }
 
     private func start() throws {
-        let text = try String(contentsOf: request.input, encoding: .utf8)
         let appearance = NSAppearance(named: request.dark ? .darkAqua : .aqua)!
-        guard let theme = ThemeStore.shared.themes.first(where: { $0.name == request.themeName }) else {
-            throw OracleError.unknownTheme(request.themeName, ThemeStore.shared.themes.map(\.name))
-        }
-        let styleSheet = StyleSheet(theme: theme, appearance: appearance, reduceMotionOverride: true)
-
         let frame = NSRect(x: 0, y: 0, width: request.width, height: request.height)
         window = NSWindow(contentRect: frame, styleMask: [.borderless], backing: .buffered, defer: false)
         window.isReleasedWhenClosed = false
         window.appearance = appearance
         window.colorSpace = .sRGB
-
-        let storage = NSTextStorage(string: text)
-        container = MarkdownContainerView(storage: storage, styleSheet: styleSheet)
-        container.frame = frame
-        window.contentView = container
-        // As in the app: the container is laid out in its window (which sets
-        // the responsive measure and the text view's size limits) before the
-        // first document update resizes the text view to its content.
-        window.layoutIfNeeded()
-        container.layoutSubtreeIfNeeded()
-        container.textView.mode = request.mode
-        container.textView.update(document: MarkdownParser.parse(text), dirty: .wholesale)
+        settleView = try scene.build(in: window, request: request)
 
         NSApp.activate(ignoringOtherApps: true)
         window.orderFrontRegardless()
-        prepareFirstFrame()
+        scene.afterShow(window: window)
         deadline = Date().addingTimeInterval(request.settleTimeout)
-        scheduleCapture()
+        scheduleCheck()
     }
 
-    /// The first-frame sequence of Downright's `DocumentWindowController`
-    /// (`restoreInitialReadingPositionIfReady`), minus the reading-position
-    /// restore: without `resizeToFitContent` the text view keeps its initial
-    /// frame and clips the measure.
-    private func prepareFirstFrame() {
-        window.layoutIfNeeded()
-        container.layoutSubtreeIfNeeded()
-        container.textView.resizeToFitContent()
-        container.textView.scroll(toOffset: 0, position: .top, animated: false)
-        container.textView.prepareForDisplay()
-        container.textView.displayIfNeeded()
-    }
-
-    private func scheduleCapture() {
+    private func scheduleCheck() {
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) { [weak self] in
-            self?.captureIfSettled()
+            self?.checkSettled()
         }
     }
 
-    /// Captures until three consecutive frames are byte-identical, so late
-    /// image decodes and fragment caches have landed before the result is
-    /// taken as the picture.
-    private func captureIfSettled() {
-        container.layoutSubtreeIfNeeded()
-        if let layout = container.textView.textLayoutManager {
-            layout.ensureLayout(for: layout.documentRange)
-        }
-        container.displayIfNeeded()
-        guard let rep = container.bitmapImageRepForCachingDisplay(in: container.bounds) else {
+    private func checkSettled() {
+        scene.beforeSettleCheck()
+        settleView.displayIfNeeded()
+        guard let rep = settleView.bitmapImageRepForCachingDisplay(in: settleView.bounds) else {
             fail("no bitmap representation")
             return
         }
-        container.cacheDisplay(in: container.bounds, to: rep)
+        settleView.cacheDisplay(in: settleView.bounds, to: rep)
         guard let png = rep.representation(using: .png, properties: [:]) else {
             fail("PNG encoding failed")
             return
@@ -122,34 +111,31 @@ final class RenderSession: NSObject, NSApplicationDelegate {
             stableCaptures = 0
             previousCapture = png
         }
-        if stableCaptures >= 2 || Date() > deadline {
-            if Date() > deadline, stableCaptures < 2 {
-                FileHandle.standardError.write("warning: render did not settle before the timeout\n".data(using: .utf8)!)
-            }
-            do {
-                if let layoutURL = request.outputLayout {
-                    try LayoutDump.textView(container.textView, container: container, bitmap: rep)
-                        .text.write(to: layoutURL, atomically: true, encoding: .utf8)
-                }
-                if !request.captureFromScreen {
-                    try png.write(to: request.outputPNG)
-                    exit(0)
-                }
-            } catch {
-                fail("write failed: \(error)")
-                return
-            }
-            Task { @MainActor in
-                do {
-                    try await self.captureWindowFromScreen(to: self.request.outputPNG)
-                    exit(0)
-                } catch {
-                    self.fail("window capture failed: \(error)")
-                }
-            }
+        guard stableCaptures >= 2 || Date() > deadline else {
+            scheduleCheck()
             return
         }
-        scheduleCapture()
+        if stableCaptures < 2 {
+            FileHandle.standardError.write("warning: render did not settle before the timeout\n".data(using: .utf8)!)
+        }
+        do {
+            try scene.writeExtras(bitmap: rep, request: request)
+            if !request.captureFromScreen {
+                try png.write(to: request.outputPNG)
+                exit(0)
+            }
+        } catch {
+            fail("write failed: \(error)")
+            return
+        }
+        Task { @MainActor in
+            do {
+                try await self.captureWindowFromScreen(to: self.request.outputPNG)
+                exit(0)
+            } catch {
+                self.fail("window capture failed: \(error)")
+            }
+        }
     }
 
     /// The window as the compositor shows it. `cacheDisplay` redraws views
@@ -177,10 +163,90 @@ final class RenderSession: NSObject, NSApplicationDelegate {
         try png.write(to: url)
     }
 
-    private func fail(_ message: String) {
+    private func fail(_ message: String) -> Never {
         FileHandle.standardError.write("render failed: \(message)\n".data(using: .utf8)!)
         exit(2)
     }
+}
+
+/// Downright's real `MarkdownContainerView`, set up the way the app's
+/// `DocumentWindowController` sets up a document window.
+final class MarkdownScene: CaptureScene {
+    private var container: MarkdownContainerView!
+
+    func build(in window: NSWindow, request: RenderRequest) throws -> NSView {
+        let text = try String(contentsOf: request.input, encoding: .utf8)
+        let appearance = NSAppearance(named: request.dark ? .darkAqua : .aqua)!
+        guard let theme = ThemeStore.shared.themes.first(where: { $0.name == request.themeName }) else {
+            throw OracleError.unknownTheme(request.themeName, ThemeStore.shared.themes.map(\.name))
+        }
+        let styleSheet = StyleSheet(theme: theme, appearance: appearance, reduceMotionOverride: true)
+        let storage = NSTextStorage(string: text)
+        container = MarkdownContainerView(storage: storage, styleSheet: styleSheet)
+        container.frame = NSRect(x: 0, y: 0, width: request.width, height: request.height)
+        window.contentView = container
+        // As in the app: the container is laid out in its window (which sets
+        // the responsive measure and the text view's size limits) before the
+        // first document update resizes the text view to its content.
+        window.layoutIfNeeded()
+        container.layoutSubtreeIfNeeded()
+        container.textView.mode = request.mode
+        container.textView.update(document: MarkdownParser.parse(text), dirty: .wholesale)
+        return container
+    }
+
+    /// The first-frame sequence of Downright's `DocumentWindowController`
+    /// (`restoreInitialReadingPositionIfReady`), minus the reading-position
+    /// restore.
+    func afterShow(window: NSWindow) {
+        window.layoutIfNeeded()
+        container.layoutSubtreeIfNeeded()
+        container.textView.resizeToFitContent()
+        container.textView.scroll(toOffset: 0, position: .top, animated: false)
+        container.textView.prepareForDisplay()
+        container.textView.displayIfNeeded()
+    }
+
+    func beforeSettleCheck() {
+        container.layoutSubtreeIfNeeded()
+        if let layout = container.textView.textLayoutManager {
+            layout.ensureLayout(for: layout.documentRange)
+        }
+    }
+
+    func writeExtras(bitmap: NSBitmapImageRep, request: RenderRequest) throws {
+        guard let layoutURL = request.outputLayout else { return }
+        try LayoutDump.textView(container.textView, container: container, bitmap: bitmap)
+            .text.write(to: layoutURL, atomically: true, encoding: .utf8)
+    }
+}
+
+/// A stock TextKit 2 text view showing the input verbatim. Nothing here is
+/// Downright's: the `probe` suite exists to prove the two oracles' window,
+/// settle and capture machinery are pixel-identical before any port is
+/// judged by it.
+final class ProbeScene: CaptureScene {
+    private var scrollView: NSScrollView!
+
+    func build(in window: NSWindow, request: RenderRequest) throws -> NSView {
+        let text = try String(contentsOf: request.input, encoding: .utf8)
+        scrollView = NSTextView.scrollableTextView()
+        scrollView.frame = NSRect(x: 0, y: 0, width: request.width, height: request.height)
+        let textView = scrollView.documentView as! NSTextView
+        textView.font = NSFont.systemFont(ofSize: 15)
+        textView.textContainerInset = NSSize(width: 24, height: 24)
+        textView.string = text
+        window.contentView = scrollView
+        return scrollView
+    }
+
+    func afterShow(window: NSWindow) {
+        window.layoutIfNeeded()
+    }
+
+    func beforeSettleCheck() {}
+
+    func writeExtras(bitmap: NSBitmapImageRep, request: RenderRequest) throws {}
 }
 
 enum OracleError: Error, CustomStringConvertible {

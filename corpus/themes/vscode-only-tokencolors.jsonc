@@ -1,0 +1,7 @@
+{
+  "tokenColors": [
+    { "scope": "variable.other", "settings": { "foreground": "#9CDCFE" } },
+    { "scope": "keyword.operator.assignment", "settings": { "foreground": "#D4D4D4" } },
+    { "scope": ["markup.inserted.diff", "markup.deleted.diff"], "settings": { "foreground": "#B5CEA8" } }
+  ]
+}

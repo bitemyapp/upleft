@@ -1,0 +1,28 @@
+{
+  "name": "Edge Numbers",
+  "name": "Ignored Duplicate",
+  "appearance": "auto",
+  "palette": {
+    "background": "system:textBackground", "surface": "#fff", "text": "system:label",
+    "textSecondary": "#12345", "textFaint": "#aabbccdd", "heading": "system:nope", "marker": "#+12345",
+    "accent": "system:accent", "link": "system:link", "rule": "system:separator",
+    "selection": "system:selectedTextBackground", "codeBackground": "system:controlBackground",
+    "inlineCodeBackground": "system:controlBackground", "codeRule": "system:separator",
+    "railTick": "system:tertiaryLabel", "railTickCurrent": "system:label", "quoteRule": "system:quaternaryLabel",
+    "changeAdded": "system:systemGreen", "changeRemoved": "system:systemRed", "changeModified": "system:systemBlue",
+    "pathMissing": "system:systemRed", "searchHit": "system:systemBlue", "searchHitCurrent": "system:systemBlue",
+    "calloutNote": "system:systemBlue", "calloutWarning": "system:systemOrange", "calloutSuccess": "system:systemGreen",
+    "calloutDanger": "system:systemRed", "calloutImportant": null
+  },
+  "code": {
+    "keyword": "#c678dd", "string": "#98c379", "number": "#d19a66", "comment": "#5c6370", "type": "#e5c07b",
+    "function": "#61afef", "variable": "#e06c75", "constant": "#d19a66", "operator": "#56b6c2",
+    "punctuation": "#abb2bf", "attribute": "#d19a66", "diffAdded": "#98c379", "diffRemoved": "#e06c75",
+    "diffHeader": "#61afef", "extra": 1
+  },
+  "typography": {
+    "preset": "working", "bodySize": 1E+1, "scaleRatio": 1.2000000000000002, "lineHeightMultiple": 123456789.125,
+    "measureCharacters": 0.00001, "monoFamily": "Fira Code", "monoSizeAdjust": 1e21, "monoLigatures": true,
+    "opticalMargins": false, "mathScale": -0.0,
+  },
+}

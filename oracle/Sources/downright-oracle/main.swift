@@ -5,9 +5,13 @@ import MarkdownRender
 // downright-oracle — the Swift reference for Upleft's conformance harness.
 //
 //   downright-oracle parse    <file.md> <out.json>
+//   downright-oracle markup   <file.md> <out.json>
 //   downright-oracle decorate <file.md> <out.json> [--mode M] [--theme NAME] [--dark]
 //   downright-oracle render   <file.md> <out.png> [--layout out.json] [--mode M]
 //                             [--theme NAME] [--dark] [--width W] [--height H]
+//   downright-oracle stylesheet   <file.md> <out.json> [--theme NAME] [--dark]
+//   downright-oracle highlight    <file.md> <out.json>
+//   downright-oracle vscode-theme <theme.json> <out.json>
 //
 // `upleft-oracle` (crates/conformance) takes identical arguments and writes
 // identical formats.
@@ -16,6 +20,7 @@ func usage() -> Never {
     FileHandle.standardError.write("""
     usage:
       downright-oracle parse    <file.md> <out.json>
+      downright-oracle markup   <file.md> <out.json>
       downright-oracle decorate <file.md> <out.json> [--mode read|live|source] [--theme NAME] [--dark]
       downright-oracle render   <file.md> <out.png> [--layout out.json] [--mode M] [--theme NAME] [--dark] [--width W] [--height H] [--capture screen|view]
 
@@ -76,6 +81,13 @@ do {
         let text = try String(contentsOf: input, encoding: .utf8)
         try write(ParseDump.document(MarkdownParser.parse(text)), to: output)
 
+    case "markup":
+        let text = try String(contentsOf: input, encoding: .utf8)
+        try write(MarkupDump.document(text), to: output)
+
+    case "markup-bench":
+        try MarkupBench.run(input, output: output)
+
     case "decorate":
         let text = try String(contentsOf: input, encoding: .utf8)
         let appearance = NSAppearance(named: flags.dark ? .darkAqua : .aqua)!
@@ -92,7 +104,7 @@ do {
     case "elk":
         try write(ElkDump.layout(input), to: output)
 
-    case "render":
+    case "render", "probe":
         let request = RenderRequest(
             input: input,
             outputPNG: URL(fileURLWithPath: output),
@@ -104,11 +116,16 @@ do {
             height: flags.height,
             captureFromScreen: flags.captureFromScreen
         )
-        let app = NSApplication.shared
-        app.setActivationPolicy(.accessory)
-        let session = RenderSession(request: request)
-        app.delegate = session
-        app.run()
+        CaptureSession.run(request: request, scene: command == "render" ? MarkdownScene() : ProbeScene())
+
+    case "stylesheet":
+        try write(StyleSheetDump.dump(themeName: flags.theme, dark: flags.dark), to: output)
+
+    case "highlight":
+        try write(HighlightDump.document(String(contentsOf: input, encoding: .utf8)), to: output)
+
+    case "vscode-theme":
+        try write(VSCodeThemeDump.dump(Data(contentsOf: input), url: input), to: output)
 
     default:
         usage()

@@ -1,0 +1,17 @@
+[package]
+name = "upleft-markup"
+description = "Rust port of the swift-markdown layer Downright parses with (cmark-gfm → Markup tree)"
+version.workspace = true
+edition.workspace = true
+license = "Apache-2.0"
+publish.workspace = true
+repository.workspace = true
+
+[dependencies]
+upleft-cmark-gfm-sys.workspace = true
+unicode-normalization = "0.1.24"
+unicode-segmentation = "1.12"
+
+[[bench]]
+name = "parse"
+harness = false
