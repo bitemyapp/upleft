@@ -312,7 +312,7 @@ fn sandbox() {
 
 fn main() {
     sandbox();
-    main_thread::run(&[
+    main_thread::run_off_screen(&[
         ("loads_rows_columns_and_source_range", loads_rows_columns_and_source_range),
         ("forwards_cell_edit_as_one_source_proposal", forwards_cell_edit_as_one_source_proposal),
         ("forwards_structure_and_alignment_operations", forwards_structure_and_alignment_operations),

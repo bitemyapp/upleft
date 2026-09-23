@@ -310,6 +310,7 @@ fn start(mtm: MainThreadMarker) -> Result<(), String> {
         window.setFrameOrigin(NSPoint::new(-30000.0, -30000.0));
         window.orderFrontRegardless();
         crate::dump::app_window::off_screen::verify(std::slice::from_ref(&window), mtm);
+        verify_visible_windows(mtm);
         window.layoutIfNeeded();
         session.scene.after_show(&window, &scenario);
         session.settle_view = window.contentView();
@@ -389,6 +390,7 @@ fn check_settled() {
                 .map_err(|error| format!("write failed: {error}"))?;
         }
         crate::dump::app_window::off_screen::verify(std::slice::from_ref(&window), window.mtm());
+        verify_visible_windows(window.mtm());
         // The window server's composite of the off-screen window (glass,
         // materials and layers included); see `WindowServerCapture`.
         std::fs::write(&session.output_png, &server).map_err(|error| format!("write failed: {error}"))?;

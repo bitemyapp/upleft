@@ -8,6 +8,7 @@
 //! PanelAccessibilityTests cases for the task panel, search results and find
 //! bar (their panels' test binaries).
 
+mod document_support;
 #[path = "main_thread/mod.rs"]
 mod main_thread;
 
@@ -25,6 +26,7 @@ use upleft_app::panels::chrome_glass::ChromeGlass;
 use upleft_app::panels::conflict_bar_view::ConflictBarView;
 use upleft_app::panels::inspector_host_view::{InspectorHostView, InspectorSection};
 use upleft_app::panels::panel_chrome::{PanelCheckbox, PanelTableView};
+use upleft_app::support::preferences::Preferences;
 
 fn mtm() -> MainThreadMarker {
     MainThreadMarker::new().expect("main thread")
@@ -207,8 +209,25 @@ fn chrome_glass_accessibility_fallback_policy_is_explicit() {
     assert!(!ChromeGlass::supports_glass_with(false, false, false));
 }
 
+/// Points the home folder into the sandbox and installs the testing
+/// `Preferences.shared` (every panel reads it through `PanelFont`; loading
+/// the real one writes the user's global preferences). Call first in `main`.
+fn sandbox() {
+    let root = document_support::sandbox();
+    let home = root.appending_path_component_is_directory("home", true);
+    std::fs::create_dir_all(home.path()).unwrap();
+    // SAFETY: called from `main` before any other thread exists.
+    unsafe {
+        std::env::set_var("CFFIXED_USER_HOME", home.path());
+        std::env::set_var("HOME", home.path());
+    }
+    let preferences = Preferences::for_testing(root.appending_path_component("shared-preferences.json"), None);
+    assert!(Preferences::install_shared_for_testing(preferences), "Preferences.shared was loaded too early");
+}
+
 fn main() {
-    main_thread::run(&[
+    sandbox();
+    main_thread::run_off_screen(&[
         ("task_checkbox_hit_target_uses_local_coordinates", task_checkbox_hit_target_uses_local_coordinates),
         ("task_table_claims_quick_add_key_equivalent", task_table_claims_quick_add_key_equivalent),
         ("inspector_section_navigation_stays_in_sync", inspector_section_navigation_stays_in_sync),

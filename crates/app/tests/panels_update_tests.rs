@@ -236,7 +236,7 @@ fn main() {
     for (name, reason) in skipped {
         println!("test {name} ... skipped ({reason})");
     }
-    main_thread::run(&[
+    main_thread::run_off_screen(&[
         ("UpdatePanelFooterTests/rebuildsAfterCheckIntoAvailableState", rebuilds_after_check_into_available_state),
         ("UpdatePanelTransitionTests/rendersEveryUpdaterPhaseWithoutThrowing", renders_every_updater_phase_without_throwing),
         ("UpdateNotesSummaryTests/dropsTheLeadingTitle", drops_the_leading_title),

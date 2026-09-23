@@ -57,6 +57,20 @@ pub fn yield_main() {
 
 pub type TestFn = fn();
 
+/// [`run`] for view tests (the panels'): `constrainFrameRect:toScreen:` is
+/// the identity for the whole run ([`keep_windows_off_screen`]), and after
+/// every test [`assert_off_screen`] stops the run if any visible window of
+/// the process touches a display.
+pub fn run_off_screen(tests: &[(&str, TestFn)]) {
+    keep_windows_off_screen();
+    OFF_SCREEN_CHECKS.with(|checks| checks.set(true));
+    run(tests);
+}
+
+thread_local! {
+    static OFF_SCREEN_CHECKS: std::cell::Cell<bool> = const { std::cell::Cell::new(false) };
+}
+
 /// Runs `tests` in order on the main thread and exits non-zero on failure.
 pub fn run(tests: &[(&str, TestFn)]) {
     assert!(objc2::MainThreadMarker::new().is_some(), "main-thread tests must run on the main thread");
@@ -91,6 +105,9 @@ pub fn run(tests: &[(&str, TestFn)]) {
     for (name, test) in &selected {
         let started = Instant::now();
         let outcome = catch_unwind(AssertUnwindSafe(test));
+        if OFF_SCREEN_CHECKS.with(std::cell::Cell::get) {
+            assert_off_screen();
+        }
         let elapsed = started.elapsed().as_secs_f64();
         match outcome {
             Ok(()) => println!("test {name} ... ok ({elapsed:.2}s)"),

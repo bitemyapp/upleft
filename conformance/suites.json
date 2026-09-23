@@ -1583,9 +1583,11 @@
         "corpus/panels/"
       ],
       "depends": [
-        "corpus/generated/agent/",
-        "corpus/generated/docs/",
-        "corpus/panel-documents/"
+        "corpus/generated/",
+        "corpus/panel-documents/",
+        "corpus/workspace/",
+        "corpus/render-images/",
+        "corpus/updater/feeds/"
       ],
       "variants": [
         []
@@ -1601,9 +1603,11 @@
         "corpus/panel-models/"
       ],
       "depends": [
-        "corpus/generated/agent/",
-        "corpus/generated/docs/",
-        "corpus/panel-documents/"
+        "corpus/generated/",
+        "corpus/panel-documents/",
+        "corpus/workspace/",
+        "corpus/render-images/",
+        "corpus/updater/feeds/"
       ],
       "variants": [
         []

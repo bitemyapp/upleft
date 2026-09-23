@@ -206,7 +206,7 @@ final class PanelCaptureSession: NSObject, NSApplicationDelegate {
         }
         window.setFrameOrigin(NSPoint(x: -30000, y: -30000))
         window.orderFrontRegardless()
-        OffScreenWindows.verify([window])
+        OffScreenWindows.verify([window] + NSApp.windows.filter { $0.isVisible })
         window.layoutIfNeeded()
         scene.afterShow(window: window, scenario: scenario)
         settleView = window.contentView
@@ -268,7 +268,7 @@ final class PanelCaptureSession: NSObject, NSApplicationDelegate {
                 ])
                 try layout.text.write(to: outputLayout, atomically: true, encoding: .utf8)
             }
-            OffScreenWindows.verify([window])
+            OffScreenWindows.verify([window] + NSApp.windows.filter { $0.isVisible })
             // The window server's composite of the off-screen window (glass,
             // materials and layers included); see `WindowServerCapture`.
             try server.write(to: outputPNG)

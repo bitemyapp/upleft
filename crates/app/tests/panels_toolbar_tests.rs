@@ -201,7 +201,7 @@ fn long_plan_keeps_exact_figure() {
 }
 
 fn main() {
-    main_thread::run(&[
+    main_thread::run_off_screen(&[
         ("breadcrumb_reserves_a_stable_text_safe_lane", breadcrumb_reserves_a_stable_text_safe_lane),
         ("breadcrumb_appears_only_when_presented", breadcrumb_appears_only_when_presented),
         ("breadcrumb_shows_only_the_current_section", breadcrumb_shows_only_the_current_section),

@@ -573,7 +573,7 @@ fn search_inspector_lays_out_its_find_field_inside_the_visible_header() {
 
 fn main() {
     let _ = NSApplication::sharedApplication(mtm());
-    main_thread::run(&[
+    main_thread::run_off_screen(&[
         // PanelAccessibilityTests
         (
             "find_accent_glyph_does_not_duplicate_the_search_field_announcement",

@@ -302,7 +302,7 @@ fn sandbox() {
 
 fn main() {
     sandbox();
-    main_thread::run(&[
+    main_thread::run_off_screen(&[
         ("picker_lists_built_ins_and_sends_live_preview", picker_lists_built_ins_and_sends_live_preview),
         ("saving_custom_profile_uses_injected_store", saving_custom_profile_uses_injected_store),
         (

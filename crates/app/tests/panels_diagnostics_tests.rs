@@ -61,7 +61,7 @@ fn main() {
     // The panels read `Preferences.shared` (`PanelFont`); keep it, and every
     // other shared store, out of the real home.
     document_support::sandbox();
-    main_thread::run(&[
+    main_thread::run_off_screen(&[
         ("health_groups_findings_and_keeps_exact_ranges", health_groups_findings_and_keeps_exact_ranges),
         ("health_sends_only_safe_fixes_as_one_batch", health_sends_only_safe_fixes_as_one_batch),
         ("health_local_ignore_can_be_reset", health_local_ignore_can_be_reset),
