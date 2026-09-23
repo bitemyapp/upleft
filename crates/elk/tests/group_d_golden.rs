@@ -12,7 +12,11 @@ use std::rc::Rc;
 use upleft_elk::org::eclipse::elk::alg::layered::graph::l_graph::{LEdgeId, LGraphArena, LGraphId, LLabelId, LNodeId, LPortId};
 use upleft_elk::org::eclipse::elk::alg::layered::graph::l_node::NodeType;
 use upleft_elk::org::eclipse::elk::alg::layered::intermediate::graph_transformer::{GraphTransformer, Mode};
+use upleft_elk::org::eclipse::elk::alg::layered::compound::compound_graph_postprocessor::CompoundGraphPostprocessor;
+use upleft_elk::org::eclipse::elk::alg::layered::compound::compound_graph_preprocessor::CompoundGraphPreprocessor;
+use upleft_elk::org::eclipse::elk::alg::layered::compound::cross_hierarchy_edge::CrossHierarchyMap;
 use upleft_elk::org::eclipse::elk::alg::layered::intermediate::hierarchical_node_resizing_processor::HierarchicalNodeResizingProcessor;
+use upleft_elk::org::eclipse::elk::core::options::edge_label_placement::EdgeLabelPlacement;
 use upleft_elk::org::eclipse::elk::alg::layered::intermediate::label_dummy_switcher::{LabelDummySwitcher, INCLUDE_LABEL};
 use upleft_elk::org::eclipse::elk::alg::layered::intermediate::self_loop_port_restorer::SelfLoopPortRestorer;
 use upleft_elk::org::eclipse::elk::alg::layered::options::center_edge_label_placement_strategy::CenterEdgeLabelPlacementStrategy;
@@ -711,4 +715,166 @@ fn hierarchical_node_resizing_matches_swift() {
             check(&golden, &format!("resizer {parent_dir:?} {child_dir:?} {variant}"), &out);
         }
     }
+}
+
+// MARK: - Compound graphs
+
+/// `dump`, with every port's outgoing edges sorted by their text.
+fn sorted_dump(lg: &LGraphArena, g: LGraphId) -> String {
+    let text = dump(lg, g);
+    let mut out: Vec<String> = Vec::new();
+    let mut block: Vec<String> = Vec::new();
+    fn flush(out: &mut Vec<String>, block: &mut Vec<String>) {
+        block.sort();
+        out.append(block);
+    }
+    for line in text.split('\n') {
+        if line.starts_with("  E ") || line.starts_with("   EL ") {
+            if line.starts_with("  E ") {
+                block.push(line.to_string());
+            } else {
+                let last = block.len() - 1;
+                block[last] += "\n";
+                block[last] += line;
+            }
+        } else {
+            flush(&mut out, &mut block);
+            out.push(line.to_string());
+        }
+    }
+    flush(&mut out, &mut block);
+    out.join("\n")
+}
+
+fn compound_scenario(golden: &HashMap<String, String>, merge: bool, fixed_side: bool, inside_loops: bool, dir: Direction) {
+    let mut lg = LGraphArena::new();
+    let lg = &mut lg;
+    let r = lg.new_graph();
+    lg[r].props.set(&LayeredOptions::DIRECTION, dir);
+    let x = node(lg, r, 300.0, 10.0, 20.0, 20.0);
+    let y = node(lg, r, 300.0, 80.0, 20.0, 20.0);
+    let p = node(lg, r, 50.0, 0.0, 100.0, 100.0);
+    let q = node(lg, r, 50.0, 150.0, 60.0, 40.0);
+    if fixed_side {
+        lg[p].props.set(&LayeredOptions::PORT_CONSTRAINTS, PortConstraints::FIXED_SIDE);
+    }
+    let c = lg.new_graph();
+    lg[c].parent_node = Some(p);
+    lg[p].nested_graph = Some(c);
+    let dd = lg.new_graph();
+    lg[dd].parent_node = Some(q);
+    lg[q].nested_graph = Some(dd);
+    lg[c].props.set(&LayeredOptions::DIRECTION, dir);
+    lg[dd].props.set(&LayeredOptions::DIRECTION, dir);
+    if merge {
+        lg[c].props.set(&LayeredOptions::MERGE_HIERARCHY_EDGES, true);
+    }
+    lg[c].padding.top = 3.0;
+    lg[c].padding.left = 4.0;
+    lg[c].offset = KVector::new(2.0, 1.0);
+    lg[dd].padding.top = 5.0;
+    lg[dd].padding.left = 6.0;
+    let c1 = node(lg, c, 10.0, 10.0, 20.0, 20.0);
+    let c2 = node(lg, c, 10.0, 50.0, 20.0, 20.0);
+    let d1 = node(lg, dd, 5.0, 5.0, 20.0, 20.0);
+    let xw = port(lg, x, PortSide::WEST, 0.0, 5.0, 0.0, 0.0);
+    let xe = port(lg, x, PortSide::EAST, 20.0, 5.0, 0.0, 0.0);
+    let yw = port(lg, y, PortSide::WEST, 0.0, 5.0, 0.0, 0.0);
+    let pe = port(lg, p, PortSide::EAST, 100.0, 50.0, 2.0, 2.0);
+    let pw = port(lg, p, PortSide::WEST, 0.0, 50.0, 2.0, 2.0);
+    let c1p1 = port(lg, c1, PortSide::EAST, 20.0, 5.0, 0.0, 0.0);
+    let c1p2 = port(lg, c1, PortSide::SOUTH, 10.0, 20.0, 0.0, 0.0);
+    let c1p3 = port(lg, c1, PortSide::WEST, 0.0, 5.0, 0.0, 0.0);
+    let c1p4 = port(lg, c1, PortSide::EAST, 20.0, 15.0, 0.0, 0.0);
+    let c2p1 = port(lg, c2, PortSide::WEST, 0.0, 5.0, 0.0, 0.0);
+    let c2p2 = port(lg, c2, PortSide::NORTH, 10.0, 0.0, 0.0, 0.0);
+    let d1p1 = port(lg, d1, PortSide::NORTH, 10.0, 0.0, 0.0, 0.0);
+    let lab = |lg: &mut LGraphArena, e: LEdgeId, w: f64, placement: EdgeLabelPlacement| {
+        let l = label(lg, w, 5.0, 0.0, 0.0);
+        lg[l].props.set(&LayeredOptions::EDGE_LABELS_PLACEMENT, placement);
+        lg[e].labels.push(l);
+    };
+    let e1 = edge(lg, c1p1, xw);
+    lab(lg, e1, 10.0, EdgeLabelPlacement::CENTER);
+    lab(lg, e1, 4.0, EdgeLabelPlacement::HEAD);
+    lab(lg, e1, 3.0, EdgeLabelPlacement::TAIL);
+    let e2 = edge(lg, xe, c2p1);
+    lab(lg, e2, 11.0, EdgeLabelPlacement::CENTER);
+    lg[e2].props.set(&LayeredOptions::EDGE_THICKNESS, 2.0);
+    let e3 = edge(lg, c1p2, d1p1);
+    lab(lg, e3, 12.0, EdgeLabelPlacement::CENTER);
+    let e4 = edge(lg, c2p2, c1p3);
+    let e5 = edge(lg, c1p4, pe);
+    lab(lg, e5, 13.0, EdgeLabelPlacement::CENTER);
+    let e6 = edge(lg, c1p1, yw);
+    lab(lg, e6, 14.0, EdgeLabelPlacement::CENTER);
+    lg[e6].props.set(&LayeredOptions::EDGE_THICKNESS, 3.0);
+    let mut orig_edges = vec![e1, e2, e3, e4, e5, e6];
+    if inside_loops {
+        lg[p].props.set(&LayeredOptions::INSIDE_SELF_LOOPS_ACTIVATE, true);
+        let e7 = edge(lg, pe, pw);
+        lg[e7].props.set(&LayeredOptions::INSIDE_SELF_LOOPS_YO, true);
+        lab(lg, e7, 15.0, EdgeLabelPlacement::CENTER);
+        orig_edges.push(e7);
+    }
+    let graphs = [("R", r), ("C", c), ("D", dd)];
+    let header = format!("compound merge={merge} fixedSide={fixed_side} insideLoops={inside_loops} {dir:?}");
+
+    run(lg, r, &mut CompoundGraphPreprocessor::new());
+    let mut out = sorted_dump(lg, r) + "\n";
+    let map = lg[r].props.get_object::<CrossHierarchyMap>(&InternalProperties::CROSS_HIERARCHY_MAP).expect("map");
+    for (i, &e) in orig_edges.iter().enumerate() {
+        let segs: Vec<String> = map
+            .get(e)
+            .unwrap_or(&[])
+            .iter()
+            .map(|che| {
+                let nodes = all_nodes(lg, che.graph);
+                let name = graphs.iter().find(|(_, g)| *g == che.graph).map_or("?", |(n, _)| n);
+                format!("{name}:{}->{}:{:?}", port_ref(lg, lg[che.new_edge].source, &nodes), port_ref(lg, lg[che.new_edge].target, &nodes), che.port_type)
+            })
+            .collect();
+        let src = if lg[e].source.is_none() { "nil" } else { "set" };
+        out += &format!("e{} src={src} labels={} segs=[{}]\n", i + 1, lg[e].labels.len(), segs.join(" "));
+    }
+    check(golden, &format!("{header} pre"), &out);
+
+    // simulate a layout
+    let mut k = 0.0f64;
+    for (_, g) in graphs {
+        for (i, n) in all_nodes(lg, g).into_iter().enumerate() {
+            if lg[n].node_type == NodeType::EXTERNAL_PORT {
+                lg[n].position = KVector::new(i as f64 * 7.0, i as f64 * 3.0);
+            }
+        }
+        for n in all_nodes(lg, g) {
+            for pt in lg[n].ports.clone() {
+                for e in lg[pt].outgoing_edges.clone() {
+                    k += 1.0;
+                    lg[e].bend_points.add(KVector::new(k * 10.0 + 1.0, k * 10.0 + 2.0));
+                    if (k as i64) % 3 == 0 {
+                        lg[e].props.set(&LayeredOptions::JUNCTION_POINTS, PropValue::kvector_chain(KVectorChain::from_vec(vec![KVector::new(k, -k)])));
+                    }
+                    for l in lg[e].labels.clone() {
+                        lg[l].position = KVector::new(k, -k);
+                    }
+                }
+            }
+        }
+    }
+    run(lg, r, &mut CompoundGraphPostprocessor::new());
+    check(golden, &format!("{header} post"), &(sorted_dump(lg, r) + "\n"));
+}
+
+#[test]
+fn compound_graph_processors_match_swift() {
+    let golden = golden_sections();
+    for merge in [false, true] {
+        for fixed_side in [false, true] {
+            for inside_loops in [false, true] {
+                compound_scenario(&golden, merge, fixed_side, inside_loops, Direction::RIGHT);
+            }
+        }
+    }
+    compound_scenario(&golden, true, false, true, Direction::DOWN);
 }

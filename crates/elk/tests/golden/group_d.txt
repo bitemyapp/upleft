@@ -1884,3 +1884,1172 @@ graph size=112.0,40.0 offset=17.0,2.0 padding=2.0,3.0,4.0,5.0 nlp=- elss=-
 N0 NORMAL pos=10.0,12.0 size=20.0,10.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=- ilc=- eps=- pc=-
 N1 EXTERNAL_PORT pos=99.5,17.0 size=4.0,6.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=- ilc=- eps=EAST pc=-
  }
+== compound merge=false fixedSide=false insideLoops=false RIGHT pre
+graph size=0.0,0.0 offset=0.0,0.0 padding=0.0,0.0,0.0,0.0 nlp=- elss=-
+N0 NORMAL pos=300.0,10.0 size=20.0,20.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=- ilc=- eps=- pc=-
+ P0 side=WEST pos=0.0,5.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+ P1 side=EAST pos=20.0,5.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+  E -> N2P5 bends=[] jps=- toff=-
+   EL pos=0.0,0.0 size=11.0,5.0 inline=-
+N1 NORMAL pos=300.0,80.0 size=20.0,20.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=- ilc=- eps=- pc=-
+ P0 side=WEST pos=0.0,5.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+N2 NORMAL pos=50.0,0.0 size=100.0,100.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=- ilc=- eps=- pc=fixedSide
+ P0 side=EAST pos=100.0,50.0 anchor=2.0,1.0 size=2.0,2.0 idx=-
+ P1 side=EAST pos=0.0,50.0 anchor=2.0,1.0 size=2.0,2.0 idx=-
+ P2 side=EAST pos=0.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+  E -> N0P0 bends=[] jps=- toff=-
+   EL pos=0.0,0.0 size=10.0,5.0 inline=-
+   EL pos=0.0,0.0 size=4.0,5.0 inline=-
+ P3 side=EAST pos=0.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+  E -> N1P0 bends=[] jps=- toff=-
+   EL pos=0.0,0.0 size=14.0,5.0 inline=-
+ P4 side=EAST pos=0.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+  E -> N3P0 bends=[] jps=- toff=-
+   EL pos=0.0,0.0 size=12.0,5.0 inline=-
+ P5 side=WEST pos=0.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+ nested {
+graph size=0.0,0.0 offset=2.0,1.0 padding=3.0,0.0,0.0,4.0 nlp=- elss=-
+N0 NORMAL pos=10.0,10.0 size=20.0,20.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=- ilc=- eps=- pc=-
+ P0 side=EAST pos=20.0,5.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+  E -> N2P0 bends=[] jps=- toff=-
+   EL pos=0.0,0.0 size=3.0,5.0 inline=-
+  E -> N3P0 bends=[] jps=- toff=-
+ P1 side=SOUTH pos=10.0,20.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+  E -> N4P0 bends=[] jps=- toff=-
+ P2 side=WEST pos=0.0,5.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+ P3 side=EAST pos=20.0,15.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+  E -> N5P0 bends=[] jps=- toff=-
+   EL pos=0.0,0.0 size=13.0,5.0 inline=-
+N1 NORMAL pos=10.0,50.0 size=20.0,20.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=- ilc=- eps=- pc=-
+ P0 side=WEST pos=0.0,5.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+ P1 side=NORTH pos=10.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+  E -> N0P2 bends=[] jps=- toff=-
+N2 EXTERNAL_PORT pos=0.0,0.0 size=0.0,0.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=LAST_SEPARATE ilc=- eps=EAST pc=fixedPos
+ P0 side=WEST pos=0.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+N3 EXTERNAL_PORT pos=0.0,0.0 size=0.0,0.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=LAST_SEPARATE ilc=- eps=EAST pc=fixedPos
+ P0 side=WEST pos=0.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+N4 EXTERNAL_PORT pos=0.0,0.0 size=0.0,0.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=LAST_SEPARATE ilc=- eps=EAST pc=fixedPos
+ P0 side=WEST pos=0.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+N5 EXTERNAL_PORT pos=0.0,0.0 size=0.0,2.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=LAST_SEPARATE ilc=- eps=EAST pc=fixedPos
+ P0 side=WEST pos=0.0,1.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+N6 EXTERNAL_PORT pos=0.0,0.0 size=0.0,0.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=FIRST_SEPARATE ilc=- eps=WEST pc=fixedPos
+ P0 side=EAST pos=0.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+  E -> N1P0 bends=[] jps=- toff=-
+N7 EXTERNAL_PORT pos=0.0,0.0 size=0.0,2.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=LAST_SEPARATE ilc=- eps=EAST pc=fixedPos
+ P0 side=WEST pos=0.0,1.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+ }
+N3 NORMAL pos=50.0,150.0 size=60.0,40.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=- ilc=- eps=- pc=fixedSide
+ P0 side=WEST pos=0.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+ nested {
+graph size=0.0,0.0 offset=0.0,0.0 padding=5.0,0.0,0.0,6.0 nlp=- elss=-
+N0 NORMAL pos=5.0,5.0 size=20.0,20.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=- ilc=- eps=- pc=-
+ P0 side=NORTH pos=10.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+N1 EXTERNAL_PORT pos=0.0,0.0 size=0.0,0.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=FIRST_SEPARATE ilc=- eps=WEST pc=fixedPos
+ P0 side=EAST pos=0.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+  E -> N0P0 bends=[] jps=- toff=-
+ }
+
+e1 src=nil labels=0 segs=[C:N0P0->N2P0:OUTPUT R:N2P2->N0P0:OUTPUT]
+e2 src=nil labels=0 segs=[C:N6P0->N1P0:INPUT R:N0P1->N2P5:INPUT]
+e3 src=nil labels=0 segs=[C:N0P1->N4P0:OUTPUT D:N1P0->N0P0:INPUT R:N2P4->N3P0:OUTPUT]
+e4 src=set labels=0 segs=[]
+e5 src=nil labels=0 segs=[C:N0P3->N5P0:OUTPUT]
+e6 src=nil labels=0 segs=[C:N0P0->N3P0:OUTPUT R:N2P3->N1P0:OUTPUT]
+== compound merge=false fixedSide=false insideLoops=false RIGHT post
+graph size=0.0,0.0 offset=0.0,0.0 padding=0.0,0.0,0.0,0.0 nlp=- elss=-
+N0 NORMAL pos=300.0,10.0 size=20.0,20.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=- ilc=- eps=- pc=-
+ P0 side=WEST pos=0.0,5.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+ P1 side=EAST pos=20.0,5.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+  E -> ? bends=[11.0,12.0;98.0,22.0;157.0,106.0] jps=- toff=56.0,4.0
+   EL pos=1.0,-1.0 size=11.0,5.0 inline=-
+N1 NORMAL pos=300.0,80.0 size=20.0,20.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=- ilc=- eps=- pc=-
+ P0 side=WEST pos=0.0,5.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+N2 NORMAL pos=50.0,0.0 size=100.0,100.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=- ilc=- eps=- pc=fixedSide
+ P0 side=EAST pos=100.0,50.0 anchor=2.0,1.0 size=2.0,2.0 idx=-
+ P1 side=EAST pos=0.0,50.0 anchor=2.0,1.0 size=2.0,2.0 idx=-
+ P2 side=EAST pos=0.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+ P3 side=EAST pos=0.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+ P4 side=EAST pos=0.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+ P5 side=WEST pos=0.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+ nested {
+graph size=0.0,0.0 offset=2.0,1.0 padding=3.0,0.0,0.0,4.0 nlp=- elss=-
+N0 NORMAL pos=10.0,10.0 size=20.0,20.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=- ilc=- eps=- pc=-
+ P0 side=EAST pos=20.0,5.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+  E -> ? bends=[51.0,52.0;-6.0,-4.0;-35.0,18.0] jps=- toff=-56.0,-4.0
+   EL pos=5.0,-5.0 size=3.0,5.0 inline=-
+   EL pos=-54.0,-6.0 size=10.0,5.0 inline=-
+   EL pos=-54.0,-6.0 size=4.0,5.0 inline=-
+  E -> ? bends=[61.0,62.0;-6.0,-4.0;-25.0,28.0] jps=[6.0,-6.0;-53.0,-7.0] toff=-56.0,-4.0
+   EL pos=-53.0,-7.0 size=14.0,5.0 inline=-
+ P1 side=SOUTH pos=10.0,20.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+  E -> ? bends=[71.0,72.0;-6.0,-4.0;-15.0,38.0;7.0,154.0;111.0,263.0] jps=- toff=0.0,151.0
+   EL pos=-52.0,-8.0 size=12.0,5.0 inline=-
+ P2 side=WEST pos=0.0,5.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+ P3 side=EAST pos=20.0,15.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+  E -> ? bends=[81.0,82.0] jps=- toff=-56.0,-4.0
+   EL pos=8.0,-8.0 size=13.0,5.0 inline=-
+N1 NORMAL pos=10.0,50.0 size=20.0,20.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=- ilc=- eps=- pc=-
+ P0 side=WEST pos=0.0,5.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+ P1 side=NORTH pos=10.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+  E -> N0P2 bends=[91.0,92.0] jps=[9.0,-9.0] toff=-
+N2 EXTERNAL_PORT pos=14.0,6.0 size=0.0,0.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=LAST_SEPARATE ilc=- eps=EAST pc=fixedPos
+ P0 side=WEST pos=0.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+N3 EXTERNAL_PORT pos=21.0,9.0 size=0.0,0.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=LAST_SEPARATE ilc=- eps=EAST pc=fixedPos
+ P0 side=WEST pos=0.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+N4 EXTERNAL_PORT pos=28.0,12.0 size=0.0,0.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=LAST_SEPARATE ilc=- eps=EAST pc=fixedPos
+ P0 side=WEST pos=0.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+N5 EXTERNAL_PORT pos=35.0,15.0 size=0.0,2.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=LAST_SEPARATE ilc=- eps=EAST pc=fixedPos
+ P0 side=WEST pos=0.0,1.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+N6 EXTERNAL_PORT pos=42.0,18.0 size=0.0,0.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=FIRST_SEPARATE ilc=- eps=WEST pc=fixedPos
+ P0 side=EAST pos=0.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+N7 EXTERNAL_PORT pos=49.0,21.0 size=0.0,2.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=LAST_SEPARATE ilc=- eps=EAST pc=fixedPos
+ P0 side=WEST pos=0.0,1.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+ }
+N3 NORMAL pos=50.0,150.0 size=60.0,40.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=- ilc=- eps=- pc=fixedSide
+ P0 side=WEST pos=0.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+ nested {
+graph size=0.0,0.0 offset=0.0,0.0 padding=5.0,0.0,0.0,6.0 nlp=- elss=-
+N0 NORMAL pos=5.0,5.0 size=20.0,20.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=- ilc=- eps=- pc=-
+ P0 side=NORTH pos=10.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+N1 EXTERNAL_PORT pos=7.0,3.0 size=0.0,0.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=FIRST_SEPARATE ilc=- eps=WEST pc=fixedPos
+ P0 side=EAST pos=0.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+ }
+
+== compound merge=false fixedSide=false insideLoops=true RIGHT pre
+graph size=0.0,0.0 offset=0.0,0.0 padding=0.0,0.0,0.0,0.0 nlp=- elss=-
+N0 NORMAL pos=300.0,10.0 size=20.0,20.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=- ilc=- eps=- pc=-
+ P0 side=WEST pos=0.0,5.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+ P1 side=EAST pos=20.0,5.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+  E -> N2P5 bends=[] jps=- toff=-
+   EL pos=0.0,0.0 size=11.0,5.0 inline=-
+N1 NORMAL pos=300.0,80.0 size=20.0,20.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=- ilc=- eps=- pc=-
+ P0 side=WEST pos=0.0,5.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+N2 NORMAL pos=50.0,0.0 size=100.0,100.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=- ilc=- eps=- pc=fixedSide
+ P0 side=EAST pos=100.0,50.0 anchor=2.0,1.0 size=2.0,2.0 idx=-
+ P1 side=EAST pos=0.0,50.0 anchor=2.0,1.0 size=2.0,2.0 idx=-
+ P2 side=EAST pos=0.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+  E -> N0P0 bends=[] jps=- toff=-
+   EL pos=0.0,0.0 size=10.0,5.0 inline=-
+   EL pos=0.0,0.0 size=4.0,5.0 inline=-
+ P3 side=EAST pos=0.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+  E -> N1P0 bends=[] jps=- toff=-
+   EL pos=0.0,0.0 size=14.0,5.0 inline=-
+ P4 side=EAST pos=0.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+  E -> N3P0 bends=[] jps=- toff=-
+   EL pos=0.0,0.0 size=12.0,5.0 inline=-
+ P5 side=WEST pos=0.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+ nested {
+graph size=0.0,0.0 offset=2.0,1.0 padding=3.0,0.0,0.0,4.0 nlp=- elss=-
+N0 NORMAL pos=10.0,10.0 size=20.0,20.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=- ilc=- eps=- pc=-
+ P0 side=EAST pos=20.0,5.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+  E -> N2P0 bends=[] jps=- toff=-
+   EL pos=0.0,0.0 size=3.0,5.0 inline=-
+  E -> N3P0 bends=[] jps=- toff=-
+ P1 side=SOUTH pos=10.0,20.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+  E -> N4P0 bends=[] jps=- toff=-
+ P2 side=WEST pos=0.0,5.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+ P3 side=EAST pos=20.0,15.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+  E -> N5P0 bends=[] jps=- toff=-
+   EL pos=0.0,0.0 size=13.0,5.0 inline=-
+N1 NORMAL pos=10.0,50.0 size=20.0,20.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=- ilc=- eps=- pc=-
+ P0 side=WEST pos=0.0,5.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+ P1 side=NORTH pos=10.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+  E -> N0P2 bends=[] jps=- toff=-
+N2 EXTERNAL_PORT pos=0.0,0.0 size=0.0,0.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=LAST_SEPARATE ilc=- eps=EAST pc=fixedPos
+ P0 side=WEST pos=0.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+N3 EXTERNAL_PORT pos=0.0,0.0 size=0.0,0.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=LAST_SEPARATE ilc=- eps=EAST pc=fixedPos
+ P0 side=WEST pos=0.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+N4 EXTERNAL_PORT pos=0.0,0.0 size=0.0,0.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=LAST_SEPARATE ilc=- eps=EAST pc=fixedPos
+ P0 side=WEST pos=0.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+N5 EXTERNAL_PORT pos=0.0,0.0 size=0.0,2.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=LAST_SEPARATE ilc=- eps=EAST pc=fixedPos
+ P0 side=WEST pos=0.0,1.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+  E -> N7P0 bends=[] jps=- toff=-
+   EL pos=0.0,0.0 size=15.0,5.0 inline=-
+N6 EXTERNAL_PORT pos=0.0,0.0 size=0.0,0.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=FIRST_SEPARATE ilc=- eps=WEST pc=fixedPos
+ P0 side=EAST pos=0.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+  E -> N1P0 bends=[] jps=- toff=-
+N7 EXTERNAL_PORT pos=0.0,0.0 size=0.0,2.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=LAST_SEPARATE ilc=- eps=EAST pc=fixedPos
+ P0 side=WEST pos=0.0,1.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+ }
+N3 NORMAL pos=50.0,150.0 size=60.0,40.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=- ilc=- eps=- pc=fixedSide
+ P0 side=WEST pos=0.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+ nested {
+graph size=0.0,0.0 offset=0.0,0.0 padding=5.0,0.0,0.0,6.0 nlp=- elss=-
+N0 NORMAL pos=5.0,5.0 size=20.0,20.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=- ilc=- eps=- pc=-
+ P0 side=NORTH pos=10.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+N1 EXTERNAL_PORT pos=0.0,0.0 size=0.0,0.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=FIRST_SEPARATE ilc=- eps=WEST pc=fixedPos
+ P0 side=EAST pos=0.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+  E -> N0P0 bends=[] jps=- toff=-
+ }
+
+e1 src=nil labels=0 segs=[C:N0P0->N2P0:OUTPUT R:N2P2->N0P0:OUTPUT]
+e2 src=nil labels=0 segs=[C:N6P0->N1P0:INPUT R:N0P1->N2P5:INPUT]
+e3 src=nil labels=0 segs=[C:N0P1->N4P0:OUTPUT D:N1P0->N0P0:INPUT R:N2P4->N3P0:OUTPUT]
+e4 src=set labels=0 segs=[]
+e5 src=nil labels=0 segs=[C:N0P3->N5P0:OUTPUT]
+e6 src=nil labels=0 segs=[C:N0P0->N3P0:OUTPUT R:N2P3->N1P0:OUTPUT]
+e7 src=nil labels=0 segs=[C:N5P0->N7P0:OUTPUT]
+== compound merge=false fixedSide=false insideLoops=true RIGHT post
+graph size=0.0,0.0 offset=0.0,0.0 padding=0.0,0.0,0.0,0.0 nlp=- elss=-
+N0 NORMAL pos=300.0,10.0 size=20.0,20.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=- ilc=- eps=- pc=-
+ P0 side=WEST pos=0.0,5.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+ P1 side=EAST pos=20.0,5.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+  E -> ? bends=[11.0,12.0;98.0,22.0;167.0,116.0] jps=- toff=56.0,4.0
+   EL pos=1.0,-1.0 size=11.0,5.0 inline=-
+N1 NORMAL pos=300.0,80.0 size=20.0,20.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=- ilc=- eps=- pc=-
+ P0 side=WEST pos=0.0,5.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+N2 NORMAL pos=50.0,0.0 size=100.0,100.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=- ilc=- eps=- pc=fixedSide
+ P0 side=EAST pos=100.0,50.0 anchor=2.0,1.0 size=2.0,2.0 idx=-
+  E -> N2P1 bends=[157.0,106.0] jps=- toff=0.0,0.0
+   EL pos=66.0,-6.0 size=15.0,5.0 inline=-
+ P1 side=EAST pos=0.0,50.0 anchor=2.0,1.0 size=2.0,2.0 idx=-
+ P2 side=EAST pos=0.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+ P3 side=EAST pos=0.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+ P4 side=EAST pos=0.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+ P5 side=WEST pos=0.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+ nested {
+graph size=0.0,0.0 offset=2.0,1.0 padding=3.0,0.0,0.0,4.0 nlp=- elss=-
+N0 NORMAL pos=10.0,10.0 size=20.0,20.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=- ilc=- eps=- pc=-
+ P0 side=EAST pos=20.0,5.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+  E -> ? bends=[51.0,52.0;-6.0,-4.0;-35.0,18.0] jps=- toff=-56.0,-4.0
+   EL pos=5.0,-5.0 size=3.0,5.0 inline=-
+   EL pos=-54.0,-6.0 size=10.0,5.0 inline=-
+   EL pos=-54.0,-6.0 size=4.0,5.0 inline=-
+  E -> ? bends=[61.0,62.0;-6.0,-4.0;-25.0,28.0] jps=[6.0,-6.0;-53.0,-7.0] toff=-56.0,-4.0
+   EL pos=-53.0,-7.0 size=14.0,5.0 inline=-
+ P1 side=SOUTH pos=10.0,20.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+  E -> ? bends=[71.0,72.0;-6.0,-4.0;-15.0,38.0;7.0,154.0;121.0,273.0] jps=[12.0,139.0] toff=0.0,151.0
+   EL pos=-52.0,-8.0 size=12.0,5.0 inline=-
+ P2 side=WEST pos=0.0,5.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+ P3 side=EAST pos=20.0,15.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+  E -> ? bends=[81.0,82.0] jps=- toff=-56.0,-4.0
+   EL pos=8.0,-8.0 size=13.0,5.0 inline=-
+N1 NORMAL pos=10.0,50.0 size=20.0,20.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=- ilc=- eps=- pc=-
+ P0 side=WEST pos=0.0,5.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+ P1 side=NORTH pos=10.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+  E -> N0P2 bends=[91.0,92.0] jps=[9.0,-9.0] toff=-
+N2 EXTERNAL_PORT pos=14.0,6.0 size=0.0,0.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=LAST_SEPARATE ilc=- eps=EAST pc=fixedPos
+ P0 side=WEST pos=0.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+N3 EXTERNAL_PORT pos=21.0,9.0 size=0.0,0.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=LAST_SEPARATE ilc=- eps=EAST pc=fixedPos
+ P0 side=WEST pos=0.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+N4 EXTERNAL_PORT pos=28.0,12.0 size=0.0,0.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=LAST_SEPARATE ilc=- eps=EAST pc=fixedPos
+ P0 side=WEST pos=0.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+N5 EXTERNAL_PORT pos=35.0,15.0 size=0.0,2.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=LAST_SEPARATE ilc=- eps=EAST pc=fixedPos
+ P0 side=WEST pos=0.0,1.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+N6 EXTERNAL_PORT pos=42.0,18.0 size=0.0,0.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=FIRST_SEPARATE ilc=- eps=WEST pc=fixedPos
+ P0 side=EAST pos=0.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+N7 EXTERNAL_PORT pos=49.0,21.0 size=0.0,2.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=LAST_SEPARATE ilc=- eps=EAST pc=fixedPos
+ P0 side=WEST pos=0.0,1.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+ }
+N3 NORMAL pos=50.0,150.0 size=60.0,40.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=- ilc=- eps=- pc=fixedSide
+ P0 side=WEST pos=0.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+ nested {
+graph size=0.0,0.0 offset=0.0,0.0 padding=5.0,0.0,0.0,6.0 nlp=- elss=-
+N0 NORMAL pos=5.0,5.0 size=20.0,20.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=- ilc=- eps=- pc=-
+ P0 side=NORTH pos=10.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+N1 EXTERNAL_PORT pos=7.0,3.0 size=0.0,0.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=FIRST_SEPARATE ilc=- eps=WEST pc=fixedPos
+ P0 side=EAST pos=0.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+ }
+
+== compound merge=false fixedSide=true insideLoops=false RIGHT pre
+graph size=0.0,0.0 offset=0.0,0.0 padding=0.0,0.0,0.0,0.0 nlp=- elss=-
+N0 NORMAL pos=300.0,10.0 size=20.0,20.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=- ilc=- eps=- pc=-
+ P0 side=WEST pos=0.0,5.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+ P1 side=EAST pos=20.0,5.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+  E -> N2P5 bends=[] jps=- toff=-
+   EL pos=0.0,0.0 size=11.0,5.0 inline=-
+N1 NORMAL pos=300.0,80.0 size=20.0,20.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=- ilc=- eps=- pc=-
+ P0 side=WEST pos=0.0,5.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+N2 NORMAL pos=50.0,0.0 size=100.0,100.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=- ilc=- eps=- pc=fixedSide
+ P0 side=EAST pos=100.0,50.0 anchor=2.0,1.0 size=2.0,2.0 idx=-
+ P1 side=WEST pos=0.0,50.0 anchor=0.0,1.0 size=2.0,2.0 idx=-
+ P2 side=EAST pos=0.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+  E -> N0P0 bends=[] jps=- toff=-
+   EL pos=0.0,0.0 size=10.0,5.0 inline=-
+   EL pos=0.0,0.0 size=4.0,5.0 inline=-
+ P3 side=EAST pos=0.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+  E -> N1P0 bends=[] jps=- toff=-
+   EL pos=0.0,0.0 size=14.0,5.0 inline=-
+ P4 side=EAST pos=0.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+  E -> N3P0 bends=[] jps=- toff=-
+   EL pos=0.0,0.0 size=12.0,5.0 inline=-
+ P5 side=WEST pos=0.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+ nested {
+graph size=0.0,0.0 offset=2.0,1.0 padding=3.0,0.0,0.0,4.0 nlp=- elss=-
+N0 NORMAL pos=10.0,10.0 size=20.0,20.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=- ilc=- eps=- pc=-
+ P0 side=EAST pos=20.0,5.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+  E -> N2P0 bends=[] jps=- toff=-
+   EL pos=0.0,0.0 size=3.0,5.0 inline=-
+  E -> N3P0 bends=[] jps=- toff=-
+ P1 side=SOUTH pos=10.0,20.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+  E -> N4P0 bends=[] jps=- toff=-
+ P2 side=WEST pos=0.0,5.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+ P3 side=EAST pos=20.0,15.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+  E -> N5P0 bends=[] jps=- toff=-
+   EL pos=0.0,0.0 size=13.0,5.0 inline=-
+N1 NORMAL pos=10.0,50.0 size=20.0,20.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=- ilc=- eps=- pc=-
+ P0 side=WEST pos=0.0,5.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+ P1 side=NORTH pos=10.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+  E -> N0P2 bends=[] jps=- toff=-
+N2 EXTERNAL_PORT pos=0.0,0.0 size=0.0,0.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=LAST_SEPARATE ilc=- eps=EAST pc=fixedPos
+ P0 side=WEST pos=0.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+N3 EXTERNAL_PORT pos=0.0,0.0 size=0.0,0.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=LAST_SEPARATE ilc=- eps=EAST pc=fixedPos
+ P0 side=WEST pos=0.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+N4 EXTERNAL_PORT pos=0.0,0.0 size=0.0,0.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=LAST_SEPARATE ilc=- eps=EAST pc=fixedPos
+ P0 side=WEST pos=0.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+N5 EXTERNAL_PORT pos=0.0,0.0 size=0.0,2.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=LAST_SEPARATE ilc=- eps=EAST pc=fixedPos
+ P0 side=WEST pos=0.0,1.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+N6 EXTERNAL_PORT pos=0.0,0.0 size=0.0,0.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=FIRST_SEPARATE ilc=- eps=WEST pc=fixedPos
+ P0 side=EAST pos=0.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+  E -> N1P0 bends=[] jps=- toff=-
+N7 EXTERNAL_PORT pos=0.0,0.0 size=0.0,2.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=FIRST_SEPARATE ilc=- eps=WEST pc=fixedPos
+ P0 side=EAST pos=0.0,1.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+ }
+N3 NORMAL pos=50.0,150.0 size=60.0,40.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=- ilc=- eps=- pc=fixedSide
+ P0 side=WEST pos=0.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+ nested {
+graph size=0.0,0.0 offset=0.0,0.0 padding=5.0,0.0,0.0,6.0 nlp=- elss=-
+N0 NORMAL pos=5.0,5.0 size=20.0,20.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=- ilc=- eps=- pc=-
+ P0 side=NORTH pos=10.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+N1 EXTERNAL_PORT pos=0.0,0.0 size=0.0,0.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=FIRST_SEPARATE ilc=- eps=WEST pc=fixedPos
+ P0 side=EAST pos=0.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+  E -> N0P0 bends=[] jps=- toff=-
+ }
+
+e1 src=nil labels=0 segs=[C:N0P0->N2P0:OUTPUT R:N2P2->N0P0:OUTPUT]
+e2 src=nil labels=0 segs=[C:N6P0->N1P0:INPUT R:N0P1->N2P5:INPUT]
+e3 src=nil labels=0 segs=[C:N0P1->N4P0:OUTPUT D:N1P0->N0P0:INPUT R:N2P4->N3P0:OUTPUT]
+e4 src=set labels=0 segs=[]
+e5 src=nil labels=0 segs=[C:N0P3->N5P0:OUTPUT]
+e6 src=nil labels=0 segs=[C:N0P0->N3P0:OUTPUT R:N2P3->N1P0:OUTPUT]
+== compound merge=false fixedSide=true insideLoops=false RIGHT post
+graph size=0.0,0.0 offset=0.0,0.0 padding=0.0,0.0,0.0,0.0 nlp=- elss=-
+N0 NORMAL pos=300.0,10.0 size=20.0,20.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=- ilc=- eps=- pc=-
+ P0 side=WEST pos=0.0,5.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+ P1 side=EAST pos=20.0,5.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+  E -> ? bends=[11.0,12.0;98.0,22.0;157.0,106.0] jps=- toff=56.0,4.0
+   EL pos=1.0,-1.0 size=11.0,5.0 inline=-
+N1 NORMAL pos=300.0,80.0 size=20.0,20.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=- ilc=- eps=- pc=-
+ P0 side=WEST pos=0.0,5.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+N2 NORMAL pos=50.0,0.0 size=100.0,100.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=- ilc=- eps=- pc=fixedSide
+ P0 side=EAST pos=100.0,50.0 anchor=2.0,1.0 size=2.0,2.0 idx=-
+ P1 side=WEST pos=0.0,50.0 anchor=0.0,1.0 size=2.0,2.0 idx=-
+ P2 side=EAST pos=0.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+ P3 side=EAST pos=0.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+ P4 side=EAST pos=0.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+ P5 side=WEST pos=0.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+ nested {
+graph size=0.0,0.0 offset=2.0,1.0 padding=3.0,0.0,0.0,4.0 nlp=- elss=-
+N0 NORMAL pos=10.0,10.0 size=20.0,20.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=- ilc=- eps=- pc=-
+ P0 side=EAST pos=20.0,5.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+  E -> ? bends=[51.0,52.0;-6.0,-4.0;-35.0,18.0] jps=- toff=-56.0,-4.0
+   EL pos=5.0,-5.0 size=3.0,5.0 inline=-
+   EL pos=-54.0,-6.0 size=10.0,5.0 inline=-
+   EL pos=-54.0,-6.0 size=4.0,5.0 inline=-
+  E -> ? bends=[61.0,62.0;-6.0,-4.0;-25.0,28.0] jps=[6.0,-6.0;-53.0,-7.0] toff=-56.0,-4.0
+   EL pos=-53.0,-7.0 size=14.0,5.0 inline=-
+ P1 side=SOUTH pos=10.0,20.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+  E -> ? bends=[71.0,72.0;-6.0,-4.0;-15.0,38.0;7.0,154.0;111.0,263.0] jps=- toff=0.0,151.0
+   EL pos=-52.0,-8.0 size=12.0,5.0 inline=-
+ P2 side=WEST pos=0.0,5.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+ P3 side=EAST pos=20.0,15.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+  E -> ? bends=[81.0,82.0] jps=- toff=-56.0,-4.0
+   EL pos=8.0,-8.0 size=13.0,5.0 inline=-
+N1 NORMAL pos=10.0,50.0 size=20.0,20.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=- ilc=- eps=- pc=-
+ P0 side=WEST pos=0.0,5.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+ P1 side=NORTH pos=10.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+  E -> N0P2 bends=[91.0,92.0] jps=[9.0,-9.0] toff=-
+N2 EXTERNAL_PORT pos=14.0,6.0 size=0.0,0.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=LAST_SEPARATE ilc=- eps=EAST pc=fixedPos
+ P0 side=WEST pos=0.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+N3 EXTERNAL_PORT pos=21.0,9.0 size=0.0,0.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=LAST_SEPARATE ilc=- eps=EAST pc=fixedPos
+ P0 side=WEST pos=0.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+N4 EXTERNAL_PORT pos=28.0,12.0 size=0.0,0.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=LAST_SEPARATE ilc=- eps=EAST pc=fixedPos
+ P0 side=WEST pos=0.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+N5 EXTERNAL_PORT pos=35.0,15.0 size=0.0,2.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=LAST_SEPARATE ilc=- eps=EAST pc=fixedPos
+ P0 side=WEST pos=0.0,1.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+N6 EXTERNAL_PORT pos=42.0,18.0 size=0.0,0.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=FIRST_SEPARATE ilc=- eps=WEST pc=fixedPos
+ P0 side=EAST pos=0.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+N7 EXTERNAL_PORT pos=49.0,21.0 size=0.0,2.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=FIRST_SEPARATE ilc=- eps=WEST pc=fixedPos
+ P0 side=EAST pos=0.0,1.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+ }
+N3 NORMAL pos=50.0,150.0 size=60.0,40.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=- ilc=- eps=- pc=fixedSide
+ P0 side=WEST pos=0.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+ nested {
+graph size=0.0,0.0 offset=0.0,0.0 padding=5.0,0.0,0.0,6.0 nlp=- elss=-
+N0 NORMAL pos=5.0,5.0 size=20.0,20.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=- ilc=- eps=- pc=-
+ P0 side=NORTH pos=10.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+N1 EXTERNAL_PORT pos=7.0,3.0 size=0.0,0.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=FIRST_SEPARATE ilc=- eps=WEST pc=fixedPos
+ P0 side=EAST pos=0.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+ }
+
+== compound merge=false fixedSide=true insideLoops=true RIGHT pre
+graph size=0.0,0.0 offset=0.0,0.0 padding=0.0,0.0,0.0,0.0 nlp=- elss=-
+N0 NORMAL pos=300.0,10.0 size=20.0,20.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=- ilc=- eps=- pc=-
+ P0 side=WEST pos=0.0,5.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+ P1 side=EAST pos=20.0,5.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+  E -> N2P5 bends=[] jps=- toff=-
+   EL pos=0.0,0.0 size=11.0,5.0 inline=-
+N1 NORMAL pos=300.0,80.0 size=20.0,20.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=- ilc=- eps=- pc=-
+ P0 side=WEST pos=0.0,5.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+N2 NORMAL pos=50.0,0.0 size=100.0,100.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=- ilc=- eps=- pc=fixedSide
+ P0 side=EAST pos=100.0,50.0 anchor=2.0,1.0 size=2.0,2.0 idx=-
+ P1 side=EAST pos=0.0,50.0 anchor=2.0,1.0 size=2.0,2.0 idx=-
+ P2 side=EAST pos=0.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+  E -> N0P0 bends=[] jps=- toff=-
+   EL pos=0.0,0.0 size=10.0,5.0 inline=-
+   EL pos=0.0,0.0 size=4.0,5.0 inline=-
+ P3 side=EAST pos=0.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+  E -> N1P0 bends=[] jps=- toff=-
+   EL pos=0.0,0.0 size=14.0,5.0 inline=-
+ P4 side=EAST pos=0.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+  E -> N3P0 bends=[] jps=- toff=-
+   EL pos=0.0,0.0 size=12.0,5.0 inline=-
+ P5 side=WEST pos=0.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+ nested {
+graph size=0.0,0.0 offset=2.0,1.0 padding=3.0,0.0,0.0,4.0 nlp=- elss=-
+N0 NORMAL pos=10.0,10.0 size=20.0,20.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=- ilc=- eps=- pc=-
+ P0 side=EAST pos=20.0,5.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+  E -> N2P0 bends=[] jps=- toff=-
+   EL pos=0.0,0.0 size=3.0,5.0 inline=-
+  E -> N3P0 bends=[] jps=- toff=-
+ P1 side=SOUTH pos=10.0,20.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+  E -> N4P0 bends=[] jps=- toff=-
+ P2 side=WEST pos=0.0,5.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+ P3 side=EAST pos=20.0,15.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+  E -> N5P0 bends=[] jps=- toff=-
+   EL pos=0.0,0.0 size=13.0,5.0 inline=-
+N1 NORMAL pos=10.0,50.0 size=20.0,20.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=- ilc=- eps=- pc=-
+ P0 side=WEST pos=0.0,5.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+ P1 side=NORTH pos=10.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+  E -> N0P2 bends=[] jps=- toff=-
+N2 EXTERNAL_PORT pos=0.0,0.0 size=0.0,0.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=LAST_SEPARATE ilc=- eps=EAST pc=fixedPos
+ P0 side=WEST pos=0.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+N3 EXTERNAL_PORT pos=0.0,0.0 size=0.0,0.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=LAST_SEPARATE ilc=- eps=EAST pc=fixedPos
+ P0 side=WEST pos=0.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+N4 EXTERNAL_PORT pos=0.0,0.0 size=0.0,0.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=LAST_SEPARATE ilc=- eps=EAST pc=fixedPos
+ P0 side=WEST pos=0.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+N5 EXTERNAL_PORT pos=0.0,0.0 size=0.0,2.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=LAST_SEPARATE ilc=- eps=EAST pc=fixedPos
+ P0 side=WEST pos=0.0,1.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+  E -> N7P0 bends=[] jps=- toff=-
+   EL pos=0.0,0.0 size=15.0,5.0 inline=-
+N6 EXTERNAL_PORT pos=0.0,0.0 size=0.0,0.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=FIRST_SEPARATE ilc=- eps=WEST pc=fixedPos
+ P0 side=EAST pos=0.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+  E -> N1P0 bends=[] jps=- toff=-
+N7 EXTERNAL_PORT pos=0.0,0.0 size=0.0,2.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=LAST_SEPARATE ilc=- eps=EAST pc=fixedPos
+ P0 side=WEST pos=0.0,1.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+ }
+N3 NORMAL pos=50.0,150.0 size=60.0,40.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=- ilc=- eps=- pc=fixedSide
+ P0 side=WEST pos=0.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+ nested {
+graph size=0.0,0.0 offset=0.0,0.0 padding=5.0,0.0,0.0,6.0 nlp=- elss=-
+N0 NORMAL pos=5.0,5.0 size=20.0,20.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=- ilc=- eps=- pc=-
+ P0 side=NORTH pos=10.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+N1 EXTERNAL_PORT pos=0.0,0.0 size=0.0,0.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=FIRST_SEPARATE ilc=- eps=WEST pc=fixedPos
+ P0 side=EAST pos=0.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+  E -> N0P0 bends=[] jps=- toff=-
+ }
+
+e1 src=nil labels=0 segs=[C:N0P0->N2P0:OUTPUT R:N2P2->N0P0:OUTPUT]
+e2 src=nil labels=0 segs=[C:N6P0->N1P0:INPUT R:N0P1->N2P5:INPUT]
+e3 src=nil labels=0 segs=[C:N0P1->N4P0:OUTPUT D:N1P0->N0P0:INPUT R:N2P4->N3P0:OUTPUT]
+e4 src=set labels=0 segs=[]
+e5 src=nil labels=0 segs=[C:N0P3->N5P0:OUTPUT]
+e6 src=nil labels=0 segs=[C:N0P0->N3P0:OUTPUT R:N2P3->N1P0:OUTPUT]
+e7 src=nil labels=0 segs=[C:N5P0->N7P0:OUTPUT]
+== compound merge=false fixedSide=true insideLoops=true RIGHT post
+graph size=0.0,0.0 offset=0.0,0.0 padding=0.0,0.0,0.0,0.0 nlp=- elss=-
+N0 NORMAL pos=300.0,10.0 size=20.0,20.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=- ilc=- eps=- pc=-
+ P0 side=WEST pos=0.0,5.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+ P1 side=EAST pos=20.0,5.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+  E -> ? bends=[11.0,12.0;98.0,22.0;167.0,116.0] jps=- toff=56.0,4.0
+   EL pos=1.0,-1.0 size=11.0,5.0 inline=-
+N1 NORMAL pos=300.0,80.0 size=20.0,20.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=- ilc=- eps=- pc=-
+ P0 side=WEST pos=0.0,5.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+N2 NORMAL pos=50.0,0.0 size=100.0,100.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=- ilc=- eps=- pc=fixedSide
+ P0 side=EAST pos=100.0,50.0 anchor=2.0,1.0 size=2.0,2.0 idx=-
+  E -> N2P1 bends=[157.0,106.0] jps=- toff=0.0,0.0
+   EL pos=66.0,-6.0 size=15.0,5.0 inline=-
+ P1 side=EAST pos=0.0,50.0 anchor=2.0,1.0 size=2.0,2.0 idx=-
+ P2 side=EAST pos=0.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+ P3 side=EAST pos=0.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+ P4 side=EAST pos=0.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+ P5 side=WEST pos=0.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+ nested {
+graph size=0.0,0.0 offset=2.0,1.0 padding=3.0,0.0,0.0,4.0 nlp=- elss=-
+N0 NORMAL pos=10.0,10.0 size=20.0,20.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=- ilc=- eps=- pc=-
+ P0 side=EAST pos=20.0,5.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+  E -> ? bends=[51.0,52.0;-6.0,-4.0;-35.0,18.0] jps=- toff=-56.0,-4.0
+   EL pos=5.0,-5.0 size=3.0,5.0 inline=-
+   EL pos=-54.0,-6.0 size=10.0,5.0 inline=-
+   EL pos=-54.0,-6.0 size=4.0,5.0 inline=-
+  E -> ? bends=[61.0,62.0;-6.0,-4.0;-25.0,28.0] jps=[6.0,-6.0;-53.0,-7.0] toff=-56.0,-4.0
+   EL pos=-53.0,-7.0 size=14.0,5.0 inline=-
+ P1 side=SOUTH pos=10.0,20.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+  E -> ? bends=[71.0,72.0;-6.0,-4.0;-15.0,38.0;7.0,154.0;121.0,273.0] jps=[12.0,139.0] toff=0.0,151.0
+   EL pos=-52.0,-8.0 size=12.0,5.0 inline=-
+ P2 side=WEST pos=0.0,5.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+ P3 side=EAST pos=20.0,15.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+  E -> ? bends=[81.0,82.0] jps=- toff=-56.0,-4.0
+   EL pos=8.0,-8.0 size=13.0,5.0 inline=-
+N1 NORMAL pos=10.0,50.0 size=20.0,20.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=- ilc=- eps=- pc=-
+ P0 side=WEST pos=0.0,5.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+ P1 side=NORTH pos=10.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+  E -> N0P2 bends=[91.0,92.0] jps=[9.0,-9.0] toff=-
+N2 EXTERNAL_PORT pos=14.0,6.0 size=0.0,0.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=LAST_SEPARATE ilc=- eps=EAST pc=fixedPos
+ P0 side=WEST pos=0.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+N3 EXTERNAL_PORT pos=21.0,9.0 size=0.0,0.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=LAST_SEPARATE ilc=- eps=EAST pc=fixedPos
+ P0 side=WEST pos=0.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+N4 EXTERNAL_PORT pos=28.0,12.0 size=0.0,0.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=LAST_SEPARATE ilc=- eps=EAST pc=fixedPos
+ P0 side=WEST pos=0.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+N5 EXTERNAL_PORT pos=35.0,15.0 size=0.0,2.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=LAST_SEPARATE ilc=- eps=EAST pc=fixedPos
+ P0 side=WEST pos=0.0,1.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+N6 EXTERNAL_PORT pos=42.0,18.0 size=0.0,0.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=FIRST_SEPARATE ilc=- eps=WEST pc=fixedPos
+ P0 side=EAST pos=0.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+N7 EXTERNAL_PORT pos=49.0,21.0 size=0.0,2.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=LAST_SEPARATE ilc=- eps=EAST pc=fixedPos
+ P0 side=WEST pos=0.0,1.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+ }
+N3 NORMAL pos=50.0,150.0 size=60.0,40.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=- ilc=- eps=- pc=fixedSide
+ P0 side=WEST pos=0.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+ nested {
+graph size=0.0,0.0 offset=0.0,0.0 padding=5.0,0.0,0.0,6.0 nlp=- elss=-
+N0 NORMAL pos=5.0,5.0 size=20.0,20.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=- ilc=- eps=- pc=-
+ P0 side=NORTH pos=10.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+N1 EXTERNAL_PORT pos=7.0,3.0 size=0.0,0.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=FIRST_SEPARATE ilc=- eps=WEST pc=fixedPos
+ P0 side=EAST pos=0.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+ }
+
+== compound merge=true fixedSide=false insideLoops=false RIGHT pre
+graph size=0.0,0.0 offset=0.0,0.0 padding=0.0,0.0,0.0,0.0 nlp=- elss=-
+N0 NORMAL pos=300.0,10.0 size=20.0,20.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=- ilc=- eps=- pc=-
+ P0 side=WEST pos=0.0,5.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+ P1 side=EAST pos=20.0,5.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+  E -> N2P4 bends=[] jps=- toff=-
+   EL pos=0.0,0.0 size=11.0,5.0 inline=-
+N1 NORMAL pos=300.0,80.0 size=20.0,20.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=- ilc=- eps=- pc=-
+ P0 side=WEST pos=0.0,5.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+N2 NORMAL pos=50.0,0.0 size=100.0,100.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=- ilc=- eps=- pc=fixedSide
+ P0 side=EAST pos=100.0,50.0 anchor=2.0,1.0 size=2.0,2.0 idx=-
+ P1 side=EAST pos=0.0,50.0 anchor=2.0,1.0 size=2.0,2.0 idx=-
+ P2 side=EAST pos=0.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+  E -> N0P0 bends=[] jps=- toff=-
+   EL pos=0.0,0.0 size=10.0,5.0 inline=-
+   EL pos=0.0,0.0 size=4.0,5.0 inline=-
+  E -> N1P0 bends=[] jps=- toff=-
+   EL pos=0.0,0.0 size=14.0,5.0 inline=-
+ P3 side=EAST pos=0.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+  E -> N3P0 bends=[] jps=- toff=-
+   EL pos=0.0,0.0 size=12.0,5.0 inline=-
+ P4 side=WEST pos=0.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+ nested {
+graph size=0.0,0.0 offset=2.0,1.0 padding=3.0,0.0,0.0,4.0 nlp=- elss=-
+N0 NORMAL pos=10.0,10.0 size=20.0,20.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=- ilc=- eps=- pc=-
+ P0 side=EAST pos=20.0,5.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+  E -> N2P0 bends=[] jps=- toff=-
+   EL pos=0.0,0.0 size=3.0,5.0 inline=-
+ P1 side=SOUTH pos=10.0,20.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+  E -> N3P0 bends=[] jps=- toff=-
+ P2 side=WEST pos=0.0,5.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+ P3 side=EAST pos=20.0,15.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+  E -> N4P0 bends=[] jps=- toff=-
+   EL pos=0.0,0.0 size=13.0,5.0 inline=-
+N1 NORMAL pos=10.0,50.0 size=20.0,20.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=- ilc=- eps=- pc=-
+ P0 side=WEST pos=0.0,5.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+ P1 side=NORTH pos=10.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+  E -> N0P2 bends=[] jps=- toff=-
+N2 EXTERNAL_PORT pos=0.0,0.0 size=0.0,0.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=LAST_SEPARATE ilc=- eps=EAST pc=fixedPos
+ P0 side=WEST pos=0.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+N3 EXTERNAL_PORT pos=0.0,0.0 size=0.0,0.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=LAST_SEPARATE ilc=- eps=EAST pc=fixedPos
+ P0 side=WEST pos=0.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+N4 EXTERNAL_PORT pos=0.0,0.0 size=0.0,2.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=LAST_SEPARATE ilc=- eps=EAST pc=fixedPos
+ P0 side=WEST pos=0.0,1.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+N5 EXTERNAL_PORT pos=0.0,0.0 size=0.0,0.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=FIRST_SEPARATE ilc=- eps=WEST pc=fixedPos
+ P0 side=EAST pos=0.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+  E -> N1P0 bends=[] jps=- toff=-
+N6 EXTERNAL_PORT pos=0.0,0.0 size=0.0,2.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=LAST_SEPARATE ilc=- eps=EAST pc=fixedPos
+ P0 side=WEST pos=0.0,1.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+ }
+N3 NORMAL pos=50.0,150.0 size=60.0,40.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=- ilc=- eps=- pc=fixedSide
+ P0 side=WEST pos=0.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+ nested {
+graph size=0.0,0.0 offset=0.0,0.0 padding=5.0,0.0,0.0,6.0 nlp=- elss=-
+N0 NORMAL pos=5.0,5.0 size=20.0,20.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=- ilc=- eps=- pc=-
+ P0 side=NORTH pos=10.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+N1 EXTERNAL_PORT pos=0.0,0.0 size=0.0,0.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=FIRST_SEPARATE ilc=- eps=WEST pc=fixedPos
+ P0 side=EAST pos=0.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+  E -> N0P0 bends=[] jps=- toff=-
+ }
+
+e1 src=nil labels=0 segs=[C:N0P0->N2P0:OUTPUT R:N2P2->N0P0:OUTPUT]
+e2 src=nil labels=0 segs=[C:N5P0->N1P0:INPUT R:N0P1->N2P4:INPUT]
+e3 src=nil labels=0 segs=[C:N0P1->N3P0:OUTPUT D:N1P0->N0P0:INPUT R:N2P3->N3P0:OUTPUT]
+e4 src=set labels=0 segs=[]
+e5 src=nil labels=0 segs=[C:N0P3->N4P0:OUTPUT]
+e6 src=nil labels=0 segs=[C:N0P0->N2P0:OUTPUT R:N2P2->N1P0:OUTPUT]
+== compound merge=true fixedSide=false insideLoops=false RIGHT post
+graph size=0.0,0.0 offset=0.0,0.0 padding=0.0,0.0,0.0,0.0 nlp=- elss=-
+N0 NORMAL pos=300.0,10.0 size=20.0,20.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=- ilc=- eps=- pc=-
+ P0 side=WEST pos=0.0,5.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+ P1 side=EAST pos=20.0,5.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+  E -> ? bends=[11.0,12.0;91.0,19.0;147.0,96.0] jps=[65.0,-5.0] toff=56.0,4.0
+   EL pos=1.0,-1.0 size=11.0,5.0 inline=-
+N1 NORMAL pos=300.0,80.0 size=20.0,20.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=- ilc=- eps=- pc=-
+ P0 side=WEST pos=0.0,5.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+N2 NORMAL pos=50.0,0.0 size=100.0,100.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=- ilc=- eps=- pc=fixedSide
+ P0 side=EAST pos=100.0,50.0 anchor=2.0,1.0 size=2.0,2.0 idx=-
+ P1 side=EAST pos=0.0,50.0 anchor=2.0,1.0 size=2.0,2.0 idx=-
+ P2 side=EAST pos=0.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+ P3 side=EAST pos=0.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+ P4 side=WEST pos=0.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+ nested {
+graph size=0.0,0.0 offset=2.0,1.0 padding=3.0,0.0,0.0,4.0 nlp=- elss=-
+N0 NORMAL pos=10.0,10.0 size=20.0,20.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=- ilc=- eps=- pc=-
+ P0 side=EAST pos=20.0,5.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+  E -> ? bends=[51.0,52.0;-6.0,-4.0;-25.0,28.0] jps=[-53.0,-7.0] toff=-56.0,-4.0
+   EL pos=-53.0,-7.0 size=14.0,5.0 inline=-
+  E -> ? bends=[51.0,52.0;-6.0,-4.0;-35.0,18.0] jps=- toff=-56.0,-4.0
+   EL pos=5.0,-5.0 size=3.0,5.0 inline=-
+   EL pos=-54.0,-6.0 size=10.0,5.0 inline=-
+   EL pos=-54.0,-6.0 size=4.0,5.0 inline=-
+ P1 side=SOUTH pos=10.0,20.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+  E -> ? bends=[61.0,62.0;-6.0,-4.0;-15.0,38.0;7.0,154.0;101.0,253.0] jps=[6.0,-6.0] toff=0.0,151.0
+   EL pos=-52.0,-8.0 size=12.0,5.0 inline=-
+ P2 side=WEST pos=0.0,5.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+ P3 side=EAST pos=20.0,15.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+  E -> ? bends=[71.0,72.0] jps=- toff=-56.0,-4.0
+   EL pos=7.0,-7.0 size=13.0,5.0 inline=-
+N1 NORMAL pos=10.0,50.0 size=20.0,20.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=- ilc=- eps=- pc=-
+ P0 side=WEST pos=0.0,5.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+ P1 side=NORTH pos=10.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+  E -> N0P2 bends=[81.0,82.0] jps=- toff=-
+N2 EXTERNAL_PORT pos=14.0,6.0 size=0.0,0.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=LAST_SEPARATE ilc=- eps=EAST pc=fixedPos
+ P0 side=WEST pos=0.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+N3 EXTERNAL_PORT pos=21.0,9.0 size=0.0,0.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=LAST_SEPARATE ilc=- eps=EAST pc=fixedPos
+ P0 side=WEST pos=0.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+N4 EXTERNAL_PORT pos=28.0,12.0 size=0.0,2.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=LAST_SEPARATE ilc=- eps=EAST pc=fixedPos
+ P0 side=WEST pos=0.0,1.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+N5 EXTERNAL_PORT pos=35.0,15.0 size=0.0,0.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=FIRST_SEPARATE ilc=- eps=WEST pc=fixedPos
+ P0 side=EAST pos=0.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+N6 EXTERNAL_PORT pos=42.0,18.0 size=0.0,2.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=LAST_SEPARATE ilc=- eps=EAST pc=fixedPos
+ P0 side=WEST pos=0.0,1.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+ }
+N3 NORMAL pos=50.0,150.0 size=60.0,40.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=- ilc=- eps=- pc=fixedSide
+ P0 side=WEST pos=0.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+ nested {
+graph size=0.0,0.0 offset=0.0,0.0 padding=5.0,0.0,0.0,6.0 nlp=- elss=-
+N0 NORMAL pos=5.0,5.0 size=20.0,20.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=- ilc=- eps=- pc=-
+ P0 side=NORTH pos=10.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+N1 EXTERNAL_PORT pos=7.0,3.0 size=0.0,0.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=FIRST_SEPARATE ilc=- eps=WEST pc=fixedPos
+ P0 side=EAST pos=0.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+ }
+
+== compound merge=true fixedSide=false insideLoops=true RIGHT pre
+graph size=0.0,0.0 offset=0.0,0.0 padding=0.0,0.0,0.0,0.0 nlp=- elss=-
+N0 NORMAL pos=300.0,10.0 size=20.0,20.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=- ilc=- eps=- pc=-
+ P0 side=WEST pos=0.0,5.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+ P1 side=EAST pos=20.0,5.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+  E -> N2P4 bends=[] jps=- toff=-
+   EL pos=0.0,0.0 size=11.0,5.0 inline=-
+N1 NORMAL pos=300.0,80.0 size=20.0,20.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=- ilc=- eps=- pc=-
+ P0 side=WEST pos=0.0,5.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+N2 NORMAL pos=50.0,0.0 size=100.0,100.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=- ilc=- eps=- pc=fixedSide
+ P0 side=EAST pos=100.0,50.0 anchor=2.0,1.0 size=2.0,2.0 idx=-
+ P1 side=EAST pos=0.0,50.0 anchor=2.0,1.0 size=2.0,2.0 idx=-
+ P2 side=EAST pos=0.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+  E -> N0P0 bends=[] jps=- toff=-
+   EL pos=0.0,0.0 size=10.0,5.0 inline=-
+   EL pos=0.0,0.0 size=4.0,5.0 inline=-
+  E -> N1P0 bends=[] jps=- toff=-
+   EL pos=0.0,0.0 size=14.0,5.0 inline=-
+ P3 side=EAST pos=0.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+  E -> N3P0 bends=[] jps=- toff=-
+   EL pos=0.0,0.0 size=12.0,5.0 inline=-
+ P4 side=WEST pos=0.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+ nested {
+graph size=0.0,0.0 offset=2.0,1.0 padding=3.0,0.0,0.0,4.0 nlp=- elss=-
+N0 NORMAL pos=10.0,10.0 size=20.0,20.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=- ilc=- eps=- pc=-
+ P0 side=EAST pos=20.0,5.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+  E -> N2P0 bends=[] jps=- toff=-
+   EL pos=0.0,0.0 size=3.0,5.0 inline=-
+ P1 side=SOUTH pos=10.0,20.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+  E -> N3P0 bends=[] jps=- toff=-
+ P2 side=WEST pos=0.0,5.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+ P3 side=EAST pos=20.0,15.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+  E -> N4P0 bends=[] jps=- toff=-
+   EL pos=0.0,0.0 size=13.0,5.0 inline=-
+N1 NORMAL pos=10.0,50.0 size=20.0,20.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=- ilc=- eps=- pc=-
+ P0 side=WEST pos=0.0,5.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+ P1 side=NORTH pos=10.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+  E -> N0P2 bends=[] jps=- toff=-
+N2 EXTERNAL_PORT pos=0.0,0.0 size=0.0,0.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=LAST_SEPARATE ilc=- eps=EAST pc=fixedPos
+ P0 side=WEST pos=0.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+N3 EXTERNAL_PORT pos=0.0,0.0 size=0.0,0.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=LAST_SEPARATE ilc=- eps=EAST pc=fixedPos
+ P0 side=WEST pos=0.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+N4 EXTERNAL_PORT pos=0.0,0.0 size=0.0,2.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=LAST_SEPARATE ilc=- eps=EAST pc=fixedPos
+ P0 side=WEST pos=0.0,1.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+  E -> N6P0 bends=[] jps=- toff=-
+   EL pos=0.0,0.0 size=15.0,5.0 inline=-
+N5 EXTERNAL_PORT pos=0.0,0.0 size=0.0,0.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=FIRST_SEPARATE ilc=- eps=WEST pc=fixedPos
+ P0 side=EAST pos=0.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+  E -> N1P0 bends=[] jps=- toff=-
+N6 EXTERNAL_PORT pos=0.0,0.0 size=0.0,2.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=LAST_SEPARATE ilc=- eps=EAST pc=fixedPos
+ P0 side=WEST pos=0.0,1.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+ }
+N3 NORMAL pos=50.0,150.0 size=60.0,40.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=- ilc=- eps=- pc=fixedSide
+ P0 side=WEST pos=0.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+ nested {
+graph size=0.0,0.0 offset=0.0,0.0 padding=5.0,0.0,0.0,6.0 nlp=- elss=-
+N0 NORMAL pos=5.0,5.0 size=20.0,20.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=- ilc=- eps=- pc=-
+ P0 side=NORTH pos=10.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+N1 EXTERNAL_PORT pos=0.0,0.0 size=0.0,0.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=FIRST_SEPARATE ilc=- eps=WEST pc=fixedPos
+ P0 side=EAST pos=0.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+  E -> N0P0 bends=[] jps=- toff=-
+ }
+
+e1 src=nil labels=0 segs=[C:N0P0->N2P0:OUTPUT R:N2P2->N0P0:OUTPUT]
+e2 src=nil labels=0 segs=[C:N5P0->N1P0:INPUT R:N0P1->N2P4:INPUT]
+e3 src=nil labels=0 segs=[C:N0P1->N3P0:OUTPUT D:N1P0->N0P0:INPUT R:N2P3->N3P0:OUTPUT]
+e4 src=set labels=0 segs=[]
+e5 src=nil labels=0 segs=[C:N0P3->N4P0:OUTPUT]
+e6 src=nil labels=0 segs=[C:N0P0->N2P0:OUTPUT R:N2P2->N1P0:OUTPUT]
+e7 src=nil labels=0 segs=[C:N4P0->N6P0:OUTPUT]
+== compound merge=true fixedSide=false insideLoops=true RIGHT post
+graph size=0.0,0.0 offset=0.0,0.0 padding=0.0,0.0,0.0,0.0 nlp=- elss=-
+N0 NORMAL pos=300.0,10.0 size=20.0,20.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=- ilc=- eps=- pc=-
+ P0 side=WEST pos=0.0,5.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+ P1 side=EAST pos=20.0,5.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+  E -> ? bends=[11.0,12.0;91.0,19.0;157.0,106.0] jps=- toff=56.0,4.0
+   EL pos=1.0,-1.0 size=11.0,5.0 inline=-
+N1 NORMAL pos=300.0,80.0 size=20.0,20.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=- ilc=- eps=- pc=-
+ P0 side=WEST pos=0.0,5.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+N2 NORMAL pos=50.0,0.0 size=100.0,100.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=- ilc=- eps=- pc=fixedSide
+ P0 side=EAST pos=100.0,50.0 anchor=2.0,1.0 size=2.0,2.0 idx=-
+  E -> N2P1 bends=[147.0,96.0] jps=[65.0,-5.0] toff=0.0,0.0
+   EL pos=65.0,-5.0 size=15.0,5.0 inline=-
+ P1 side=EAST pos=0.0,50.0 anchor=2.0,1.0 size=2.0,2.0 idx=-
+ P2 side=EAST pos=0.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+ P3 side=EAST pos=0.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+ P4 side=WEST pos=0.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+ nested {
+graph size=0.0,0.0 offset=2.0,1.0 padding=3.0,0.0,0.0,4.0 nlp=- elss=-
+N0 NORMAL pos=10.0,10.0 size=20.0,20.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=- ilc=- eps=- pc=-
+ P0 side=EAST pos=20.0,5.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+  E -> ? bends=[51.0,52.0;-6.0,-4.0;-25.0,28.0] jps=[-53.0,-7.0] toff=-56.0,-4.0
+   EL pos=-53.0,-7.0 size=14.0,5.0 inline=-
+  E -> ? bends=[51.0,52.0;-6.0,-4.0;-35.0,18.0] jps=- toff=-56.0,-4.0
+   EL pos=5.0,-5.0 size=3.0,5.0 inline=-
+   EL pos=-54.0,-6.0 size=10.0,5.0 inline=-
+   EL pos=-54.0,-6.0 size=4.0,5.0 inline=-
+ P1 side=SOUTH pos=10.0,20.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+  E -> ? bends=[61.0,62.0;-6.0,-4.0;-15.0,38.0;7.0,154.0;111.0,263.0] jps=[6.0,-6.0] toff=0.0,151.0
+   EL pos=-52.0,-8.0 size=12.0,5.0 inline=-
+ P2 side=WEST pos=0.0,5.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+ P3 side=EAST pos=20.0,15.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+  E -> ? bends=[71.0,72.0] jps=- toff=-56.0,-4.0
+   EL pos=7.0,-7.0 size=13.0,5.0 inline=-
+N1 NORMAL pos=10.0,50.0 size=20.0,20.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=- ilc=- eps=- pc=-
+ P0 side=WEST pos=0.0,5.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+ P1 side=NORTH pos=10.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+  E -> N0P2 bends=[81.0,82.0] jps=- toff=-
+N2 EXTERNAL_PORT pos=14.0,6.0 size=0.0,0.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=LAST_SEPARATE ilc=- eps=EAST pc=fixedPos
+ P0 side=WEST pos=0.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+N3 EXTERNAL_PORT pos=21.0,9.0 size=0.0,0.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=LAST_SEPARATE ilc=- eps=EAST pc=fixedPos
+ P0 side=WEST pos=0.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+N4 EXTERNAL_PORT pos=28.0,12.0 size=0.0,2.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=LAST_SEPARATE ilc=- eps=EAST pc=fixedPos
+ P0 side=WEST pos=0.0,1.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+N5 EXTERNAL_PORT pos=35.0,15.0 size=0.0,0.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=FIRST_SEPARATE ilc=- eps=WEST pc=fixedPos
+ P0 side=EAST pos=0.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+N6 EXTERNAL_PORT pos=42.0,18.0 size=0.0,2.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=LAST_SEPARATE ilc=- eps=EAST pc=fixedPos
+ P0 side=WEST pos=0.0,1.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+ }
+N3 NORMAL pos=50.0,150.0 size=60.0,40.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=- ilc=- eps=- pc=fixedSide
+ P0 side=WEST pos=0.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+ nested {
+graph size=0.0,0.0 offset=0.0,0.0 padding=5.0,0.0,0.0,6.0 nlp=- elss=-
+N0 NORMAL pos=5.0,5.0 size=20.0,20.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=- ilc=- eps=- pc=-
+ P0 side=NORTH pos=10.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+N1 EXTERNAL_PORT pos=7.0,3.0 size=0.0,0.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=FIRST_SEPARATE ilc=- eps=WEST pc=fixedPos
+ P0 side=EAST pos=0.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+ }
+
+== compound merge=true fixedSide=true insideLoops=false RIGHT pre
+graph size=0.0,0.0 offset=0.0,0.0 padding=0.0,0.0,0.0,0.0 nlp=- elss=-
+N0 NORMAL pos=300.0,10.0 size=20.0,20.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=- ilc=- eps=- pc=-
+ P0 side=WEST pos=0.0,5.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+ P1 side=EAST pos=20.0,5.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+  E -> N2P4 bends=[] jps=- toff=-
+   EL pos=0.0,0.0 size=11.0,5.0 inline=-
+N1 NORMAL pos=300.0,80.0 size=20.0,20.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=- ilc=- eps=- pc=-
+ P0 side=WEST pos=0.0,5.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+N2 NORMAL pos=50.0,0.0 size=100.0,100.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=- ilc=- eps=- pc=fixedSide
+ P0 side=EAST pos=100.0,50.0 anchor=2.0,1.0 size=2.0,2.0 idx=-
+ P1 side=WEST pos=0.0,50.0 anchor=0.0,1.0 size=2.0,2.0 idx=-
+ P2 side=EAST pos=0.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+  E -> N0P0 bends=[] jps=- toff=-
+   EL pos=0.0,0.0 size=10.0,5.0 inline=-
+   EL pos=0.0,0.0 size=4.0,5.0 inline=-
+  E -> N1P0 bends=[] jps=- toff=-
+   EL pos=0.0,0.0 size=14.0,5.0 inline=-
+ P3 side=EAST pos=0.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+  E -> N3P0 bends=[] jps=- toff=-
+   EL pos=0.0,0.0 size=12.0,5.0 inline=-
+ P4 side=WEST pos=0.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+ nested {
+graph size=0.0,0.0 offset=2.0,1.0 padding=3.0,0.0,0.0,4.0 nlp=- elss=-
+N0 NORMAL pos=10.0,10.0 size=20.0,20.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=- ilc=- eps=- pc=-
+ P0 side=EAST pos=20.0,5.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+  E -> N2P0 bends=[] jps=- toff=-
+   EL pos=0.0,0.0 size=3.0,5.0 inline=-
+ P1 side=SOUTH pos=10.0,20.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+  E -> N3P0 bends=[] jps=- toff=-
+ P2 side=WEST pos=0.0,5.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+ P3 side=EAST pos=20.0,15.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+  E -> N4P0 bends=[] jps=- toff=-
+   EL pos=0.0,0.0 size=13.0,5.0 inline=-
+N1 NORMAL pos=10.0,50.0 size=20.0,20.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=- ilc=- eps=- pc=-
+ P0 side=WEST pos=0.0,5.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+ P1 side=NORTH pos=10.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+  E -> N0P2 bends=[] jps=- toff=-
+N2 EXTERNAL_PORT pos=0.0,0.0 size=0.0,0.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=LAST_SEPARATE ilc=- eps=EAST pc=fixedPos
+ P0 side=WEST pos=0.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+N3 EXTERNAL_PORT pos=0.0,0.0 size=0.0,0.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=LAST_SEPARATE ilc=- eps=EAST pc=fixedPos
+ P0 side=WEST pos=0.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+N4 EXTERNAL_PORT pos=0.0,0.0 size=0.0,2.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=LAST_SEPARATE ilc=- eps=EAST pc=fixedPos
+ P0 side=WEST pos=0.0,1.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+N5 EXTERNAL_PORT pos=0.0,0.0 size=0.0,0.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=FIRST_SEPARATE ilc=- eps=WEST pc=fixedPos
+ P0 side=EAST pos=0.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+  E -> N1P0 bends=[] jps=- toff=-
+N6 EXTERNAL_PORT pos=0.0,0.0 size=0.0,2.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=FIRST_SEPARATE ilc=- eps=WEST pc=fixedPos
+ P0 side=EAST pos=0.0,1.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+ }
+N3 NORMAL pos=50.0,150.0 size=60.0,40.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=- ilc=- eps=- pc=fixedSide
+ P0 side=WEST pos=0.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+ nested {
+graph size=0.0,0.0 offset=0.0,0.0 padding=5.0,0.0,0.0,6.0 nlp=- elss=-
+N0 NORMAL pos=5.0,5.0 size=20.0,20.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=- ilc=- eps=- pc=-
+ P0 side=NORTH pos=10.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+N1 EXTERNAL_PORT pos=0.0,0.0 size=0.0,0.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=FIRST_SEPARATE ilc=- eps=WEST pc=fixedPos
+ P0 side=EAST pos=0.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+  E -> N0P0 bends=[] jps=- toff=-
+ }
+
+e1 src=nil labels=0 segs=[C:N0P0->N2P0:OUTPUT R:N2P2->N0P0:OUTPUT]
+e2 src=nil labels=0 segs=[C:N5P0->N1P0:INPUT R:N0P1->N2P4:INPUT]
+e3 src=nil labels=0 segs=[C:N0P1->N3P0:OUTPUT D:N1P0->N0P0:INPUT R:N2P3->N3P0:OUTPUT]
+e4 src=set labels=0 segs=[]
+e5 src=nil labels=0 segs=[C:N0P3->N4P0:OUTPUT]
+e6 src=nil labels=0 segs=[C:N0P0->N2P0:OUTPUT R:N2P2->N1P0:OUTPUT]
+== compound merge=true fixedSide=true insideLoops=false RIGHT post
+graph size=0.0,0.0 offset=0.0,0.0 padding=0.0,0.0,0.0,0.0 nlp=- elss=-
+N0 NORMAL pos=300.0,10.0 size=20.0,20.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=- ilc=- eps=- pc=-
+ P0 side=WEST pos=0.0,5.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+ P1 side=EAST pos=20.0,5.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+  E -> ? bends=[11.0,12.0;91.0,19.0;147.0,96.0] jps=[65.0,-5.0] toff=56.0,4.0
+   EL pos=1.0,-1.0 size=11.0,5.0 inline=-
+N1 NORMAL pos=300.0,80.0 size=20.0,20.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=- ilc=- eps=- pc=-
+ P0 side=WEST pos=0.0,5.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+N2 NORMAL pos=50.0,0.0 size=100.0,100.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=- ilc=- eps=- pc=fixedSide
+ P0 side=EAST pos=100.0,50.0 anchor=2.0,1.0 size=2.0,2.0 idx=-
+ P1 side=WEST pos=0.0,50.0 anchor=0.0,1.0 size=2.0,2.0 idx=-
+ P2 side=EAST pos=0.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+ P3 side=EAST pos=0.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+ P4 side=WEST pos=0.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+ nested {
+graph size=0.0,0.0 offset=2.0,1.0 padding=3.0,0.0,0.0,4.0 nlp=- elss=-
+N0 NORMAL pos=10.0,10.0 size=20.0,20.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=- ilc=- eps=- pc=-
+ P0 side=EAST pos=20.0,5.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+  E -> ? bends=[51.0,52.0;-6.0,-4.0;-25.0,28.0] jps=[-53.0,-7.0] toff=-56.0,-4.0
+   EL pos=-53.0,-7.0 size=14.0,5.0 inline=-
+  E -> ? bends=[51.0,52.0;-6.0,-4.0;-35.0,18.0] jps=- toff=-56.0,-4.0
+   EL pos=5.0,-5.0 size=3.0,5.0 inline=-
+   EL pos=-54.0,-6.0 size=10.0,5.0 inline=-
+   EL pos=-54.0,-6.0 size=4.0,5.0 inline=-
+ P1 side=SOUTH pos=10.0,20.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+  E -> ? bends=[61.0,62.0;-6.0,-4.0;-15.0,38.0;7.0,154.0;101.0,253.0] jps=[6.0,-6.0] toff=0.0,151.0
+   EL pos=-52.0,-8.0 size=12.0,5.0 inline=-
+ P2 side=WEST pos=0.0,5.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+ P3 side=EAST pos=20.0,15.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+  E -> ? bends=[71.0,72.0] jps=- toff=-56.0,-4.0
+   EL pos=7.0,-7.0 size=13.0,5.0 inline=-
+N1 NORMAL pos=10.0,50.0 size=20.0,20.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=- ilc=- eps=- pc=-
+ P0 side=WEST pos=0.0,5.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+ P1 side=NORTH pos=10.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+  E -> N0P2 bends=[81.0,82.0] jps=- toff=-
+N2 EXTERNAL_PORT pos=14.0,6.0 size=0.0,0.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=LAST_SEPARATE ilc=- eps=EAST pc=fixedPos
+ P0 side=WEST pos=0.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+N3 EXTERNAL_PORT pos=21.0,9.0 size=0.0,0.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=LAST_SEPARATE ilc=- eps=EAST pc=fixedPos
+ P0 side=WEST pos=0.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+N4 EXTERNAL_PORT pos=28.0,12.0 size=0.0,2.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=LAST_SEPARATE ilc=- eps=EAST pc=fixedPos
+ P0 side=WEST pos=0.0,1.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+N5 EXTERNAL_PORT pos=35.0,15.0 size=0.0,0.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=FIRST_SEPARATE ilc=- eps=WEST pc=fixedPos
+ P0 side=EAST pos=0.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+N6 EXTERNAL_PORT pos=42.0,18.0 size=0.0,2.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=FIRST_SEPARATE ilc=- eps=WEST pc=fixedPos
+ P0 side=EAST pos=0.0,1.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+ }
+N3 NORMAL pos=50.0,150.0 size=60.0,40.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=- ilc=- eps=- pc=fixedSide
+ P0 side=WEST pos=0.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+ nested {
+graph size=0.0,0.0 offset=0.0,0.0 padding=5.0,0.0,0.0,6.0 nlp=- elss=-
+N0 NORMAL pos=5.0,5.0 size=20.0,20.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=- ilc=- eps=- pc=-
+ P0 side=NORTH pos=10.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+N1 EXTERNAL_PORT pos=7.0,3.0 size=0.0,0.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=FIRST_SEPARATE ilc=- eps=WEST pc=fixedPos
+ P0 side=EAST pos=0.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+ }
+
+== compound merge=true fixedSide=true insideLoops=true RIGHT pre
+graph size=0.0,0.0 offset=0.0,0.0 padding=0.0,0.0,0.0,0.0 nlp=- elss=-
+N0 NORMAL pos=300.0,10.0 size=20.0,20.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=- ilc=- eps=- pc=-
+ P0 side=WEST pos=0.0,5.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+ P1 side=EAST pos=20.0,5.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+  E -> N2P4 bends=[] jps=- toff=-
+   EL pos=0.0,0.0 size=11.0,5.0 inline=-
+N1 NORMAL pos=300.0,80.0 size=20.0,20.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=- ilc=- eps=- pc=-
+ P0 side=WEST pos=0.0,5.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+N2 NORMAL pos=50.0,0.0 size=100.0,100.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=- ilc=- eps=- pc=fixedSide
+ P0 side=EAST pos=100.0,50.0 anchor=2.0,1.0 size=2.0,2.0 idx=-
+ P1 side=EAST pos=0.0,50.0 anchor=2.0,1.0 size=2.0,2.0 idx=-
+ P2 side=EAST pos=0.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+  E -> N0P0 bends=[] jps=- toff=-
+   EL pos=0.0,0.0 size=10.0,5.0 inline=-
+   EL pos=0.0,0.0 size=4.0,5.0 inline=-
+  E -> N1P0 bends=[] jps=- toff=-
+   EL pos=0.0,0.0 size=14.0,5.0 inline=-
+ P3 side=EAST pos=0.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+  E -> N3P0 bends=[] jps=- toff=-
+   EL pos=0.0,0.0 size=12.0,5.0 inline=-
+ P4 side=WEST pos=0.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+ nested {
+graph size=0.0,0.0 offset=2.0,1.0 padding=3.0,0.0,0.0,4.0 nlp=- elss=-
+N0 NORMAL pos=10.0,10.0 size=20.0,20.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=- ilc=- eps=- pc=-
+ P0 side=EAST pos=20.0,5.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+  E -> N2P0 bends=[] jps=- toff=-
+   EL pos=0.0,0.0 size=3.0,5.0 inline=-
+ P1 side=SOUTH pos=10.0,20.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+  E -> N3P0 bends=[] jps=- toff=-
+ P2 side=WEST pos=0.0,5.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+ P3 side=EAST pos=20.0,15.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+  E -> N4P0 bends=[] jps=- toff=-
+   EL pos=0.0,0.0 size=13.0,5.0 inline=-
+N1 NORMAL pos=10.0,50.0 size=20.0,20.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=- ilc=- eps=- pc=-
+ P0 side=WEST pos=0.0,5.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+ P1 side=NORTH pos=10.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+  E -> N0P2 bends=[] jps=- toff=-
+N2 EXTERNAL_PORT pos=0.0,0.0 size=0.0,0.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=LAST_SEPARATE ilc=- eps=EAST pc=fixedPos
+ P0 side=WEST pos=0.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+N3 EXTERNAL_PORT pos=0.0,0.0 size=0.0,0.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=LAST_SEPARATE ilc=- eps=EAST pc=fixedPos
+ P0 side=WEST pos=0.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+N4 EXTERNAL_PORT pos=0.0,0.0 size=0.0,2.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=LAST_SEPARATE ilc=- eps=EAST pc=fixedPos
+ P0 side=WEST pos=0.0,1.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+  E -> N6P0 bends=[] jps=- toff=-
+   EL pos=0.0,0.0 size=15.0,5.0 inline=-
+N5 EXTERNAL_PORT pos=0.0,0.0 size=0.0,0.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=FIRST_SEPARATE ilc=- eps=WEST pc=fixedPos
+ P0 side=EAST pos=0.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+  E -> N1P0 bends=[] jps=- toff=-
+N6 EXTERNAL_PORT pos=0.0,0.0 size=0.0,2.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=LAST_SEPARATE ilc=- eps=EAST pc=fixedPos
+ P0 side=WEST pos=0.0,1.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+ }
+N3 NORMAL pos=50.0,150.0 size=60.0,40.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=- ilc=- eps=- pc=fixedSide
+ P0 side=WEST pos=0.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+ nested {
+graph size=0.0,0.0 offset=0.0,0.0 padding=5.0,0.0,0.0,6.0 nlp=- elss=-
+N0 NORMAL pos=5.0,5.0 size=20.0,20.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=- ilc=- eps=- pc=-
+ P0 side=NORTH pos=10.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+N1 EXTERNAL_PORT pos=0.0,0.0 size=0.0,0.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=FIRST_SEPARATE ilc=- eps=WEST pc=fixedPos
+ P0 side=EAST pos=0.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+  E -> N0P0 bends=[] jps=- toff=-
+ }
+
+e1 src=nil labels=0 segs=[C:N0P0->N2P0:OUTPUT R:N2P2->N0P0:OUTPUT]
+e2 src=nil labels=0 segs=[C:N5P0->N1P0:INPUT R:N0P1->N2P4:INPUT]
+e3 src=nil labels=0 segs=[C:N0P1->N3P0:OUTPUT D:N1P0->N0P0:INPUT R:N2P3->N3P0:OUTPUT]
+e4 src=set labels=0 segs=[]
+e5 src=nil labels=0 segs=[C:N0P3->N4P0:OUTPUT]
+e6 src=nil labels=0 segs=[C:N0P0->N2P0:OUTPUT R:N2P2->N1P0:OUTPUT]
+e7 src=nil labels=0 segs=[C:N4P0->N6P0:OUTPUT]
+== compound merge=true fixedSide=true insideLoops=true RIGHT post
+graph size=0.0,0.0 offset=0.0,0.0 padding=0.0,0.0,0.0,0.0 nlp=- elss=-
+N0 NORMAL pos=300.0,10.0 size=20.0,20.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=- ilc=- eps=- pc=-
+ P0 side=WEST pos=0.0,5.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+ P1 side=EAST pos=20.0,5.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+  E -> ? bends=[11.0,12.0;91.0,19.0;157.0,106.0] jps=- toff=56.0,4.0
+   EL pos=1.0,-1.0 size=11.0,5.0 inline=-
+N1 NORMAL pos=300.0,80.0 size=20.0,20.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=- ilc=- eps=- pc=-
+ P0 side=WEST pos=0.0,5.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+N2 NORMAL pos=50.0,0.0 size=100.0,100.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=- ilc=- eps=- pc=fixedSide
+ P0 side=EAST pos=100.0,50.0 anchor=2.0,1.0 size=2.0,2.0 idx=-
+  E -> N2P1 bends=[147.0,96.0] jps=[65.0,-5.0] toff=0.0,0.0
+   EL pos=65.0,-5.0 size=15.0,5.0 inline=-
+ P1 side=EAST pos=0.0,50.0 anchor=2.0,1.0 size=2.0,2.0 idx=-
+ P2 side=EAST pos=0.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+ P3 side=EAST pos=0.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+ P4 side=WEST pos=0.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+ nested {
+graph size=0.0,0.0 offset=2.0,1.0 padding=3.0,0.0,0.0,4.0 nlp=- elss=-
+N0 NORMAL pos=10.0,10.0 size=20.0,20.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=- ilc=- eps=- pc=-
+ P0 side=EAST pos=20.0,5.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+  E -> ? bends=[51.0,52.0;-6.0,-4.0;-25.0,28.0] jps=[-53.0,-7.0] toff=-56.0,-4.0
+   EL pos=-53.0,-7.0 size=14.0,5.0 inline=-
+  E -> ? bends=[51.0,52.0;-6.0,-4.0;-35.0,18.0] jps=- toff=-56.0,-4.0
+   EL pos=5.0,-5.0 size=3.0,5.0 inline=-
+   EL pos=-54.0,-6.0 size=10.0,5.0 inline=-
+   EL pos=-54.0,-6.0 size=4.0,5.0 inline=-
+ P1 side=SOUTH pos=10.0,20.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+  E -> ? bends=[61.0,62.0;-6.0,-4.0;-15.0,38.0;7.0,154.0;111.0,263.0] jps=[6.0,-6.0] toff=0.0,151.0
+   EL pos=-52.0,-8.0 size=12.0,5.0 inline=-
+ P2 side=WEST pos=0.0,5.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+ P3 side=EAST pos=20.0,15.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+  E -> ? bends=[71.0,72.0] jps=- toff=-56.0,-4.0
+   EL pos=7.0,-7.0 size=13.0,5.0 inline=-
+N1 NORMAL pos=10.0,50.0 size=20.0,20.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=- ilc=- eps=- pc=-
+ P0 side=WEST pos=0.0,5.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+ P1 side=NORTH pos=10.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+  E -> N0P2 bends=[81.0,82.0] jps=- toff=-
+N2 EXTERNAL_PORT pos=14.0,6.0 size=0.0,0.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=LAST_SEPARATE ilc=- eps=EAST pc=fixedPos
+ P0 side=WEST pos=0.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+N3 EXTERNAL_PORT pos=21.0,9.0 size=0.0,0.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=LAST_SEPARATE ilc=- eps=EAST pc=fixedPos
+ P0 side=WEST pos=0.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+N4 EXTERNAL_PORT pos=28.0,12.0 size=0.0,2.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=LAST_SEPARATE ilc=- eps=EAST pc=fixedPos
+ P0 side=WEST pos=0.0,1.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+N5 EXTERNAL_PORT pos=35.0,15.0 size=0.0,0.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=FIRST_SEPARATE ilc=- eps=WEST pc=fixedPos
+ P0 side=EAST pos=0.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+N6 EXTERNAL_PORT pos=42.0,18.0 size=0.0,2.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=LAST_SEPARATE ilc=- eps=EAST pc=fixedPos
+ P0 side=WEST pos=0.0,1.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+ }
+N3 NORMAL pos=50.0,150.0 size=60.0,40.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=- ilc=- eps=- pc=fixedSide
+ P0 side=WEST pos=0.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+ nested {
+graph size=0.0,0.0 offset=0.0,0.0 padding=5.0,0.0,0.0,6.0 nlp=- elss=-
+N0 NORMAL pos=5.0,5.0 size=20.0,20.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=- ilc=- eps=- pc=-
+ P0 side=NORTH pos=10.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+N1 EXTERNAL_PORT pos=7.0,3.0 size=0.0,0.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=FIRST_SEPARATE ilc=- eps=WEST pc=fixedPos
+ P0 side=EAST pos=0.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+ }
+
+== compound merge=true fixedSide=false insideLoops=true DOWN pre
+graph size=0.0,0.0 offset=0.0,0.0 padding=0.0,0.0,0.0,0.0 nlp=- elss=-
+N0 NORMAL pos=300.0,10.0 size=20.0,20.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=- ilc=- eps=- pc=-
+ P0 side=WEST pos=0.0,5.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+ P1 side=EAST pos=20.0,5.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+  E -> N2P4 bends=[] jps=- toff=-
+   EL pos=0.0,0.0 size=11.0,5.0 inline=-
+N1 NORMAL pos=300.0,80.0 size=20.0,20.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=- ilc=- eps=- pc=-
+ P0 side=WEST pos=0.0,5.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+N2 NORMAL pos=50.0,0.0 size=100.0,100.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=- ilc=- eps=- pc=fixedSide
+ P0 side=SOUTH pos=100.0,50.0 anchor=1.0,2.0 size=2.0,2.0 idx=-
+ P1 side=SOUTH pos=0.0,50.0 anchor=1.0,2.0 size=2.0,2.0 idx=-
+ P2 side=SOUTH pos=0.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+  E -> N0P0 bends=[] jps=- toff=-
+   EL pos=0.0,0.0 size=10.0,5.0 inline=-
+   EL pos=0.0,0.0 size=4.0,5.0 inline=-
+  E -> N1P0 bends=[] jps=- toff=-
+   EL pos=0.0,0.0 size=14.0,5.0 inline=-
+ P3 side=SOUTH pos=0.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+  E -> N3P0 bends=[] jps=- toff=-
+   EL pos=0.0,0.0 size=12.0,5.0 inline=-
+ P4 side=NORTH pos=0.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+ nested {
+graph size=0.0,0.0 offset=2.0,1.0 padding=3.0,0.0,0.0,4.0 nlp=- elss=-
+N0 NORMAL pos=10.0,10.0 size=20.0,20.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=- ilc=- eps=- pc=-
+ P0 side=EAST pos=20.0,5.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+  E -> N2P0 bends=[] jps=- toff=-
+   EL pos=0.0,0.0 size=3.0,5.0 inline=-
+ P1 side=SOUTH pos=10.0,20.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+  E -> N3P0 bends=[] jps=- toff=-
+ P2 side=WEST pos=0.0,5.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+ P3 side=EAST pos=20.0,15.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+  E -> N4P0 bends=[] jps=- toff=-
+   EL pos=0.0,0.0 size=13.0,5.0 inline=-
+N1 NORMAL pos=10.0,50.0 size=20.0,20.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=- ilc=- eps=- pc=-
+ P0 side=WEST pos=0.0,5.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+ P1 side=NORTH pos=10.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+  E -> N0P2 bends=[] jps=- toff=-
+N2 EXTERNAL_PORT pos=0.0,0.0 size=0.0,0.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=- ilc=BOTTOM eps=SOUTH pc=fixedPos
+ P0 side=NORTH pos=0.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+N3 EXTERNAL_PORT pos=0.0,0.0 size=0.0,0.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=- ilc=BOTTOM eps=SOUTH pc=fixedPos
+ P0 side=NORTH pos=0.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+N4 EXTERNAL_PORT pos=0.0,0.0 size=2.0,0.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=- ilc=BOTTOM eps=SOUTH pc=fixedPos
+ P0 side=NORTH pos=1.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+  E -> N6P0 bends=[] jps=- toff=-
+   EL pos=0.0,0.0 size=15.0,5.0 inline=-
+N5 EXTERNAL_PORT pos=0.0,0.0 size=0.0,0.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=- ilc=TOP eps=NORTH pc=fixedPos
+ P0 side=SOUTH pos=0.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+  E -> N1P0 bends=[] jps=- toff=-
+N6 EXTERNAL_PORT pos=0.0,0.0 size=2.0,0.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=- ilc=BOTTOM eps=SOUTH pc=fixedPos
+ P0 side=NORTH pos=1.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+ }
+N3 NORMAL pos=50.0,150.0 size=60.0,40.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=- ilc=- eps=- pc=fixedSide
+ P0 side=NORTH pos=0.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+ nested {
+graph size=0.0,0.0 offset=0.0,0.0 padding=5.0,0.0,0.0,6.0 nlp=- elss=-
+N0 NORMAL pos=5.0,5.0 size=20.0,20.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=- ilc=- eps=- pc=-
+ P0 side=NORTH pos=10.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+N1 EXTERNAL_PORT pos=0.0,0.0 size=0.0,0.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=- ilc=TOP eps=NORTH pc=fixedPos
+ P0 side=SOUTH pos=0.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+  E -> N0P0 bends=[] jps=- toff=-
+ }
+
+e1 src=nil labels=0 segs=[C:N0P0->N2P0:OUTPUT R:N2P2->N0P0:OUTPUT]
+e2 src=nil labels=0 segs=[C:N5P0->N1P0:INPUT R:N0P1->N2P4:INPUT]
+e3 src=nil labels=0 segs=[C:N0P1->N3P0:OUTPUT D:N1P0->N0P0:INPUT R:N2P3->N3P0:OUTPUT]
+e4 src=set labels=0 segs=[]
+e5 src=nil labels=0 segs=[C:N0P3->N4P0:OUTPUT]
+e6 src=nil labels=0 segs=[C:N0P0->N2P0:OUTPUT R:N2P2->N1P0:OUTPUT]
+e7 src=nil labels=0 segs=[C:N4P0->N6P0:OUTPUT]
+== compound merge=true fixedSide=false insideLoops=true DOWN post
+graph size=0.0,0.0 offset=0.0,0.0 padding=0.0,0.0,0.0,0.0 nlp=- elss=-
+N0 NORMAL pos=300.0,10.0 size=20.0,20.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=- ilc=- eps=- pc=-
+ P0 side=WEST pos=0.0,5.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+ P1 side=EAST pos=20.0,5.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+  E -> ? bends=[11.0,12.0;91.0,19.0;157.0,106.0] jps=- toff=56.0,4.0
+   EL pos=1.0,-1.0 size=11.0,5.0 inline=-
+N1 NORMAL pos=300.0,80.0 size=20.0,20.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=- ilc=- eps=- pc=-
+ P0 side=WEST pos=0.0,5.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+N2 NORMAL pos=50.0,0.0 size=100.0,100.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=- ilc=- eps=- pc=fixedSide
+ P0 side=SOUTH pos=100.0,50.0 anchor=1.0,2.0 size=2.0,2.0 idx=-
+  E -> N2P1 bends=[147.0,96.0] jps=[65.0,-5.0] toff=0.0,0.0
+   EL pos=65.0,-5.0 size=15.0,5.0 inline=-
+ P1 side=SOUTH pos=0.0,50.0 anchor=1.0,2.0 size=2.0,2.0 idx=-
+ P2 side=SOUTH pos=0.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+ P3 side=SOUTH pos=0.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+ P4 side=NORTH pos=0.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+ nested {
+graph size=0.0,0.0 offset=2.0,1.0 padding=3.0,0.0,0.0,4.0 nlp=- elss=-
+N0 NORMAL pos=10.0,10.0 size=20.0,20.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=- ilc=- eps=- pc=-
+ P0 side=EAST pos=20.0,5.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+  E -> ? bends=[51.0,52.0;-6.0,-4.0;-25.0,28.0] jps=[-53.0,-7.0] toff=-56.0,-4.0
+   EL pos=-53.0,-7.0 size=14.0,5.0 inline=-
+  E -> ? bends=[51.0,52.0;-6.0,-4.0;-35.0,18.0] jps=- toff=-56.0,-4.0
+   EL pos=5.0,-5.0 size=3.0,5.0 inline=-
+   EL pos=-54.0,-6.0 size=10.0,5.0 inline=-
+   EL pos=-54.0,-6.0 size=4.0,5.0 inline=-
+ P1 side=SOUTH pos=10.0,20.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+  E -> ? bends=[61.0,62.0;-6.0,-4.0;-15.0,38.0;7.0,154.0;111.0,263.0] jps=[6.0,-6.0] toff=0.0,151.0
+   EL pos=-52.0,-8.0 size=12.0,5.0 inline=-
+ P2 side=WEST pos=0.0,5.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+ P3 side=EAST pos=20.0,15.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+  E -> ? bends=[71.0,72.0] jps=- toff=-56.0,-4.0
+   EL pos=7.0,-7.0 size=13.0,5.0 inline=-
+N1 NORMAL pos=10.0,50.0 size=20.0,20.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=- ilc=- eps=- pc=-
+ P0 side=WEST pos=0.0,5.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+ P1 side=NORTH pos=10.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+  E -> N0P2 bends=[81.0,82.0] jps=- toff=-
+N2 EXTERNAL_PORT pos=14.0,6.0 size=0.0,0.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=- ilc=BOTTOM eps=SOUTH pc=fixedPos
+ P0 side=NORTH pos=0.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+N3 EXTERNAL_PORT pos=21.0,9.0 size=0.0,0.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=- ilc=BOTTOM eps=SOUTH pc=fixedPos
+ P0 side=NORTH pos=0.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+N4 EXTERNAL_PORT pos=28.0,12.0 size=2.0,0.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=- ilc=BOTTOM eps=SOUTH pc=fixedPos
+ P0 side=NORTH pos=1.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+N5 EXTERNAL_PORT pos=35.0,15.0 size=0.0,0.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=- ilc=TOP eps=NORTH pc=fixedPos
+ P0 side=SOUTH pos=0.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+N6 EXTERNAL_PORT pos=42.0,18.0 size=2.0,0.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=- ilc=BOTTOM eps=SOUTH pc=fixedPos
+ P0 side=NORTH pos=1.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+ }
+N3 NORMAL pos=50.0,150.0 size=60.0,40.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=- ilc=- eps=- pc=fixedSide
+ P0 side=NORTH pos=0.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+ nested {
+graph size=0.0,0.0 offset=0.0,0.0 padding=5.0,0.0,0.0,6.0 nlp=- elss=-
+N0 NORMAL pos=5.0,5.0 size=20.0,20.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=- ilc=- eps=- pc=-
+ P0 side=NORTH pos=10.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+N1 EXTERNAL_PORT pos=7.0,3.0 size=0.0,0.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=- ilc=TOP eps=NORTH pc=fixedPos
+ P0 side=SOUTH pos=0.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+ }
+
