@@ -50,7 +50,11 @@ enum ElkDump {
             let text = try String(contentsOf: file, encoding: .utf8)
             if !outputs.contains(text) { outputs.append(text) }
         }
-        if let lab = labExecutable() {
+        // The instrumented copy only arbitrates where elk-swift itself has
+        // been seen to disagree with itself. On a graph whose samples all
+        // agree, the real output is the only acceptable one, so a drift in
+        // the instrumented copy can never loosen the gate.
+        if outputs.count > 1, let lab = labExecutable() {
             let file = scratch.appendingPathComponent("lab.json")
             let process = Process()
             process.executableURL = lab
