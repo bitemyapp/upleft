@@ -661,15 +661,13 @@ fn memfind(hay: &[u8], needle: &[u8]) -> Option<usize> {
     let first = needle[0];
     let mut i = 0;
     while i + needle.len() <= hay.len() {
-        match hay[i..hay.len() - needle.len() + 1].iter().position(|&b| b == first) {
-            None => return None,
-            Some(p) => {
-                let at = i + p;
-                if &hay[at..at + needle.len()] == needle {
-                    return Some(at);
-                }
-                i = at + 1;
+        {
+            let p = hay[i..hay.len() - needle.len() + 1].iter().position(|&b| b == first)?;
+            let at = i + p;
+            if &hay[at..at + needle.len()] == needle {
+                return Some(at);
             }
+            i = at + 1;
         }
     }
     None
@@ -714,8 +712,8 @@ pub fn first_index_where(s: &str, mut predicate: impl FnMut(&str) -> bool) -> Op
 }
 
 /// `s.allSatisfy { … }` over Characters.
-pub fn all_satisfy(s: &str, mut predicate: impl FnMut(&str) -> bool) -> bool {
-    graphemes(s).all(|g| predicate(g))
+pub fn all_satisfy(s: &str, predicate: impl FnMut(&str) -> bool) -> bool {
+    graphemes(s).all(predicate)
 }
 
 /// `String(s.filter { … })` over Characters.

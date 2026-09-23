@@ -259,8 +259,8 @@ impl MarkdownCompatibility {
                         );
                     }
                 }
-                InlineKind::InlineHTML => {
-                    if !capabilities.contains(MarkdownCapabilities::RAW_HTML) {
+                InlineKind::InlineHTML
+                    if !capabilities.contains(MarkdownCapabilities::RAW_HTML) => {
                         add(
                             findings,
                             document,
@@ -271,7 +271,6 @@ impl MarkdownCompatibility {
                             None,
                         );
                     }
-                }
                 _ => {}
             }
             for child in &span.children {
@@ -361,8 +360,8 @@ impl MarkdownCompatibility {
                         );
                     }
                 }
-                BlockContent::FrontMatter(front_matter) => {
-                    if !capabilities.contains(MarkdownCapabilities::FRONT_MATTER) {
+                BlockContent::FrontMatter(front_matter)
+                    if !capabilities.contains(MarkdownCapabilities::FRONT_MATTER) => {
                         add(
                             &mut findings,
                             document,
@@ -373,7 +372,6 @@ impl MarkdownCompatibility {
                             None,
                         );
                     }
-                }
                 _ => {}
             }
             if matches!(block.content, BlockContent::Heading { .. })

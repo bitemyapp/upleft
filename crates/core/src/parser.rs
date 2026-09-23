@@ -295,7 +295,7 @@ impl<'m> BlockBuilder<'m> {
 
         let content_start = children.first().map_or(range.upper_bound(), |child| child.range.location);
         MDBlock::new(content, range, NSRange::new(content_start, 0.max(range.upper_bound() - content_start)))
-            .with_marker_range(marker.and_then(|m| if m.length > 0 { Some(m) } else { None }))
+            .with_marker_range(marker.filter(|&m| m.length > 0))
             .with_children(children)
             .with_depth(depth)
             .with_quote_depth(quote_depth)

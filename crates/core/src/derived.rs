@@ -427,7 +427,7 @@ impl Slug {
             let mut it = swift_text::graphemes(&out);
             while start < end {
                 match it.next() {
-                    Some(g) if g == "-" => start += 1,
+                    Some("-") => start += 1,
                     _ => break,
                 }
             }
@@ -436,7 +436,7 @@ impl Slug {
             let mut it = swift_text::graphemes(&out[start..]);
             while end > start {
                 match it.next_back() {
-                    Some(g) if g == "-" => end -= 1,
+                    Some("-") => end -= 1,
                     _ => break,
                 }
             }

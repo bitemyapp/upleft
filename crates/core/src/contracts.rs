@@ -202,7 +202,7 @@ pub fn applied(edits: &[TextEdit], text: &str) -> String {
     let mut sorted: Vec<&TextEdit> = edits.iter().collect();
     // Swift's `sorted(by:)` has been a stable merge sort since Swift 5, so
     // equal locations keep their order in both.
-    sorted.sort_by(|a, b| b.range.location.cmp(&a.range.location));
+    sorted.sort_by_key(|edit| std::cmp::Reverse(edit.range.location));
     for edit in sorted {
         if !(edit.range.upper_bound() <= last_start) {
             continue;

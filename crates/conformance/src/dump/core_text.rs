@@ -515,9 +515,9 @@ fn myers(old: &str, new: &str, max_distance: isize) -> Value {
     let mut runs: Vec<(&str, isize, isize, isize)> = Vec::new();
     for step in script {
         let (kind, o, n) = match step {
-            Step::Equal { old_index, new_index } => ("equal", old_index as isize, new_index as isize),
-            Step::Delete { old_index } => ("delete", old_index as isize, -1),
-            Step::Insert { new_index } => ("insert", -1, new_index as isize),
+            Step::Equal { old_index, new_index } => ("equal", old_index, new_index),
+            Step::Delete { old_index } => ("delete", old_index, -1),
+            Step::Insert { new_index } => ("insert", -1, new_index),
         };
         if let Some(last) = runs.last_mut()
             && last.0 == kind
