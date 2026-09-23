@@ -12,7 +12,9 @@
 //! animated paths the conformance scenes cannot reach (they force Reduce
 //! Motion on): `animated_row_rebuilds_keep_the_table_consistent` and
 //! `completion_holds_the_row_until_the_deferred_rebuild`. Their window is
-//! borderless at (-30000, -30000) and never ordered in or activated.
+//! borderless at (-30000, -30000) and never ordered in or activated. And
+//! `selected_task_past_a_shorter_plan_traps_as_in_swift`, which pins a
+//! reproduced Downright trap.
 //!
 //! Skipped, with reasons:
 //! - `PanelAccessibilityTests.searchResultsExposeSearchingAndEmptyStates`,
@@ -499,6 +501,23 @@ fn completion_holds_the_row_until_the_deferred_rebuild() {
     window.close();
 }
 
+/// Downright traps here (verified: the Swift oracle exits with SIGTRAP on
+/// the same sequence): `preferredAddSection` reads the new `tasks` at a task
+/// index taken from the old rows, so a selected row past the end of a
+/// shorter plan is out of range. The port reproduces the trap as a panic.
+fn selected_task_past_a_shorter_plan_traps_as_in_swift() {
+    let parsed = MarkdownParser::parse("# A\n\n- [ ] one\n- [ ] two\n\n# B\n\n- [ ] three\n- [ ] four\n");
+    let view = TaskPanelView::new_current(mtm());
+    view.set_tasks(parsed.tasks.clone());
+    view.set_headings(parsed.headings.clone());
+    // Rows: A, one, two, B, three, four, add; select "four" (task 3).
+    let table = task_table(&view);
+    table.selectRowIndexes_byExtendingSelection(&NSIndexSet::indexSetWithIndex(5), false);
+    let shorter = parsed.tasks[..2].to_vec();
+    let outcome = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| view.set_tasks(shorter)));
+    assert!(outcome.is_err(), "Swift traps on this edit; the port must too");
+}
+
 fn main() {
     main_thread::run(&[
         ("task_checkbox_hit_target_uses_local_coordinates", task_checkbox_hit_target_uses_local_coordinates),
@@ -518,5 +537,6 @@ fn main() {
         ("task_panel_builds_agent_5000_within_budget", task_panel_builds_agent_5000_within_budget),
         ("animated_row_rebuilds_keep_the_table_consistent", animated_row_rebuilds_keep_the_table_consistent),
         ("completion_holds_the_row_until_the_deferred_rebuild", completion_holds_the_row_until_the_deferred_rebuild),
+        ("selected_task_past_a_shorter_plan_traps_as_in_swift", selected_task_past_a_shorter_plan_traps_as_in_swift),
     ]);
 }
