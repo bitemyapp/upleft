@@ -416,7 +416,27 @@
       "output": "json",
       "input": "json",
       "only": ["corpus/updater/"],
-      "variants": [[]]
+      "variants": [[]],
+      "stamps": [
+        "corpus/updater/feeds/basic.xml",
+        "corpus/updater/feeds/binary-junk.xml",
+        "corpus/updater/feeds/bom-crlf.xml",
+        "corpus/updater/feeds/channels.xml",
+        "corpus/updater/feeds/critical.xml",
+        "corpus/updater/feeds/deltas.xml",
+        "corpus/updater/feeds/empty.xml",
+        "corpus/updater/feeds/html-release-notes.xml",
+        "corpus/updater/feeds/informational.xml",
+        "corpus/updater/feeds/latin1.xml",
+        "corpus/updater/feeds/malformed-not-xml.xml",
+        "corpus/updater/feeds/malformed-unclosed.xml",
+        "corpus/updater/feeds/markdown-release-notes.xml",
+        "corpus/updater/feeds/minimum-system-version.xml",
+        "corpus/updater/feeds/missing-fields.xml",
+        "corpus/updater/feeds/multiple-items.xml",
+        "corpus/updater/feeds/non-ascii.xml",
+        "corpus/updater/feeds/odd-versions.xml"
+      ]
     },
     {
       "name": "local-ai",

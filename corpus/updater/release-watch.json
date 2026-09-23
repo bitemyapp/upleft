@@ -1,0 +1,660 @@
+{
+ "kind": "release-watch",
+ "metadata": {
+  "sample": {
+   "versionString": "47",
+   "displayVersionString": "1.1.0",
+   "title": "Downright 1.1.0",
+   "itemDescription": "## What's new\n- Faster parsing",
+   "infoURL": "https://github.com/ezzy1630/Downright/releases/tag/v1.1.0",
+   "contentLength": "4000000"
+  },
+  "informational": {
+   "versionString": "50",
+   "displayVersionString": "1.2.0",
+   "infoURL": "https://github.com/ezzy1630/Downright/releases/tag/v1.2.0",
+   "contentLength": "0",
+   "isInformationOnly": true
+  },
+  "informationalNoURL": {
+   "versionString": "51",
+   "displayVersionString": "1.2.1",
+   "isInformationOnly": true
+  },
+  "informationalHTTP": {
+   "versionString": "52",
+   "displayVersionString": "1.2.2",
+   "isInformationOnly": true,
+   "infoURL": "http://github.com/ezzy1630/Downright/releases"
+  },
+  "critical": {
+   "versionString": "49",
+   "displayVersionString": "1.1.2",
+   "title": "Downright 1.1.2 (security)",
+   "contentLength": "4060000",
+   "isCritical": true
+  },
+  "major": {
+   "versionString": "60",
+   "displayVersionString": "2.0.0",
+   "title": "Downright 2.0",
+   "releaseNotesURL": "https://updates.example.invalid/notes/2.0.0.html",
+   "contentLength": "5000000",
+   "isMajorUpgrade": true,
+   "minimumSystemVersion": "27.0"
+  },
+  "nonAscii": {
+   "versionString": "47",
+   "displayVersionString": "1.1.0‑été",
+   "title": "Downright 1.1.0 « Été » 夏 🌞",
+   "itemDescription": "## Nouveautés\n- Analyse plus rapide\n- 👨‍👩‍👧 🇫🇷",
+   "contentLength": "4000000"
+  },
+  "nonAsciiNFD": {
+   "versionString": "47",
+   "displayVersionString": "1.1.0‑été",
+   "title": "Downright 1.1.0 « Été » 夏 🌞",
+   "itemDescription": "## Nouveautés\n- Analyse plus rapide\n- 👨‍👩‍👧 🇫🇷",
+   "contentLength": "4000000"
+  },
+  "huge": {
+   "versionString": "",
+   "displayVersionString": "",
+   "contentLength": "18446744073709551615"
+  },
+  "oddURLs": {
+   "versionString": "99",
+   "displayVersionString": "9.9.9",
+   "releaseNotesURL": "not a URL",
+   "infoURL": "",
+   "contentLength": "1"
+  }
+ },
+ "scripts": [
+  {
+   "name": "firstProbeEstablishesTheBaselineWithoutFiring",
+   "results": [
+    {
+     "result": "changed",
+     "validator": "etag:a"
+    }
+   ],
+   "steps": [
+    {
+     "do": "start"
+    },
+    {
+     "do": "drain"
+    },
+    {
+     "do": "stop"
+    }
+   ]
+  },
+  {
+   "name": "aMovedFeedFiresOnce",
+   "results": [
+    {
+     "result": "changed",
+     "validator": "etag:a"
+    },
+    {
+     "result": "changed",
+     "validator": "etag:b"
+    }
+   ],
+   "steps": [
+    {
+     "do": "start"
+    },
+    {
+     "do": "drain"
+    },
+    {
+     "do": "probeNow"
+    },
+    {
+     "do": "drain"
+    },
+    {
+     "do": "stop"
+    }
+   ]
+  },
+  {
+   "name": "anUnchangedFeedIsSilent",
+   "results": [
+    {
+     "result": "changed",
+     "validator": "etag:a"
+    },
+    {
+     "result": "unchanged"
+    },
+    {
+     "result": "unchanged"
+    }
+   ],
+   "steps": [
+    {
+     "do": "start"
+    },
+    {
+     "do": "drain"
+    },
+    {
+     "do": "probeNow"
+    },
+    {
+     "do": "drain"
+    },
+    {
+     "do": "probeNow"
+    },
+    {
+     "do": "drain"
+    }
+   ]
+  },
+  {
+   "name": "anUnreachableFeedDoesNotEstablishTheBaseline",
+   "results": [
+    {
+     "result": "unreachable"
+    },
+    {
+     "result": "changed",
+     "validator": "etag:a"
+    }
+   ],
+   "steps": [
+    {
+     "do": "start"
+    },
+    {
+     "do": "drain"
+    },
+    {
+     "do": "probeNow"
+    },
+    {
+     "do": "drain"
+    }
+   ]
+  },
+  {
+   "name": "coincidingEventsCollapseIntoOneProbe",
+   "results": [
+    {
+     "result": "changed",
+     "validator": "etag:a"
+    }
+   ],
+   "steps": [
+    {
+     "do": "start"
+    },
+    {
+     "do": "drain"
+    },
+    {
+     "do": "systemDidWake"
+    },
+    {
+     "do": "activation",
+     "isActive": true
+    },
+    {
+     "do": "network",
+     "hasNetwork": true
+    },
+    {
+     "do": "drain"
+    }
+   ]
+  },
+  {
+   "name": "losingTheNetworkStopsProbing",
+   "results": [
+    {
+     "result": "changed",
+     "validator": "etag:a"
+    }
+   ],
+   "steps": [
+    {
+     "do": "start"
+    },
+    {
+     "do": "drain"
+    },
+    {
+     "do": "network",
+     "hasNetwork": false
+    },
+    {
+     "do": "probeNow"
+    },
+    {
+     "do": "drain"
+    }
+   ]
+  },
+  {
+   "name": "events before start are policy only",
+   "results": [
+    {
+     "result": "changed",
+     "validator": "etag:a"
+    }
+   ],
+   "steps": [
+    {
+     "do": "activation",
+     "isActive": true
+    },
+    {
+     "do": "powerState",
+     "isLowPower": true
+    },
+    {
+     "do": "network",
+     "hasNetwork": false
+    },
+    {
+     "do": "probeNow"
+    },
+    {
+     "do": "drain"
+    },
+    {
+     "do": "network",
+     "hasNetwork": true
+    },
+    {
+     "do": "drain"
+    },
+    {
+     "do": "start"
+    },
+    {
+     "do": "drain"
+    }
+   ]
+  },
+  {
+   "name": "start twice",
+   "results": [
+    {
+     "result": "changed",
+     "validator": "sha256:x"
+    },
+    {
+     "result": "changed",
+     "validator": "sha256:y"
+    }
+   ],
+   "steps": [
+    {
+     "do": "start"
+    },
+    {
+     "do": "start"
+    },
+    {
+     "do": "drain"
+    },
+    {
+     "do": "start"
+    },
+    {
+     "do": "drain"
+    }
+   ]
+  },
+  {
+   "name": "a probe in flight swallows events",
+   "results": [
+    {
+     "result": "changed",
+     "validator": "etag:a"
+    },
+    {
+     "result": "changed",
+     "validator": "etag:b"
+    }
+   ],
+   "steps": [
+    {
+     "do": "start"
+    },
+    {
+     "do": "systemDidWake"
+    },
+    {
+     "do": "probeNow"
+    },
+    {
+     "do": "drain"
+    },
+    {
+     "do": "probeNow"
+    },
+    {
+     "do": "systemDidWake"
+    },
+    {
+     "do": "drain"
+    }
+   ]
+  },
+  {
+   "name": "nil validators",
+   "results": [
+    {
+     "result": "changed",
+     "validator": null
+    },
+    {
+     "result": "changed",
+     "validator": null
+    },
+    {
+     "result": "changed",
+     "validator": "lastModified:x"
+    },
+    {
+     "result": "unchanged"
+    }
+   ],
+   "steps": [
+    {
+     "do": "start"
+    },
+    {
+     "do": "drain"
+    },
+    {
+     "do": "probeNow"
+    },
+    {
+     "do": "drain"
+    },
+    {
+     "do": "probeNow"
+    },
+    {
+     "do": "drain"
+    },
+    {
+     "do": "probeNow"
+    },
+    {
+     "do": "drain"
+    }
+   ]
+  },
+  {
+   "name": "low power backs off",
+   "results": [
+    {
+     "result": "changed",
+     "validator": "etag:a"
+    },
+    {
+     "result": "changed",
+     "validator": "etag:b"
+    }
+   ],
+   "steps": [
+    {
+     "do": "start"
+    },
+    {
+     "do": "drain"
+    },
+    {
+     "do": "powerState",
+     "isLowPower": true
+    },
+    {
+     "do": "probeNow"
+    },
+    {
+     "do": "drain"
+    },
+    {
+     "do": "activation",
+     "isActive": true
+    },
+    {
+     "do": "probeNow"
+    },
+    {
+     "do": "drain"
+    },
+    {
+     "do": "activation",
+     "isActive": false
+    },
+    {
+     "do": "powerState",
+     "isLowPower": false
+    },
+    {
+     "do": "probeNow"
+    },
+    {
+     "do": "drain"
+    }
+   ]
+  },
+  {
+   "name": "network comes back",
+   "results": [
+    {
+     "result": "changed",
+     "validator": "etag:a"
+    },
+    {
+     "result": "changed",
+     "validator": "etag:b"
+    }
+   ],
+   "steps": [
+    {
+     "do": "start"
+    },
+    {
+     "do": "drain"
+    },
+    {
+     "do": "network",
+     "hasNetwork": false
+    },
+    {
+     "do": "network",
+     "hasNetwork": true
+    },
+    {
+     "do": "drain"
+    },
+    {
+     "do": "probeNow"
+    },
+    {
+     "do": "drain"
+    }
+   ]
+  },
+  {
+   "name": "stop then events",
+   "results": [
+    {
+     "result": "changed",
+     "validator": "etag:a"
+    },
+    {
+     "result": "changed",
+     "validator": "etag:b"
+    }
+   ],
+   "steps": [
+    {
+     "do": "start"
+    },
+    {
+     "do": "drain"
+    },
+    {
+     "do": "stop"
+    },
+    {
+     "do": "probeNow"
+    },
+    {
+     "do": "systemDidWake"
+    },
+    {
+     "do": "activation",
+     "isActive": true
+    },
+    {
+     "do": "drain"
+    },
+    {
+     "do": "start"
+    },
+    {
+     "do": "drain"
+    }
+   ]
+  },
+  {
+   "name": "wired to a coordinator",
+   "results": [
+    {
+     "result": "changed",
+     "validator": "etag:a"
+    },
+    {
+     "result": "changed",
+     "validator": "etag:b"
+    },
+    {
+     "result": "changed",
+     "validator": "etag:c"
+    },
+    {
+     "result": "changed",
+     "validator": "etag:d"
+    },
+    {
+     "result": "changed",
+     "validator": "etag:e"
+    }
+   ],
+   "steps": [
+    {
+     "do": "wireCoordinator"
+    },
+    {
+     "do": "start"
+    },
+    {
+     "do": "drain"
+    },
+    {
+     "do": "probeNow"
+    },
+    {
+     "do": "drain"
+    },
+    {
+     "do": "coordinator",
+     "step": {
+      "do": "driverDidFindUpdate",
+      "metadata": "sample",
+      "stage": "downloaded",
+      "userInitiated": false
+     }
+    },
+    {
+     "do": "probeNow"
+    },
+    {
+     "do": "drain"
+    },
+    {
+     "do": "coordinator",
+     "step": {
+      "do": "driverDidDismiss"
+     }
+    },
+    {
+     "do": "coordinator",
+     "step": {
+      "do": "completeBackgroundDownload",
+      "version": "1.1.0"
+     }
+    },
+    {
+     "do": "probeNow"
+    },
+    {
+     "do": "drain"
+    },
+    {
+     "do": "coordinator",
+     "step": {
+      "do": "driverDidDismiss"
+     }
+    },
+    {
+     "do": "coordinator",
+     "step": {
+      "do": "setAutomaticallyChecksForUpdates",
+      "value": false
+     }
+    },
+    {
+     "do": "probeNow"
+    },
+    {
+     "do": "drain"
+    }
+   ]
+  },
+  {
+   "name": "wired to a stopped engine",
+   "results": [
+    {
+     "result": "changed",
+     "validator": "etag:a"
+    },
+    {
+     "result": "changed",
+     "validator": "etag:b"
+    }
+   ],
+   "steps": [
+    {
+     "do": "wireCoordinator",
+     "engine": "stopped"
+    },
+    {
+     "do": "start"
+    },
+    {
+     "do": "drain"
+    },
+    {
+     "do": "probeNow"
+    },
+    {
+     "do": "drain"
+    }
+   ]
+  }
+ ]
+}

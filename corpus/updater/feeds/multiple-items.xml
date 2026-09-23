@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<rss version="2.0" xmlns:sparkle="http://www.andymatuschak.org/xml-namespaces/sparkle">
+  <channel>
+    <title>Downright</title>
+    <item>
+      <title>Downright 1.2.0</title>
+      <sparkle:version>50</sparkle:version>
+      <sparkle:shortVersionString>1.2.0</sparkle:shortVersionString>
+      <pubDate>Mon, 02 Nov 2026 10:00:00 +0000</pubDate>
+      <enclosure url="https://updates.example.invalid/Downright-1.2.0.zip" length="4100000" type="application/octet-stream" sparkle:edSignature="AAAA"/>
+    </item>
+    <item>
+      <title>Downright 1.1.1</title>
+      <sparkle:version>48</sparkle:version>
+      <sparkle:shortVersionString>1.1.1</sparkle:shortVersionString>
+      <pubDate>Fri, 23 Oct 2026 10:00:00 +0000</pubDate>
+      <enclosure url="https://updates.example.invalid/Downright-1.1.1.zip" length="4050000" type="application/octet-stream" sparkle:edSignature="BBBB"/>
+    </item>
+    <item>
+      <title>Downright 1.1.0</title>
+      <sparkle:version>47</sparkle:version>
+      <sparkle:shortVersionString>1.1.0</sparkle:shortVersionString>
+      <pubDate>Wed, 21 Oct 2026 07:28:00 +0000</pubDate>
+      <enclosure url="https://updates.example.invalid/Downright-1.1.0.zip" length="4000000" type="application/octet-stream" sparkle:edSignature="CCCC"/>
+    </item>
+  </channel>
+</rss>

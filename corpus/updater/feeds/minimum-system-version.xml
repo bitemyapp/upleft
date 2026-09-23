@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<rss version="2.0" xmlns:sparkle="http://www.andymatuschak.org/xml-namespaces/sparkle">
+  <channel>
+    <title>Downright</title>
+    <item>
+      <title>Downright 2.0.0</title>
+      <sparkle:version>60</sparkle:version>
+      <sparkle:shortVersionString>2.0.0</sparkle:shortVersionString>
+      <sparkle:minimumSystemVersion>27.0</sparkle:minimumSystemVersion>
+      <sparkle:maximumSystemVersion>99.0</sparkle:maximumSystemVersion>
+      <sparkle:hardwareRequirements>arm64</sparkle:hardwareRequirements>
+      <sparkle:minimumAutoupdateVersion>55</sparkle:minimumAutoupdateVersion>
+      <enclosure url="https://updates.example.invalid/Downright-2.0.0.zip" length="5000000" type="application/octet-stream" sparkle:edSignature="GGGG"/>
+    </item>
+    <item>
+      <title>Downright 1.2.0</title>
+      <sparkle:version>50</sparkle:version>
+      <sparkle:shortVersionString>1.2.0</sparkle:shortVersionString>
+      <sparkle:minimumSystemVersion>14.0</sparkle:minimumSystemVersion>
+      <enclosure url="https://updates.example.invalid/Downright-1.2.0.zip" length="4100000" type="application/octet-stream" sparkle:edSignature="FFFF"/>
+    </item>
+  </channel>
+</rss>

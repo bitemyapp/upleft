@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<rss version="2.0" xmlns:sparkle="http://www.andymatuschak.org/xml-namespaces/sparkle">
+  <channel>
+    <title>Downright</title>
+    <item>
+      <title>Downright 1.1.0</title>
+      <sparkle:version>47</sparkle:version>
+      <sparkle:shortVersionString>1.1.0</sparkle:shortVersionString>
+      <description sparkle:format="markdown"><![CDATA[# Downright 1.1.0
+
+- **Update Now** installs from the titlebar, without a window in the way
+- Resting on the button unfurls these notes
+- The appcast is watched while the app is open, so a build lands here in about a minute
+
+| Area | Change |
+|------|--------|
+| Parser | `2×` faster |
+
+```swift
+let answer = 42
+```
+]]></description>
+      <enclosure url="https://updates.example.invalid/Downright-1.1.0.zip" length="4000000" type="application/octet-stream" sparkle:edSignature="MMMM"/>
+    </item>
+  </channel>
+</rss>
