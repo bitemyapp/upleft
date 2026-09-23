@@ -4,8 +4,8 @@
  "width": 520,
  "height": 420,
  "document": "corpus/generated/agent/agent-5000.md",
- "runs": 60,
- "warmup": 5,
+ "runs": 120,
+ "warmup": 10,
  "state": {},
  "states": [
   {
