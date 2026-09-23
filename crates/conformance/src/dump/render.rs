@@ -27,6 +27,7 @@ use upleft_render::view::markdown_text_view::MarkdownTextView;
 use upleft_render::view::markdown_text_view_delegate::ScrollPosition;
 
 use super::json::{Object, double};
+use super::density::DensityHost;
 use crate::capture::{CaptureRequest, CaptureScene, appearance};
 
 /// Downright's real `MarkdownContainerView` (`MarkdownScene`).
@@ -34,6 +35,9 @@ pub struct MarkdownScene {
     mode: RenderMode,
     theme_name: String,
     container: Option<Retained<MarkdownContainerView>>,
+    /// `--density leading|trailing` (see `DensityHost`).
+    density: Option<String>,
+    density_host: Option<Rc<DensityHost>>,
 }
 
 impl MarkdownScene {
@@ -42,7 +46,18 @@ impl MarkdownScene {
             mode: RenderMode::from_raw_value(mode).unwrap_or(RenderMode::Live),
             theme_name: theme_name.to_owned(),
             container: None,
+            density: None,
+            density_host: None,
         }
+    }
+
+    pub fn with_density(mut self, density: Option<String>) -> MarkdownScene {
+        self.density = density;
+        self
+    }
+
+    pub fn density_host(&self) -> Option<&Rc<DensityHost>> {
+        self.density_host.as_ref()
     }
 
     fn container(&self) -> &MarkdownContainerView {
@@ -61,7 +76,10 @@ impl CaptureScene for MarkdownScene {
         };
         let style_sheet = Rc::new(StyleSheet::new(theme, &appearance, Some(true)));
         let storage = NSTextStorage::from_nsstring_storage(&NSString::from_str(&text));
-        let container = MarkdownContainerView::new(&storage, style_sheet, mtm);
+        let container = MarkdownContainerView::new(&storage, style_sheet.clone(), mtm);
+        if let Some(density) = &self.density {
+            self.density_host = Some(DensityHost::new(&container, density, style_sheet, &text, mtm));
+        }
         container.setFrame(CGRect::new(
             objc2_foundation::NSPoint::new(0.0, 0.0),
             objc2_foundation::NSSize::new(request.width, request.height),
@@ -73,7 +91,11 @@ impl CaptureScene for MarkdownScene {
         container.layoutSubtreeIfNeeded();
         let text_view = container.text_view();
         text_view.set_mode(self.mode);
-        text_view.update(MarkdownParser::parse(&text), &DirtySet::wholesale(), true);
+        let document = MarkdownParser::parse(&text);
+        text_view.update(document.clone(), &DirtySet::wholesale(), true);
+        if let Some(host) = &self.density_host {
+            host.refresh_density_bands(document);
+        }
         self.container = Some(container.clone());
         Ok(Retained::into_super(container))
     }
@@ -88,6 +110,9 @@ impl CaptureScene for MarkdownScene {
         text_view.scroll_to_offset(0, ScrollPosition::Top, false);
         text_view.prepare_for_display();
         text_view.displayIfNeeded();
+        if let Some(host) = &self.density_host {
+            host.update_gutter();
+        }
     }
 
     fn before_settle_check(&mut self) {

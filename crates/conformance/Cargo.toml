@@ -33,7 +33,11 @@ objc2-app-kit = { workspace = true, features = [
     "NSTextRange", "NSTextContainer", "NSTextSelectionNavigation",
     "objc2-core-graphics",
     "NSAttributedString", "NSParagraphStyle", "NSShadow", "NSTextAttachment", "NSTextList", "NSTextStorage",
-    "NSTextTable",
+    "NSTextTable", "NSEvent", "NSTableView", "NSTableCellView", "NSControl", "NSTextField", "NSPanel",
+    "NSAccessibility", "NSAccessibilityProtocols",
+] }
+objc2-quartz-core = { version = "0.3.2", default-features = false, features = [
+    "std", "objc2-core-foundation", "objc2-core-graphics", "CALayer",
 ] }
 objc2-core-foundation = { workspace = true, features = ["CFArray", "CFCGTypes", "CFDictionary", "CFString"] }
 objc2-core-graphics = { workspace = true, features = ["CGBitmapContext", "CGColor", "CGColorSpace", "CGContext", "CGImage"] }

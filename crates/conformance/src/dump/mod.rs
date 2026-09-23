@@ -5,6 +5,7 @@ pub mod clipboard;
 pub mod core_text;
 pub mod attribute_dump;
 pub mod decorate;
+pub mod density;
 pub mod display_map;
 pub mod elk;
 pub mod highlight;
@@ -69,6 +70,10 @@ pub struct Request {
     pub capture_from_screen: bool,
     /// The flags exactly as given, for the app-layer commands.
     pub flags: Vec<String>,
+    /// `--density leading|trailing`: attach the density gutter as the app does.
+    pub density: Option<String>,
+    /// `--hover`: which state `density-hover` drives the gutter into.
+    pub hover: Option<String>,
 }
 
 impl Request {
@@ -88,6 +93,8 @@ impl Request {
             layout: None,
             capture_from_screen: true,
             flags: flags.to_vec(),
+            density: None,
+            hover: None,
         };
         if APP_COMMANDS.contains(&command.as_str()) {
             return Ok(request);
@@ -108,6 +115,14 @@ impl Request {
                 "--width" => request.width = value()?.parse().map_err(|_| "--width takes a number")?,
                 "--height" => request.height = value()?.parse().map_err(|_| "--height takes a number")?,
                 "--layout" => request.layout = Some(value()?.into()),
+                "--density" => {
+                    let side = value()?;
+                    if !matches!(side.as_str(), "leading" | "trailing") {
+                        return Err(format!("unknown density side {side}"));
+                    }
+                    request.density = Some(side);
+                }
+                "--hover" => request.hover = Some(value()?),
                 "--capture" => {
                     request.capture_from_screen = match value()?.as_str() {
                         "screen" => true,
@@ -172,7 +187,17 @@ pub fn run(request: &Request) -> Result<(), Failure> {
         "bench-view" => view_bench::run(request),
         "render" => crate::capture::run(
             request.capture(),
-            Box::new(render::MarkdownScene::new(&request.mode, &request.theme)),
+            Box::new(render::MarkdownScene::new(&request.mode, &request.theme).with_density(request.density.clone())),
+        ),
+        "density-model" => density::model(request),
+        "bench-density" => density::bench(request),
+        "density-hover" => crate::capture::run(
+            request.capture(),
+            Box::new(density::DensityHoverScene::new(
+                render::MarkdownScene::new(&request.mode, &request.theme)
+                    .with_density(Some(request.density.clone().unwrap_or_else(|| "leading".to_owned()))),
+                request.hover.clone().unwrap_or_else(|| "0.5".to_owned()),
+            )),
         ),
         "html-export" => html_export::run(request),
         "spotlight" => spotlight::run(request),

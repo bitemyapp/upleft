@@ -32,6 +32,17 @@ protocol CaptureScene: AnyObject {
     func beforeSettleCheck()
     /// Writes any extra outputs once the scene has settled.
     func writeExtras(bitmap: NSBitmapImageRep, request: RenderRequest) throws
+    /// False while the scene is still driving itself into the state to
+    /// capture; the session only counts stable captures once it is ready.
+    var isReady: Bool { get }
+    /// Further windows (child windows, panels) captured below the main
+    /// window, top to bottom, in the same PNG.
+    func extraWindows() -> [NSWindow]
+}
+
+extension CaptureScene {
+    var isReady: Bool { true }
+    func extraWindows() -> [NSWindow] { [] }
 }
 
 /// Shows a scene in an on-screen borderless window of a running, activated
@@ -112,6 +123,7 @@ final class CaptureSession: NSObject, NSApplicationDelegate {
             stableCaptures = 0
             previousCapture = png
         }
+        if !scene.isReady { stableCaptures = 0 }
         guard stableCaptures >= 2 || Date() > deadline else {
             scheduleCheck()
             return
@@ -122,7 +134,7 @@ final class CaptureSession: NSObject, NSApplicationDelegate {
         do {
             try scene.writeExtras(bitmap: rep, request: request)
             if !request.captureFromScreen {
-                try png.write(to: request.outputPNG)
+                try viewCapture(main: rep, png: png).write(to: request.outputPNG)
                 exit(0)
             }
         } catch {
@@ -146,6 +158,42 @@ final class CaptureSession: NSObject, NSApplicationDelegate {
     /// the `screencapture` tool proved unreliable (it hangs intermittently).
     private func captureWindowFromScreen(to url: URL) async throws {
         let content = try await SCShareableContent.excludingDesktopWindows(false, onScreenWindowsOnly: true)
+        var image = try await captureImage(of: window, in: content)
+        let extras = scene.extraWindows()
+        if !extras.isEmpty {
+            var images = [image]
+            for extra in extras { images.append(try await captureImage(of: extra, in: content)) }
+            image = try stackImages(images)
+        }
+        let rep = NSBitmapImageRep(cgImage: image)
+        guard let png = rep.representation(using: .png, properties: [:]) else {
+            throw OracleError.usage("PNG encoding of the window capture failed")
+        }
+        try png.write(to: url)
+    }
+
+    /// `--capture view`: the settle view's cached display, with each extra
+    /// window's content view cached and stacked beneath it.
+    private func viewCapture(main: NSBitmapImageRep, png: Data) throws -> Data {
+        let extras = scene.extraWindows()
+        guard !extras.isEmpty, let first = main.cgImage else { return png }
+        var images = [first]
+        for extra in extras {
+            guard let view = extra.contentView,
+                  let rep = view.bitmapImageRepForCachingDisplay(in: view.bounds) else {
+                throw OracleError.usage("no bitmap representation for an extra window")
+            }
+            view.cacheDisplay(in: view.bounds, to: rep)
+            guard let image = rep.cgImage else { throw OracleError.usage("no image for an extra window") }
+            images.append(image)
+        }
+        guard let data = NSBitmapImageRep(cgImage: try stackImages(images)).representation(using: .png, properties: [:]) else {
+            throw OracleError.usage("PNG encoding of the stacked capture failed")
+        }
+        return data
+    }
+
+    private func captureImage(of window: NSWindow, in content: SCShareableContent) async throws -> CGImage {
         guard let scWindow = content.windows.first(where: { $0.windowID == CGWindowID(window.windowNumber) }) else {
             throw OracleError.usage("ScreenCaptureKit does not list the render window")
         }
@@ -156,12 +204,28 @@ final class CaptureSession: NSObject, NSApplicationDelegate {
         configuration.showsCursor = false
         configuration.ignoreShadowsSingleWindow = true
         configuration.captureResolution = .best
-        let image = try await SCScreenshotManager.captureImage(contentFilter: filter, configuration: configuration)
-        let rep = NSBitmapImageRep(cgImage: image)
-        guard let png = rep.representation(using: .png, properties: [:]) else {
-            throw OracleError.usage("PNG encoding of the window capture failed")
+        return try await SCScreenshotManager.captureImage(contentFilter: filter, configuration: configuration)
+    }
+
+    /// The captures one above the other, left-aligned, in the first
+    /// capture's colour space (so no pixel is colour-converted).
+    private func stackImages(_ images: [CGImage]) throws -> CGImage {
+        let width = images.map(\.width).max() ?? 0
+        let height = images.map(\.height).reduce(0, +)
+        guard let space = images.first?.colorSpace,
+              let context = CGContext(
+                data: nil, width: width, height: height, bitsPerComponent: 8, bytesPerRow: 0, space: space,
+                bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue
+              ) else {
+            throw OracleError.usage("cannot make the stacking context")
         }
-        try png.write(to: url)
+        var top = height
+        for image in images {
+            top -= image.height
+            context.draw(image, in: CGRect(x: 0, y: top, width: image.width, height: image.height))
+        }
+        guard let stacked = context.makeImage() else { throw OracleError.usage("stacking failed") }
+        return stacked
     }
 
     private func fail(_ message: String) -> Never {
@@ -187,6 +251,13 @@ func acquireWindowCaptureLock() {
 /// `DocumentWindowController` sets up a document window.
 final class MarkdownScene: CaptureScene {
     private var container: MarkdownContainerView!
+    /// `--density leading|trailing` (see `DensityHost`).
+    let density: String?
+    private(set) var densityHost: DensityHost?
+
+    init(density: String? = nil) {
+        self.density = density
+    }
 
     func build(in window: NSWindow, request: RenderRequest) throws -> NSView {
         let text = try String(contentsOf: request.input, encoding: .utf8)
@@ -197,6 +268,12 @@ final class MarkdownScene: CaptureScene {
         let styleSheet = StyleSheet(theme: theme, appearance: appearance, reduceMotionOverride: true)
         let storage = NSTextStorage(string: text)
         container = MarkdownContainerView(storage: storage, styleSheet: styleSheet)
+        if let density {
+            let container = container!
+            densityHost = MainActor.assumeIsolated {
+                DensityHost(container: container, side: density, styleSheet: styleSheet, text: text)
+            }
+        }
         container.frame = NSRect(x: 0, y: 0, width: request.width, height: request.height)
         window.contentView = container
         // As in the app: the container is laid out in its window (which sets
@@ -205,7 +282,9 @@ final class MarkdownScene: CaptureScene {
         window.layoutIfNeeded()
         container.layoutSubtreeIfNeeded()
         container.textView.mode = request.mode
-        container.textView.update(document: MarkdownParser.parse(text), dirty: .wholesale)
+        let document = MarkdownParser.parse(text)
+        container.textView.update(document: document, dirty: .wholesale)
+        if let densityHost { MainActor.assumeIsolated { densityHost.refreshDensityBands(document) } }
         return container
     }
 
@@ -219,6 +298,7 @@ final class MarkdownScene: CaptureScene {
         container.textView.scroll(toOffset: 0, position: .top, animated: false)
         container.textView.prepareForDisplay()
         container.textView.displayIfNeeded()
+        if let densityHost { MainActor.assumeIsolated { densityHost.updateGutter() } }
     }
 
     func beforeSettleCheck() {

@@ -51,35 +51,57 @@
       "name": "core-text",
       "command": "core-text",
       "output": "json",
-      "variants": [[]]
+      "variants": [
+        []
+      ]
     },
     {
       "name": "core-io",
       "command": "core-text",
       "output": "json",
-      "variants": [[]],
+      "variants": [
+        []
+      ],
       "input": "txt",
-      "only": ["corpus/core-io/"]
+      "only": [
+        "corpus/core-io/"
+      ]
     },
     {
       "name": "unicode",
       "command": "unicode",
       "output": "json",
-      "variants": [[]],
+      "variants": [
+        []
+      ],
       "input": "txt",
-      "only": ["corpus/unicode/"]
+      "only": [
+        "corpus/unicode/"
+      ]
     },
     {
       "name": "parse-io",
       "command": "parse",
       "output": "json",
-      "variants": [[]],
+      "variants": [
+        []
+      ],
       "input": "txt",
       "only": [
-        "core-io/adversarial.txt", "core-io/adversarial-crlf.txt", "core-io/utf8.txt", "core-io/utf8-bom.txt",
-        "core-io/utf8-double-bom.txt", "core-io/crlf.txt", "core-io/cr.txt", "core-io/mixed.txt",
-        "core-io/crlf-no-trailing.txt", "core-io/trailing-cr.txt", "core-io/only-newlines.txt", "core-io/one-byte.txt",
-        "core-io/nul-bytes.txt", "core-io/mostly-nul.txt"
+        "core-io/adversarial.txt",
+        "core-io/adversarial-crlf.txt",
+        "core-io/utf8.txt",
+        "core-io/utf8-bom.txt",
+        "core-io/utf8-double-bom.txt",
+        "core-io/crlf.txt",
+        "core-io/cr.txt",
+        "core-io/mixed.txt",
+        "core-io/crlf-no-trailing.txt",
+        "core-io/trailing-cr.txt",
+        "core-io/only-newlines.txt",
+        "core-io/one-byte.txt",
+        "core-io/nul-bytes.txt",
+        "core-io/mostly-nul.txt"
       ]
     },
     {
@@ -126,9 +148,18 @@
       "command": "incremental",
       "output": "json",
       "variants": [
-        ["--mode", "live"],
-        ["--mode", "source"],
-        ["--mode", "read"]
+        [
+          "--mode",
+          "live"
+        ],
+        [
+          "--mode",
+          "source"
+        ],
+        [
+          "--mode",
+          "read"
+        ]
       ]
     },
     {
@@ -136,16 +167,27 @@
       "command": "displaymap",
       "output": "json",
       "variants": [
-        ["--mode", "live"],
-        ["--mode", "read"],
-        ["--mode", "source"]
+        [
+          "--mode",
+          "live"
+        ],
+        [
+          "--mode",
+          "read"
+        ],
+        [
+          "--mode",
+          "source"
+        ]
       ]
     },
     {
       "name": "clipboard",
       "command": "clipboard",
       "output": "json",
-      "variants": [[]]
+      "variants": [
+        []
+      ]
     },
     {
       "name": "render",
@@ -253,14 +295,18 @@
       "command": "mermaid-replay",
       "output": "json",
       "input": "elkrec",
-      "variants": [[]]
+      "variants": [
+        []
+      ]
     },
     {
       "name": "mermaid-parse",
       "command": "mermaid-parse",
       "output": "json",
       "input": "mmd",
-      "variants": [[]]
+      "variants": [
+        []
+      ]
     },
     {
       "name": "mermaid-layout",
@@ -269,9 +315,17 @@
       "input": "mmd",
       "variants": [
         [],
-        ["--dark"],
-        ["--theme", "Nord"],
-        ["--theme", "High Contrast"]
+        [
+          "--dark"
+        ],
+        [
+          "--theme",
+          "Nord"
+        ],
+        [
+          "--theme",
+          "High Contrast"
+        ]
       ]
     },
     {
@@ -281,9 +335,17 @@
       "input": "mmd",
       "variants": [
         [],
-        ["--dark"],
-        ["--theme", "Nord"],
-        ["--theme", "High Contrast"]
+        [
+          "--dark"
+        ],
+        [
+          "--theme",
+          "Nord"
+        ],
+        [
+          "--theme",
+          "High Contrast"
+        ]
       ]
     },
     {
@@ -316,18 +378,60 @@
       "output": "png",
       "input": "tex",
       "variants": [
-        ["--theme", "Paper Light"],
-        ["--theme", "Paper Light", "--dark"],
-        ["--theme", "Nord"],
-        ["--theme", "Nord", "--dark"],
-        ["--theme", "Warm Dark"],
-        ["--theme", "Warm Dark", "--dark"],
-        ["--theme", "High Contrast"],
-        ["--theme", "High Contrast", "--dark"],
-        ["--theme", "Solarized Light"],
-        ["--theme", "Solarized Light", "--dark"],
-        ["--theme", "System"],
-        ["--theme", "System", "--dark"]
+        [
+          "--theme",
+          "Paper Light"
+        ],
+        [
+          "--theme",
+          "Paper Light",
+          "--dark"
+        ],
+        [
+          "--theme",
+          "Nord"
+        ],
+        [
+          "--theme",
+          "Nord",
+          "--dark"
+        ],
+        [
+          "--theme",
+          "Warm Dark"
+        ],
+        [
+          "--theme",
+          "Warm Dark",
+          "--dark"
+        ],
+        [
+          "--theme",
+          "High Contrast"
+        ],
+        [
+          "--theme",
+          "High Contrast",
+          "--dark"
+        ],
+        [
+          "--theme",
+          "Solarized Light"
+        ],
+        [
+          "--theme",
+          "Solarized Light",
+          "--dark"
+        ],
+        [
+          "--theme",
+          "System"
+        ],
+        [
+          "--theme",
+          "System",
+          "--dark"
+        ]
       ]
     },
     {
@@ -336,18 +440,60 @@
       "output": "json",
       "input": "tex",
       "variants": [
-        ["--theme", "Paper Light"],
-        ["--theme", "Paper Light", "--dark"],
-        ["--theme", "Nord"],
-        ["--theme", "Nord", "--dark"],
-        ["--theme", "Warm Dark"],
-        ["--theme", "Warm Dark", "--dark"],
-        ["--theme", "High Contrast"],
-        ["--theme", "High Contrast", "--dark"],
-        ["--theme", "Solarized Light"],
-        ["--theme", "Solarized Light", "--dark"],
-        ["--theme", "System"],
-        ["--theme", "System", "--dark"]
+        [
+          "--theme",
+          "Paper Light"
+        ],
+        [
+          "--theme",
+          "Paper Light",
+          "--dark"
+        ],
+        [
+          "--theme",
+          "Nord"
+        ],
+        [
+          "--theme",
+          "Nord",
+          "--dark"
+        ],
+        [
+          "--theme",
+          "Warm Dark"
+        ],
+        [
+          "--theme",
+          "Warm Dark",
+          "--dark"
+        ],
+        [
+          "--theme",
+          "High Contrast"
+        ],
+        [
+          "--theme",
+          "High Contrast",
+          "--dark"
+        ],
+        [
+          "--theme",
+          "Solarized Light"
+        ],
+        [
+          "--theme",
+          "Solarized Light",
+          "--dark"
+        ],
+        [
+          "--theme",
+          "System"
+        ],
+        [
+          "--theme",
+          "System",
+          "--dark"
+        ]
       ]
     },
     {
@@ -355,24 +501,79 @@
       "command": "html-export",
       "oracle": "app",
       "output": "json",
-      "only": ["corpus/"],
+      "only": [
+        "corpus/"
+      ],
       "keyPath": true,
-      "depends": ["corpus/workspace/"],
+      "depends": [
+        "corpus/workspace/"
+      ],
       "variants": [
-        ["--theme", "High Contrast"],
-        ["--theme", "High Contrast", "--dark"],
-        ["--theme", "Nord"],
-        ["--theme", "Nord", "--dark"],
-        ["--theme", "Paper Light"],
-        ["--theme", "Paper Light", "--dark"],
-        ["--theme", "Solarized Light"],
-        ["--theme", "Solarized Light", "--dark"],
-        ["--theme", "System"],
-        ["--theme", "System", "--dark"],
-        ["--theme", "Warm Dark"],
-        ["--theme", "Warm Dark", "--dark"],
-        ["--theme", "Paper Light", "--print"],
-        ["--theme", "Warm Dark", "--dark", "--print"]
+        [
+          "--theme",
+          "High Contrast"
+        ],
+        [
+          "--theme",
+          "High Contrast",
+          "--dark"
+        ],
+        [
+          "--theme",
+          "Nord"
+        ],
+        [
+          "--theme",
+          "Nord",
+          "--dark"
+        ],
+        [
+          "--theme",
+          "Paper Light"
+        ],
+        [
+          "--theme",
+          "Paper Light",
+          "--dark"
+        ],
+        [
+          "--theme",
+          "Solarized Light"
+        ],
+        [
+          "--theme",
+          "Solarized Light",
+          "--dark"
+        ],
+        [
+          "--theme",
+          "System"
+        ],
+        [
+          "--theme",
+          "System",
+          "--dark"
+        ],
+        [
+          "--theme",
+          "Warm Dark"
+        ],
+        [
+          "--theme",
+          "Warm Dark",
+          "--dark"
+        ],
+        [
+          "--theme",
+          "Paper Light",
+          "--print"
+        ],
+        [
+          "--theme",
+          "Warm Dark",
+          "--dark",
+          "--print"
+        ]
       ]
     },
     {
@@ -381,8 +582,14 @@
       "oracle": "app",
       "output": "json",
       "keyPath": true,
-      "only": ["corpus/generated/", "corpus/highlight/", "corpus/spotlight/"],
-      "variants": [[]]
+      "only": [
+        "corpus/generated/",
+        "corpus/highlight/",
+        "corpus/spotlight/"
+      ],
+      "variants": [
+        []
+      ]
     },
     {
       "name": "down-cli",
@@ -390,9 +597,15 @@
       "oracle": "app",
       "output": "json",
       "input": "json",
-      "only": ["corpus/down-cli/"],
-      "stamps": ["target/downright-cli/release/down"],
-      "variants": [[]]
+      "only": [
+        "corpus/down-cli/"
+      ],
+      "stamps": [
+        "target/downright-cli/release/down"
+      ],
+      "variants": [
+        []
+      ]
     },
     {
       "name": "workspace",
@@ -400,9 +613,15 @@
       "oracle": "app",
       "output": "json",
       "input": "json",
-      "only": ["corpus/workspace-queries/"],
-      "depends": ["corpus/workspace/"],
-      "variants": [[]]
+      "only": [
+        "corpus/workspace-queries/"
+      ],
+      "depends": [
+        "corpus/workspace/"
+      ],
+      "variants": [
+        []
+      ]
     },
     {
       "name": "find",
@@ -410,9 +629,17 @@
       "oracle": "app",
       "output": "json",
       "input": "json",
-      "only": ["corpus/find/"],
-      "depends": ["corpus/workspace/", "corpus/generated/agent/", "corpus/generated/docs/"],
-      "variants": [[]]
+      "only": [
+        "corpus/find/"
+      ],
+      "depends": [
+        "corpus/workspace/",
+        "corpus/generated/agent/",
+        "corpus/generated/docs/"
+      ],
+      "variants": [
+        []
+      ]
     },
     {
       "name": "palette",
@@ -420,8 +647,12 @@
       "oracle": "app",
       "output": "json",
       "input": "json",
-      "only": ["corpus/palette/"],
-      "variants": [[]]
+      "only": [
+        "corpus/palette/"
+      ],
+      "variants": [
+        []
+      ]
     },
     {
       "name": "formats",
@@ -429,8 +660,12 @@
       "oracle": "app",
       "output": "json",
       "input": "json",
-      "only": ["corpus/formats/"],
-      "variants": [[]]
+      "only": [
+        "corpus/formats/"
+      ],
+      "variants": [
+        []
+      ]
     },
     {
       "name": "updater",
@@ -438,8 +673,12 @@
       "oracle": "app",
       "output": "json",
       "input": "json",
-      "only": ["corpus/updater/"],
-      "variants": [[]],
+      "only": [
+        "corpus/updater/"
+      ],
+      "variants": [
+        []
+      ],
       "stamps": [
         "corpus/updater/feeds/basic.xml",
         "corpus/updater/feeds/binary-junk.xml",
@@ -467,8 +706,731 @@
       "oracle": "app",
       "output": "json",
       "input": "json",
-      "only": ["corpus/local-ai/"],
-      "variants": [[]]
+      "only": [
+        "corpus/local-ai/"
+      ],
+      "variants": [
+        []
+      ]
+    },
+    {
+      "name": "density-model",
+      "command": "density-model",
+      "output": "json",
+      "variants": [
+        [],
+        [
+          "--theme",
+          "Nord",
+          "--dark"
+        ]
+      ]
+    },
+    {
+      "name": "render-density",
+      "command": "render",
+      "output": "png",
+      "serial": true,
+      "only": [
+        "corpus/generated/docs/Docs__MARKDOWN-COMPATIBILITY.md",
+        "corpus/generated/docs/Docs__marketing__reddit-editor-showcase.prompt.md",
+        "corpus/generated/fixtures/DownrightAppTests__AppLayerTests-001.md",
+        "corpus/generated/fixtures/DownrightAppTests__AppLayerTests-002.md",
+        "corpus/generated/fixtures/DownrightAppTests__AppLayerTests-004.md",
+        "corpus/generated/fixtures/DownrightAppTests__AppLayerTests-005.md",
+        "corpus/generated/fixtures/DownrightAppTests__ReviewBaselineTests-001.md",
+        "corpus/generated/fixtures/DownrightAppTests__ReviewBaselineTests-002.md",
+        "corpus/generated/fixtures/DownrightAppTests__TrustTests-001.md",
+        "corpus/generated/fixtures/DownrightAppTests__UpdateCoordinatorTests-001.md",
+        "corpus/generated/fixtures/MarkdownCLITests__MarkdownCLITests-001.md",
+        "corpus/generated/fixtures/MarkdownCLITests__MarkdownCLITests-002.md",
+        "corpus/generated/fixtures/MarkdownCLITests__MarkdownCLITests-003.md",
+        "corpus/generated/fixtures/MarkdownCoreTests__EditingTests-002.md",
+        "corpus/generated/fixtures/MarkdownCoreTests__SafeHTMLTests-003.md",
+        "corpus/generated/fixtures/MarkdownCoreTests__SafeHTMLTests-004.md",
+        "corpus/generated/fixtures/MarkdownCoreTests__ZoomMetricsTests-003.md",
+        "corpus/generated/fixtures/MarkdownRenderTests__ContentStorageTilingTests-001.md",
+        "corpus/generated/fixtures/MarkdownRenderTests__DecorationTests-007.md",
+        "corpus/generated/fixtures/MarkdownRenderTests__MermaidOrientationProbeTests-001.md",
+        "corpus/generated/fixtures/MarkdownRenderTests__MermaidOrientationProbeTests-002.md",
+        "corpus/generated/fixtures/MarkdownRenderTests__ReflowAndRhythmTests-003.md",
+        "corpus/generated/fixtures/MarkdownRenderTests__ReflowAndRhythmTests-006.md",
+        "corpus/generated/fixtures/MarkdownRenderTests__SafeHTMLLineBreakTests-001.md",
+        "corpus/generated/fixtures/MarkdownRenderTests__SmartPasteIntegrationTests-001.md",
+        "corpus/generated/fixtures/MarkdownRenderTests__SmartPasteIntegrationTests-002.md",
+        "corpus/generated/fixtures/MarkdownRenderTests__SmartPasteIntegrationTests-003.md",
+        "corpus/generated/fixtures/MarkdownRenderTests__SyntaxTests-001.md",
+        "corpus/generated/fixtures/MarkdownRenderTests__SyntaxTests-002.md",
+        "corpus/generated/fixtures/MarkdownRenderTests__SyntaxTests-003.md",
+        "corpus/generated/fixtures/MarkdownRenderTests__SyntaxTests-004.md",
+        "corpus/generated/fixtures/MarkdownRenderTests__SyntaxTests-005.md",
+        "corpus/generated/fixtures/MarkdownRenderTests__SyntaxTests-006.md",
+        "corpus/generated/fixtures/MarkdownRenderTests__SyntaxTests-007.md",
+        "corpus/generated/fixtures/MarkdownRenderTests__SyntaxTests-008.md",
+        "corpus/generated/fixtures/MarkdownRenderTests__SyntaxTests-009.md",
+        "corpus/generated/fixtures/MarkdownRenderTests__SyntaxTests-010.md",
+        "corpus/generated/fixtures/MarkdownRenderTests__SyntaxTests-011.md",
+        "corpus/generated/fixtures/MarkdownRenderTests__SyntaxTests-012.md",
+        "corpus/generated/fixtures/MarkdownRenderTests__SyntaxTests-013.md",
+        "corpus/generated/fixtures/MarkdownRenderTests__SyntaxTests-014.md",
+        "corpus/generated/fixtures/MarkdownRenderTests__SyntaxTests-015.md",
+        "corpus/generated/fixtures/MarkdownRenderTests__SyntaxTests-016.md",
+        "corpus/generated/fixtures/MarkdownRenderTests__SyntaxTests-017.md",
+        "corpus/generated/fixtures/MarkdownRenderTests__SyntaxTests-019.md",
+        "corpus/generated/fixtures/MarkdownRenderTests__SyntaxTests-020.md",
+        "corpus/generated/fixtures/MarkdownRenderTests__SyntaxTests-021.md",
+        "corpus/generated/fixtures/MarkdownRenderTests__SyntaxTests-022.md",
+        "corpus/generated/fixtures/MarkdownRenderTests__SyntaxTests-023.md",
+        "corpus/generated/fixtures/MarkdownRenderTests__SyntaxTests-024.md",
+        "corpus/generated/fixtures/MarkdownRenderTests__SyntaxTests-025.md",
+        "corpus/generated/fixtures/MarkdownRenderTests__ThemeTests-001.md",
+        "corpus/generated/fixtures/MarkdownRenderTests__ThemeTests-002.md",
+        "corpus/generated/fixtures/MarkdownRenderTests__ThemeTests-003.md",
+        "corpus/generated/spec/extensions-0007.md",
+        "corpus/generated/spec/extensions-0017.md",
+        "corpus/generated/spec/extensions-0018.md",
+        "corpus/generated/spec/extensions-0020.md",
+        "corpus/generated/spec/extensions-0022.md",
+        "corpus/generated/spec/extensions-0024.md",
+        "corpus/generated/spec/extensions-0025.md",
+        "corpus/generated/spec/extensions-0026.md",
+        "corpus/generated/spec/regression-0001.md",
+        "corpus/generated/spec/regression-0003.md",
+        "corpus/generated/spec/regression-0004.md",
+        "corpus/generated/spec/regression-0005.md",
+        "corpus/generated/spec/regression-0006.md",
+        "corpus/generated/spec/regression-0007.md",
+        "corpus/generated/spec/regression-0008.md",
+        "corpus/generated/spec/regression-0009.md",
+        "corpus/generated/spec/regression-0010.md",
+        "corpus/generated/spec/regression-0011.md",
+        "corpus/generated/spec/regression-0012.md",
+        "corpus/generated/spec/regression-0014.md",
+        "corpus/generated/spec/regression-0015.md",
+        "corpus/generated/spec/regression-0016.md",
+        "corpus/generated/spec/regression-0017.md",
+        "corpus/generated/spec/regression-0018.md",
+        "corpus/generated/spec/regression-0019.md",
+        "corpus/generated/spec/regression-0020.md",
+        "corpus/generated/spec/regression-0021.md",
+        "corpus/generated/spec/regression-0022.md",
+        "corpus/generated/spec/regression-0023.md",
+        "corpus/generated/spec/regression-0024.md",
+        "corpus/generated/spec/regression-0025.md",
+        "corpus/generated/spec/regression-0026.md",
+        "corpus/generated/spec/smart_punct-0001.md",
+        "corpus/generated/spec/smart_punct-0002.md",
+        "corpus/generated/spec/smart_punct-0003.md",
+        "corpus/generated/spec/smart_punct-0004.md",
+        "corpus/generated/spec/smart_punct-0005.md",
+        "corpus/generated/spec/smart_punct-0006.md",
+        "corpus/generated/spec/smart_punct-0007.md",
+        "corpus/generated/spec/smart_punct-0008.md",
+        "corpus/generated/spec/smart_punct-0009.md",
+        "corpus/generated/spec/smart_punct-0010.md",
+        "corpus/generated/spec/smart_punct-0011.md",
+        "corpus/generated/spec/smart_punct-0012.md",
+        "corpus/generated/spec/smart_punct-0013.md",
+        "corpus/generated/spec/smart_punct-0014.md",
+        "corpus/generated/spec/smart_punct-0015.md",
+        "corpus/generated/spec/smart_punct-0016.md",
+        "corpus/generated/spec/spec-0010.md",
+        "corpus/generated/spec/spec-0014.md",
+        "corpus/generated/spec/spec-0015.md",
+        "corpus/generated/spec/spec-0016.md",
+        "corpus/generated/spec/spec-0019.md",
+        "corpus/generated/spec/spec-0025.md",
+        "corpus/generated/spec/spec-0026.md",
+        "corpus/generated/spec/spec-0029.md",
+        "corpus/generated/spec/spec-0032.md",
+        "corpus/generated/spec/spec-0033.md",
+        "corpus/generated/spec/spec-0034.md",
+        "corpus/generated/spec/spec-0035.md",
+        "corpus/generated/spec/spec-0036.md",
+        "corpus/generated/spec/spec-0037.md",
+        "corpus/generated/spec/spec-0038.md",
+        "corpus/generated/spec/spec-0040.md",
+        "corpus/generated/spec/spec-0041.md",
+        "corpus/generated/spec/spec-0042.md",
+        "corpus/generated/spec/spec-0043.md",
+        "corpus/generated/spec/spec-0044.md",
+        "corpus/generated/spec/spec-0045.md",
+        "corpus/generated/spec/spec-0046.md",
+        "corpus/generated/spec/spec-0048.md",
+        "corpus/generated/spec/spec-0049.md",
+        "corpus/generated/spec/spec-0050.md",
+        "corpus/generated/spec/spec-0051.md",
+        "corpus/generated/spec/spec-0052.md",
+        "corpus/generated/spec/spec-0053.md",
+        "corpus/generated/spec/spec-0054.md",
+        "corpus/generated/spec/spec-0056.md",
+        "corpus/generated/spec/spec-0057.md",
+        "corpus/generated/spec/spec-0059.md",
+        "corpus/generated/spec/spec-0060.md",
+        "corpus/generated/spec/spec-0061.md",
+        "corpus/generated/spec/spec-0065.md",
+        "corpus/generated/spec/spec-0067.md",
+        "corpus/generated/spec/spec-0072.md",
+        "corpus/generated/spec/spec-0073.md",
+        "corpus/generated/spec/spec-0076.md",
+        "corpus/generated/spec/spec-0083.md",
+        "corpus/generated/spec/spec-0091.md",
+        "corpus/generated/spec/spec-0108.md",
+        "corpus/generated/spec/spec-0115.md",
+        "corpus/generated/spec/spec-0118.md",
+        "corpus/generated/spec/spec-0119.md",
+        "corpus/generated/spec/spec-0120.md",
+        "corpus/generated/spec/spec-0121.md",
+        "corpus/generated/spec/spec-0122.md",
+        "corpus/generated/spec/spec-0123.md",
+        "corpus/generated/spec/spec-0124.md",
+        "corpus/generated/spec/spec-0125.md",
+        "corpus/generated/spec/spec-0126.md",
+        "corpus/generated/spec/spec-0127.md",
+        "corpus/generated/spec/spec-0128.md",
+        "corpus/generated/spec/spec-0129.md",
+        "corpus/generated/spec/spec-0130.md",
+        "corpus/generated/spec/spec-0131.md",
+        "corpus/generated/spec/spec-0132.md",
+        "corpus/generated/spec/spec-0133.md",
+        "corpus/generated/spec/spec-0134.md",
+        "corpus/generated/spec/spec-0135.md",
+        "corpus/generated/spec/spec-0136.md",
+        "corpus/generated/spec/spec-0137.md",
+        "corpus/generated/spec/spec-0138.md",
+        "corpus/generated/spec/spec-0139.md",
+        "corpus/generated/spec/spec-0140.md",
+        "corpus/generated/spec/spec-0141.md",
+        "corpus/generated/spec/spec-0142.md",
+        "corpus/generated/spec/spec-0145.md",
+        "corpus/generated/spec/spec-0146.md",
+        "corpus/generated/spec/spec-0147.md",
+        "corpus/generated/spec/spec-0148.md",
+        "corpus/generated/spec/spec-0149.md",
+        "corpus/generated/spec/spec-0150.md",
+        "corpus/generated/spec/spec-0151.md",
+        "corpus/generated/spec/spec-0154.md",
+        "corpus/generated/spec/spec-0155.md",
+        "corpus/generated/spec/spec-0156.md",
+        "corpus/generated/spec/spec-0157.md",
+        "corpus/generated/spec/spec-0158.md",
+        "corpus/generated/spec/spec-0159.md",
+        "corpus/generated/spec/spec-0161.md",
+        "corpus/generated/spec/spec-0162.md",
+        "corpus/generated/spec/spec-0163.md",
+        "corpus/generated/spec/spec-0164.md",
+        "corpus/generated/spec/spec-0165.md",
+        "corpus/generated/spec/spec-0166.md",
+        "corpus/generated/spec/spec-0167.md",
+        "corpus/generated/spec/spec-0168.md",
+        "corpus/generated/spec/spec-0169.md",
+        "corpus/generated/spec/spec-0170.md",
+        "corpus/generated/spec/spec-0171.md",
+        "corpus/generated/spec/spec-0172.md",
+        "corpus/generated/spec/spec-0173.md",
+        "corpus/generated/spec/spec-0174.md",
+        "corpus/generated/spec/spec-0175.md",
+        "corpus/generated/spec/spec-0176.md",
+        "corpus/generated/spec/spec-0177.md",
+        "corpus/generated/spec/spec-0178.md",
+        "corpus/generated/spec/spec-0179.md",
+        "corpus/generated/spec/spec-0182.md",
+        "corpus/generated/spec/spec-0184.md",
+        "corpus/generated/spec/spec-0185.md",
+        "corpus/generated/spec/spec-0186.md",
+        "corpus/generated/spec/spec-0188.md",
+        "corpus/generated/spec/spec-0189.md",
+        "corpus/generated/spec/spec-0190.md",
+        "corpus/generated/spec/spec-0191.md",
+        "corpus/generated/spec/spec-0192.md",
+        "corpus/generated/spec/spec-0193.md",
+        "corpus/generated/spec/spec-0194.md",
+        "corpus/generated/spec/spec-0196.md",
+        "corpus/generated/spec/spec-0197.md",
+        "corpus/generated/spec/spec-0203.md",
+        "corpus/generated/spec/spec-0239.md",
+        "corpus/generated/spec/spec-0244.md",
+        "corpus/generated/spec/spec-0247.md",
+        "corpus/generated/spec/spec-0253.md",
+        "corpus/generated/spec/spec-0263.md",
+        "corpus/generated/spec/spec-0284.md",
+        "corpus/generated/spec/spec-0307.md",
+        "corpus/generated/spec/spec-0308.md",
+        "corpus/generated/spec/spec-0309.md",
+        "corpus/generated/spec/spec-0310.md",
+        "corpus/generated/spec/spec-0311.md",
+        "corpus/generated/spec/spec-0312.md",
+        "corpus/generated/spec/spec-0313.md",
+        "corpus/generated/spec/spec-0316.md",
+        "corpus/generated/spec/spec-0317.md",
+        "corpus/generated/spec/spec-0318.md",
+        "corpus/generated/spec/spec-0319.md",
+        "corpus/generated/spec/spec-0321.md",
+        "corpus/generated/spec/spec-0322.md",
+        "corpus/generated/spec/spec-0323.md",
+        "corpus/generated/spec/spec-0324.md",
+        "corpus/generated/spec/spec-0325.md",
+        "corpus/generated/spec/spec-0326.md",
+        "corpus/generated/spec/spec-0327.md",
+        "corpus/generated/spec/spec-0328.md",
+        "corpus/generated/spec/spec-0329.md",
+        "corpus/generated/spec/spec-0331.md",
+        "corpus/generated/spec/spec-0333.md",
+        "corpus/generated/spec/spec-0335.md",
+        "corpus/generated/spec/spec-0336.md",
+        "corpus/generated/spec/spec-0337.md",
+        "corpus/generated/spec/spec-0338.md",
+        "corpus/generated/spec/spec-0339.md",
+        "corpus/generated/spec/spec-0340.md",
+        "corpus/generated/spec/spec-0341.md",
+        "corpus/generated/spec/spec-0342.md",
+        "corpus/generated/spec/spec-0343.md",
+        "corpus/generated/spec/spec-0344.md",
+        "corpus/generated/spec/spec-0345.md",
+        "corpus/generated/spec/spec-0346.md",
+        "corpus/generated/spec/spec-0347.md",
+        "corpus/generated/spec/spec-0348.md",
+        "corpus/generated/spec/spec-0349.md",
+        "corpus/generated/spec/spec-0350.md",
+        "corpus/generated/spec/spec-0351.md",
+        "corpus/generated/spec/spec-0352.md",
+        "corpus/generated/spec/spec-0353.md",
+        "corpus/generated/spec/spec-0354.md",
+        "corpus/generated/spec/spec-0355.md",
+        "corpus/generated/spec/spec-0356.md",
+        "corpus/generated/spec/spec-0357.md",
+        "corpus/generated/spec/spec-0358.md",
+        "corpus/generated/spec/spec-0359.md",
+        "corpus/generated/spec/spec-0360.md",
+        "corpus/generated/spec/spec-0361.md",
+        "corpus/generated/spec/spec-0362.md",
+        "corpus/generated/spec/spec-0363.md",
+        "corpus/generated/spec/spec-0364.md",
+        "corpus/generated/spec/spec-0365.md",
+        "corpus/generated/spec/spec-0366.md",
+        "corpus/generated/spec/spec-0367.md",
+        "corpus/generated/spec/spec-0368.md",
+        "corpus/generated/spec/spec-0369.md",
+        "corpus/generated/spec/spec-0370.md",
+        "corpus/generated/spec/spec-0371.md",
+        "corpus/generated/spec/spec-0372.md",
+        "corpus/generated/spec/spec-0373.md",
+        "corpus/generated/spec/spec-0374.md",
+        "corpus/generated/spec/spec-0375.md",
+        "corpus/generated/spec/spec-0376.md",
+        "corpus/generated/spec/spec-0377.md",
+        "corpus/generated/spec/spec-0378.md",
+        "corpus/generated/spec/spec-0379.md",
+        "corpus/generated/spec/spec-0380.md",
+        "corpus/generated/spec/spec-0381.md",
+        "corpus/generated/spec/spec-0382.md",
+        "corpus/generated/spec/spec-0383.md",
+        "corpus/generated/spec/spec-0384.md",
+        "corpus/generated/spec/spec-0385.md",
+        "corpus/generated/spec/spec-0386.md",
+        "corpus/generated/spec/spec-0387.md",
+        "corpus/generated/spec/spec-0388.md",
+        "corpus/generated/spec/spec-0389.md",
+        "corpus/generated/spec/spec-0390.md",
+        "corpus/generated/spec/spec-0391.md",
+        "corpus/generated/spec/spec-0392.md",
+        "corpus/generated/spec/spec-0393.md",
+        "corpus/generated/spec/spec-0394.md",
+        "corpus/generated/spec/spec-0395.md",
+        "corpus/generated/spec/spec-0396.md",
+        "corpus/generated/spec/spec-0397.md",
+        "corpus/generated/spec/spec-0398.md",
+        "corpus/generated/spec/spec-0399.md",
+        "corpus/generated/spec/spec-0400.md",
+        "corpus/generated/spec/spec-0401.md",
+        "corpus/generated/spec/spec-0402.md",
+        "corpus/generated/spec/spec-0403.md",
+        "corpus/generated/spec/spec-0404.md",
+        "corpus/generated/spec/spec-0405.md",
+        "corpus/generated/spec/spec-0406.md",
+        "corpus/generated/spec/spec-0407.md",
+        "corpus/generated/spec/spec-0408.md",
+        "corpus/generated/spec/spec-0409.md",
+        "corpus/generated/spec/spec-0410.md",
+        "corpus/generated/spec/spec-0411.md",
+        "corpus/generated/spec/spec-0412.md",
+        "corpus/generated/spec/spec-0413.md",
+        "corpus/generated/spec/spec-0414.md",
+        "corpus/generated/spec/spec-0415.md",
+        "corpus/generated/spec/spec-0416.md",
+        "corpus/generated/spec/spec-0417.md",
+        "corpus/generated/spec/spec-0418.md",
+        "corpus/generated/spec/spec-0419.md",
+        "corpus/generated/spec/spec-0420.md",
+        "corpus/generated/spec/spec-0421.md",
+        "corpus/generated/spec/spec-0422.md",
+        "corpus/generated/spec/spec-0423.md",
+        "corpus/generated/spec/spec-0424.md",
+        "corpus/generated/spec/spec-0425.md",
+        "corpus/generated/spec/spec-0426.md",
+        "corpus/generated/spec/spec-0427.md",
+        "corpus/generated/spec/spec-0428.md",
+        "corpus/generated/spec/spec-0429.md",
+        "corpus/generated/spec/spec-0430.md",
+        "corpus/generated/spec/spec-0431.md",
+        "corpus/generated/spec/spec-0432.md",
+        "corpus/generated/spec/spec-0433.md",
+        "corpus/generated/spec/spec-0434.md",
+        "corpus/generated/spec/spec-0435.md",
+        "corpus/generated/spec/spec-0436.md",
+        "corpus/generated/spec/spec-0437.md",
+        "corpus/generated/spec/spec-0438.md",
+        "corpus/generated/spec/spec-0439.md",
+        "corpus/generated/spec/spec-0440.md",
+        "corpus/generated/spec/spec-0441.md",
+        "corpus/generated/spec/spec-0442.md",
+        "corpus/generated/spec/spec-0443.md",
+        "corpus/generated/spec/spec-0444.md",
+        "corpus/generated/spec/spec-0445.md",
+        "corpus/generated/spec/spec-0446.md",
+        "corpus/generated/spec/spec-0447.md",
+        "corpus/generated/spec/spec-0448.md",
+        "corpus/generated/spec/spec-0449.md",
+        "corpus/generated/spec/spec-0450.md",
+        "corpus/generated/spec/spec-0451.md",
+        "corpus/generated/spec/spec-0452.md",
+        "corpus/generated/spec/spec-0453.md",
+        "corpus/generated/spec/spec-0454.md",
+        "corpus/generated/spec/spec-0455.md",
+        "corpus/generated/spec/spec-0456.md",
+        "corpus/generated/spec/spec-0457.md",
+        "corpus/generated/spec/spec-0458.md",
+        "corpus/generated/spec/spec-0459.md",
+        "corpus/generated/spec/spec-0460.md",
+        "corpus/generated/spec/spec-0461.md",
+        "corpus/generated/spec/spec-0462.md",
+        "corpus/generated/spec/spec-0463.md",
+        "corpus/generated/spec/spec-0464.md",
+        "corpus/generated/spec/spec-0465.md",
+        "corpus/generated/spec/spec-0466.md",
+        "corpus/generated/spec/spec-0467.md",
+        "corpus/generated/spec/spec-0468.md",
+        "corpus/generated/spec/spec-0469.md",
+        "corpus/generated/spec/spec-0470.md",
+        "corpus/generated/spec/spec-0471.md",
+        "corpus/generated/spec/spec-0472.md",
+        "corpus/generated/spec/spec-0473.md",
+        "corpus/generated/spec/spec-0474.md",
+        "corpus/generated/spec/spec-0475.md",
+        "corpus/generated/spec/spec-0476.md",
+        "corpus/generated/spec/spec-0477.md",
+        "corpus/generated/spec/spec-0478.md",
+        "corpus/generated/spec/spec-0479.md",
+        "corpus/generated/spec/spec-0480.md",
+        "corpus/generated/spec/spec-0481.md",
+        "corpus/generated/spec/spec-0482.md",
+        "corpus/generated/spec/spec-0483.md",
+        "corpus/generated/spec/spec-0485.md",
+        "corpus/generated/spec/spec-0486.md",
+        "corpus/generated/spec/spec-0487.md",
+        "corpus/generated/spec/spec-0488.md",
+        "corpus/generated/spec/spec-0489.md",
+        "corpus/generated/spec/spec-0490.md",
+        "corpus/generated/spec/spec-0491.md",
+        "corpus/generated/spec/spec-0492.md",
+        "corpus/generated/spec/spec-0493.md",
+        "corpus/generated/spec/spec-0494.md",
+        "corpus/generated/spec/spec-0495.md",
+        "corpus/generated/spec/spec-0496.md",
+        "corpus/generated/spec/spec-0497.md",
+        "corpus/generated/spec/spec-0498.md",
+        "corpus/generated/spec/spec-0499.md",
+        "corpus/generated/spec/spec-0500.md",
+        "corpus/generated/spec/spec-0501.md",
+        "corpus/generated/spec/spec-0502.md",
+        "corpus/generated/spec/spec-0503.md",
+        "corpus/generated/spec/spec-0504.md",
+        "corpus/generated/spec/spec-0505.md",
+        "corpus/generated/spec/spec-0506.md",
+        "corpus/generated/spec/spec-0507.md",
+        "corpus/generated/spec/spec-0508.md",
+        "corpus/generated/spec/spec-0509.md",
+        "corpus/generated/spec/spec-0510.md",
+        "corpus/generated/spec/spec-0511.md",
+        "corpus/generated/spec/spec-0512.md",
+        "corpus/generated/spec/spec-0513.md",
+        "corpus/generated/spec/spec-0514.md",
+        "corpus/generated/spec/spec-0515.md",
+        "corpus/generated/spec/spec-0516.md",
+        "corpus/generated/spec/spec-0517.md",
+        "corpus/generated/spec/spec-0518.md",
+        "corpus/generated/spec/spec-0519.md",
+        "corpus/generated/spec/spec-0520.md",
+        "corpus/generated/spec/spec-0521.md",
+        "corpus/generated/spec/spec-0522.md",
+        "corpus/generated/spec/spec-0523.md",
+        "corpus/generated/spec/spec-0524.md",
+        "corpus/generated/spec/spec-0525.md",
+        "corpus/generated/spec/spec-0526.md",
+        "corpus/generated/spec/spec-0527.md",
+        "corpus/generated/spec/spec-0529.md",
+        "corpus/generated/spec/spec-0530.md",
+        "corpus/generated/spec/spec-0531.md",
+        "corpus/generated/spec/spec-0532.md",
+        "corpus/generated/spec/spec-0533.md",
+        "corpus/generated/spec/spec-0534.md",
+        "corpus/generated/spec/spec-0535.md",
+        "corpus/generated/spec/spec-0536.md",
+        "corpus/generated/spec/spec-0537.md",
+        "corpus/generated/spec/spec-0538.md",
+        "corpus/generated/spec/spec-0539.md",
+        "corpus/generated/spec/spec-0540.md",
+        "corpus/generated/spec/spec-0541.md",
+        "corpus/generated/spec/spec-0542.md",
+        "corpus/generated/spec/spec-0543.md",
+        "corpus/generated/spec/spec-0544.md",
+        "corpus/generated/spec/spec-0545.md",
+        "corpus/generated/spec/spec-0546.md",
+        "corpus/generated/spec/spec-0547.md",
+        "corpus/generated/spec/spec-0548.md",
+        "corpus/generated/spec/spec-0549.md",
+        "corpus/generated/spec/spec-0550.md",
+        "corpus/generated/spec/spec-0551.md",
+        "corpus/generated/spec/spec-0552.md",
+        "corpus/generated/spec/spec-0553.md",
+        "corpus/generated/spec/spec-0554.md",
+        "corpus/generated/spec/spec-0555.md",
+        "corpus/generated/spec/spec-0556.md",
+        "corpus/generated/spec/spec-0557.md",
+        "corpus/generated/spec/spec-0558.md",
+        "corpus/generated/spec/spec-0559.md",
+        "corpus/generated/spec/spec-0560.md",
+        "corpus/generated/spec/spec-0561.md",
+        "corpus/generated/spec/spec-0562.md",
+        "corpus/generated/spec/spec-0563.md",
+        "corpus/generated/spec/spec-0564.md",
+        "corpus/generated/spec/spec-0565.md",
+        "corpus/generated/spec/spec-0566.md",
+        "corpus/generated/spec/spec-0567.md",
+        "corpus/generated/spec/spec-0568.md",
+        "corpus/generated/spec/spec-0569.md",
+        "corpus/generated/spec/spec-0570.md",
+        "corpus/generated/spec/spec-0571.md",
+        "corpus/generated/spec/spec-0572.md",
+        "corpus/generated/spec/spec-0573.md",
+        "corpus/generated/spec/spec-0574.md",
+        "corpus/generated/spec/spec-0575.md",
+        "corpus/generated/spec/spec-0576.md",
+        "corpus/generated/spec/spec-0577.md",
+        "corpus/generated/spec/spec-0578.md",
+        "corpus/generated/spec/spec-0579.md",
+        "corpus/generated/spec/spec-0587.md",
+        "corpus/generated/spec/spec-0595.md",
+        "corpus/generated/spec/spec-0598.md",
+        "corpus/generated/spec/spec-0600.md",
+        "corpus/generated/spec/spec-0601.md",
+        "corpus/generated/spec/spec-0602.md",
+        "corpus/generated/spec/spec-0603.md",
+        "corpus/generated/spec/spec-0604.md",
+        "corpus/generated/spec/spec-0605.md",
+        "corpus/generated/spec/spec-0606.md",
+        "corpus/generated/spec/spec-0607.md",
+        "corpus/generated/spec/spec-0608.md",
+        "corpus/generated/spec/spec-0609.md",
+        "corpus/generated/spec/spec-0610.md",
+        "corpus/generated/spec/spec-0611.md",
+        "corpus/generated/spec/spec-0612.md",
+        "corpus/generated/spec/spec-0613.md",
+        "corpus/generated/spec/spec-0614.md",
+        "corpus/generated/spec/spec-0615.md",
+        "corpus/generated/spec/spec-0616.md",
+        "corpus/generated/spec/spec-0617.md",
+        "corpus/generated/spec/spec-0618.md",
+        "corpus/generated/spec/spec-0619.md",
+        "corpus/generated/spec/spec-0620.md",
+        "corpus/generated/spec/spec-0621.md",
+        "corpus/generated/spec/spec-0622.md",
+        "corpus/generated/spec/spec-0623.md",
+        "corpus/generated/spec/spec-0624.md",
+        "corpus/generated/spec/spec-0625.md",
+        "corpus/generated/spec/spec-0626.md",
+        "corpus/generated/spec/spec-0627.md",
+        "corpus/generated/spec/spec-0628.md",
+        "corpus/generated/spec/spec-0629.md",
+        "corpus/generated/spec/spec-0630.md",
+        "corpus/generated/spec/spec-0631.md",
+        "corpus/generated/spec/spec-0632.md",
+        "corpus/generated/spec/spec-0633.md",
+        "corpus/generated/spec/spec-0634.md",
+        "corpus/generated/spec/spec-0635.md",
+        "corpus/generated/spec/spec-0636.md",
+        "corpus/generated/spec/spec-0637.md",
+        "corpus/generated/spec/spec-0638.md",
+        "corpus/generated/spec/spec-0639.md",
+        "corpus/generated/spec/spec-0640.md",
+        "corpus/generated/spec/spec-0641.md",
+        "corpus/generated/spec/spec-0642.md",
+        "corpus/generated/spec/spec-0643.md",
+        "corpus/generated/spec/spec-0644.md",
+        "corpus/generated/spec/spec-0645.md",
+        "corpus/generated/spec/spec-0646.md",
+        "corpus/generated/spec/spec-0647.md",
+        "corpus/generated/spec/spec-0648.md",
+        "corpus/generated/spec/spec-0649.md",
+        "corpus/generated/spec/spec-0650.md",
+        "corpus/generated/spec/spec-0651.md",
+        "corpus/generated/spec/spec-0652.md",
+        "corpus/generated/spec/spec-0653.md",
+        "corpus/generated/spec/spec-0654.md",
+        "corpus/generated/spec/spec-0655.md",
+        "corpus/generated/spec/spec-0656.md",
+        "corpus/generated/spec/spec-0657.md",
+        "corpus/generated/spec/spec-0658.md",
+        "corpus/generated/spec/spec-0659.md",
+        "corpus/generated/spec/spec-0660.md",
+        "corpus/generated/spec/spec-0661.md",
+        "corpus/generated/spec/spec-0662.md",
+        "corpus/generated/spec/spec-0663.md",
+        "corpus/generated/spec/spec-0664.md",
+        "corpus/generated/spec/spec-0665.md",
+        "corpus/generated/spec/spec-0666.md",
+        "corpus/generated/spec/spec-0667.md",
+        "corpus/generated/spec/spec-0668.md",
+        "corpus/generated/spec/spec-0669.md",
+        "corpus/generated/spec/spec-0670.md",
+        "corpus/generated/spec/spec-0671.md",
+        "corpus/generated/spec/spec-0672.md"
+      ],
+      "variants": [
+        [
+          "--density",
+          "leading"
+        ],
+        [
+          "--dark",
+          "--density",
+          "trailing"
+        ]
+      ]
+    },
+    {
+      "name": "density-hover",
+      "command": "density-hover",
+      "output": "png",
+      "serial": true,
+      "only": [
+        "corpus/generated/agent/agent-5000.md",
+        "corpus/generated/agent/agent-400.md",
+        "corpus/generated/agent/agent-40.md",
+        "corpus/generated/docs/Docs__UX-PLAN-2026-08.md",
+        "corpus/generated/docs/Docs__UI-PLAN.md",
+        "corpus/generated/docs/Vendor__SwiftMath__README.md",
+        "corpus/generated/docs/Vendor__SwiftMath__EXAMPLES.md",
+        "corpus/generated/docs/README.md",
+        "corpus/generated/docs/Docs__STATUS.md",
+        "corpus/generated/docs/CHANGELOG.md",
+        "corpus/generated/docs/Docs__RELEASE.md",
+        "corpus/generated/docs/Docs__ARCHITECTURE.md",
+        "corpus/generated/docs/DESIGN.md",
+        "corpus/generated/docs/Docs__marketing__reddit-posts-2026-08-20.md",
+        "corpus/generated/docs/Docs__PRIVACY.md",
+        "corpus/generated/docs/PRODUCT.md",
+        "corpus/generated/docs/Docs__QUICKLOOK.md",
+        "corpus/generated/docs/Resources__Welcome.md",
+        "corpus/generated/docs/Docs__PERFORMANCE.md",
+        "corpus/generated/docs/SECURITY.md",
+        "corpus/generated/docs/AGENTS.md",
+        "corpus/generated/docs/Docs__FEATURE-MATRIX.md",
+        "corpus/generated/docs/CONTRIBUTING.md",
+        "corpus/generated/docs/Docs__sample.md",
+        "corpus/generated/spec/spec-0032.md",
+        "corpus/generated/spec/spec-0046.md",
+        "corpus/generated/spec/spec-0042.md",
+        "corpus/generated/spec/spec-0049.md",
+        "corpus/generated/fixtures/DownrightAppTests__AppLayerTests-002.md",
+        "corpus/generated/fixtures/DownrightAppTests__AppLayerTests-001.md",
+        "corpus/generated/fixtures/MarkdownCoreTests__ZoomMetricsTests-003.md",
+        "corpus/generated/docs/Docs__MARKDOWN-COMPATIBILITY.md",
+        "corpus/generated/spec/spec-0217.md",
+        "corpus/generated/spec/spec-0262.md",
+        "corpus/generated/spec/spec-0615.md",
+        "corpus/generated/spec/spec-0014.md",
+        "corpus/generated/spec/spec-0096.md",
+        "corpus/generated/spec/regression-0019.md",
+        "corpus/generated/spec/spec-0026.md",
+        "corpus/generated/spec/spec-0342.md"
+      ],
+      "variants": [
+        [
+          "--mode",
+          "source",
+          "--width",
+          "1400",
+          "--height",
+          "1000",
+          "--density",
+          "leading",
+          "--hover",
+          "0.25"
+        ],
+        [
+          "--mode",
+          "source",
+          "--width",
+          "1400",
+          "--height",
+          "1000",
+          "--density",
+          "leading",
+          "--hover",
+          "0.5"
+        ],
+        [
+          "--mode",
+          "source",
+          "--width",
+          "1400",
+          "--height",
+          "1000",
+          "--density",
+          "leading",
+          "--hover",
+          "0.75"
+        ],
+        [
+          "--mode",
+          "source",
+          "--width",
+          "1400",
+          "--height",
+          "1000",
+          "--density",
+          "leading",
+          "--hover",
+          "outline"
+        ],
+        [
+          "--mode",
+          "source",
+          "--width",
+          "1400",
+          "--height",
+          "1000",
+          "--dark",
+          "--density",
+          "trailing",
+          "--hover",
+          "0.5"
+        ],
+        [
+          "--mode",
+          "source",
+          "--width",
+          "1400",
+          "--height",
+          "1000",
+          "--dark",
+          "--density",
+          "trailing",
+          "--hover",
+          "outline"
+        ]
+      ]
     }
   ]
 }

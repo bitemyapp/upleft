@@ -28,12 +28,10 @@ use crate::engine::render_metrics;
 use crate::render_contracts::RenderMode;
 use crate::swift_compat::{smax, smin};
 use crate::theme::style_sheet::StyleSheet;
+use crate::view::density_gutter_view::DensityGutterView;
 use crate::view::footnote_margin_view::FootnoteMarginView;
 use crate::view::gutter_rail_view::GutterRailView;
 use crate::view::markdown_text_view::MarkdownTextView;
-
-/// `DensityGutterView.width`, for the leading/trailing density map lane.
-const DENSITY_GUTTER_WIDTH: CGFloat = 72.0;
 
 pub struct MarkdownContainerViewIvars {
     text_view: Retained<MarkdownTextView>,
@@ -269,12 +267,12 @@ impl MarkdownContainerView {
         })
     }
 
-    fn density_gutter_class() -> Option<&'static AnyClass> {
-        AnyClass::get(c"DensityGutterView")
+    fn is_density_map(view: &NSView) -> bool {
+        view.isKindOfClass(DensityGutterView::class())
     }
 
-    fn is_density_map(view: &NSView) -> bool {
-        Self::density_gutter_class().is_some_and(|class| view.isKindOfClass(class))
+    fn as_density_map(view: &Retained<NSView>) -> Option<Retained<DensityGutterView>> {
+        view.clone().downcast::<DensityGutterView>().ok()
     }
 
     fn layout_subviews(&self) {
@@ -287,12 +285,12 @@ impl MarkdownContainerView {
         let leading = self.leading_accessory();
         let trailing = self.trailing_accessory();
         let density_map = leading
-            .clone()
-            .filter(|view| Self::is_density_map(view))
-            .or_else(|| trailing.clone().filter(|view| Self::is_density_map(view)));
+            .as_ref()
+            .and_then(Self::as_density_map)
+            .or_else(|| trailing.as_ref().and_then(Self::as_density_map));
         let has_leading_density_map = leading.as_ref().is_some_and(|view| Self::is_density_map(view));
         let leading_width = if has_leading_density_map {
-            leading.as_ref().map_or(DENSITY_GUTTER_WIDTH, |view| view.fittingSize().width)
+            leading.as_ref().map_or(DensityGutterView::WIDTH, |view| view.fittingSize().width)
         } else {
             leading.as_ref().map_or(0.0, |view| {
                 let width = view.fittingSize().width;
@@ -302,7 +300,7 @@ impl MarkdownContainerView {
         let trailing_width = trailing.as_ref().map_or(0.0, |view| {
             let width = view.fittingSize().width;
             if Self::is_density_map(view) {
-                return if width > 0.0 { width } else { DENSITY_GUTTER_WIDTH };
+                return if width > 0.0 { width } else { DensityGutterView::WIDTH };
             }
             if width > 0.0 { width } else { 14.0 }
         });
@@ -383,7 +381,7 @@ impl MarkdownContainerView {
                 bounds.height(),
             ));
             self.addSubview_positioned_relativeTo(&density_map, NSWindowOrderingMode::Above, None);
-            let _: () = unsafe { msg_send![&*density_map, containerGeometryDidChange] };
+            density_map.container_geometry_did_change();
         }
 
         if !footnote_margin.isHidden() {

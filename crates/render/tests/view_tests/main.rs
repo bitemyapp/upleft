@@ -14,6 +14,7 @@ mod support;
 
 mod click_stability_tests;
 mod content_resize_tests;
+mod density_rail_tests;
 mod drop_and_quick_look_tests;
 mod fragment_seam_tests;
 mod layout_filler_tests;
@@ -58,6 +59,7 @@ fn main() {
     tests.extend(fragment_seam_tests::TESTS);
     tests.extend(smart_paste_integration_tests::TESTS);
     tests.extend(drop_and_quick_look_tests::TESTS);
+    tests.extend(density_rail_tests::TESTS);
 
     let selected: Vec<&Test> = tests
         .iter()
