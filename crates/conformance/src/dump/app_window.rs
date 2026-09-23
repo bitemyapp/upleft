@@ -9,7 +9,7 @@
 //! (`OffScreenWindows`, `WindowServerCapture`).
 
 use std::cell::RefCell;
-use std::ffi::{CStr, c_void};
+use std::ffi::c_void;
 use std::path::{Path, PathBuf};
 use std::time::{Duration, Instant};
 
@@ -34,27 +34,30 @@ use super::json::{self, Object};
 use super::{Failure, Request};
 
 /// `AppWindowScenario`.
-struct Scenario {
-    window: String,
-    document: Option<String>,
-    mode: String,
-    dark: bool,
-    size: Option<NSSize>,
-    preferences: Option<Vec<u8>>,
-    pane: Option<String>,
-    guide: String,
-    commands: Vec<String>,
-    settle_timeout: Duration,
+pub(crate) struct Scenario {
+    pub(crate) window: String,
+    pub(crate) document: Option<String>,
+    pub(crate) mode: String,
+    pub(crate) dark: bool,
+    pub(crate) size: Option<NSSize>,
+    pub(crate) preferences: Option<Vec<u8>>,
+    pub(crate) keybindings: Option<Vec<u8>>,
+    pub(crate) pane: Option<String>,
+    pub(crate) guide: String,
+    /// Recent documents seeded into the sandbox (`sandbox::seed_recents`).
+    pub(crate) recents: Vec<Value>,
+    pub(crate) commands: Vec<String>,
+    pub(crate) settle_timeout: Duration,
 }
 
 impl Scenario {
-    fn load(path: &Path) -> Result<Scenario, Failure> {
+    pub(crate) fn load(path: &Path) -> Result<Scenario, Failure> {
         let text = std::fs::read_to_string(path)?;
         let object: Value = serde_json::from_str(&text).map_err(|error| Failure::Error(error.to_string()))?;
-        let window = object["window"]
-            .as_str()
-            .ok_or_else(|| Failure::Error("scenario needs a \"window\"".into()))?
-            .to_owned();
+        if !object.is_object() {
+            return Err(Failure::Error("a scenario is a JSON object".into()));
+        }
+        let window = object["window"].as_str().unwrap_or("").to_owned();
         let mode = object["mode"].as_str().unwrap_or("live").to_owned();
         if !matches!(mode.as_str(), "read" | "live" | "source") {
             return Err(Failure::Error(format!("unknown mode {mode}")));
@@ -68,8 +71,13 @@ impl Scenario {
             Some(value) => Some(serde_json::to_vec_pretty(value).map_err(|error| Failure::Error(error.to_string()))?),
             None => None,
         };
+        let keybindings = match object.get("keybindings") {
+            Some(value) => Some(serde_json::to_vec_pretty(value).map_err(|error| Failure::Error(error.to_string()))?),
+            None => None,
+        };
         Ok(Scenario {
             window,
+            keybindings,
             document: object["document"].as_str().map(str::to_owned),
             mode,
             dark: object["appearance"].as_str() == Some("dark"),
@@ -77,6 +85,7 @@ impl Scenario {
             preferences,
             pane: object["pane"].as_str().map(str::to_owned),
             guide: object["guide"].as_str().unwrap_or("unavailable").to_owned(),
+            recents: object["recents"].as_array().cloned().unwrap_or_default(),
             commands: object["commands"]
                 .as_array()
                 .map(|commands| commands.iter().filter_map(|command| command.as_str().map(str::to_owned)).collect())
@@ -89,13 +98,13 @@ impl Scenario {
 /// Window kinds this oracle can build yet. Anything else is "not ported",
 /// reported before the application starts.
 fn is_ported(window: &str) -> bool {
-    matches!(window, "probe" | "setup")
+    matches!(window, "probe" | "start" | "setup" | "preferences")
 }
 
 // MARK: - Sandbox
 
 /// `AppWindowSandbox`.
-mod sandbox {
+pub(crate) mod sandbox {
     use super::*;
 
     pub fn prepare(scenario: &Scenario) -> Result<PathBuf, Failure> {
@@ -115,8 +124,44 @@ mod sandbox {
         if let Some(preferences) = &scenario.preferences {
             std::fs::write(support.join("preferences.json"), preferences)?;
         }
+        if let Some(keybindings) = &scenario.keybindings {
+            std::fs::write(support.join("keybindings.json"), keybindings)?;
+        }
+        seed_recents(&scenario.recents, &root, &support)?;
         clear_own_defaults();
         Ok(root)
+    }
+
+    /// `AppWindowSandbox.seedRecents`: each recent's file under
+    /// `<root>/recents/` and `recents.json` in the support folder, in the
+    /// scenario's order.
+    fn seed_recents(recents: &[Value], root: &Path, support: &Path) -> Result<(), Failure> {
+        if recents.is_empty() {
+            return Ok(());
+        }
+        let folder = root.join("recents");
+        let mut entries = Vec::new();
+        for recent in recents {
+            let (Some(relative), Some(opened)) = (recent["path"].as_str(), recent["opened"].as_str()) else {
+                return Err(Failure::Error("a recent needs \"path\" and \"opened\"".into()));
+            };
+            let heading = recent["heading"].as_str().unwrap_or("");
+            let file = folder.join(relative);
+            if let Some(parent) = file.parent() {
+                std::fs::create_dir_all(parent)?;
+            }
+            std::fs::write(&file, format!("# {heading}\n"))?;
+            entries.push(serde_json::json!({
+                "path": file.to_string_lossy(),
+                "displayName": file.file_stem().map(|stem| stem.to_string_lossy().into_owned()).unwrap_or_default(),
+                "firstHeading": heading,
+                "lastOpened": opened,
+                "wordCount": recent["words"].as_i64().unwrap_or(0),
+            }));
+        }
+        let data = serde_json::to_vec(&Value::Array(entries)).map_err(|error| Failure::Error(error.to_string()))?;
+        std::fs::write(support.join("recents.json"), data)?;
+        Ok(())
     }
 
     /// This process's own defaults domain, never the user's app domain.
@@ -231,7 +276,7 @@ pub(crate) mod window_server {
 }
 
 /// The machine-wide window-capture lock (see `capture.rs`). Held until exit.
-fn acquire_window_capture_lock() {
+pub(crate) fn acquire_window_capture_lock() {
     let file = std::fs::OpenOptions::new()
         .create(true)
         .truncate(false)
@@ -255,7 +300,7 @@ fn appearance(dark: bool) -> Retained<NSAppearance> {
 /// `applyScenarioAppearance`: `AppDelegate.applySelectedTheme`, with the
 /// system appearance taken from the scenario, and the bundle's icon as the
 /// application icon.
-fn apply_scenario_appearance(scenario: &Scenario, root: &Path, mtm: MainThreadMarker) {
+pub(crate) fn apply_scenario_appearance(scenario: &Scenario, root: &Path, mtm: MainThreadMarker) {
     let icon_path = NSString::from_str(&root.join("vendor/downright/Resources/AppIcon.icns").to_string_lossy());
     let icon = objc2_app_kit::NSImage::initWithContentsOfFile(objc2_app_kit::NSImage::alloc(), &icon_path);
     unsafe { NSApplication::sharedApplication(mtm).setApplicationIconImage(icon.as_deref()) };
@@ -311,12 +356,40 @@ impl Scene {
                 scene.show(mtm);
                 Ok(scene)
             }
+            "start" => {
+                use upleft_app::ai::document_state_store::DocumentStateStore;
+                use upleft_app::app::start_window_controller::{StartGuideOffer, StartWindowController};
+                let guide = match scenario.guide.as_str() {
+                    "primary" => StartGuideOffer::Primary,
+                    "secondary" => StartGuideOffer::Secondary,
+                    _ => StartGuideOffer::Unavailable,
+                };
+                let recents = DocumentStateStore::shared().recents(StartWindowController::RECENT_DISPLAY_LIMIT);
+                let controller = StartWindowController::new(recents, guide, mtm);
+                let window = controller.window().ok_or_else(|| Failure::Error("start controller has no window".into()))?;
+                let scene = Scene { window, pending_commands: None, _retained: Some(Retained::into_super(Retained::into_super(Retained::into_super(controller)))) };
+                scene.show(mtm);
+                Ok(scene)
+            }
             "setup" => {
                 use upleft_app::app::setup_window_controller::SetupWindowController;
                 let controller = SetupWindowController::make_if_needed(mtm).ok_or_else(|| {
                     Failure::Error("SetupWindowController.makeIfNeeded() returned nil on this machine".into())
                 })?;
                 let window = controller.window().ok_or_else(|| Failure::Error("setup controller has no window".into()))?;
+                let scene = Scene { window, pending_commands: None, _retained: Some(Retained::into_super(Retained::into_super(Retained::into_super(controller)))) };
+                scene.show(mtm);
+                Ok(scene)
+            }
+            "preferences" => {
+                use upleft_app::app::preferences_window_controller::{PreferencesWindowController, SettingsPane};
+                let controller = PreferencesWindowController::new(mtm);
+                if let Some(name) = &scenario.pane {
+                    let pane = SettingsPane::from_raw_value(name)
+                        .ok_or_else(|| Failure::Error(format!("unknown pane {name}")))?;
+                    controller.select(pane);
+                }
+                let window = controller.window().ok_or_else(|| Failure::Error("Settings has no window".into()))?;
                 let scene = Scene { window, pending_commands: None, _retained: Some(Retained::into_super(Retained::into_super(Retained::into_super(controller)))) };
                 scene.show(mtm);
                 Ok(scene)
@@ -361,66 +434,45 @@ mod geometry {
         fn dlsym(handle: *mut c_void, symbol: *const std::ffi::c_char) -> *mut c_void;
     }
 
-    type Demangle = unsafe extern "C" fn(*const std::ffi::c_char, usize, *mut std::ffi::c_char, *mut usize, u32) -> *mut std::ffi::c_char;
 
-    /// `String(describing: type(of:))`: Objective-C names as they are;
-    /// Swift runtime names (`_Tt…`) demangled with the module qualifiers
-    /// dropped, as Swift prints a type.
-    pub fn class_name(class: &AnyClass) -> String {
-        let raw = class.name().to_string_lossy().into_owned();
-        let mut name = raw.strip_prefix("NSKVONotifying_").map(str::to_owned).unwrap_or(raw);
-        if name.starts_with("_Tt") {
-            name = demangle(&name).map(|demangled| strip_modules(&demangled)).unwrap_or(name);
-        }
-        name
+    #[repr(C)]
+    struct TypeNamePair {
+        data: *const u8,
+        length: usize,
     }
 
-    fn demangle(mangled: &str) -> Option<String> {
-        // SAFETY: `swift_demangle` from the Swift runtime, with its C
-        // signature; the result is malloc'd.
+    type GetTypeName = unsafe extern "C" fn(*const c_void, bool) -> TypeNamePair;
+
+    /// `String(describing: type(of:))`: an Objective-C class's own name; for
+    /// a Swift class (a runtime name that is mangled, `_Tt…`, or
+    /// module-qualified), the Swift runtime's unqualified type name
+    /// (`swift_getTypeName(_, false)`, which `_typeName(_:qualified:)` calls).
+    pub fn class_name(class: &AnyClass) -> String {
+        let raw = class.name().to_string_lossy().into_owned();
+        let name = raw.strip_prefix("NSKVONotifying_").map(str::to_owned).unwrap_or(raw);
+        if !(name.starts_with("_Tt") || name.contains('.')) {
+            return name;
+        }
+        swift_type_name(class).unwrap_or(name)
+    }
+
+    fn swift_type_name(class: &AnyClass) -> Option<String> {
+        // SAFETY: `swift_getTypeName` from the Swift runtime, with its C
+        // signature; a Swift class object is its own type metadata.
         unsafe {
             let handle = libc::dlopen(c"/usr/lib/swift/libswiftCore.dylib".as_ptr(), libc::RTLD_NOW);
-            let symbol = dlsym(handle, c"swift_demangle".as_ptr());
+            let symbol = dlsym(handle, c"swift_getTypeName".as_ptr());
             if symbol.is_null() {
                 return None;
             }
-            let demangle = std::mem::transmute::<*mut c_void, Demangle>(symbol);
-            let input = std::ffi::CString::new(mangled).ok()?;
-            let output = demangle(input.as_ptr(), mangled.len(), std::ptr::null_mut(), std::ptr::null_mut(), 0);
-            if output.is_null() {
+            let get = std::mem::transmute::<*mut c_void, GetTypeName>(symbol);
+            let pair = get((class as *const AnyClass).cast(), false);
+            if pair.data.is_null() {
                 return None;
             }
-            let text = CStr::from_ptr(output).to_string_lossy().into_owned();
-            libc::free(output.cast());
-            Some(text)
+            let bytes = std::slice::from_raw_parts(pair.data, pair.length);
+            Some(String::from_utf8_lossy(bytes).into_owned())
         }
-    }
-
-    /// `SwiftUI._NSCoreHostingView<SwiftUI.RootView>` → `_NSCoreHostingView<RootView>`,
-    /// and a private type's `(PortalView in _EC3F…)` → `PortalView`.
-    fn strip_modules(name: &str) -> String {
-        let mut name = name.to_owned();
-        while let Some(start) = name.find('(') {
-            let Some(marker) = name[start..].find(" in _").map(|offset| start + offset) else { break };
-            let Some(end) = name[marker..].find(')').map(|offset| marker + offset) else { break };
-            name = format!("{}{}{}", &name[..start], &name[start + 1..marker], &name[end + 1..]);
-        }
-        let name = name.as_str();
-        let mut out = String::new();
-        let mut word = String::new();
-        for character in name.chars() {
-            if character.is_alphanumeric() || character == '_' {
-                word.push(character);
-            } else if character == '.' {
-                word.clear();
-            } else {
-                out.push_str(&word);
-                word.clear();
-                out.push(character);
-            }
-        }
-        out.push_str(&word);
-        out
     }
 
     pub fn rect(rect: NSRect) -> Value {
@@ -432,11 +484,28 @@ mod geometry {
         ])
     }
 
+    /// An identifier AppKit makes from an object's address
+    /// (`NSTabViewControllerToolbarUIProvider(0x…)`) differs per run.
+    pub fn without_address(identifier: &str) -> String {
+        match identifier.find("(0x") {
+            Some(index) => format!("{}(0x…)", &identifier[..index]),
+            None => identifier.to_owned(),
+        }
+    }
+
+    /// See `AppWindowGeometry.view` in the Swift harness: a view with an
+    /// ambiguous Auto Layout solution, and its subtree, report "ambiguous".
     pub fn view(view: &NSView) -> Value {
+        view_in(view, false)
+    }
+
+    fn view_in(view: &NSView, ambiguous_ancestor: bool) -> Value {
+        let ambiguous = ambiguous_ancestor || view.hasAmbiguousLayout();
+        let geometry = |value: NSRect| if ambiguous { Value::String("ambiguous".into()) } else { rect(value) };
         let mut object = Object::new()
             .with("class", class_name(view.class()))
-            .with("frame", rect(view.frame()))
-            .with("bounds", rect(view.bounds()))
+            .with("frame", geometry(view.frame()))
+            .with("bounds", geometry(view.bounds()))
             .with("hidden", view.isHidden())
             .with("alpha", json::double(view.alphaValue()));
         if let Some(field) = view.downcast_ref::<NSTextField>() {
@@ -444,7 +513,7 @@ mod geometry {
         } else if let Some(button) = view.downcast_ref::<NSButton>() {
             object = object.with("title", button.title().to_string()).with("state", button.state());
         }
-        let subviews: Vec<Value> = view.subviews().iter().map(|subview| self::view(&subview)).collect();
+        let subviews: Vec<Value> = view.subviews().iter().map(|subview| view_in(&subview, ambiguous)).collect();
         object.with("subviews", Value::Array(subviews)).build()
     }
 
@@ -470,7 +539,7 @@ mod geometry {
                 .collect();
             object = object.with(
                 "toolbar",
-                Object::new().with("identifier", toolbar.identifier().to_string()).with("items", Value::Array(items)),
+                Object::new().with("identifier", without_address(&toolbar.identifier().to_string())).with("items", Value::Array(items)),
             );
         }
         let root = window.contentView().map(|content| unsafe { content.superview() }.unwrap_or(content));
@@ -598,7 +667,7 @@ fn check_settled() {
     }
 }
 
-fn repository_root() -> PathBuf {
+pub(crate) fn repository_root() -> PathBuf {
     Path::new(env!("CARGO_MANIFEST_DIR")).join("../..").canonicalize().expect("repository root")
 }
 
@@ -639,9 +708,62 @@ pub fn run(request: &Request) -> Result<(), Failure> {
     std::process::exit(0)
 }
 
-/// `bench-app-window`: not measurable until the document window is ported.
-pub fn bench(request: &Request) -> Result<(), Failure> {
+
+// MARK: - The main menu
+
+/// `AppMenuDump`: `app-menu <scenario.json> <out.json>`.
+pub fn menu(request: &Request) -> Result<(), Failure> {
+    use objc2_app_kit::{NSMenu, NSMenuItem};
     let scenario = Scenario::load(&request.input)?;
-    let _ = scenario;
-    Err(Failure::NotPorted)
+    let mtm = MainThreadMarker::new().ok_or_else(|| Failure::Error("app-menu runs on the main thread".into()))?;
+    let sandbox = sandbox::prepare(&scenario)?;
+    let app = NSApplication::sharedApplication(mtm);
+    app.setActivationPolicy(NSApplicationActivationPolicy::Accessory);
+    apply_scenario_appearance(&scenario, &repository_root(), mtm);
+    let menu = upleft_app::app::main_menu::MainMenu::build(mtm);
+    app.setMainMenu(Some(&menu));
+
+    fn dump(menu: &NSMenu) -> Value {
+        if let Some(delegate) = menu.delegate() {
+            let responds: bool = unsafe { msg_send![&*delegate, respondsToSelector: sel!(menuNeedsUpdate:)] };
+            if responds {
+                let _: () = unsafe { msg_send![&*delegate, menuNeedsUpdate: menu] };
+            }
+        }
+        let items: Vec<Value> = menu.itemArray().iter().map(|entry| dump_item(&entry)).collect();
+        Object::new().with("title", menu.title().to_string()).with("items", Value::Array(items)).build()
+    }
+
+    fn dump_item(item: &NSMenuItem) -> Value {
+        let represented = match item.representedObject() {
+            None => Value::Null,
+            Some(object) => match object.downcast::<NSString>() {
+                Ok(string) => Value::String(string.to_string()),
+                Err(other) => Value::String(format!("<{}>", geometry::class_name(other.class()))),
+            },
+        };
+        let target = item.target();
+        Object::new()
+            .with("title", item.title().to_string())
+            .with("separator", item.isSeparatorItem())
+            .with("keyEquivalent", item.keyEquivalent().to_string())
+            .with("modifiers", item.keyEquivalentModifierMask().0 as i64)
+            .with("action", item.action().map_or(Value::Null, |action| Value::String(action.name().to_string_lossy().into_owned())))
+            .with("target", target.map_or(Value::Null, |target| Value::String(geometry::class_name(target.class()))))
+            .with("tag", item.tag() as i64)
+            .with("representedObject", represented)
+            .with("enabled", item.isEnabled())
+            .with("state", item.state() as i64)
+            .with("hidden", item.isHidden())
+            .with("alternate", item.isAlternate())
+            .with("indentation", item.indentationLevel() as i64)
+            .with("image", item.image().is_some())
+            .with("toolTip", item.toolTip().map_or(Value::Null, |tip| Value::String(tip.to_string())))
+            .with("submenu", item.submenu().map_or(Value::Null, |submenu| dump(&submenu)))
+            .build()
+    }
+
+    let value = dump(&menu);
+    sandbox::remove(&sandbox);
+    Ok(json::write(&value, &request.output)?)
 }

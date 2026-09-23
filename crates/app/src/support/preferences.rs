@@ -345,6 +345,15 @@ impl Preferences {
         })
     }
 
+    /// Makes `preferences` the instance [`Preferences::shared`] returns, so a
+    /// test process can run code that reads `Preferences.shared` (the
+    /// Settings window) without publishing to the user's real preferences
+    /// domain. Works only before the first `shared()` call, and answers
+    /// whether it did. Not called by the app.
+    pub fn install_shared(preferences: Preferences) -> bool {
+        SHARED.set(preferences).is_ok()
+    }
+
     /// Test seam: makes `preferences` (a [`Preferences::for_testing`]
     /// instance) what `Preferences::shared()` returns, so a test binary that
     /// builds panels (`PanelFont` reads the shared text size adjustment)

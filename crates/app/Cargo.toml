@@ -144,6 +144,10 @@ name = "update_coordinator_tests"
 harness = false
 
 [[test]]
+name = "sparkle_bridge_tests"
+harness = false
+
+[[test]]
 name = "release_watch_probe_tests"
 harness = false
 
@@ -242,6 +246,22 @@ harness = false
 name = "scroll_zoom_tests"
 harness = false
 
+[[test]]
+name = "settings_pane_tests"
+harness = false
+
+# The toolbar controls, `ToolbarGlassBand` and `DocumentWindow`
+# (`App/ToolbarControls.swift`, `App/ToolbarGlassBand.swift`,
+# `App/DocumentWindow.swift`): `@MainActor` suites over AppKit views, on the
+# main thread (tests/main_thread/mod.rs).
+[[test]]
+name = "window_chrome_tests"
+harness = false
+
+[[test]]
+name = "toolbar_controls_tests"
+harness = false
+
 # The panels' view-level tests (DownrightAppTests), one binary per group of
 # panels; each runs on the main thread (tests/main_thread/mod.rs) and puts any
 # window it needs off-screen, never activated.
@@ -276,4 +296,11 @@ harness = false
 
 [[test]]
 name = "panels_sidebar_tests"
+harness = false
+
+# The start window (`App/StartWindowController.swift`): the `@MainActor`
+# StartWindowTests and RecentRowSubtitleTests, on the main thread
+# (tests/main_thread/mod.rs), in a sandboxed home.
+[[test]]
+name = "start_window_tests_window"
 harness = false

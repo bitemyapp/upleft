@@ -53,6 +53,7 @@ pub const APP_COMMANDS: &[&str] = &[
     "bench-find",
     "app-window",
     "bench-app-window",
+    "app-menu",
     "panel",
     "panel-model",
     "bench-panel",
@@ -223,7 +224,9 @@ pub fn run(request: &Request) -> Result<(), Failure> {
         "bench-workspace" => app_bench::workspace(request),
         "bench-find" => app_bench::find(request),
         "app-window" => app_window::run(request),
-        "bench-app-window" => app_window::bench(request),
+        // app_window_bench.rs, registered once DocumentWindowController lands.
+        "bench-app-window" => Err(Failure::NotPorted),
+        "app-menu" => app_window::menu(request),
         "panel" => panel::run_capture(request),
         "panel-model" => panel::run_model(request),
         "bench-panel" => panel::run_bench(request),
