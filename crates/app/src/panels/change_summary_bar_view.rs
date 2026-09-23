@@ -6,6 +6,10 @@
 //! pointer equivalent of `[` and `]` (§7.2).  Same non-modal shape as the
 //! conflict bar: it must be ignorable.
 
+// `!(a > b)` spells Swift's `guard a > b`, which is false for NaN; the
+// negated comparisons are deliberate.
+#![allow(clippy::neg_cmp_op_on_partial_ord)]
+
 use std::cell::{Cell, RefCell};
 use std::rc::{Rc, Weak};
 
