@@ -159,8 +159,10 @@ fn heading(level: isize, title: &str, range: NSRange, content_range: NSRange, wo
 
 type Expected = (&'static str, &'static str, &'static str, NSRange, &'static str, &'static str, Option<(NSRange, &'static str, &'static str)>);
 
+type Actual = (String, String, String, NSRange, String, String, Option<(NSRange, String, String)>);
+
 fn check(findings: &[DocumentHealthDiagnostic], expected: &[Expected]) {
-    let actual: Vec<(String, String, String, NSRange, String, String, Option<(NSRange, String, String)>)> = findings
+    let actual: Vec<Actual> = findings
         .iter()
         .map(|d| {
             (
@@ -465,4 +467,24 @@ fn options_clamp_to_one() {
     let options = DocumentHealthOptions::new(-5, 0, 7);
     assert_eq!((options.max_section_words, options.max_sentence_words, options.max_paragraph_words), (1, 1, 7));
     assert_eq!(DocumentHealthOptions::default(), DocumentHealthOptions::new(500, 35, 120));
+}
+
+/// Substrings of a document holding any non-ASCII character are bridged
+/// `NSString`s, whose `contains` is Foundation's search: `":\u{200D}"` holds a
+/// `":"` there but not Character-wise. `trimmingCharacters` returns a native
+/// string whenever it trims something; parser strings are native.
+#[test]
+fn differential_bridged_substrings() {
+    let ids = |text: &str| DocumentHealth::analyze_document(&make_doc(text, vec![], None, vec![])).into_iter().map(|d| d.id).collect::<Vec<_>>();
+    assert!(ids("---\nkey:\u{200D} x\n").is_empty());
+    assert_eq!(ids("---\nkey:\u{200D}x"), ["frontmatter.unclosed"]);
+
+    let text = "[a]: a:\u{200D}b\n\n[l](x)\n";
+    let paragraph = block(BlockContent::Paragraph, line(text, 2)).with_inlines(vec![link("c:\u{200D}d", line(text, 2))]);
+    let doc = make_doc(text, vec![paragraph], None, vec![]);
+    let findings = DocumentHealth::analyze_document_with(&doc, DocumentHealthOptions::DEFAULT, Some(&DocumentHealthResolver::new(|_| false)));
+    assert_eq!(
+        findings.iter().map(|d| (d.id.as_str(), d.range)).collect::<Vec<_>>(),
+        [("reference.unused", r(0, 9)), ("link.missing", r(11, 6))]
+    );
 }

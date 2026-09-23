@@ -121,6 +121,17 @@ fn side_by_side_comparison_exposes_capability_delta() {
 
 // MARK: - Extra (not in Swift)
 
+/// SafeHTMLTests.swift's `githubProfileContinuesToDescribeRawHTMLAsTargetCompatibility`,
+/// which safe_html_tests.rs leaves for this port: the body to paste there.
+#[test]
+fn github_profile_continues_to_describe_raw_html_as_target_compatibility() {
+    let parsed = MarkdownParser::parse("<strong>Text</strong>");
+    let github = MarkdownCompatibility::diagnose(&parsed, &RenderTargetProfile::git_hub());
+    let no_html = MarkdownCompatibility::diagnose(&parsed, &RenderTargetProfile::custom("No raw HTML", MarkdownCapabilities::EMPTY));
+    assert!(!github.diagnostics.iter().any(|d| d.capability == MarkdownCapability::RawHTML));
+    assert!(no_html.diagnostics.iter().any(|d| d.capability == MarkdownCapability::RawHTML));
+}
+
 #[test]
 fn capability_set_is_an_option_set() {
     let set = MarkdownCapabilities::from(MarkdownCapability::Math) | MarkdownCapabilities::TABLES;
@@ -268,6 +279,11 @@ mod differential {
         assert_eq!(actual, expected);
     }
 
+    // The two footnote definitions share a location (an artificial case: a
+    // parse never produces it). Swift walks `document.footnotes.values` in
+    // Dictionary order, which changes from run to run, and its stable sort
+    // keeps that order for equal locations; so Swift prints (205, 4) and
+    // (205, 10) in either order. The port walks them by position.
     #[test]
     fn differential_no_extensions() {
         let doc = document();
@@ -343,6 +359,39 @@ mod differential {
             ),
             (1023, 1807, 240, 1024, 6)
         );
+    }
+
+    /// A document's `NSString` substrings are bridged when it holds any
+    /// non-ASCII character, and a bridged string's `contains("\n")` finds the
+    /// LF of a CR LF.
+    #[test]
+    fn differential_bridged_substrings() {
+        let cases: [(&str, Vec<(&str, NSRange)>); 3] = [
+            ("x ~~a\r\nb~~ y\n", vec![("strikethrough", r(2, 8))]),
+            ("\u{E9} ~~a\r\nb~~ y\n", vec![]),
+            ("# H {#\u{200D}x}\n", vec![("headingAttributes", r(4, 5))]),
+        ];
+        for (text, expected) in cases {
+            let content = if text.starts_with('#') { BlockContent::Heading { level: 1 } } else { BlockContent::Paragraph };
+            let map = SourceMap::new(text);
+            let root = MDBlock::new(BlockContent::Document, r(0, map.length), r(0, map.length))
+                .with_children(vec![block(content, line(text, 0)).into_ref()]);
+            let doc = ParsedDocument::new(
+                text.to_owned(),
+                map.length,
+                root.into_ref(),
+                None,
+                vec![],
+                vec![],
+                vec![],
+                HashMap::new(),
+                HashMap::new(),
+                map.line_starts.clone(),
+            );
+            let report = MarkdownCompatibility::diagnose(&doc, &RenderTargetProfile::common_mark());
+            let actual: Vec<(&str, NSRange)> = report.diagnostics.iter().map(|d| (d.capability.raw_value(), d.range)).collect();
+            assert_eq!(actual, expected, "{text:?}");
+        }
     }
 
     #[test]

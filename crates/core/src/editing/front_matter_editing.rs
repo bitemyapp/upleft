@@ -215,7 +215,7 @@ impl FrontMatterEditing {
         let Some(rendered) = Self::render(value, "") else {
             return FrontMatterEditResult::fail(FrontMatterSourceFallback::UnsupportedValue);
         };
-        let newline = Self::line_ending(&document.substring(front_matter.range));
+        let newline = Self::line_ending(&document.substring(front_matter.range), swift_text::bridges_substrings(&document.utf16));
         let insertion = format!("{key}: {rendered}{newline}");
         let range = NSRange::new(front_matter.body_range.upper_bound(), 0);
         Self::result(document, range, insertion, format!("Add {key}"))
@@ -232,6 +232,10 @@ impl FrontMatterEditing {
     fn validate(document: &ParsedDocument, front_matter: &FrontMatter) -> Option<FrontMatterSourceFallback> {
         let source = document.substring(front_matter.body_range);
         let lines = swift_text::components_separated_by_set(&source, CharSet::Newlines);
+        // `source` is bridged when the document's substrings are. Splitting it
+        // into several components yields native strings; a single component
+        // is `source` itself.
+        let lines_bridged = lines.len() == 1 && swift_text::bridges_substrings(&document.utf16);
         // `Set<String>`: canonical-equivalence keys, i.e. NFC forms.
         let mut keys: HashSet<String> = HashSet::new();
         for line in &lines {
@@ -242,10 +246,12 @@ impl FrontMatterEditing {
                 return Some(FrontMatterSourceFallback::NestedYAML);
             }
             let trimmed = swift_text::trim_whitespaces(line);
+            // Trimming anything yields a native string.
+            let bridged = lines_bridged && trimmed.len() == line.len();
             if swift_text::has_prefix(trimmed, "#") {
                 return Some(FrontMatterSourceFallback::CommentsNotSupported);
             }
-            if swift_text::contains(trimmed, "&") || swift_text::contains(trimmed, "*") {
+            if swift_text::contains_with(trimmed, "&", bridged) || swift_text::contains_with(trimmed, "*", bridged) {
                 return Some(FrontMatterSourceFallback::AnchorsOrAliasesNotSupported);
             }
             if let Some(colon) = swift_text::first_index_of(trimmed, ':') {
@@ -357,12 +363,13 @@ impl FrontMatterEditing {
         swift_text::has_prefix(text, "-") || swift_text::has_prefix(text, "?")
     }
 
-    fn line_ending(source: &str) -> &'static str {
-        // Character-wise: a lone "\r" is not found inside a CR LF.
-        if swift_text::contains(source, "\r\n") {
+    /// `source` is a document substring: `bridged` says whether Swift's
+    /// `contains` searches it Character-wise or through Foundation.
+    fn line_ending(source: &str, bridged: bool) -> &'static str {
+        if swift_text::contains_with(source, "\r\n", bridged) {
             return "\r\n";
         }
-        if swift_text::contains(source, "\r") {
+        if swift_text::contains_with(source, "\r", bridged) {
             return "\r";
         }
         "\n"
@@ -562,7 +569,7 @@ mod tests {
             (1.0 / 3.0, "0.3333333333333333"),
             (9007199254740992.0, "9007199254740992.0"),
             (9007199254740994.0, "9.007199254740994e+15"),
-            (9.223372036854775807e18, "9.223372036854776e+18"),
+            (i64::MAX as f64, "9.223372036854776e+18"),
             (1.2e-5, "1.2e-05"),
             (-0.00012, "-0.00012"),
         ];
