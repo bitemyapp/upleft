@@ -27,6 +27,10 @@ Upleft is a faithful Rust port of Downright (`vendor/downright`). The Swift orig
   - Make the same framework calls, with the same arguments, in the same order. That is what makes pixels match.
 - **Main thread.** Never block the AppKit main thread with parsing, I/O, or subprocesses. Follow Downright's threading exactly (see `Docs/ARCHITECTURE.md` in the submodule), and be at least as strict where it is lax.
 
+## The one Swift exception
+
+FoundationModels (Downright's optional on-device AI, `AI/LocalAI.swift`) and AppIntents (`Integrations/AppIntents.swift`) are Swift-only frameworks, so objc2 can't reach them. By the owner's decision (2026-09-23), Upleft carries a tiny Swift shim for them at `crates/app/swift-shim/`: C entry points for the model session and its availability, plus the intent declarations. Every other piece of logic stays in Rust. Nothing else in Upleft is written in Swift, and the shim must not grow beyond those framework calls.
+
 ## Gates
 
 - `cargo test --workspace` must pass.
