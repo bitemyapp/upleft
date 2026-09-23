@@ -444,7 +444,8 @@ fn swift_double_parses(text: &str) -> bool {
         // The first ")" after "nan(" must end the string.
         return payload[1..].iter().position(|&b| b == b')').is_some_and(|close| close + 2 == payload.len());
     }
-    let (digits, exponent_markers, is_digit): (&[u8], &[u8], fn(&u8) -> bool) =
+    type DigitClass = fn(&u8) -> bool;
+    let (digits, exponent_markers, is_digit): (&[u8], &[u8], DigitClass) =
         if rest.len() >= 2 && rest[0] == b'0' && (rest[1] == b'x' || rest[1] == b'X') {
             (&rest[2..], b"pP", u8::is_ascii_hexdigit)
         } else {

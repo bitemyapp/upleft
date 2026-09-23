@@ -534,8 +534,9 @@ impl<'a> HealthPass<'a> {
             };
             let capture = m.capture(1);
             let id = swift_text::lowercased(&self.source.substring(NSRange::new(line.range.location + capture.location, capture.length)));
-            let key = swift_key(&id);
-            if footnotes.contains_key(&key) {
+            if let std::collections::hash_map::Entry::Vacant(slot) = footnotes.entry(swift_key(&id)) {
+                slot.insert(line.range);
+            } else {
                 out.push(diagnostic(
                     "footnote.duplicate",
                     DocumentHealthSeverity::Error,
@@ -545,8 +546,6 @@ impl<'a> HealthPass<'a> {
                     "Footnote references resolve to one definition; keep a single definition for each identifier.",
                     None,
                 ));
-            } else {
-                footnotes.insert(key, line.range);
             }
         }
     }
@@ -1066,7 +1065,7 @@ struct IntervalIndex {
 impl IntervalIndex {
     fn new(ranges: Vec<NSRange>) -> IntervalIndex {
         let mut ranges: Vec<NSRange> = ranges.into_iter().filter(|r| r.location >= 0 && r.length > 0).collect();
-        ranges.sort_by(|a, b| a.location.cmp(&b.location));
+        ranges.sort_by_key(|r| r.location);
         IntervalIndex { ranges }
     }
 

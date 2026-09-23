@@ -269,7 +269,7 @@ impl StructuralZoom {
             .map(|r| NSRange::new(r.location, r.length.min(limit - r.location)))
             .collect();
         // Swift's `sorted(by:)` is stable, as is `sort_by`.
-        sorted.sort_by(|a, b| a.location.cmp(&b.location));
+        sorted.sort_by_key(|r| r.location);
         let Some(&first) = sorted.first() else {
             return Vec::new();
         };
