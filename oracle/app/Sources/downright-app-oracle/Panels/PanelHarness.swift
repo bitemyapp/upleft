@@ -143,6 +143,7 @@ final class PanelCaptureSession: NSObject, NSApplicationDelegate {
     private var settleView: NSView!
     private var previousCapture: Data?
     private var stableCaptures = 0
+    private var previousServerCapture: Data?
     private var deadline = Date.distantFuture
 
     init(scenario: PanelScenario, outputPNG: URL, outputLayout: URL?) {
@@ -236,6 +237,23 @@ final class PanelCaptureSession: NSObject, NSApplicationDelegate {
         if stableCaptures < 2 {
             FileHandle.standardError.write("warning: panel did not settle before the timeout\n".data(using: .utf8)!)
         }
+        // The window server composites glass and materials on its own
+        // clock, after the view tree has settled: capture it until two
+        // consecutive captures agree.
+        let server: Data
+        do {
+            server = try WindowServerCapture.png(of: [window])
+        } catch {
+            fail("\(error)")
+        }
+        if server != previousServerCapture && Date() < deadline {
+            previousServerCapture = server
+            scheduleCheck()
+            return
+        }
+        if server != previousServerCapture {
+            FileHandle.standardError.write("warning: the window server capture did not settle before the timeout\n".data(using: .utf8)!)
+        }
         do {
             if let outputLayout {
                 let layout = JSON.object([
@@ -248,7 +266,7 @@ final class PanelCaptureSession: NSObject, NSApplicationDelegate {
             OffScreenWindows.verify([window])
             // The window server's composite of the off-screen window (glass,
             // materials and layers included); see `WindowServerCapture`.
-            try WindowServerCapture.png(of: [window]).write(to: outputPNG)
+            try server.write(to: outputPNG)
             exit(0)
         } catch {
             fail("\(error)")
