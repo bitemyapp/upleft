@@ -20,6 +20,7 @@ import AppKit
 //   app-window       <scenario.json> <out.png> [--layout out.json]
 //                                 a real app window, captured off-screen (AppWindowCapture.swift)
 //   bench-app-window <scenario.json> document open and mode-switch timings (AppWindowCapture.swift)
+//   app-menu         <scenario.json> the main menu, every submenu refreshed (AppWindowCapture.swift)
 //
 // Each command parses its own flags. `upleft-oracle` (crates/conformance)
 // takes identical arguments and writes identical formats. The runner selects
@@ -79,6 +80,8 @@ do {
         try MainActor.assumeIsolated {
             try AppWindowSession.run(input: input, output: output, flags: flags, repositoryRoot: repositoryRoot)
         }
+    case "app-menu":
+        try write(MainActor.assumeIsolated { try AppMenuDump.run(input: input, repositoryRoot: repositoryRoot) }, to: output)
     case "bench-app-window":
         try MainActor.assumeIsolated {
             try AppWindowBench.run(input: input, output: output, repositoryRoot: repositoryRoot)

@@ -41,6 +41,7 @@ struct Scenario {
     dark: bool,
     size: Option<NSSize>,
     preferences: Option<Vec<u8>>,
+    keybindings: Option<Vec<u8>>,
     pane: Option<String>,
     guide: String,
     commands: Vec<String>,
@@ -51,10 +52,10 @@ impl Scenario {
     fn load(path: &Path) -> Result<Scenario, Failure> {
         let text = std::fs::read_to_string(path)?;
         let object: Value = serde_json::from_str(&text).map_err(|error| Failure::Error(error.to_string()))?;
-        let window = object["window"]
-            .as_str()
-            .ok_or_else(|| Failure::Error("scenario needs a \"window\"".into()))?
-            .to_owned();
+        if !object.is_object() {
+            return Err(Failure::Error("a scenario is a JSON object".into()));
+        }
+        let window = object["window"].as_str().unwrap_or("").to_owned();
         let mode = object["mode"].as_str().unwrap_or("live").to_owned();
         if !matches!(mode.as_str(), "read" | "live" | "source") {
             return Err(Failure::Error(format!("unknown mode {mode}")));
@@ -68,8 +69,13 @@ impl Scenario {
             Some(value) => Some(serde_json::to_vec_pretty(value).map_err(|error| Failure::Error(error.to_string()))?),
             None => None,
         };
+        let keybindings = match object.get("keybindings") {
+            Some(value) => Some(serde_json::to_vec_pretty(value).map_err(|error| Failure::Error(error.to_string()))?),
+            None => None,
+        };
         Ok(Scenario {
             window,
+            keybindings,
             document: object["document"].as_str().map(str::to_owned),
             mode,
             dark: object["appearance"].as_str() == Some("dark"),
@@ -114,6 +120,9 @@ mod sandbox {
         }
         if let Some(preferences) = &scenario.preferences {
             std::fs::write(support.join("preferences.json"), preferences)?;
+        }
+        if let Some(keybindings) = &scenario.keybindings {
+            std::fs::write(support.join("keybindings.json"), keybindings)?;
         }
         clear_own_defaults();
         Ok(root)
@@ -645,4 +654,63 @@ pub fn bench(request: &Request) -> Result<(), Failure> {
     let scenario = Scenario::load(&request.input)?;
     let _ = scenario;
     Err(Failure::NotPorted)
+}
+
+// MARK: - The main menu
+
+/// `AppMenuDump`: `app-menu <scenario.json> <out.json>`.
+pub fn menu(request: &Request) -> Result<(), Failure> {
+    use objc2_app_kit::{NSMenu, NSMenuItem};
+    let scenario = Scenario::load(&request.input)?;
+    let mtm = MainThreadMarker::new().ok_or_else(|| Failure::Error("app-menu runs on the main thread".into()))?;
+    let sandbox = sandbox::prepare(&scenario)?;
+    let app = NSApplication::sharedApplication(mtm);
+    app.setActivationPolicy(NSApplicationActivationPolicy::Accessory);
+    apply_scenario_appearance(&scenario, &repository_root(), mtm);
+    let menu = upleft_app::app::main_menu::MainMenu::build(mtm);
+    app.setMainMenu(Some(&menu));
+
+    fn dump(menu: &NSMenu) -> Value {
+        if let Some(delegate) = menu.delegate() {
+            let responds: bool = unsafe { msg_send![&*delegate, respondsToSelector: sel!(menuNeedsUpdate:)] };
+            if responds {
+                let _: () = unsafe { msg_send![&*delegate, menuNeedsUpdate: menu] };
+            }
+        }
+        let items: Vec<Value> = menu.itemArray().iter().map(|entry| dump_item(&entry)).collect();
+        Object::new().with("title", menu.title().to_string()).with("items", Value::Array(items)).build()
+    }
+
+    fn dump_item(item: &NSMenuItem) -> Value {
+        let represented = match item.representedObject() {
+            None => Value::Null,
+            Some(object) => match object.downcast::<NSString>() {
+                Ok(string) => Value::String(string.to_string()),
+                Err(other) => Value::String(format!("<{}>", geometry::class_name(other.class()))),
+            },
+        };
+        let target = unsafe { item.target() };
+        Object::new()
+            .with("title", item.title().to_string())
+            .with("separator", item.isSeparatorItem())
+            .with("keyEquivalent", item.keyEquivalent().to_string())
+            .with("modifiers", item.keyEquivalentModifierMask().0 as i64)
+            .with("action", unsafe { item.action() }.map_or(Value::Null, |action| Value::String(action.name().to_string_lossy().into_owned())))
+            .with("target", target.map_or(Value::Null, |target| Value::String(geometry::class_name(target.class()))))
+            .with("tag", item.tag() as i64)
+            .with("representedObject", represented)
+            .with("enabled", item.isEnabled())
+            .with("state", item.state() as i64)
+            .with("hidden", item.isHidden())
+            .with("alternate", item.isAlternate())
+            .with("indentation", item.indentationLevel() as i64)
+            .with("image", item.image().is_some())
+            .with("toolTip", item.toolTip().map_or(Value::Null, |tip| Value::String(tip.to_string())))
+            .with("submenu", item.submenu().map_or(Value::Null, |submenu| dump(&submenu)))
+            .build()
+    }
+
+    let value = dump(&menu);
+    sandbox::remove(&sandbox);
+    Ok(json::write(&value, &request.output)?)
 }

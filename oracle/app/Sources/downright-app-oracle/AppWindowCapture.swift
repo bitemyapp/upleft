@@ -41,6 +41,8 @@ struct AppWindowScenario {
     /// Written verbatim as `preferences.json`; absent means no settings file
     /// (a first run).
     var preferences: Data?
+    /// Written verbatim as `keybindings.json`, if present.
+    var keybindings: Data?
     /// Settings pane to select (`preferences` windows).
     var pane: String?
     /// `StartGuideOffer` for the start window: "unavailable", "secondary",
@@ -53,10 +55,10 @@ struct AppWindowScenario {
 
     init(url: URL) throws {
         let data = try Data(contentsOf: url)
-        guard let object = try JSONSerialization.jsonObject(with: data) as? [String: Any],
-              let window = object["window"] as? String
-        else { throw AppOracleError(description: "scenario needs a \"window\"") }
-        self.window = window
+        guard let object = try JSONSerialization.jsonObject(with: data) as? [String: Any] else {
+            throw AppOracleError(description: "a scenario is a JSON object")
+        }
+        window = object["window"] as? String ?? ""
         document = object["document"] as? String
         if let mode = object["mode"] as? String {
             guard let parsed = RenderMode(rawValue: mode) else {
@@ -70,6 +72,9 @@ struct AppWindowScenario {
         }
         if let preferences = object["preferences"] {
             self.preferences = try JSONSerialization.data(withJSONObject: preferences, options: [.prettyPrinted, .sortedKeys])
+        }
+        if let keybindings = object["keybindings"] {
+            self.keybindings = try JSONSerialization.data(withJSONObject: keybindings, options: [.prettyPrinted, .sortedKeys])
         }
         pane = object["pane"] as? String
         if let guide = object["guide"] as? String { self.guide = guide }
@@ -93,6 +98,9 @@ enum AppWindowSandbox {
         setenv("DOWNRIGHT_SUPPORT_DIRECTORY", support.path, 1)
         if let preferences = scenario.preferences {
             try preferences.write(to: support.appendingPathComponent("preferences.json"))
+        }
+        if let keybindings = scenario.keybindings {
+            try keybindings.write(to: support.appendingPathComponent("keybindings.json"))
         }
         clearOwnDefaults()
         return root
@@ -579,5 +587,59 @@ enum AppWindowBench {
         ])
         try json.text.write(toFile: output, atomically: true, encoding: .utf8)
         exit(0)
+    }
+}
+
+// MARK: - The main menu
+
+/// `app-menu <scenario.json> <out.json>`: the main menu `MainMenu.build()`
+/// makes, in the scenario's sandbox, every submenu refreshed by its delegate
+/// (`menuNeedsUpdate`) as AppKit does before showing it.
+@MainActor
+enum AppMenuDump {
+    static func run(input: URL, repositoryRoot: URL) throws -> JSON {
+        let scenario = try AppWindowScenario(url: input)
+        let sandbox = try AppWindowSandbox.prepare(scenario)
+        defer { AppWindowSandbox.remove(sandbox) }
+        NSApplication.shared.setActivationPolicy(.accessory)
+        applyScenarioAppearance(scenario, repositoryRoot: repositoryRoot)
+        let menu = MainMenu.build()
+        NSApp.mainMenu = menu
+        return dump(menu)
+    }
+
+    static func dump(_ menu: NSMenu) -> JSON {
+        menu.delegate?.menuNeedsUpdate?(menu)
+        return .object([
+            ("title", .string(menu.title)),
+            ("items", .array(menu.items.map(item))),
+        ])
+    }
+
+    static func item(_ item: NSMenuItem) -> JSON {
+        let represented: JSON
+        switch item.representedObject {
+        case nil: represented = .null
+        case let string as String: represented = .string(string)
+        case let other?: represented = .string("<\(AppWindowGeometry.className(other as AnyObject))>")
+        }
+        return .object([
+            ("title", .string(item.title)),
+            ("separator", .bool(item.isSeparatorItem)),
+            ("keyEquivalent", .string(item.keyEquivalent)),
+            ("modifiers", .int(Int(item.keyEquivalentModifierMask.rawValue))),
+            ("action", item.action.map { .string(NSStringFromSelector($0)) } ?? .null),
+            ("target", item.target.map { .string(AppWindowGeometry.className($0 as AnyObject)) } ?? .null),
+            ("tag", .int(item.tag)),
+            ("representedObject", represented),
+            ("enabled", .bool(item.isEnabled)),
+            ("state", .int(item.state.rawValue)),
+            ("hidden", .bool(item.isHidden)),
+            ("alternate", .bool(item.isAlternate)),
+            ("indentation", .int(item.indentationLevel)),
+            ("image", .bool(item.image != nil)),
+            ("toolTip", .string(item.toolTip)),
+            ("submenu", item.submenu.map { dump($0) } ?? .null),
+        ])
     }
 }

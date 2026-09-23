@@ -1558,6 +1558,19 @@
       "variants": [
         []
       ]
+    },
+    {
+      "name": "app-menu",
+      "command": "app-menu",
+      "oracle": "app",
+      "output": "json",
+      "input": "json",
+      "only": [
+        "corpus/app-menu/"
+      ],
+      "variants": [
+        []
+      ]
     }
   ]
 }

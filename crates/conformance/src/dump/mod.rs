@@ -52,6 +52,7 @@ pub const APP_COMMANDS: &[&str] = &[
     "bench-find",
     "app-window",
     "bench-app-window",
+    "app-menu",
 ];
 
 use std::path::PathBuf;
@@ -220,6 +221,7 @@ pub fn run(request: &Request) -> Result<(), Failure> {
         "bench-find" => app_bench::find(request),
         "app-window" => app_window::run(request),
         "bench-app-window" => app_window::bench(request),
+        "app-menu" => app_window::menu(request),
         _ => Err(Failure::NotPorted),
     }
 }
