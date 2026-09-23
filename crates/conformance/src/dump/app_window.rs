@@ -89,7 +89,7 @@ impl Scenario {
 /// Window kinds this oracle can build yet. Anything else is "not ported",
 /// reported before the application starts.
 fn is_ported(window: &str) -> bool {
-    matches!(window, "probe")
+    matches!(window, "probe" | "setup")
 }
 
 // MARK: - Sandbox
@@ -253,8 +253,12 @@ fn appearance(dark: bool) -> Retained<NSAppearance> {
 }
 
 /// `applyScenarioAppearance`: `AppDelegate.applySelectedTheme`, with the
-/// system appearance taken from the scenario.
-fn apply_scenario_appearance(scenario: &Scenario, mtm: MainThreadMarker) {
+/// system appearance taken from the scenario, and the bundle's icon as the
+/// application icon.
+fn apply_scenario_appearance(scenario: &Scenario, root: &Path, mtm: MainThreadMarker) {
+    let icon_path = NSString::from_str(&root.join("vendor/downright/Resources/AppIcon.icns").to_string_lossy());
+    let icon = objc2_app_kit::NSImage::initWithContentsOfFile(objc2_app_kit::NSImage::alloc(), &icon_path);
+    unsafe { NSApplication::sharedApplication(mtm).setApplicationIconImage(icon.as_deref()) };
     let appearance = appearance(scenario.dark);
     NSApplication::sharedApplication(mtm).setAppearance(Some(&appearance));
     let name = upleft_app::support::preferences::Preferences::shared().theme_name(&appearance);
@@ -267,6 +271,8 @@ fn apply_scenario_appearance(scenario: &Scenario, mtm: MainThreadMarker) {
 struct Scene {
     window: Retained<NSWindow>,
     pending_commands: Option<Vec<String>>,
+    /// Keeps the window's controller alive (`retained` in Swift).
+    _retained: Option<Retained<NSObject>>,
 }
 
 impl Scene {
@@ -301,7 +307,17 @@ impl Scene {
                 let content = probe.contentView().expect("content view");
                 content.addSubview(&label);
                 content.addSubview(&button);
-                let scene = Scene { window: probe, pending_commands: None };
+                let scene = Scene { window: probe, pending_commands: None, _retained: None };
+                scene.show(mtm);
+                Ok(scene)
+            }
+            "setup" => {
+                use upleft_app::app::setup_window_controller::SetupWindowController;
+                let controller = SetupWindowController::make_if_needed(mtm).ok_or_else(|| {
+                    Failure::Error("SetupWindowController.makeIfNeeded() returned nil on this machine".into())
+                })?;
+                let window = controller.window().ok_or_else(|| Failure::Error("setup controller has no window".into()))?;
+                let scene = Scene { window, pending_commands: None, _retained: Some(Retained::into_super(Retained::into_super(Retained::into_super(controller)))) };
                 scene.show(mtm);
                 Ok(scene)
             }
@@ -495,7 +511,7 @@ define_class!(
             let result = SESSION.with(|cell| -> Result<(), Failure> {
                 let mut guard = cell.borrow_mut();
                 let session = guard.as_mut().expect("session");
-                apply_scenario_appearance(&session.scenario, mtm);
+                apply_scenario_appearance(&session.scenario, &session.root, mtm);
                 session.scene = Some(Scene::build(&session.scenario, &session.root, mtm)?);
                 session.restart_settling();
                 Ok(())

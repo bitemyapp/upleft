@@ -212,7 +212,6 @@ harness = false
 [[test]]
 name = "app_shell_menu_objects"
 harness = false
-||||||| 1e39b93
 
 # The document scroll gestures (`App/DocumentScrollGestures.swift` and the
 # swipes and zoom built on it): `@MainActor` suites over AppKit views and

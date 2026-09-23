@@ -113,9 +113,13 @@ enum AppWindowSandbox {
 
 /// What the app's launch does before any window is built:
 /// `AppDelegate.applySelectedTheme`, with the system appearance taken from
-/// the scenario rather than the machine.
+/// the scenario rather than the machine. The application icon is the one
+/// the bundle carries (`CFBundleIconFile` AppIcon): an oracle binary has no
+/// bundle, and AppKit would otherwise show the icon of the folder it runs
+/// from.
 @MainActor
-func applyScenarioAppearance(_ scenario: AppWindowScenario) {
+func applyScenarioAppearance(_ scenario: AppWindowScenario, repositoryRoot: URL) {
+    NSApp.applicationIconImage = NSImage(contentsOf: repositoryRoot.appendingPathComponent("vendor/downright/Resources/AppIcon.icns"))
     let appearance = NSAppearance(named: scenario.dark ? .darkAqua : .aqua)!
     NSApp.appearance = appearance
     ThemeStore.shared.select(named: Preferences.shared.themeName(for: appearance))
@@ -356,7 +360,7 @@ final class AppWindowSession: NSObject, NSApplicationDelegate {
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         do {
-            applyScenarioAppearance(scenario)
+            applyScenarioAppearance(scenario, repositoryRoot: repositoryRoot)
             scene = AppWindowScene(scenario: scenario)
             try scene.build(repositoryRoot: repositoryRoot)
             restartSettling()
@@ -512,7 +516,7 @@ enum AppWindowBench {
         let sandbox = try AppWindowSandbox.prepare(scenario)
         let app = NSApplication.shared
         app.setActivationPolicy(.accessory)
-        applyScenarioAppearance(scenario)
+        applyScenarioAppearance(scenario, repositoryRoot: repositoryRoot)
         guard let path = scenario.document else { throw AppOracleError(description: "bench needs a document") }
         let url = repositoryRoot.appendingPathComponent(path)
 
