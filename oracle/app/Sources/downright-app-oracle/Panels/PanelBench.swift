@@ -15,6 +15,7 @@ enum PanelBench {
     @MainActor
     static func run(input: URL) throws -> JSON {
         let json = try readScenarioJSON(input)
+        OffScreenWindows.install()
         _ = NSApplication.shared
         let runs = (json["runs"] as? NSNumber)?.intValue ?? 20
         let warmup = (json["warmup"] as? NSNumber)?.intValue ?? 3
@@ -41,6 +42,7 @@ enum PanelBench {
                 }
                 let end = DispatchTime.now().uptimeNanoseconds
                 if index >= warmup { samples.append(Double(end - start) / 1_000_000) }
+                OffScreenWindows.verify(NSApp.windows.filter { $0.isVisible })
             }
             samples.sort()
             let p50 = samples[samples.count / 2]

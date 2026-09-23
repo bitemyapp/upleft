@@ -282,6 +282,7 @@ enum PanelModelDump {
     @MainActor
     static func run(input: URL, flags: [String]) throws -> JSON {
         let json = try readScenarioJSON(input)
+        OffScreenWindows.install()
         _ = NSApplication.shared
         let base = json["state"] as? [String: Any] ?? [:]
         let states = json["states"] as? [[String: Any]] ?? [[:]]
@@ -297,6 +298,8 @@ enum PanelModelDump {
             let panel = try scene.build(scenario, styleSheet: styleSheet)
             panel.frame = NSRect(x: 0, y: 0, width: scenario.width, height: scenario.height)
             panel.layoutSubtreeIfNeeded()
+            // Windowless, but a panel may order in a window of its own.
+            OffScreenWindows.verify(NSApp.windows.filter { $0.isVisible })
             results.append(.object([
                 ("name", .string(entry["name"] as? String ?? "")),
                 ("fittingSize", PanelTree.size(panel.fittingSize)),

@@ -393,6 +393,7 @@ fn check_settled() {
 /// `PanelModelDump.run(input:flags:)`.
 pub fn run_model(request: &Request) -> Result<(), Failure> {
     let json = read_scenario_json(&request.input)?;
+    crate::dump::app_window::off_screen::install();
     let mtm = MainThreadMarker::new().expect("panel-model runs on the main thread");
     let _ = NSApplication::sharedApplication(mtm);
     let base = json.get("state").and_then(Value::as_object).cloned().unwrap_or_default();
@@ -415,6 +416,8 @@ pub fn run_model(request: &Request) -> Result<(), Failure> {
         let panel = scene.build(&scenario, style_sheet, mtm)?;
         panel.setFrame(NSRect::new(NSPoint::new(0.0, 0.0), NSSize::new(scenario.width, scenario.height)));
         panel.layoutSubtreeIfNeeded();
+        // Windowless, but a panel may order in a window of its own.
+        verify_visible_windows(mtm);
         let mut object = Map::new();
         object.insert("name".into(), Value::String(entry.get("name").and_then(Value::as_str).unwrap_or("").to_owned()));
         object.insert("fittingSize".into(), tree::size(panel.fittingSize()));
@@ -434,6 +437,7 @@ pub fn run_model(request: &Request) -> Result<(), Failure> {
 /// windowless; `prepare` is not timed.
 pub fn run_bench(request: &Request) -> Result<(), Failure> {
     let json = read_scenario_json(&request.input)?;
+    crate::dump::app_window::off_screen::install();
     let mtm = MainThreadMarker::new().expect("bench-panel runs on the main thread");
     let _ = NSApplication::sharedApplication(mtm);
     let runs = json.get("runs").and_then(Value::as_i64).unwrap_or(20) as usize;
@@ -469,6 +473,7 @@ pub fn run_bench(request: &Request) -> Result<(), Failure> {
             if index >= warmup {
                 samples.push(elapsed);
             }
+            verify_visible_windows(mtm);
             drop(panel);
             drop(scene);
         }
@@ -487,4 +492,11 @@ pub fn run_bench(request: &Request) -> Result<(), Failure> {
     let mut out = Map::new();
     out.insert("stages".into(), Value::Array(stages));
     Ok(super::json::write(&Value::Object(out), &request.output)?)
+}
+
+/// `OffScreenWindows.verify(NSApp.windows.filter { $0.isVisible })`.
+fn verify_visible_windows(mtm: MainThreadMarker) {
+    let visible: Vec<Retained<NSWindow>> =
+        NSApplication::sharedApplication(mtm).windows().iter().filter(|window| window.isVisible()).collect();
+    crate::dump::app_window::off_screen::verify(&visible, mtm);
 }
