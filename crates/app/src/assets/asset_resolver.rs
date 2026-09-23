@@ -29,7 +29,7 @@
 //!   is a substring of the document; an image's own source is the parser's
 //!   native string; a link reference definition's destination is native
 //!   unless it is the definition's untrimmed body (see
-//!   `definition_destination_is_bridged`).
+//!   `definition_is_untrimmed_body`).
 
 use std::sync::Arc;
 
@@ -213,12 +213,15 @@ impl AssetReferenceParser {
     pub fn references(document: &ParsedDocument, context: &AssetResolutionContext) -> Vec<AssetReference> {
         let mut output: Vec<AssetReference> = Vec::new();
         let text = document.utf16.as_slice();
+        // Substrings of the document are bridged exactly when it holds a
+        // non-ASCII character (see the module notes).
+        let bridged = swift::bridges_substrings(text);
         document.root.walk(&mut |block| {
             for inline in &block.inlines {
                 inline.walk(&mut |span| {
                     let InlineKind::Image { source, alt } = &span.kind else { return };
-                    let Some(parsed) = Self::parse_destination(text, span.range, source) else { return };
-                    let resolved = Self::resolved_destination(parsed, document);
+                    let Some(parsed) = Self::parse_destination(text, span.range, source, bridged) else { return };
+                    let resolved = Self::resolved_destination(parsed, document, bridged);
                     let kind = Self::classify_with(&resolved.source, resolved.bridged);
                     output.push(AssetReference {
                         source_text: text.substring(resolved.range),
@@ -237,7 +240,7 @@ impl AssetReferenceParser {
         output
     }
 
-    fn resolved_destination(parsed: Destination, document: &ParsedDocument) -> Destination {
+    fn resolved_destination(parsed: Destination, document: &ParsedDocument, document_bridges: bool) -> Destination {
         let Some(identifier) = parsed.reference_identifier.as_deref() else { return parsed };
         let Some(definition) = swift::dict_get(&document.link_references, &swift::lowercased(identifier)) else {
             return parsed;
@@ -250,20 +253,17 @@ impl AssetReferenceParser {
             range: definition_range,
             title: definition.title.clone(),
             reference_identifier: Some(identifier.to_owned()),
-            bridged: Self::definition_destination_is_bridged(definition, document.utf16.as_slice()),
+            bridged: document_bridges && Self::definition_is_untrimmed_body(definition, document.utf16.as_slice()),
         }
     }
 
     /// Whether MarkdownCore's `destinationAndTitle(_:)` handed back the
     /// definition's body itself, a substring of the document's `NSString`
-    /// (bridged when the document is not ASCII). It does exactly when nothing
-    /// was trimmed and no title followed, that is when the destination is the
-    /// whole rest of the line after `]:`. Otherwise its `String(…)` and
+    /// (so bridged when the document is not ASCII). It does exactly when
+    /// nothing was trimmed and no title followed, that is when the destination
+    /// is the whole rest of the line after `]:`. Otherwise its `String(…)` and
     /// trimming made a native string.
-    fn definition_destination_is_bridged(definition: &LinkReference, text: &[u16]) -> bool {
-        if !swift::bridges_substrings(text) {
-            return false;
-        }
+    fn definition_is_untrimmed_body(definition: &LinkReference, text: &[u16]) -> bool {
         let destination = swift::ns::utf16(&definition.destination);
         let upper = definition.range.upper_bound();
         let start = upper - destination.len() as isize;
@@ -313,7 +313,7 @@ impl AssetReferenceParser {
         Some(NSRange::new(definition.range.location + start, end - start))
     }
 
-    fn parse_destination(text: &[u16], image_range: NSRange, fallback_source: &str) -> Option<Destination> {
+    fn parse_destination(text: &[u16], image_range: NSRange, fallback_source: &str, bridged: bool) -> Option<Destination> {
         let raw = &text[image_range.as_usize_range()];
         // `rawString.hasPrefix("![")` is Character-wise. Whether a Character
         // boundary follows the `[` depends only on the next scalar, which the
@@ -321,9 +321,6 @@ impl AssetReferenceParser {
         if !swift::has_prefix(&swift::ns::string_from_utf16(&raw[..raw.len().min(4)]), "![") {
             return None;
         }
-        // A use-site substring of the document is bridged exactly when the
-        // document holds a non-ASCII character.
-        let bridged = swift::bridges_substrings(text);
         let mut index: isize = 2;
         let mut depth = 1;
         while index < raw.length() {
