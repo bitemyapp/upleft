@@ -293,3 +293,18 @@ harness = false
 [[test]]
 name = "toolbar_controls_tests"
 harness = false
+
+# Window-level cases of the DocumentWindowController panel extensions
+# (`+AssetInsertion`, `+ContinuityCamera`, `+CommandPalette`): main-thread
+# suites over a real controller whose window is never ordered in.
+[[test]]
+name = "document_drop_tests_window"
+harness = false
+
+[[test]]
+name = "share_and_capture_tests_window"
+harness = false
+
+[[test]]
+name = "command_palette_navigation_regression_tests"
+harness = false
