@@ -13,9 +13,13 @@ use upleft_quicklook::quick_look_policy::QuickLookPolicy;
 use upleft_render::theme::preview_appearance::PreviewAppearance;
 
 fn temporary_directory() -> PathBuf {
+    // The clock only ticks in microseconds here, so parallel tests need a
+    // counter as well or two of them share (and delete) one directory.
+    static NEXT: std::sync::atomic::AtomicUsize = std::sync::atomic::AtomicUsize::new(0);
     let unique = format!(
-        "downright-ql-{}-{}",
+        "downright-ql-{}-{}-{}",
         std::process::id(),
+        NEXT.fetch_add(1, std::sync::atomic::Ordering::Relaxed),
         std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).unwrap().as_nanos()
     );
     let url = std::env::temp_dir().join(unique);
