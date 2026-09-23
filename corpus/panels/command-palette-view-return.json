@@ -1,0 +1,1 @@
+{"panel": "CommandPaletteView", "theme": "Warm Dark", "dark": true, "width": 520, "height": 420, "state": {"commands": ["find", "findNext", "findPrevious", "findReplace", "findInSiblings", "useSelectionForFind"], "recents": ["findReplace"], "query": "find", "keys": [125, 125, 36, 53, 76]}}

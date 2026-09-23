@@ -1,0 +1,1 @@
+{"panel": "FindBarView", "theme": "Nord", "dark": true, "width": 336, "height": 88, "document": "corpus/generated/agent/agent-400.md", "state": {"presentation": "inspector", "query": "module", "advance": 1, "showsReplace": true, "replacement": "package"}}
