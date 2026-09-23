@@ -1,0 +1,36 @@
+{
+ "panel": "TaskPanelView",
+ "theme": "Paper Light",
+ "width": 300,
+ "height": 640,
+ "document": "corpus/generated/agent/agent-5000.md",
+ "runs": 40,
+ "warmup": 5,
+ "state": {},
+ "states": [
+  {
+   "name": "agent-5000 build + layout"
+  },
+  {
+   "name": "agent-5000 build + layout + draw",
+   "draw": true
+  },
+  {
+   "name": "agent-5000 completed piles expanded",
+   "actions": [
+    [
+     "expandPile",
+     0
+    ],
+    [
+     "expandPile",
+     1
+    ],
+    [
+     "expandPile",
+     2
+    ]
+   ]
+  }
+ ]
+}

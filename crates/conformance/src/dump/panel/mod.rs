@@ -61,11 +61,29 @@ impl PanelScenario {
         })
     }
 
-    /// The attached document's text (UTF-8, as the app reads a file).
+    /// The attached document's text (UTF-8, as the app reads a file), read
+    /// once per process.
     pub fn document_text(&self) -> Result<String, String> {
         let Some(path) = &self.document_path else { return Ok(String::new()) };
+        if let Some(cached) = DOCUMENT_TEXTS.with(|texts| texts.borrow().get(path).cloned()) {
+            return Ok(cached);
+        }
         let url = repository_root().join(path);
-        std::fs::read_to_string(&url).map_err(|error| format!("{}: {error}", url.display()))
+        let text = std::fs::read_to_string(&url).map_err(|error| format!("{}: {error}", url.display()))?;
+        DOCUMENT_TEXTS.with(|texts| texts.borrow_mut().insert(path.clone(), text.clone()));
+        Ok(text)
+    }
+
+    /// `MarkdownParser::parse(document_text())`, parsed once per process, so
+    /// `bench-panel` times the panel rather than the parser.
+    pub fn parsed_document(&self) -> Result<std::sync::Arc<upleft_core::model::ParsedDocument>, String> {
+        let key = self.document_path.clone().unwrap_or_default();
+        if let Some(cached) = PARSED_DOCUMENTS.with(|documents| documents.borrow().get(&key).cloned()) {
+            return Ok(cached);
+        }
+        let document = upleft_core::parser::MarkdownParser::parse(&self.document_text()?);
+        PARSED_DOCUMENTS.with(|documents| documents.borrow_mut().insert(key, document.clone()));
+        Ok(document)
     }
 
     pub fn string(&self, key: &str) -> Option<String> {
@@ -113,6 +131,13 @@ impl PanelScenario {
     pub fn strings(&self, key: &str) -> Vec<String> {
         self.array(key).iter().filter_map(|value| value.as_str().map(str::to_owned)).collect()
     }
+}
+
+thread_local! {
+    /// `PanelScenarioCache`.
+    static DOCUMENT_TEXTS: RefCell<std::collections::HashMap<String, String>> = RefCell::default();
+    static PARSED_DOCUMENTS: RefCell<std::collections::HashMap<String, std::sync::Arc<upleft_core::model::ParsedDocument>>> =
+        RefCell::default();
 }
 
 /// `repositoryRoot` in the Swift oracle.
@@ -488,6 +513,10 @@ pub fn run_bench(request: &Request) -> Result<(), Failure> {
         let (style_sheet, appearance) = panel_style_sheet(&scenario)?;
         NSApplication::sharedApplication(mtm).setAppearance(Some(&appearance));
         let draw = scenario.bool("draw");
+        // The document is read and parsed before timing (cached per process).
+        if scenario.document_path.is_some() {
+            scenario.parsed_document().map_err(Failure::Error)?;
+        }
         let mut samples = Vec::with_capacity(runs);
         for index in 0..(warmup + runs) {
             let mut scene = scenes::make(&scenario.panel)?;

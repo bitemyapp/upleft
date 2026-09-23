@@ -61,11 +61,25 @@ struct PanelScenario {
         self.state = state ?? (json["state"] as? [String: Any] ?? [:])
     }
 
-    /// The attached document's text (read as the app reads a file: UTF-8).
+    /// The attached document's text (read as the app reads a file: UTF-8),
+    /// read once per process.
     func documentText() throws -> String {
         guard let documentPath else { return "" }
+        if let cached = PanelScenarioCache.texts[documentPath] { return cached }
         let url = repositoryRoot.appendingPathComponent(documentPath)
-        return try String(contentsOf: url, encoding: .utf8)
+        let text = try String(contentsOf: url, encoding: .utf8)
+        PanelScenarioCache.texts[documentPath] = text
+        return text
+    }
+
+    /// `MarkdownParser.parse(documentText())`, parsed once per process, so
+    /// `bench-panel` times the panel rather than the parser.
+    func parsedDocument() throws -> ParsedDocument {
+        let key = documentPath ?? ""
+        if let cached = PanelScenarioCache.documents[key] { return cached }
+        let document = MarkdownParser.parse(try documentText())
+        PanelScenarioCache.documents[key] = document
+        return document
     }
 
     func string(_ key: String) -> String? { state[key] as? String }
@@ -78,6 +92,12 @@ struct PanelScenario {
     func array(_ key: String) -> [Any] { state[key] as? [Any] ?? [] }
     func object(_ key: String) -> [String: Any] { state[key] as? [String: Any] ?? [:] }
     func strings(_ key: String) -> [String] { array(key).compactMap { $0 as? String } }
+}
+
+/// Per-process caches behind `documentText()` and `parsedDocument()`.
+enum PanelScenarioCache {
+    nonisolated(unsafe) static var texts: [String: String] = [:]
+    nonisolated(unsafe) static var documents: [String: ParsedDocument] = [:]
 }
 
 /// What a panel scene provides. The harness owns the window, the settle loop

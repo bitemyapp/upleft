@@ -66,7 +66,7 @@ final class CommandPaletteViewScene: PanelScene, CommandPaletteViewDelegate {
         store.values = scenario.strings("recents").compactMap(Command.init(rawValue:))
         var providers: [any QuickOpenProvider] = []
         if scenario.documentPath != nil {
-            providers.append(CurrentDocumentQuickOpenProvider(document: MarkdownParser.parse(try scenario.documentText())))
+            providers.append(CurrentDocumentQuickOpenProvider(document: try scenario.parsedDocument()))
         }
         let palette: CommandPaletteView
         if scenario.bool("current") {

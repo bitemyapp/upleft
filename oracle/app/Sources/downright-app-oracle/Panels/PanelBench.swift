@@ -7,7 +7,8 @@ import MarkdownRender
 /// and lay out (and, with `"draw": true`, draw into a bitmap), windowless, for
 /// each entry of the scenario's `states` (merged over `state`, as
 /// `panel-model` does). The scene's `prepare` (parsing the document, building
-/// the model the panel is handed) is not timed. `runs` (default 20) samples
+/// the model the panel is handed) is not timed, nor is reading and parsing
+/// the scenario's document (`parsedDocument()`, cached per process). `runs` (default 20) samples
 /// after `warmup` (default 3) per stage; prints `<panel> <stage>  p50 … ms  p95
 /// … ms` lines as the other app benches do. Mirrored by
 /// `crates/conformance/src/dump/panel/mod.rs` (`run_bench`).
@@ -30,6 +31,8 @@ enum PanelBench {
             let (styleSheet, appearance) = try panelStyleSheet(scenario)
             NSApp.appearance = appearance
             let draw = scenario.bool("draw")
+            // The document is read and parsed before timing (cached per process).
+            if scenario.documentPath != nil { _ = try scenario.parsedDocument() }
             var samples: [Double] = []
             for index in 0..<(warmup + runs) {
                 let scene = try PanelScenes.make(scenario.panel)
