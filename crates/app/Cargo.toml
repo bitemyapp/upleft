@@ -51,3 +51,7 @@ harness = false
 [[test]]
 name = "file_watcher_tests"
 harness = false
+
+[[test]]
+name = "async_parse_tests"
+harness = false
