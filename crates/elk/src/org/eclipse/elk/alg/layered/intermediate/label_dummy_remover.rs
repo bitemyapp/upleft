@@ -14,16 +14,9 @@ use crate::org::eclipse::elk::core::options::edge_routing::EdgeRouting;
 use crate::org::eclipse::elk::core::options::label_side::LabelSide;
 use crate::org::eclipse::elk::core::util::i_elk_progress_monitor::IElkProgressMonitor;
 
-/// `LongEdgeJoiner.joinAt(_:_:)` (group C,
-/// `intermediate::long_edge_joiner::LongEdgeJoiner::join_at`). Placeholder
-/// until the merge wires it.
+/// `LongEdgeJoiner.joinAt(_:_:)`.
 fn join_at(lg: &mut LGraphArena, long_edge_dummy: LNodeId, add_unnecessary_bendpoints: bool) {
-    _needs_group_c_long_edge_joiner_join_at(lg, long_edge_dummy, add_unnecessary_bendpoints)
-}
-
-#[allow(unused_variables)]
-fn _needs_group_c_long_edge_joiner_join_at(lg: &mut LGraphArena, long_edge_dummy: LNodeId, add_unnecessary_bendpoints: bool) {
-    unimplemented!("wire to LongEdgeJoiner::join_at(lg, long_edge_dummy, add_unnecessary_bendpoints) (group C)")
+    crate::org::eclipse::elk::alg::layered::intermediate::long_edge_joiner::LongEdgeJoiner::join_at(lg, long_edge_dummy, add_unnecessary_bendpoints)
 }
 
 #[derive(Default)]

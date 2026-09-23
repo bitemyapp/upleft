@@ -18,23 +18,14 @@ use crate::org::eclipse::elk::core::alg::i_layout_processor::ILayoutProcessor;
 use crate::org::eclipse::elk::core::math::k_vector::KVectorRef;
 use crate::org::eclipse::elk::core::options::port_label_placement::PortLabelPlacement;
 use crate::org::eclipse::elk::core::options::size_constraint::SizeConstraint;
+use crate::org::eclipse::elk::alg::common::nodespacing::node_dimension_calculation::NodeDimensionCalculation;
+use crate::org::eclipse::elk::alg::layered::graph::l_graph_adapters::LGraphAdapters;
 use crate::prelude::*;
 
 #[derive(Default)]
 pub struct HierarchicalPortOrthogonalEdgeRouter {
     /// The amount of space necessary to accommodate northern external port edge routing.
     northern_ext_port_edge_routing_height: f64,
-}
-
-/// NEEDS GROUP E: the Swift calls
-/// `NodeDimensionCalculation.getNodeMarginCalculator(LGraphAdapters.adapt(graph, transparentNorthSouthEdges: false))
-///     .process(node: LGraphAdapters.adapt(dummy, transparentNorthSouthEdges: false))`,
-/// i.e. `NodeMarginCalculator(LGraphAdapter(graph)).process(node:)` on the
-/// restored dummy (computes its margins from its labels and ports). To be
-/// wired to group E's `alg::common::nodespacing` / `graph::l_graph_adapters`
-/// port at merge.
-fn _needs_group_e_node_margin_calculator_process_node(_lg: &mut LGraphArena, _graph: LGraphId, _dummy: LNodeId) {
-    unimplemented!("HierarchicalPortOrthogonalEdgeRouter: NodeMarginCalculator.process(node:) (group E) is not wired yet")
 }
 
 impl HierarchicalPortOrthogonalEdgeRouter {
@@ -122,7 +113,8 @@ impl HierarchicalPortOrthogonalEdgeRouter {
             }
 
             // Calculate margins
-            _needs_group_e_node_margin_calculator_process_node(lg, graph, dummy);
+            NodeDimensionCalculation::get_node_margin_calculator(LGraphAdapters::adapt_ns(graph, false))
+                .process_node(lg, &LGraphAdapters::adapt_node(dummy, false));
         }
     }
 
