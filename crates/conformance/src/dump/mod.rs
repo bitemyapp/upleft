@@ -25,6 +25,7 @@ pub mod unicode;
 pub mod app_bench;
 pub mod app_window;
 pub mod panel;
+pub mod quicklook_thumbnail;
 pub mod down_cli;
 pub mod find;
 pub mod formats;
@@ -57,6 +58,7 @@ pub const APP_COMMANDS: &[&str] = &[
     "panel",
     "panel-model",
     "bench-panel",
+    "quicklook-thumbnail",
 ];
 
 use std::path::PathBuf;
@@ -229,6 +231,7 @@ pub fn run(request: &Request) -> Result<(), Failure> {
         "panel" => panel::run_capture(request),
         "panel-model" => panel::run_model(request),
         "bench-panel" => panel::run_bench(request),
+        "quicklook-thumbnail" => quicklook_thumbnail::run(request),
         _ => Err(Failure::NotPorted),
     }
 }

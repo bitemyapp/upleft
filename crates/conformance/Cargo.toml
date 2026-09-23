@@ -20,6 +20,8 @@ upleft-foundation.workspace = true
 upleft-spotlight-metadata.workspace = true
 upleft-cli.workspace = true
 upleft-app.workspace = true
+upleft-quicklook.workspace = true
+upleft-thumb.workspace = true
 objc2.workspace = true
 objc2-foundation = { workspace = true, features = [
     "NSArray", "NSAttributedString", "NSData", "NSDictionary", "NSEnumerator", "NSError", "NSGeometry",

@@ -27,6 +27,7 @@ enum PanelScenes {
         case "LightboxWindow": return LightboxWindowScene()
         case "LocalAIPanelView": return LocalAIPanelViewScene()
         case "PanelChrome": return PanelChromeScene()
+        case "PreviewViewController": return PreviewViewControllerScene()
         case "ReaderProfilePickerView": return ReaderProfilePickerViewScene()
         case "RenderTargetsView": return RenderTargetsViewScene()
         case "ReviewPanelView": return ReviewPanelViewScene()

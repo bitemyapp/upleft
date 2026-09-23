@@ -671,9 +671,11 @@ dependencies = [
  "upleft-markup",
  "upleft-math",
  "upleft-mermaid",
+ "upleft-quicklook",
  "upleft-render",
  "upleft-spotlight-metadata",
  "upleft-swift-text",
+ "upleft-thumb",
 ]
 
 [[package]]

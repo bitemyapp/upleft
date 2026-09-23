@@ -1126,6 +1126,20 @@ impl PreviewViewController {
         self.fall_back_to_plain_text();
     }
 
+    /// `previewGeneration &+= 1`: retires a pending memory watch the way a
+    /// newer preview does (its first sample sees another generation). The
+    /// conformance scene uses it so a capture never depends on the process's
+    /// own malloc footprint.
+    pub fn retire_memory_watch_for_testing(&self) {
+        let generation = &self.ivars().preview_generation;
+        generation.set(generation.get().wrapping_add(1));
+    }
+
+    /// `currentHeadingIndex`.
+    pub fn current_heading_index_for_testing(&self) -> Option<isize> {
+        self.ivars().current_heading_index.get()
+    }
+
     /// Whether the memory watch's timer is scheduled.
     pub fn has_memory_timer_for_testing(&self) -> bool {
         self.ivars().memory_timer.borrow().is_some()
