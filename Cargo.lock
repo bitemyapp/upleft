@@ -548,6 +548,7 @@ dependencies = [
  "upleft-markup",
  "upleft-math",
  "upleft-render",
+ "upleft-swift-text",
 ]
 
 [[package]]

@@ -26,19 +26,20 @@
 //! it does not give the Kirat Rai vowel signs (U+16D63, U+16D67–U+16D6A)
 //! Grapheme_Cluster_Break=V.
 //!
-//! Canonical equivalence uses `unicode-normalization`; the `unicode` suite
-//! checks its decompositions, compositions and combining classes against
-//! Foundation and Swift's `==` for every scalar.
+//! Canonical equivalence runs the stdlib's own NFC algorithm
+//! ([`normalization`]) over `unicode-normalization`'s Unicode 17 data; the
+//! `unicode` suite checks Swift's `==` and `<` against it for every
+//! decomposable scalar and 20,000 adversarial pairs.
 
 pub mod grapheme_tables;
 pub mod graphemes;
 pub mod ns;
+pub mod normalization;
 pub mod ns_range;
 pub mod tables;
 
+pub use normalization::{swift_nfc, swift_nfd};
 pub use ns_range::{NS_NOT_FOUND, NSRange};
-
-use unicode_normalization::UnicodeNormalization;
 
 // MARK: - Property tables
 
@@ -595,7 +596,7 @@ pub fn str_eq(a: &str, b: &str) -> bool {
     if a.is_ascii() && b.is_ascii() {
         return false;
     }
-    a.nfc().eq(b.nfc())
+    swift_nfc(a).eq(swift_nfc(b))
 }
 
 /// `Character == Character`.
@@ -741,7 +742,9 @@ pub fn bridges_substrings(document: &[u16]) -> bool {
 
 /// `String.contains(_: String)` — a Character-wise substring search.
 pub fn contains(s: &str, needle: &str) -> bool {
-    find(s, needle).is_some()
+    // Swift 6.4: `"abc".contains("")` and `"".contains("")` are false, though
+    // `firstRange(of: "")` is an empty range at the start.
+    !needle.is_empty() && find(s, needle).is_some()
 }
 
 /// `String.contains(_: Character)`.
@@ -1113,36 +1116,142 @@ pub fn dict_get<'a, V>(map: &'a std::collections::HashMap<String, V>, key: &str)
     map.iter().find(|(existing, _)| str_eq(existing, key)).map(|(_, value)| value)
 }
 
-/// Swift's `String < String`: Unicode scalar order of the NFC forms.
-pub fn str_cmp(a: &str, b: &str) -> std::cmp::Ordering {
-    if a.is_ascii() && b.is_ascii() {
-        return a.cmp(b);
+/// Swift's `String < String`, as `StringComparison.swift` computes it for
+/// native strings. Mostly the order of the NFC scalars, but with the
+/// stdlib's shortcuts, which are observable:
+///
+/// * when one string is a byte prefix of the other, the shorter is less,
+///   without normalizing (`"\u{F71}"` < `"\u{F71}\u{308}\u{323}\u{93C}"`
+///   although the latter's NFC starts with U+093C);
+/// * when the NFC scalars of one are a proper prefix of the other's, the one
+///   with fewer UTF-8 bytes is less (`"\u{AC00}\u{11A8}\u{2B0}"` <
+///   `"\u{1100}\u{1161}\u{11A8}"`, and `"a\u{301}"` and `"\u{E1}b"` are
+///   each not less than the other, nor equal).
+///
+/// So `<` is not a strict weak order on non-NFC input; [`str_cmp`] folds it
+/// into an `Ordering` the way a `<`-driven sort observes it.
+pub fn str_less(a: &str, b: &str) -> bool {
+    let (x, y) = (a.as_bytes(), b.as_bytes());
+    if x == y {
+        return false;
     }
-    a.nfc().cmp(b.nfc())
+    if a.is_ascii() && b.is_ascii() {
+        return x < y;
+    }
+    // `_findDiffIdx`: a byte prefix compares by length.
+    let limit = x.len().min(y.len());
+    let mut diff = 0;
+    while diff < limit && x[diff] == y[diff] {
+        diff += 1;
+    }
+    if diff == limit {
+        return x.len() < y.len();
+    }
+    // `_scalarAlign`: the bytes before `diff` agree, so the scalar starts at
+    // the same offset in both.
+    let mut start = diff;
+    while !a.is_char_boundary(start) {
+        start -= 1;
+    }
+    let left = a[start..].chars().next().expect("scalar");
+    let right = b[start..].chars().next().expect("scalar");
+    if is_nfc_starter(left)
+        && is_nfc_starter(right)
+        && has_normalization_boundary(a, start + left.len_utf8())
+        && has_normalization_boundary(b, start + right.len_utf8())
+    {
+        return left < right;
+    }
+    // Back up to the nearest normalization boundary; compare NFC scalars.
+    let boundary = find_boundary(a, diff).min(find_boundary(b, diff));
+    let (a, b) = (&a[boundary..], &b[boundary..]);
+    let mut left = swift_nfc(a);
+    let mut right = swift_nfc(b);
+    loop {
+        match (left.next(), right.next()) {
+            (Some(l), Some(r)) if l == r => continue,
+            (Some(l), Some(r)) => return l < r,
+            (None, None) => return false,
+            // One ran out of scalars: the one with fewer bytes is less.
+            _ => return a.len() < b.len(),
+        }
+    }
+}
+
+/// `Unicode.Scalar._isNFCStarter`: canonical combining class 0 and
+/// NFC_Quick_Check=Yes (every scalar below U+0300 is one).
+#[inline]
+pub fn is_nfc_starter(c: char) -> bool {
+    if (c as u32) < 0x300 {
+        return true;
+    }
+    canonical_combining_class(c) == 0 && nfc_quick_check_yes(c)
+}
+
+/// NFC_Quick_Check=Yes.
+#[inline]
+pub fn nfc_quick_check_yes(c: char) -> bool {
+    unicode_normalization::is_nfc_quick(std::iter::once(c)) == unicode_normalization::IsNormalized::Yes
+}
+
+/// `UnsafeBufferPointer<UInt8>.hasNormalizationBoundary(before:)`.
+fn has_normalization_boundary(s: &str, offset: usize) -> bool {
+    if offset == 0 || offset == s.len() {
+        return true;
+    }
+    if s.as_bytes()[offset] < 0xCC {
+        return true;
+    }
+    is_nfc_starter(s[offset..].chars().next().expect("scalar"))
+}
+
+/// `_findBoundary(_:before:)`: the nearest NFC starter at or before `before`.
+fn find_boundary(s: &str, before: usize) -> usize {
+    if before >= s.len() {
+        return s.len();
+    }
+    let mut index = before;
+    while !s.is_char_boundary(index) {
+        index -= 1;
+    }
+    loop {
+        if index == 0 {
+            return 0;
+        }
+        if is_nfc_starter(s[index..].chars().next().expect("scalar")) {
+            return index;
+        }
+        index -= s[..index].chars().next_back().expect("scalar").len_utf8();
+    }
+}
+
+/// Swift's `String` comparison folded into an `Ordering`: `Less` when
+/// `a < b`, `Greater` when `b < a`, otherwise `Equal` (which, for the
+/// non-NFC cases [`str_less`] describes, need not mean `==`).
+pub fn str_cmp(a: &str, b: &str) -> std::cmp::Ordering {
+    if str_less(a, b) {
+        std::cmp::Ordering::Less
+    } else if str_less(b, a) {
+        std::cmp::Ordering::Greater
+    } else {
+        std::cmp::Ordering::Equal
+    }
 }
 
 // MARK: - Normalization
 
-/// The NFC form of `s`: the representative Swift's `==`, `<` and `hashValue`
+/// Swift's NFC of `s`: the representative its `==`, `<` and `hashValue`
 /// work from.
 pub fn nfc(s: &str) -> String {
     if s.is_ascii() {
         return s.to_owned();
     }
-    s.nfc().collect()
+    swift_nfc(s).collect()
 }
 
-/// The NFD form of `s` (`decomposedStringWithCanonicalMapping`).
-pub fn nfd(s: &str) -> String {
-    if s.is_ascii() {
-        return s.to_owned();
-    }
-    s.nfd().collect()
-}
-
-/// The NFC scalars of `s`, without allocating a `String` for ASCII input.
+/// Swift's NFC scalars of `s`, lazily.
 pub fn nfc_scalars(s: &str) -> impl Iterator<Item = char> + '_ {
-    s.nfc()
+    swift_nfc(s)
 }
 
 /// A key under which canonically equivalent strings collide, for maps that

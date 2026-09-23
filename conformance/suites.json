@@ -54,7 +54,16 @@
       "command": "core-text",
       "output": "json",
       "variants": [[]],
-      "input": "txt"
+      "input": "txt",
+      "only": ["corpus/core-io/"]
+    },
+    {
+      "name": "unicode",
+      "command": "unicode",
+      "output": "json",
+      "variants": [[]],
+      "input": "txt",
+      "only": ["corpus/unicode/"]
     },
     {
       "name": "parse-io",

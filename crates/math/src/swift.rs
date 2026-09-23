@@ -56,7 +56,9 @@ pub fn compare(a: &str, b: &str) -> Ordering {
 
 /// `lower...upper ~= ch` for a `ClosedRange<String>` or `ClosedRange<Character>`.
 pub fn in_closed_range(ch: &str, lower: &str, upper: &str) -> bool {
-    compare(lower, ch) != Ordering::Greater && compare(ch, upper) != Ordering::Greater
+    // `ClosedRange.contains`: `lower <= ch && ch <= upper`, where `x <= y` is
+    // `!(y < x)`.
+    !swift_text::str_less(ch, lower) && !swift_text::str_less(upper, ch)
 }
 
 /// NFC form, for looking a character up in a table keyed by `Character`.
