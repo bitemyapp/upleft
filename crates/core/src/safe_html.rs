@@ -16,22 +16,37 @@ use crate::swift_text::{self, ns::NSStringExt};
 /// The deliberately small HTML vocabulary Downright may present as content.
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub enum SafeHTMLKind {
-    Paragraph { align: Option<SafeHTMLAlignment> },
-    Heading { level: isize },
+    Paragraph {
+        align: Option<SafeHTMLAlignment>,
+    },
+    Heading {
+        level: isize,
+    },
     Strong,
     Emphasis,
-    Link { destination: String, title: Option<String> },
-    Image { source: String, alt: String },
+    Link {
+        destination: String,
+        title: Option<String>,
+    },
+    Image {
+        source: String,
+        alt: String,
+    },
     /// A recognized but deliberately non-rendered tag, such as a remote image.
     Inert,
     LineBreak,
-    Details { open: bool },
+    Details {
+        open: bool,
+    },
     /// A closing `</details>` emitted in a separate Markdown HTML block.
     DetailsClosing,
     Summary,
     Table,
     TableRow,
-    TableCell { header: bool, align: Option<SafeHTMLAlignment> },
+    TableCell {
+        header: bool,
+        align: Option<SafeHTMLAlignment>,
+    },
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
@@ -265,10 +280,7 @@ impl SafeHTMLParser {
                 if !Self::safe_local_image_source(src) {
                     return Some(SafeHTMLKind::Inert);
                 }
-                Some(SafeHTMLKind::Image {
-                    source: src.clone(),
-                    alt: swift_text::dict_get(attributes, "alt").cloned().unwrap_or_default(),
-                })
+                Some(SafeHTMLKind::Image { source: src.clone(), alt: swift_text::dict_get(attributes, "alt").cloned().unwrap_or_default() })
             }
             "br" => Some(SafeHTMLKind::LineBreak),
             "details" => Some(SafeHTMLKind::Details { open: swift_text::dict_get(attributes, "open").is_some() }),
