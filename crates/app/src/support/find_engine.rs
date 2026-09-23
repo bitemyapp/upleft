@@ -90,6 +90,59 @@ pub fn ns_string(text: &str) -> Retained<NSString> {
     swift::ns::foundation::ns_from_utf16(&swift::ns::utf16(text))
 }
 
+/// `text as NSString` for a regex to scan: the UTF-16 units in a malloc
+/// block the string owns (`initWithCharactersNoCopy:length:freeWhenDone:
+/// YES`), so `CFStringGetCharactersPtr` hands ICU the characters directly
+/// instead of a per-search copy. The same characters as [`ns_string`], so
+/// every match range is the same.
+pub struct Utf16Text {
+    pub ns: Retained<NSString>,
+    /// The units, read back only if Foundation chose to store the string
+    /// some other way.
+    copied: std::cell::OnceCell<Vec<u16>>,
+}
+
+unsafe extern "C" {
+    fn CFStringGetCharactersPtr(string: *const std::ffi::c_void) -> *const u16;
+}
+
+impl Utf16Text {
+    pub fn new(text: &str) -> Utf16Text {
+        let length = text.encode_utf16().count();
+        // SAFETY: a fresh malloc block large enough for `length` units (one
+        // unit when empty, so the pointer is never null); every unit is
+        // written before the string sees it, and `freeWhenDone` hands the
+        // block to the string, which frees it with `free` (or copies it and
+        // frees it at once).
+        let ns = unsafe {
+            let buffer = libc::malloc(length.max(1) * std::mem::size_of::<u16>()) as *mut u16;
+            assert!(!buffer.is_null(), "out of memory");
+            for (index, unit) in text.encode_utf16().enumerate() {
+                buffer.add(index).write(unit);
+            }
+            NSString::initWithCharactersNoCopy_length_freeWhenDone(
+                NSString::alloc(),
+                std::ptr::NonNull::new_unchecked(buffer),
+                length,
+                true,
+            )
+        };
+        Utf16Text { ns, copied: std::cell::OnceCell::new() }
+    }
+
+    /// The UTF-16 units (`(text as NSString).character(at:)`).
+    pub fn units(&self) -> &[u16] {
+        let length = self.ns.length();
+        // SAFETY: a non-null characters pointer addresses the string's own
+        // `length` units, which live as long as `self.ns`.
+        let direct = unsafe { CFStringGetCharactersPtr(&*self.ns as *const NSString as *const std::ffi::c_void) };
+        if !direct.is_null() {
+            return unsafe { std::slice::from_raw_parts(direct, length) };
+        }
+        self.copied.get_or_init(|| swift::ns::utf16(&string(&self.ns)))
+    }
+}
+
 /// `String(ns)`.
 pub fn string(ns: &NSString) -> String {
     swift::ns::foundation::to_string(ns)
@@ -117,26 +170,34 @@ pub(crate) fn range_of(result: &NSTextCheckingResult) -> NSRange {
 // MARK: - Engine
 
 /// A search's text, regex and results, kept so a replacement can use the
-/// captures of the search that found the hit (`FindEngine.SearchResult`).
+/// captures of the search that found the hit (`FindEngine.SearchResult`,
+/// whose `text` [`FindSession`] keeps beside it).
 pub struct SearchResult {
-    pub text: String,
-    ns_text: Retained<NSString>,
+    text: Utf16Text,
     pub regex: Retained<NSRegularExpression>,
     pub results: Vec<Retained<NSTextCheckingResult>>,
 }
 
 impl SearchResult {
     /// `regex.replacementString(for:in:offset: 0, template:)`.
-    fn replacement_string(&self, result: &NSTextCheckingResult, template: &str) -> String {
+    fn replacement_string(&self, result: &NSTextCheckingResult, template: &NSString) -> String {
         objc2::rc::autoreleasepool(|_| {
-            string(&self.regex.replacementStringForResult_inString_offset_template(
-                result,
-                &self.ns_text,
-                0,
-                &ns_string(template),
-            ))
+            string(&self.regex.replacementStringForResult_inString_offset_template(result, &self.text.ns, 0, template))
         })
     }
+}
+
+/// `TextEdit(range:replacement:summary: "Replace")`. The identifier is a
+/// random (version 4) UUID, as Foundation's `UUID()` is; its bytes come from
+/// `arc4random_buf`, which costs far less per edit than the entropy system
+/// call behind `Uuid::new_v4` (a replace-all makes one per match).
+fn replace_edit(range: NSRange, replacement: String) -> TextEdit {
+    let mut bytes = [0u8; 16];
+    // SAFETY: fills exactly the 16 bytes of `bytes`.
+    unsafe { libc::arc4random_buf(bytes.as_mut_ptr().cast(), bytes.len()) };
+    bytes[6] = (bytes[6] & 0x0F) | 0x40;
+    bytes[8] = (bytes[8] & 0x3F) | 0x80;
+    TextEdit { id: upleft_core::Uuid::from_bytes(bytes), range, replacement, summary: "Replace".into(), rule: None }
 }
 
 pub struct FindEngine;
@@ -145,22 +206,40 @@ impl FindEngine {
     /// All matches, ascending. Empty rather than an error on a half-typed
     /// regex.
     pub fn matches(text: &str, query: &FindQuery) -> Vec<NSRange> {
-        Self::search(text, query).map_or_else(Vec::new, |search| search.results.iter().map(|r| range_of(r)).collect())
+        objc2::rc::autoreleasepool(|_| {
+            let Some((text, regex, scope)) = Self::prepare(text, query) else { return Vec::new() };
+            let matches = regex.matchesInString_options_range(&text.ns, NSMatchingOptions::empty(), frange(scope));
+            let mut ranges = Vec::with_capacity(matches.count());
+            for index in 0..matches.count() {
+                let range = range_of(&matches.objectAtIndex(index));
+                if range.length > 0 {
+                    ranges.push(range);
+                }
+            }
+            ranges
+        })
+    }
+
+    /// The pattern compiled, the text bridged, and the scope clipped to it;
+    /// `nil` for an empty or invalid pattern or an empty scope.
+    fn prepare(text: &str, query: &FindQuery) -> Option<(Utf16Text, Retained<NSRegularExpression>, NSRange)> {
+        let pattern = query.pattern()?;
+        let regex = regular_expression(&pattern, query.options())?;
+        let text = Utf16Text::new(text);
+        let full = NSRange::new(0, text.units().len() as isize);
+        let scope = query.scope.map_or(full, |scope| ns_intersection_range(scope, full));
+        if !(scope.length > 0) {
+            return None;
+        }
+        Some((text, regex, scope))
     }
 
     pub fn search(text: &str, query: &FindQuery) -> Option<SearchResult> {
         objc2::rc::autoreleasepool(|_| {
-            let pattern = query.pattern()?;
-            let regex = regular_expression(&pattern, query.options())?;
-            let ns_text = ns_string(text);
-            let full = NSRange::new(0, ns_text.length() as isize);
-            let scope = query.scope.map_or(full, |scope| ns_intersection_range(scope, full));
-            if !(scope.length > 0) {
-                return None;
-            }
-            let matches = regex.matchesInString_options_range(&ns_text, NSMatchingOptions::empty(), frange(scope));
+            let (text, regex, scope) = Self::prepare(text, query)?;
+            let matches = regex.matchesInString_options_range(&text.ns, NSMatchingOptions::empty(), frange(scope));
             let results = matches.iter().filter(|result| result.range().length > 0).collect();
-            Some(SearchResult { text: text.to_owned(), ns_text, regex, results })
+            Some(SearchResult { text, regex, results })
         })
     }
 
@@ -183,18 +262,19 @@ impl FindEngine {
         };
         // Preserve the original search scope: narrowing it to the matched
         // text changes lookarounds, anchors, and captures.
-        search.replacement_string(result, template)
+        search.replacement_string(result, &ns_string(template))
     }
 
     pub fn replace_all_edits(text: &str, query: &FindQuery, template: &str) -> Vec<TextEdit> {
         let Some(search) = Self::search(text, query) else { return Vec::new() };
+        let ns_template = ns_string(template);
         search
             .results
             .iter()
             .map(|result| {
                 let replacement =
-                    if query.is_regex { search.replacement_string(result, template) } else { template.to_owned() };
-                TextEdit::new(range_of(result), replacement, "Replace", None)
+                    if query.is_regex { search.replacement_string(result, &ns_template) } else { template.to_owned() };
+                replace_edit(range_of(result), replacement)
             })
             .collect()
     }
@@ -220,7 +300,8 @@ pub struct FindSession {
     query: FindQuery,
     matches: Vec<NSRange>,
     current_index: Option<usize>,
-    search_result: Option<SearchResult>,
+    /// `searchResult`, with the text it searched (`searchResult.text`).
+    search_result: Option<(String, SearchResult)>,
 }
 
 impl FindSession {
@@ -268,11 +349,11 @@ impl FindSession {
 
     pub fn update(&mut self, query: FindQuery, text: &str, caret: isize) {
         self.query = query;
-        self.search_result = FindEngine::search(text, &self.query);
+        self.search_result = FindEngine::search(text, &self.query).map(|search| (text.to_owned(), search));
         self.matches = self
             .search_result
             .as_ref()
-            .map_or_else(Vec::new, |search| search.results.iter().map(|r| range_of(r)).collect());
+            .map_or_else(Vec::new, |(_, search)| search.results.iter().map(|r| range_of(r)).collect());
         self.current_index = self
             .matches
             .iter()
@@ -285,16 +366,19 @@ impl FindSession {
     /// live caret first.
     pub fn replacement_edit(&mut self, text: &str, template: &str, caret: isize) -> Option<TextEdit> {
         // UTF-8 equality is UTF-16 equality for well-formed text.
-        if self.search_result.as_ref().is_none_or(|search| search.text != text) {
+        if self.search_result.as_ref().is_none_or(|(searched, _)| searched != text) {
             let query = self.query.clone();
             self.update(query, text, caret);
         }
-        let search = self.search_result.as_ref()?;
+        let (_, search) = self.search_result.as_ref()?;
         let index = self.current_index?;
         let result = search.results.get(index)?;
-        let replacement =
-            if self.query.is_regex { search.replacement_string(result, template) } else { template.to_owned() };
-        Some(TextEdit::new(range_of(result), replacement, "Replace", None))
+        let replacement = if self.query.is_regex {
+            search.replacement_string(result, &ns_string(template))
+        } else {
+            template.to_owned()
+        };
+        Some(replace_edit(range_of(result), replacement))
     }
 
     pub fn advance(&mut self, forward: bool) -> Option<NSRange> {

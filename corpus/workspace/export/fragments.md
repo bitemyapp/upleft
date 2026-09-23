@@ -147,3 +147,20 @@ const x = "<y>";
 ```
 
 Path tokens: `src/main.rs:10`, ./scripts/build.sh and /usr/local/bin/tool.
+
+## Repeats
+
+The same formula twice, $E = mc^2$ and $E = mc^2$, and the first block again:
+
+$$
+\int_0^1 x^2 \, dx = \frac{1}{3}
+$$
+
+```mermaid
+flowchart LR
+  A[Start] --> B{Choice}
+  B -->|yes| C[Done]
+  B -->|no| A
+```
+
+![local again](local.png)

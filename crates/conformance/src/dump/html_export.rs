@@ -57,7 +57,7 @@ pub fn html(input: &Path, flags: &Flags) -> Result<String, Failure> {
         style_sheet.theme.clone(),
         url.deleting_path_extension().last_path_component(),
         Some(url.deleting_last_path_component()),
-        Some(Box::new(NativeFragmentImageProvider { style_sheet })),
+        Some(Box::new(NativeFragmentImageProvider::new(style_sheet))),
     );
     exporter.for_print = flags.print;
     let result = RefCell::new(String::new());

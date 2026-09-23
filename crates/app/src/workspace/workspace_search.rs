@@ -23,7 +23,7 @@ use super::workspace_index::{
     CancellationToken, WorkspaceIndexEntry, WorkspaceIndexSnapshot, read_up_to_count, string_from_utf8_data,
 };
 use super::workspace_link_graph::{StringMap, WorkspaceLinkGraph};
-use crate::support::find_engine::{escaped_pattern, frange, ns_string, range_of, regular_expression, string};
+use crate::support::find_engine::{Utf16Text, escaped_pattern, frange, range_of, regular_expression, string};
 
 #[derive(Clone, Debug, Default)]
 pub struct WorkspaceSearchQuery {
@@ -127,15 +127,16 @@ impl WorkspaceSearch {
             let mut results = Vec::new();
             for entry in entries {
                 let Some(text) = resolved_text(entry) else { continue };
-                let ns = ns_string(&text);
-                let units = swift::ns::utf16(&text);
-                let line_starts = line_start_offsets(&units);
-                let full = NSRange::new(0, units.len() as isize);
-                let matches = regex.matchesInString_options_range(&ns, NSMatchingOptions::empty(), frange(full));
-                for result in matches.iter().take(limit_per_file) {
-                    let range = range_of(&result);
+                let text = Utf16Text::new(&text);
+                let ns = &text.ns;
+                let length = text.units().len() as isize;
+                let line_starts = line_start_offsets(text.units());
+                let full = NSRange::new(0, length);
+                let matches = regex.matchesInString_options_range(ns, NSMatchingOptions::empty(), frange(full));
+                for index in 0..matches.count().min(limit_per_file) {
+                    let range = range_of(&matches.objectAtIndex(index));
                     let line = line_number(range.location, &line_starts);
-                    let context = range_of_line(line, &line_starts, units.len() as isize);
+                    let context = range_of_line(line, &line_starts, length);
                     let heading = entry
                         .headings
                         .iter()
@@ -148,7 +149,7 @@ impl WorkspaceSearch {
                         relative_path: entry.relative_path.clone(),
                         range,
                         context_range: context,
-                        context_text: substring(&ns, context),
+                        context_text: substring(ns, context),
                         line,
                         heading,
                     });

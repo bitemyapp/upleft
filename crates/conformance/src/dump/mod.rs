@@ -19,6 +19,7 @@ pub mod style_sheet;
 pub mod unicode;
 
 // App-layer suites (Swift side: oracle/app, `downright-app-oracle`).
+pub mod app_bench;
 pub mod down_cli;
 pub mod find;
 pub mod formats;
@@ -32,8 +33,20 @@ pub mod workspace;
 /// Commands answered by the app layer. Their flags are not the core flags:
 /// each command parses its own from [`Request::flags`], as each
 /// `downright-app-oracle` dump does.
-pub const APP_COMMANDS: &[&str] =
-    &["html-export", "spotlight", "down-cli", "workspace", "find", "palette", "formats", "updater", "local-ai"];
+pub const APP_COMMANDS: &[&str] = &[
+    "html-export",
+    "spotlight",
+    "down-cli",
+    "workspace",
+    "find",
+    "palette",
+    "formats",
+    "updater",
+    "local-ai",
+    "bench-export",
+    "bench-workspace",
+    "bench-find",
+];
 
 use std::path::PathBuf;
 
@@ -163,6 +176,9 @@ pub fn run(request: &Request) -> Result<(), Failure> {
         "formats" => formats::run(request),
         "updater" => updater::run(request),
         "local-ai" => local_ai::run(request),
+        "bench-export" => app_bench::export(request),
+        "bench-workspace" => app_bench::workspace(request),
+        "bench-find" => app_bench::find(request),
         _ => Err(Failure::NotPorted),
     }
 }

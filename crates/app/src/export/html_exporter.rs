@@ -14,17 +14,18 @@
 //! window controller is not part of this crate.
 
 use std::path::Path;
-use std::sync::Arc;
+use std::sync::{Arc, LazyLock, Mutex};
 
 use objc2::Message;
 use objc2::rc::Retained;
-use objc2_app_kit::{NSBitmapImageFileType, NSBitmapImageRep, NSColor, NSColorSpace, NSImage};
+use objc2_app_kit::{NSAppearance, NSBitmapImageFileType, NSBitmapImageRep, NSColor, NSColorSpace, NSImage};
 use objc2_core_foundation::CGFloat;
 use objc2_foundation::NSDictionary;
 use upleft_core::{BlockContent, InlineKind, InlineSpan, MDBlock, NSRange, ParsedDocument, TableAlignment, TableData};
 use upleft_foundation::url::FileUrl;
+use upleft_math::downright::bounded_image_cache::BoundedImageCache;
 use upleft_math::downright::math_renderer::MathRenderer;
-use upleft_mermaid::downright::mermaid_renderer_bridge;
+use upleft_mermaid::downright::mermaid_renderer_bridge::{self, MermaidCacheKey};
 use upleft_render::render_contracts::{BodyPreset, Theme, ThemeAppearance, ThemeColor};
 use upleft_render::theme::style_sheet::StyleSheet;
 use upleft_swift_text::{self as swift, CharSet};
@@ -44,6 +45,46 @@ pub trait FragmentImageProvider {
 /// carries the same math and diagrams the app draws.
 pub struct NativeFragmentImageProvider {
     pub style_sheet: StyleSheet,
+    style_token: std::sync::OnceLock<i64>,
+}
+
+/// `MarkdownFragmentImageCaches.mermaid`, which Swift's
+/// `MermaidRendererBridge.image` fills. The Rust bridge leaves its cache to
+/// the caller, so the export path keeps one with the same limits; a cached
+/// diagram is the same bitmap, only sooner.
+static MERMAID_IMAGES: LazyLock<BoundedImageCache<MermaidCacheKey>> =
+    LazyLock::new(|| BoundedImageCache::new(48, 24 * 1024 * 1024));
+
+impl NativeFragmentImageProvider {
+    pub fn new(style_sheet: StyleSheet) -> NativeFragmentImageProvider {
+        NativeFragmentImageProvider { style_sheet, style_token: std::sync::OnceLock::new() }
+    }
+
+    /// `StyleToken.of(styleSheet)`: the revision, theme name, body point size,
+    /// Increase Contrast and four sRGB colours, hashed. Swift's `Hasher` is
+    /// seeded per process, so only equality matters.
+    fn style_token(&self) -> i64 {
+        *self.style_token.get_or_init(|| {
+            use std::hash::{Hash, Hasher};
+            let sheet = &self.style_sheet;
+            let mut hasher = std::collections::hash_map::DefaultHasher::new();
+            let double = |value: f64, hasher: &mut std::collections::hash_map::DefaultHasher| {
+                (if value == 0.0 { 0.0f64 } else { value }).to_bits().hash(hasher);
+            };
+            sheet.revision.hash(&mut hasher);
+            sheet.theme.name.hash(&mut hasher);
+            double(sheet.body_font().pointSize(), &mut hasher);
+            sheet.increase_contrast.hash(&mut hasher);
+            for color in [&sheet.background, &sheet.text, &sheet.accent, &sheet.code_background] {
+                let converted = color.colorUsingColorSpace(&srgb());
+                let resolved = converted.as_deref().unwrap_or(color);
+                double(resolved.redComponent(), &mut hasher);
+                double(resolved.greenComponent(), &mut hasher);
+                double(resolved.blueComponent(), &mut hasher);
+            }
+            hasher.finish() as i64
+        })
+    }
 }
 
 impl FragmentImageProvider for NativeFragmentImageProvider {
@@ -58,7 +99,10 @@ impl FragmentImageProvider for NativeFragmentImageProvider {
     }
 
     fn image_for_mermaid(&self, source: &str, _theme: &Theme) -> Option<Retained<NSImage>> {
-        mermaid_renderer_bridge::image(source, &self.style_sheet).map(|image| image.ns_image())
+        let key = mermaid_renderer_bridge::cache_key(source, self.style_token())?;
+        MERMAID_IMAGES.image(&key, key.source.len(), || {
+            mermaid_renderer_bridge::image(source, &self.style_sheet).map(|image| image.ns_image())
+        })
     }
 }
 
@@ -838,15 +882,71 @@ fn missing_image(source: &str, caption: &str, out: &mut String) {
 }
 
 /// `dataURI(for:)`: TIFF → `NSBitmapImageRep` → PNG, base64.
+///
+/// The PNG encoding is nearly all of an export's cost, and the math and
+/// diagram caches hand back the same `NSImage` for the same fragment, so the
+/// finished URI is remembered per image object and drawing appearance (a
+/// drawing-handler image renders its dynamic colours for the current one).
+/// A remembered URI is the bytes this function computed for that image, so
+/// the output is unchanged; the image is retained with it, so its address
+/// cannot be reused while it is remembered.
 fn data_uri(image: &NSImage) -> Option<String> {
     objc2::rc::autoreleasepool(|_| {
+        let appearance = NSAppearance::currentDrawingAppearance().name().to_string();
+        if let Some(uri) = DATA_URIS.lookup(image, &appearance) {
+            return Some(uri);
+        }
         let tiff = image.TIFFRepresentation()?;
         let bitmap = NSBitmapImageRep::imageRepWithData(&tiff)?;
         let png = unsafe { bitmap.representationUsingType_properties(NSBitmapImageFileType::PNG, &NSDictionary::new()) }?;
         let mut uri = String::from("data:image/png;base64,");
         base64_into(&png.to_vec(), &mut uri);
+        DATA_URIS.store(image, appearance, &uri);
         Some(uri)
     })
+}
+
+/// The remembered data URIs, least recently used first, bounded by count and
+/// by the characters they hold.
+struct DataUriMemo {
+    entries: Mutex<std::collections::VecDeque<(Retained<NSImage>, String, Arc<str>)>>,
+}
+
+// SAFETY: the remembered images are immutable fragment bitmaps shared the
+// way the math and diagram caches share them; the memo only compares their
+// addresses and keeps them alive.
+unsafe impl Send for DataUriMemo {}
+unsafe impl Sync for DataUriMemo {}
+
+static DATA_URIS: LazyLock<DataUriMemo> = LazyLock::new(|| DataUriMemo { entries: Mutex::new(Default::default()) });
+
+impl DataUriMemo {
+    const COUNT_LIMIT: usize = 64;
+    const CHARACTER_LIMIT: usize = 16 * 1024 * 1024;
+
+    fn lookup(&self, image: &NSImage, appearance: &str) -> Option<String> {
+        let mut entries = self.entries.lock().unwrap_or_else(|poison| poison.into_inner());
+        let index = entries
+            .iter()
+            .position(|(remembered, name, _)| std::ptr::eq(&**remembered, image) && name == appearance)?;
+        let entry = entries.remove(index)?;
+        let uri = entry.2.to_string();
+        entries.push_back(entry);
+        Some(uri)
+    }
+
+    fn store(&self, image: &NSImage, appearance: String, uri: &str) {
+        if uri.len() > Self::CHARACTER_LIMIT {
+            return;
+        }
+        let mut entries = self.entries.lock().unwrap_or_else(|poison| poison.into_inner());
+        entries.push_back((image.retain(), appearance, Arc::from(uri)));
+        let mut total: usize = entries.iter().map(|entry| entry.2.len()).sum();
+        while entries.len() > Self::COUNT_LIMIT || total > Self::CHARACTER_LIMIT {
+            let Some(evicted) = entries.pop_front() else { break };
+            total -= evicted.2.len();
+        }
+    }
 }
 
 /// `Data.base64EncodedString()`: standard alphabet, padded, no line breaks.
@@ -941,5 +1041,41 @@ impl Slugs {
             out = swift::replacing_occurrences(&out, "--", "-");
         }
         swift::trimming(&out, CharSet::Chars("-")).to_owned()
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    /// Recorded from `String(format:)` in Swift 6.4 on macOS 26.
+    #[test]
+    fn formats_match_foundation() {
+        assert_eq!(hex_string(-1, 256, 4_294_967_297), "#ffffffff10001");
+        assert_eq!(hex_string(0, 15, 255), "#000fff");
+        assert_eq!(format_double("%.3frem", 1.25f64.powf(3.0)), "1.953rem");
+        assert_eq!(format_double("%.3frem", 0.0005), "0.001rem");
+        assert_eq!(format_double("%.3frem", 1.0005), "1.000rem");
+        assert_eq!(format_double("%.3frem", 2.0625), "2.062rem");
+    }
+
+    #[test]
+    fn escape_walks_characters() {
+        assert_eq!(escape("a < b & \"c\" > d"), "a &lt; b &amp; &quot;c&quot; &gt; d");
+        // `<` followed by a combining mark is one Character, not `<`.
+        assert_eq!(escape("x <\u{338} y &\u{301}"), "x <\u{338} y &\u{301}");
+        assert_eq!(escape("é <"), "é &lt;");
+    }
+
+    #[test]
+    fn base64_matches_foundation() {
+        let mut out = String::new();
+        base64_into(b"", &mut out);
+        base64_into(b"f", &mut out);
+        out.push('|');
+        base64_into(b"fo", &mut out);
+        out.push('|');
+        base64_into(b"foobar", &mut out);
+        assert_eq!(out, "Zg==|Zm8=|Zm9vYmFy");
     }
 }
