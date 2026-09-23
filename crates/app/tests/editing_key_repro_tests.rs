@@ -37,7 +37,7 @@ use upleft_render::view::markdown_text_view::MarkdownTextView;
 use upleft_render::view::markdown_text_view_delegate::ScrollPosition;
 
 fn unique() -> String {
-    controller_support::document_support::unique()
+    controller_support::unique()
 }
 
 fn text_view(controller: &Closing) -> Retained<MarkdownTextView> {

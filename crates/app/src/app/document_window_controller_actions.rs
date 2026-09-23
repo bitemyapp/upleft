@@ -157,6 +157,11 @@ fn write_utf8(code: &str, url: &NSURL) -> Result<(), Retained<NSError>> {
     data.writeToURL_options_error(url, NSDataWritingOptions::empty())
 }
 
+/// `error.localizedDescription`.
+fn localized_description(error: &NSError) -> String {
+    upleft_swift_text::ns::foundation::to_string(&error.localizedDescription())
+}
+
 /// A value that crosses to the image queue and back. `NSURL` is immutable,
 /// and the `NSImage` is created on the queue and only handed to the main
 /// thread afterwards, as Swift's `Task.detached` hands it to `MainActor.run`.
@@ -328,9 +333,9 @@ impl DocumentWindowController {
         };
         if url.isFileURL() {
             let Some(file_url) = FileUrl::from_nsurl(&url) else { return };
-            self.authorize_local_effect(TrustEffect::ReadLocalAsset, &file_url, present);
+            self.authorize_local_effect(TrustEffect::ReadLocalAsset, &file_url, Rc::new(present));
         } else {
-            self.authorize_remote_asset_url(&url, present);
+            self.authorize_remote_asset_url(&url, Rc::new(present));
         }
     }
 
@@ -342,7 +347,7 @@ impl DocumentWindowController {
         };
         let Some(origin_file) = FileUrl::from_nsurl(&origin) else { return };
         let this = self.retain();
-        self.authorize_local_effect(TrustEffect::ReadLocalAsset, &origin_file, move || {
+        self.authorize_local_effect(TrustEffect::ReadLocalAsset, &origin_file, Rc::new(move || {
             let panel = NSSavePanel::savePanel(this.actions_mtm());
             // `URL.lastPathComponent` is `""` where `NSURL` answers nil.
             panel.setNameFieldStringValue(&origin.lastPathComponent().unwrap_or_else(|| NSString::from_str("")));
@@ -351,9 +356,9 @@ impl DocumentWindowController {
             }
             let Some(destination) = panel.URL() else { return };
             if let Err(error) = NSFileManager::defaultManager().copyItemAtURL_toURL_error(&origin, &destination) {
-                this.present_operation_error("Couldn’t save the image copy", &error);
+                this.present_operation_error("Couldn’t save the image copy", &localized_description(&error));
             }
-        });
+        }));
     }
 
     // MARK: - Code blocks
@@ -398,7 +403,7 @@ impl DocumentWindowController {
         }
         let Some(url) = panel.URL() else { return };
         if let Err(error) = write_utf8(&code, &url) {
-            self.present_operation_error("Couldn’t save the code block", &error);
+            self.present_operation_error("Couldn’t save the code block", &localized_description(&error));
         }
     }
 
@@ -422,18 +427,20 @@ impl DocumentWindowController {
             name = format!("snippet.{}", CodeFileExtensions::extension(language));
         }
         let Some(url) = directory.URLByAppendingPathComponent(&NSString::from_str(&name)) else { return };
-        let written = file_manager
-            .createDirectoryAtURL_withIntermediateDirectories_attributes_error(&directory, true, None)
-            .and_then(|()| write_utf8(&code, &url));
+        // SAFETY: no attributes are passed.
+        let written = unsafe {
+            file_manager.createDirectoryAtURL_withIntermediateDirectories_attributes_error(&directory, true, None)
+        }
+        .and_then(|()| write_utf8(&code, &url));
         if let Err(error) = written {
-            self.present_operation_error("Couldn’t prepare the code block", &error);
+            self.present_operation_error("Couldn’t prepare the code block", &localized_description(&error));
             return;
         }
         let Some(file_url) = FileUrl::from_nsurl(&url) else { return };
         let target = file_url.clone();
-        self.authorize_local_effect(TrustEffect::LaunchPathOrEditor, &file_url, move || {
+        self.authorize_local_effect(TrustEffect::LaunchPathOrEditor, &file_url, Rc::new(move || {
             Preferences::shared().values().external_editor.open(&target, None);
-        });
+        }));
     }
 
     // MARK: - Tables (§6.3)

@@ -12,6 +12,7 @@
 //! delegate, downcast by Objective-C class.
 
 use std::collections::HashSet;
+use std::rc::Rc;
 
 use objc2::rc::{Retained, Weak as ObjcWeak};
 use objc2::runtime::AnyObject;
@@ -155,19 +156,23 @@ impl DocumentWindowController {
 
         match command {
             Command::ScrollDown => {
-                text_view.scrollLineDown(None);
+                // SAFETY: a nil sender, as Swift passes.
+                unsafe { text_view.scrollLineDown(None) };
                 true
             }
             Command::ScrollUp => {
-                text_view.scrollLineUp(None);
+                // SAFETY: a nil sender, as Swift passes.
+                unsafe { text_view.scrollLineUp(None) };
                 true
             }
             Command::PageDown => {
-                text_view.scrollPageDown(None);
+                // SAFETY: a nil sender, as Swift passes.
+                unsafe { text_view.scrollPageDown(None) };
                 true
             }
             Command::PageUp => {
-                text_view.scrollPageUp(None);
+                // SAFETY: a nil sender, as Swift passes.
+                unsafe { text_view.scrollPageUp(None) };
                 true
             }
             _ => self.perform(command),
@@ -225,11 +230,12 @@ impl DocumentWindowController {
             Command::GoToLine => self.go_to_line(),
             // Scrolling is geometry the text view owns, but the Navigate menu
             // items arrive here, so route them rather than dropping them on
-            // the floor.
-            Command::ScrollDown => self.container_text_view().scrollLineDown(None),
-            Command::ScrollUp => self.container_text_view().scrollLineUp(None),
-            Command::PageDown => self.container_text_view().scrollPageDown(None),
-            Command::PageUp => self.container_text_view().scrollPageUp(None),
+            // the floor. (SAFETY, for the four calls: a nil sender, as Swift
+            // passes.)
+            Command::ScrollDown => unsafe { self.container_text_view().scrollLineDown(None) },
+            Command::ScrollUp => unsafe { self.container_text_view().scrollLineUp(None) },
+            Command::PageDown => unsafe { self.container_text_view().scrollPageDown(None) },
+            Command::PageUp => unsafe { self.container_text_view().scrollPageUp(None) },
 
             // MARK: Structural zoom (§5.2)
             Command::ZoomLevel1 => self.set_zoom(ZoomLevel::H1),
@@ -305,10 +311,10 @@ impl DocumentWindowController {
             Command::RevealInFinder => {
                 let Some(url) = self.markdown_document().url() else { return true };
                 let target = url.clone();
-                self.authorize_local_effect(TrustEffect::LaunchPathOrEditor, &url, move || {
+                self.authorize_local_effect(TrustEffect::LaunchPathOrEditor, &url, Rc::new(move || {
                     let urls = NSArray::from_retained_slice(&[target.to_nsurl()]);
                     NSWorkspace::sharedWorkspace().activateFileViewerSelectingURLs(&urls);
-                });
+                }));
             }
             // Reports whether anything was previewed, so a Quick Look aimed
             // at nothing can fall back the way the caller expects rather than
@@ -317,9 +323,9 @@ impl DocumentWindowController {
             Command::OpenInEditor => {
                 let Some(url) = self.markdown_document().url() else { return true };
                 let target = url.clone();
-                self.authorize_local_effect(TrustEffect::LaunchPathOrEditor, &url, move || {
+                self.authorize_local_effect(TrustEffect::LaunchPathOrEditor, &url, Rc::new(move || {
                     Preferences::shared().values().external_editor.open(&target, None);
-                });
+                }));
             }
 
             // MARK: Copy and export (§9.5)
@@ -405,7 +411,8 @@ impl DocumentWindowController {
             self.current_style_sheet(),
             self.commands_mtm(),
         );
-        controller.showWindow(None);
+        // SAFETY: a nil sender, as Swift passes.
+        unsafe { controller.showWindow(None) };
         self.retain_timeline(&controller);
     }
 
@@ -549,7 +556,7 @@ impl DocumentWindowController {
             alert.runModal();
             return;
         }
-        self.present_tidy_sheet(edits);
+        self.present_tidy_sheet(&edits);
     }
 
     // MARK: - Editing helpers

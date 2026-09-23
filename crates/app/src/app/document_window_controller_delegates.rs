@@ -23,6 +23,7 @@
 //! `BlockActionTarget` is a `define_class!` type of that Objective-C name.
 
 use std::cell::RefCell;
+use std::rc::Rc;
 
 use objc2::rc::{Retained, Weak as ObjcWeak};
 use objc2::runtime::{AnyObject, NSObject, NSObjectProtocol};
@@ -380,7 +381,7 @@ impl DocumentWindowController {
 
             MarkdownLinkDestination::Web(url) => {
                 let target = url.clone();
-                self.authorize_external_url(&url, move || workspace_open(&target));
+                self.authorize_external_url(&url, Rc::new(move || workspace_open(&target)));
             }
 
             MarkdownLinkDestination::LocalFile(target) => {
@@ -389,7 +390,7 @@ impl DocumentWindowController {
                     return;
                 }
                 let opened = target.clone();
-                self.authorize_local_effect(TrustEffect::LaunchPathOrEditor, &target, move || {
+                self.authorize_local_effect(TrustEffect::LaunchPathOrEditor, &target, Rc::new(move || {
                     if document_types::is_markdown(&opened.path_extension()) {
                         if let Some(delegate) = app_delegate(mtm) {
                             delegate.open(&opened, None, None, false, DocumentOpenDisposition::Tab, None);
@@ -404,12 +405,12 @@ impl DocumentWindowController {
                     } else {
                         workspace_open(&opened.to_nsurl());
                     }
-                });
+                }));
             }
 
             MarkdownLinkDestination::Automation(url) => {
                 let target = url.clone();
-                self.authorize_automation_url(&url, move || workspace_open(&target));
+                self.authorize_automation_url(&url, Rc::new(move || workspace_open(&target)));
             }
 
             MarkdownLinkDestination::Invalid => {}
@@ -437,14 +438,14 @@ impl DocumentWindowController {
                     // Same rule as `.localFile`: reveal execution-capable
                     // targets, never run them from inside a document.
                     let revealed = target.clone();
-                    self.authorize_local_effect(TrustEffect::LaunchPathOrEditor, &target, move || {
+                    self.authorize_local_effect(TrustEffect::LaunchPathOrEditor, &target, Rc::new(move || {
                         workspace_select_file(Some(&revealed.path()), &revealed.deleting_last_path_component().path());
-                    });
+                    }));
                 } else {
                     let opened = target.clone();
-                    self.authorize_local_effect(TrustEffect::LaunchPathOrEditor, &target, move || {
+                    self.authorize_local_effect(TrustEffect::LaunchPathOrEditor, &target, Rc::new(move || {
                         workspace_open(&opened.to_nsurl());
-                    });
+                    }));
                 }
             }
         }
@@ -459,9 +460,9 @@ impl DocumentWindowController {
         let Some(url) = resolution.url else { return };
         if resolution.is_directory {
             let root = url.clone();
-            self.authorize_local_effect(TrustEffect::LaunchPathOrEditor, &url, move || {
+            self.authorize_local_effect(TrustEffect::LaunchPathOrEditor, &url, Rc::new(move || {
                 workspace_select_file(None, &root.path());
-            });
+            }));
         } else if document_types::is_markdown(&url.path_extension()) {
             if let Some(delegate) = app_delegate(self.delegates_mtm()) {
                 delegate.open(&url, None, None, false, DocumentOpenDisposition::Tab, None);
@@ -469,9 +470,9 @@ impl DocumentWindowController {
         } else {
             let target = url.clone();
             let line = token.line;
-            self.authorize_local_effect(TrustEffect::LaunchPathOrEditor, &url, move || {
+            self.authorize_local_effect(TrustEffect::LaunchPathOrEditor, &url, Rc::new(move || {
                 Preferences::shared().values().external_editor.open(&target, line);
-            });
+            }));
         }
     }
 
@@ -507,7 +508,7 @@ impl DocumentWindowController {
             }
             self.set_shared_folds(folds, Some(view));
         } else {
-            self.copy_section_link(Some(heading_index as isize));
+            self.copy_section_link(Some(heading_index));
         }
     }
 
@@ -611,9 +612,9 @@ impl DocumentWindowController {
         let Some(url) = resolution.url else { return false };
         let target = url.clone();
         let line = token.line;
-        self.authorize_local_effect(TrustEffect::LaunchPathOrEditor, &url, move || {
+        self.authorize_local_effect(TrustEffect::LaunchPathOrEditor, &url, Rc::new(move || {
             Preferences::shared().values().external_editor.open(&target, line);
-        });
+        }));
         true
     }
 
@@ -626,7 +627,7 @@ impl DocumentWindowController {
         }
         let Some(url) = resolution.url else { return false };
         let target = url.clone();
-        self.authorize_local_effect(TrustEffect::LaunchPathOrEditor, &url, move || workspace_reveal(&target));
+        self.authorize_local_effect(TrustEffect::LaunchPathOrEditor, &url, Rc::new(move || workspace_reveal(&target)));
         true
     }
 
@@ -734,9 +735,9 @@ impl DocumentWindowController {
                     };
                     let url = base.appending_path_component(&revealed_source).standardized_file_url();
                     let target = url.clone();
-                    this.authorize_local_effect(TrustEffect::LaunchPathOrEditor, &url, move || {
+                    this.authorize_local_effect(TrustEffect::LaunchPathOrEditor, &url, Rc::new(move || {
                         workspace_reveal(&target);
-                    });
+                    }));
                 }));
             }
 
@@ -899,6 +900,49 @@ fn action_item(title: &str, mtm: MainThreadMarker, handler: impl Fn() + 'static)
         item.setRepresentedObject(Some(&target));
     }
     item
+}
+
+// MARK: - Quick Look host
+
+/// `Panels/DocumentQuickLook.swift` extends `DocumentWindowController`; its
+/// port is the [`QuickLookHost`] trait, whose provided methods are the Swift
+/// bodies and whose required accessors are these. (The Objective-C
+/// `QLPreviewPanelDataSource`/`QLPreviewPanelDelegate` methods the trait
+/// documents are forwarded from the controller's `define_class!`.)
+impl QuickLookHost for DocumentWindowController {
+    fn quick_look_owner(&self) -> Retained<AnyObject> {
+        let object: &AnyObject = self;
+        object.retain()
+    }
+
+    fn container_text_view(&self) -> Retained<MarkdownTextView> {
+        DocumentWindowController::container_text_view(self)
+    }
+
+    fn markdown_document_url(&self) -> Option<FileUrl> {
+        self.markdown_document().url()
+    }
+
+    fn resolve_path_token(&self, token: &PathToken) -> Option<crate::ai::path_resolver::Resolution> {
+        self.path_resolver().map(|resolver| resolver.resolve(token))
+    }
+
+    fn present_lightbox(&self, source: &str, caption: Option<&str>) {
+        DocumentWindowController::present_lightbox(self, source, caption);
+    }
+
+    fn authorize_read_local_asset(&self, target: &FileUrl, action: Box<dyn FnOnce()>) {
+        let action = RefCell::new(Some(action));
+        self.authorize_local_effect(
+            TrustEffect::ReadLocalAsset,
+            target,
+            Rc::new(move || {
+                if let Some(action) = action.borrow_mut().take() {
+                    action();
+                }
+            }),
+        );
+    }
 }
 
 // MARK: - BlockActionTarget
@@ -1219,7 +1263,8 @@ impl DocumentWindowController {
             Some(&url),
             self.delegates_mtm(),
         );
-        controller.showWindow(None);
+        // SAFETY: a nil sender, as Swift passes.
+        unsafe { controller.showWindow(None) };
         self.retain_timeline(&controller);
     }
 

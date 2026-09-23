@@ -1,19 +1,19 @@
 //! Port of the `Tests/DownrightAppTests/WindowChromeTests.swift` cases that
 //! exercise `DocumentWindowController`'s toolbar and command dispatch
-//! (`+Actions`, `+Commands`, `+Delegates`): the toolbar's items, the Find
+//! (`+Actions`, `+Commands`, `+Delegates`): the toolbar's items (the
+//! identity view's states on the controller's own item, the mode control,
+//! the trailing cluster, the absence of an inspector item), the Find
 //! button's toggle, `perform(_:)` in split view, Use Selection for Find, and
 //! the find bar's delegate path. `window_chrome_tests.rs` holds the
-//! controller-free cases.
+//! controller-free cases and `window_chrome_tests_document.rs` the main
+//! controller file's.
 //!
-//! The rest of the Swift suite's controller cases (`missingFileRecovery…`,
-//! `splitViewUsesTwoVisibleSideBySideDocumentPanes`,
-//! `splitDividerIsThemedChrome…`, `documentBarsReserveSpace…`,
-//! `floatingTaskPanelFitsItsFooterRow`, `inspectorSelectionAndClose…`,
+//! Left to `window_chrome_tests_document.rs` (the main file's panels and
+//! layout, not these extensions): `missingFileRecovery…`,
+//! `documentBarsReserveSpace…`, `floatingTaskPanelFitsItsFooterRow`,
 //! `replaceModePreservesActiveQuery`, `localFindPreservesViewport`,
 //! `findMotionDoesNotShiftDocument`, `ordinaryFindDoesNotReplace…`,
-//! `closingTheFindBarRetires…`, `statusBarIsOffByDefault…`) test the main
-//! controller file's panels and layout, not these extensions; they belong
-//! with its port.
+//! `closingTheFindBarRetires…`.
 //!
 //! The Swift suite is `@MainActor` and `.serialized`: this binary owns the
 //! main thread (`harness = false`). No window is ordered in
@@ -66,6 +66,65 @@ fn find_text_field(label: &str, root: &NSView) -> Retained<NSTextField> {
         .filter_map(|view| downcast::<NSTextField>(&view))
         .find(|field| accessibility_label(field).as_deref() == Some(label))
         .unwrap_or_else(|| panic!("no text field labelled {label}"))
+}
+
+fn document_identity_shows_only_exceptional_states() {
+    use upleft_app::ai::markdown_document::{Phase, PresentationState};
+
+    let controller = Closing(new_controller());
+    let identity = controller.toolbar_document_identity_view().expect("the toolbar's identity view");
+    let label = || accessibility_label(&identity);
+    let tool_tip = || identity.toolTip().map(|tip| tip.to_string());
+    let cases = [
+        (Phase::ChangedOnDisk, "Changed externally"),
+        (Phase::Conflict, "Conflict"),
+        (Phase::SaveFailed, "Save failed"),
+    ];
+    for (phase, text) in cases {
+        identity.set_document_state(PresentationState::new(phase, Some("Paste".into()), Some("Example".into())));
+        assert_eq!(label().map(|label| label.contains(text)), Some(true));
+        assert_eq!(label().map(|label| label.contains("Paste")), Some(true));
+        assert_eq!(tool_tip().map(|tip| tip.contains(text)), Some(true));
+    }
+    for phase in [Phase::Neutral, Phase::Edited, Phase::Saving, Phase::Saved] {
+        identity.set_document_state(PresentationState::new(phase, Some("Paste".into()), Some("Example".into())));
+        assert_ne!(label().map(|label| label.contains("Paste")), Some(true));
+        assert_ne!(tool_tip().map(|tip| tip.contains("Paste")), Some(true));
+    }
+
+    identity.set_document_state(PresentationState::new(Phase::ChangedOnDisk, None, Some("File missing".into())));
+    assert_eq!(label().map(|label| label.contains("File missing")), Some(true));
+    assert_eq!(label().map(|label| label.contains("Changed externally")), Some(false));
+    assert_eq!(tool_tip().map(|tip| tip.contains("File missing: File missing")), Some(false));
+}
+
+fn inspector_selection_and_close_stay_in_sync_with_toolbar() {
+    use upleft_app::panels::inspector_host_view::InspectorSection;
+
+    let controller = Closing(new_controller());
+    let toolbar = controller.window().and_then(|window| window.toolbar()).expect("the toolbar");
+    assert!(!toolbar.items().iter().any(|item| item.itemIdentifier().to_string() == "inspector"));
+
+    // History shares the same floating host as Tasks; switching sections
+    // must not resurrect the old width-reserving inspector lane.
+    let mtm = controller_support::mtm();
+    controller.show_in_inspector(&NSView::new(mtm), InspectorSection::History);
+    assert!(controller.floating_surface().is_some());
+    assert_eq!(controller.inspector_host().and_then(|host| host.selected_section()), Some(InspectorSection::History));
+
+    controller.show_in_inspector(&NSView::new(mtm), InspectorSection::Context);
+    assert!(controller.floating_surface().is_some());
+    assert_eq!(controller.inspector_host().and_then(|host| host.selected_section()), Some(InspectorSection::Context));
+
+    controller.show_in_inspector(&NSView::new(mtm), InspectorSection::Search);
+    assert!(controller.floating_surface().is_some());
+    assert_eq!(controller.inspector_host().and_then(|host| host.selected_section()), Some(InspectorSection::Search));
+
+    controller.close_inspector(true);
+    if let Some(surface) = controller.floating_surface() {
+        surface.settle_for_testing();
+    }
+    assert!(controller.floating_surface().is_none());
 }
 
 fn toolbar_uses_native_centered_mode_and_trailing_menu() {
@@ -278,7 +337,9 @@ fn find_action_flushes_the_visible_query_before_the_debounce_fires() {
 fn main() {
     controller_support::prepare();
     controller_support::main_thread::run(&[
+        ("document_identity_shows_only_exceptional_states", document_identity_shows_only_exceptional_states),
         ("toolbar_uses_native_centered_mode_and_trailing_menu", toolbar_uses_native_centered_mode_and_trailing_menu),
+        ("inspector_selection_and_close_stay_in_sync_with_toolbar", inspector_selection_and_close_stay_in_sync_with_toolbar),
         ("split_view_mirrors_presentation_state", split_view_mirrors_presentation_state),
         ("local_find_uses_compact_document_bar", local_find_uses_compact_document_bar),
         ("selection_find_ignores_an_empty_selection", selection_find_ignores_an_empty_selection),

@@ -6,10 +6,11 @@
 //! window in (`showWindow`, `makeKeyAndOrderFront`). These ports never touch
 //! the real home and never put a window on a display:
 //!
-//! - [`prepare`] points Downright's `DOWNRIGHT_SUPPORT_DIRECTORY` override at a
-//!   fresh temporary folder (`document_support::sandbox`) and installs a
-//!   sandboxed `Preferences` as `Preferences::shared()` before anything reads
-//!   it. Call it first thing in `main`.
+//! - [`prepare`] is `document_window_support::enter_sandbox`: the binary runs
+//!   again with a temporary `HOME`, `CFFIXED_USER_HOME` and
+//!   `DOWNRIGHT_SUPPORT_DIRECTORY`, a sandboxed `Preferences.shared`, and a
+//!   clean defaults domain. Call it first thing in `main`, and [`finish`]
+//!   last.
 //! - [`new_controller`] parks the window at (-30000, -30000) and never orders
 //!   it in: AppKit pulls a titled window onto a display once it is ordered in,
 //!   even from there. Where Swift orders the window in before making the text
@@ -25,14 +26,12 @@ use objc2::rc::Retained;
 use objc2::{MainThreadMarker, Message};
 use objc2_app_kit::{NSEvent, NSEventModifierFlags, NSEventType, NSTextView, NSView};
 use objc2_foundation::{NSPoint, NSProcessInfo, NSString};
-use upleft_app::ai::snapshot_store::SnapshotStore;
 use upleft_app::app::document_window_controller::DocumentWindowController;
-use upleft_app::support::preferences::Preferences;
 use upleft_foundation::url::FileUrl;
 use upleft_render::render_contracts::RenderMode;
 
-#[path = "../document_support/mod.rs"]
-pub mod document_support;
+#[path = "../document_window_support/mod.rs"]
+pub mod document_window_support;
 #[path = "../main_thread/mod.rs"]
 pub mod main_thread;
 
@@ -40,15 +39,14 @@ pub fn mtm() -> MainThreadMarker {
     MainThreadMarker::new().expect("controller tests run on the main thread")
 }
 
-/// Sandboxes the stores and `Preferences.shared`. Call first in `main`.
+/// Sandboxes the home, the stores and `Preferences.shared`. Call first in
+/// `main`.
 pub fn prepare() {
-    let root = document_support::sandbox();
-    let file = root.appending_path_component("shared-preferences.json");
-    let _ = Preferences::install_shared(Preferences::for_testing(file, Some(SnapshotStore::shared().clone())));
+    document_window_support::enter_sandbox();
 }
 
 /// What `Preferences.shared.update` posts after a change. The sandboxed
-/// instance [`prepare`] installs is built with `Preferences::for_testing`,
+/// instance the sandbox installs is built with `Preferences::for_testing`,
 /// which never posts, so a test whose Swift original relies on the
 /// notification posts it itself, right after the update, as the real
 /// instance does.
@@ -63,9 +61,19 @@ pub fn post_preferences_did_change() {
     };
 }
 
-/// Removes the sandbox. Call after the tests ran.
+/// Call after the tests ran.
 pub fn finish() {
-    document_support::remove_sandbox();
+    document_window_support::leave_sandbox();
+}
+
+/// `UUID().uuidString`.
+pub fn unique() -> String {
+    objc2_foundation::NSUUID::UUID().UUIDString().to_string()
+}
+
+/// `URL(fileURLWithPath: NSTemporaryDirectory())`.
+fn temporary_root() -> FileUrl {
+    FileUrl::from_path_is_directory(&objc2_foundation::NSTemporaryDirectory().to_string(), true)
 }
 
 /// `RunLoop.main.run(mode: .common, before:)` until `condition` holds or
@@ -124,13 +132,12 @@ pub fn make_first_responder(controller: &DocumentWindowController, view: &NSView
 
 /// `URL(fileURLWithPath: NSTemporaryDirectory()).appendingPathComponent(name)`.
 pub fn temporary_file(name: &str) -> FileUrl {
-    document_support::temporary_directory().appending_path_component(name)
+    temporary_root().appending_path_component(name)
 }
 
 /// A fresh temporary directory (`…/prefix-UUID/`).
 pub fn temporary_directory(prefix: &str) -> FileUrl {
-    let directory = document_support::temporary_directory()
-        .appending_path_component_is_directory(&format!("{prefix}-{}", document_support::unique()), true);
+    let directory = temporary_root().appending_path_component_is_directory(&format!("{prefix}-{}", unique()), true);
     std::fs::create_dir_all(directory.path()).expect("create the fixture directory");
     directory
 }
