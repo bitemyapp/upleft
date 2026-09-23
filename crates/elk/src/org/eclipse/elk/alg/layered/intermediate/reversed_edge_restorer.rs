@@ -1,10 +1,9 @@
-//! Port of `vendor/elk-swift/Sources/ElkSwift/ELK/org/eclipse/elk/alg/layered/intermediate/org_eclipse_elk_alg_layered_intermediate_ReversedEdgeRestorer.swift`.
+//! Port of `alg/layered/intermediate/ReversedEdgeRestorer.swift`.
 //!
-//! Not ported yet.
+//! Turns every edge marked `REVERSED` back to its original direction.
 
-use crate::org::eclipse::elk::alg::layered::graph::l_graph::{LGraphArena, LGraphId};
 use crate::org::eclipse::elk::core::alg::i_layout_processor::ILayoutProcessor;
-use crate::org::eclipse::elk::core::util::i_elk_progress_monitor::IElkProgressMonitor;
+use crate::prelude::*;
 
 #[derive(Default)]
 pub struct ReversedEdgeRestorer;
@@ -16,8 +15,26 @@ impl ReversedEdgeRestorer {
 }
 
 impl ILayoutProcessor for ReversedEdgeRestorer {
-    fn process(&mut self, _lg: &mut LGraphArena, _graph: LGraphId, _monitor: &mut dyn IElkProgressMonitor) {
-        unimplemented!("ReversedEdgeRestorer is not ported yet")
+    fn process(&mut self, lg: &mut LGraphArena, layered_graph: LGraphId, monitor: &mut dyn IElkProgressMonitor) {
+        monitor.begin("Restoring reversed edges", 1.0);
+
+        for li in 0..lg[layered_graph].layers.len() {
+            let layer = lg[layered_graph].layers[li];
+            for ni in 0..lg[layer].nodes.len() {
+                let node = lg[layer].nodes[ni];
+                for pi in 0..lg[node].ports.len() {
+                    let port = lg[node].ports[pi];
+                    let edge_array = lg[port].outgoing_edges.clone();
+                    for edge in edge_array {
+                        if lg[edge].props.get_as::<bool>(&InternalProperties::REVERSED).unwrap_or(false) {
+                            lg.edge_reverse(edge, layered_graph, false);
+                        }
+                    }
+                }
+            }
+        }
+
+        monitor.done();
     }
 
     fn name(&self) -> &'static str {
