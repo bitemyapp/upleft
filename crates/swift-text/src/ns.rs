@@ -204,7 +204,7 @@ pub mod foundation {
 
     /// `s as NSString`. Built from UTF-16 units: `NSString::from_str` decodes
     /// UTF-8 and would drop a leading U+FEFF, which a Swift string keeps.
-    fn ns(s: &str) -> Retained<NSString> {
+    pub fn ns(s: &str) -> Retained<NSString> {
         if s.is_ascii() {
             return NSString::from_str(s);
         }
@@ -262,6 +262,16 @@ pub mod foundation {
             NSComparisonResult::Descending => std::cmp::Ordering::Greater,
             _ => std::cmp::Ordering::Equal,
         })
+    }
+
+    /// [`localized_standard_compare`] on strings already bridged with
+    /// [`ns`], for sorts that compare each string many times.
+    pub fn localized_standard_compare_ns(a: &NSString, b: &NSString) -> std::cmp::Ordering {
+        match a.localizedStandardCompare(b) {
+            NSComparisonResult::Ascending => std::cmp::Ordering::Less,
+            NSComparisonResult::Descending => std::cmp::Ordering::Greater,
+            _ => std::cmp::Ordering::Equal,
+        }
     }
 
     /// `localizedStandardCompare(_:)`: Finder-style ordering in the current

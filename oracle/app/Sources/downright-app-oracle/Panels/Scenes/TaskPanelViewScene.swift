@@ -85,7 +85,7 @@ final class TaskPanelViewScene: PanelScene {
     }
 
     func build(_ scenario: PanelScenario, styleSheet: StyleSheet) throws -> NSView {
-        let document = MarkdownParser.parse(try scenario.documentText())
+        let document = try scenario.parsedDocument()
         let panel = TaskPanelView()
         panel.delegate = recorder
         panel.styleSheet = styleSheet
