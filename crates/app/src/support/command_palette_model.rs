@@ -342,6 +342,21 @@ impl CommandPaletteModel {
         cache.quick_results.clone().unwrap_or_default()
     }
 
+    /// `quickResults` read in place: the cached list, computed if stale,
+    /// handed to `body` without copying it (the palette reads its count and
+    /// one row at a time). `body` must not call back into the model.
+    pub fn with_quick_results<R>(&self, body: impl FnOnce(&[QuickOpenResult]) -> R) -> R {
+        let mut cache = self.cache.borrow_mut();
+        let stale = cache.quick_results.is_none()
+            || !cache.quick_query.as_deref().is_some_and(|query| swift_text::str_eq(query, &self.query));
+        if stale {
+            cache.quick_results =
+                Some(Self::compute_quick_results(&self.entries, &self.recent_commands, &self.providers, &self.query));
+            cache.quick_query = Some(self.query.clone());
+        }
+        body(cache.quick_results.as_deref().unwrap_or(&[]))
+    }
+
     fn compute_quick_results(
         entries: &[CommandPaletteEntry],
         recent_commands: &[Command],
