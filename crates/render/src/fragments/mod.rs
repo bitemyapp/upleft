@@ -5,6 +5,8 @@
 //! math, Mermaid, thematic breaks) plug into `view::fragment_provider`
 //! through its object-fragment constructors.
 
+pub mod callout_fragment;
+pub mod code_block_fragment;
 pub mod footnote_reference_display;
 pub mod fragment_base;
 pub mod inline_code_pill;

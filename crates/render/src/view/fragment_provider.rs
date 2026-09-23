@@ -359,11 +359,18 @@ fn first_non_whitespace_offset(storage: &NSTextStorage, source: NSRange) -> isiz
 
 /// `CodeBlockFragment(textElement:range:payload:context:role:lineCount:)`.
 fn code_block_fragment(
-    _request: &ObjectFragmentRequest<'_>,
-    _role: CodeBlockRole,
-    _line_count: isize,
+    request: &ObjectFragmentRequest<'_>,
+    role: CodeBlockRole,
+    line_count: isize,
 ) -> Option<Retained<NSTextLayoutFragment>> {
-    None
+    Some(crate::fragments::code_block_fragment::make(
+        request.text_element,
+        Some(request.element_range),
+        request.payload,
+        request.context,
+        role,
+        line_count,
+    ))
 }
 
 /// `TableRowFragment.make(textElement:range:payload:context:)`, which may
@@ -406,8 +413,13 @@ fn thematic_break_fragment(request: &ObjectFragmentRequest<'_>) -> Option<Retain
 }
 
 /// `CalloutFragment(textElement:range:payload:context:)`.
-fn callout_fragment(_request: &ObjectFragmentRequest<'_>) -> Option<Retained<NSTextLayoutFragment>> {
-    None
+fn callout_fragment(request: &ObjectFragmentRequest<'_>) -> Option<Retained<NSTextLayoutFragment>> {
+    Some(crate::fragments::callout_fragment::make(
+        request.text_element,
+        Some(request.element_range),
+        request.payload,
+        request.context,
+    ))
 }
 
 /// `ListOrnamentFragment(textElement:range:payload:context:)`.
@@ -434,7 +446,7 @@ pub mod object_geometry {
     }
 
     /// `CodeBlockFragment.copyButtonRect(in:style:language:)`.
-    pub fn code_copy_button_rect(_band: CGRect, _style: &StyleSheet, _language: &str) -> Option<CGRect> {
-        None
+    pub fn code_copy_button_rect(band: CGRect, style: &StyleSheet, language: &str) -> Option<CGRect> {
+        Some(crate::fragments::code_block_fragment::copy_button_rect(band, style, language))
     }
 }
