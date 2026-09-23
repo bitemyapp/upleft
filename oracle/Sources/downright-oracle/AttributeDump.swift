@@ -1,6 +1,6 @@
 import AppKit
 import MarkdownCore
-import MarkdownRender
+@testable import MarkdownRender
 
 /// The canonical dump of a decorated `NSTextStorage`: every attribute run,
 /// every key, every value in a representation both implementations can

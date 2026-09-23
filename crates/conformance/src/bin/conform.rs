@@ -36,6 +36,9 @@ struct Suite {
     serial: bool,
     /// Restricts the suite to corpus paths containing one of these.
     only: Vec<String>,
+    /// Input file extension; Markdown unless the suite says otherwise
+    /// (ELK graphs are `.json`, LaTeX expressions `.tex`).
+    input: String,
 }
 
 struct Options {
@@ -124,26 +127,27 @@ fn load_suites(root: &Path) -> (Vec<PathBuf>, Vec<Suite>) {
                 .map_or_else(|| vec![Vec::new()], |variants| variants.iter().map(strings).collect()),
             serial: suite["serial"].as_bool().unwrap_or(false),
             only: strings(&suite["only"]),
+            input: suite["input"].as_str().unwrap_or("md").to_owned(),
         })
         .collect();
     (corpus, suites)
 }
 
-fn corpus_files(directories: &[PathBuf]) -> Vec<PathBuf> {
-    fn visit(directory: &Path, out: &mut Vec<PathBuf>) {
+fn corpus_files(directories: &[PathBuf], input: &str) -> Vec<PathBuf> {
+    fn visit(directory: &Path, input: &str, out: &mut Vec<PathBuf>) {
         let Ok(entries) = fs::read_dir(directory) else { return };
         for entry in entries.flatten() {
             let path = entry.path();
             if path.is_dir() {
-                visit(&path, out);
-            } else if path.extension().is_some_and(|extension| extension == "md") {
+                visit(&path, input, out);
+            } else if path.extension().is_some_and(|extension| extension == input) {
                 out.push(path);
             }
         }
     }
     let mut files = Vec::new();
     for directory in directories {
-        visit(directory, &mut files);
+        visit(directory, input, &mut files);
     }
     files.sort();
     files
@@ -351,7 +355,6 @@ fn main() -> ExitCode {
         out: root.join("conformance-out"),
     };
 
-    let files = corpus_files(&corpus);
     let selected: Vec<&Suite> = suites
         .iter()
         .filter(|suite| options.suites.is_empty() || options.suites.contains(&suite.name))
@@ -363,6 +366,7 @@ fn main() -> ExitCode {
     let mut any_failure = false;
     for suite in selected {
         let _ = fs::remove_dir_all(context.out.join(&suite.name));
+        let files = corpus_files(&corpus, &suite.input);
         let mut cases: Vec<Case> = files
             .iter()
             .filter(|file| {

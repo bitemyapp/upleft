@@ -6,8 +6,10 @@ default:
     @just --list --unsorted
 
 # Build downright-oracle, the Swift reference, from vendor/downright.
+# `-enable-testing` lets the oracle `@testable import` Downright's modules to
+# dump internal state; it changes symbol visibility, not behaviour.
 oracle:
-    cd oracle && swift build -c release --scratch-path {{scratch}}/oracle
+    cd oracle && swift build -c release -Xswiftc -enable-testing --scratch-path {{scratch}}/oracle
 
 # Build the original Downright.app from the submodule (for window-level conformance).
 downright-app:
