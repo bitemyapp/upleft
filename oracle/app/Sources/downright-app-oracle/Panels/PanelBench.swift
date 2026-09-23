@@ -15,6 +15,7 @@ enum PanelBench {
     @MainActor
     static func run(input: URL) throws -> JSON {
         let json = try readScenarioJSON(input)
+        pinThemeSelection()
         OffScreenWindows.install()
         _ = NSApplication.shared
         let runs = (json["runs"] as? NSNumber)?.intValue ?? 20

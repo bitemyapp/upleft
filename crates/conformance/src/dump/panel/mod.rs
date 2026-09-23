@@ -174,6 +174,18 @@ pub fn panel_style_sheet(scenario: &PanelScenario) -> Result<(Rc<StyleSheet>, Re
     Ok((Rc::new(StyleSheet::new(theme, &appearance, Some(true))), appearance))
 }
 
+/// `pinThemeSelection()`: `downright.theme.selected` pinned to its default
+/// in the argument domain, before `ThemeStore::shared` exists (see the Swift
+/// harness).
+pub fn pin_theme_selection() {
+    use objc2_foundation::{NSArgumentDomain, NSDictionary, NSString, NSUserDefaults};
+    let key = NSString::from_str("downright.theme.selected");
+    let value = NSString::from_str("Paper Light");
+    let domain = NSDictionary::from_slices(&[&*key], &[&*value as &objc2::runtime::AnyObject]);
+    // SAFETY: a volatile domain of property-list values.
+    unsafe { NSUserDefaults::standardUserDefaults().setVolatileDomain_forName(&domain, NSArgumentDomain) };
+}
+
 fn read_scenario_json(path: &Path) -> Result<Map<String, Value>, Failure> {
     let text = std::fs::read_to_string(path)?;
     let value: Value = serde_json::from_str(&text).map_err(|error| Failure::Error(error.to_string()))?;
@@ -239,6 +251,7 @@ pub fn run_capture(request: &Request) -> Result<(), Failure> {
     }
     let scene = scenes::make(&scenario.panel)?;
     acquire_window_capture_lock();
+    pin_theme_selection();
     crate::dump::app_window::off_screen::install();
     let mtm = MainThreadMarker::new().expect("panel capture runs on the main thread");
     let app = NSApplication::sharedApplication(mtm);
@@ -408,6 +421,7 @@ fn check_settled() {
 /// `PanelModelDump.run(input:flags:)`.
 pub fn run_model(request: &Request) -> Result<(), Failure> {
     let json = read_scenario_json(&request.input)?;
+    pin_theme_selection();
     crate::dump::app_window::off_screen::install();
     let mtm = MainThreadMarker::new().expect("panel-model runs on the main thread");
     let _ = NSApplication::sharedApplication(mtm);
@@ -452,6 +466,7 @@ pub fn run_model(request: &Request) -> Result<(), Failure> {
 /// windowless; `prepare` is not timed.
 pub fn run_bench(request: &Request) -> Result<(), Failure> {
     let json = read_scenario_json(&request.input)?;
+    pin_theme_selection();
     crate::dump::app_window::off_screen::install();
     let mtm = MainThreadMarker::new().expect("bench-panel runs on the main thread");
     let _ = NSApplication::sharedApplication(mtm);

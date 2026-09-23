@@ -127,6 +127,17 @@ func panelStyleSheet(_ scenario: PanelScenario) throws -> (StyleSheet, NSAppeara
     return (StyleSheet(theme: theme, appearance: appearance, reduceMotionOverride: true), appearance)
 }
 
+/// Pins `ThemeStore`'s selection (`downright.theme.selected`) to its default
+/// in this process's argument domain, before `ThemeStore.shared` exists.
+/// Scenes that must select a theme (the update panels read
+/// `StyleSheet.current`) write the persistent key, which every other oracle
+/// process of the same executable, running in parallel, would otherwise read
+/// at launch. The argument domain wins over the persistent one, and the
+/// selecting process keeps its in-memory choice.
+func pinThemeSelection() {
+    UserDefaults.standard.setVolatileDomain(["downright.theme.selected": "Paper Light"], forName: UserDefaults.argumentDomain)
+}
+
 func readScenarioJSON(_ url: URL) throws -> [String: Any] {
     let data = try Data(contentsOf: url)
     guard let json = try JSONSerialization.jsonObject(with: data) as? [String: Any] else {
@@ -169,6 +180,7 @@ final class PanelCaptureSession: NSObject, NSApplicationDelegate {
             }
         }
         acquirePanelCaptureLock()
+        pinThemeSelection()
         OffScreenWindows.install()
         let app = NSApplication.shared
         app.setActivationPolicy(.accessory)
@@ -300,6 +312,7 @@ enum PanelModelDump {
     @MainActor
     static func run(input: URL, flags: [String]) throws -> JSON {
         let json = try readScenarioJSON(input)
+        pinThemeSelection()
         OffScreenWindows.install()
         _ = NSApplication.shared
         let base = json["state"] as? [String: Any] ?? [:]
