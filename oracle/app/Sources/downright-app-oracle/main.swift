@@ -24,6 +24,8 @@ import AppKit
 //   panel        <scenario.json>  a panel built off-screen and captured (Panels/PanelHarness.swift)
 //   panel-model  <scenario.json>  panels built windowless, laid out and dumped (Panels/PanelHarness.swift)
 //   bench-panel  <scenario.json>  panel build, layout and draw timings (Panels/PanelBench.swift)
+//   quicklook-thumbnail <file.md> <out.png> [--width W --height H --scale S --layout out.json]
+//                                 the Quick Look thumbnail extension's drawing (QuickLookThumbnailDump.swift)
 //
 // Each command parses its own flags. `upleft-oracle` (crates/conformance)
 // takes identical arguments and writes identical formats. The runner selects
@@ -92,6 +94,8 @@ do {
     case "panel": try MainActor.assumeIsolated { try PanelCaptureSession.run(input: input, output: output, flags: flags) }
     case "panel-model": try write(MainActor.assumeIsolated { try PanelModelDump.run(input: input, flags: flags) }, to: output)
     case "bench-panel": try write(MainActor.assumeIsolated { try PanelBench.run(input: input) }, to: output)
+    case "quicklook-thumbnail":
+        try MainActor.assumeIsolated { try QuickLookThumbnailDump.run(input: input, output: output, flags: flags) }
     default: usage()
     }
 } catch {

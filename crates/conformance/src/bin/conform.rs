@@ -300,7 +300,11 @@ fn run_case(context: &Context, case: &Case) -> (Outcome, String) {
     fs::create_dir_all(&scratch).unwrap();
     let layout_flags = |path: &Path| -> Vec<String> {
         let mut flags = flags.clone();
-        if suite.command == "render" || suite.command == "app-window" || suite.command == "panel" {
+        if suite.command == "render"
+            || suite.command == "app-window"
+            || suite.command == "panel"
+            || suite.command == "quicklook-thumbnail"
+        {
             flags.push("--layout".into());
             flags.push(path.to_string_lossy().into_owned());
         }

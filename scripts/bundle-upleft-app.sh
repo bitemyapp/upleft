@@ -3,7 +3,8 @@
 # Downright's Scripts/bundle-app.sh assembles Downright.app from SwiftPM's:
 # the app binary and `down` in Contents/MacOS, the resources, Sparkle.framework
 # in Contents/Frameworks, the Spotlight importer in Contents/Library/Spotlight,
-# and an ad-hoc signature.
+# the Quick Look extensions in Contents/PlugIns (scripts/bundle-upleft-quicklook.sh,
+# bundle-quicklook.sh's port), and an ad-hoc signature.
 #
 # Identity: Upleft everywhere (AGENTS.md, "App identity"). The Info.plist
 # values come from the rebranded Config/Downright-Info.plist (`just rebrand`),
@@ -17,8 +18,10 @@
 #   * the themes are compiled into the binary (upleft-render embeds the same
 #     JSON files), so there is no MarkdownRender resource bundle; the math
 #     fonts ship as Contents/Resources/mathFonts.bundle, where upleft-math's
-#     resolver looks;
-#   * the Quick Look .appex targets are not built yet (a listed gap).
+#     resolver looks (and in each .appex, beside its executable);
+#   * the Quick Look extensions are embedded here, before the host is signed,
+#     rather than by a separate run afterwards; they are never registered
+#     with pluginkit.
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
@@ -123,6 +126,12 @@ cp "$ROOT/vendor/downright/Resources/Spotlight/schema.xml" "$IMPORTER/Contents/R
 codesign --force --sign - --identifier "$SPOTLIGHT_BUNDLE_IDENTIFIER.binary" "$EXECUTABLE"
 codesign --force --sign - --identifier "$SPOTLIGHT_BUNDLE_IDENTIFIER" "$IMPORTER"
 
+echo "==> Embedding Quick Look extensions"
+# DownrightQL.appex and DownrightThumb.appex, built, assembled and signed with
+# their entitlements. The host is signed below, after Sparkle, and the
+# extensions are verified with everything else.
+SIGN_HOST=0 VERIFY=0 "$ROOT/scripts/bundle-upleft-quicklook.sh" APP="$APP"
+
 echo "==> Signing (ad-hoc)"
 # Sparkle first (its XPC helpers are nested code), then the app without
 # --deep so the framework's signature is preserved.
@@ -174,6 +183,11 @@ check "$(grep -q ' _MetadataImporterPluginFactory$' <<<"$IMPORTER_SYMBOLS" && ec
 check "$([ "$(/usr/libexec/PlistBuddy -c 'Print :CFBundleExecutable' "$SPOTLIGHT_PLIST")" = "DownrightSpotlight" ] && echo 1 || echo 0)" "Spotlight importer executable name"
 check "$(grep -q '8B08C4BF-415B-11D8-B3F9-0003936726FC' "$SPOTLIGHT_PLIST" && echo 1 || echo 0)" "Spotlight importer declares the MDImporter plug-in type"
 check "$([ -f "$IMPORTER/Contents/Resources/schema.xml" ] && echo 1 || echo 0)" "Spotlight importer schema present"
+# The Quick Look section of verify-bundle.sh: both extensions, their fonts,
+# sandbox entitlements, versions and identifiers.
+# shellcheck source=scripts/verify-upleft-quicklook.sh
+source "$ROOT/scripts/verify-upleft-quicklook.sh"
+verify_quicklook_plugins "$APP"
 check "$(codesign --verify --strict "$APP" 2>/dev/null && echo 1 || echo 0)" "codesign --verify --strict"
 [ "$FAILURES" = "0" ] || { echo "$FAILURES check(s) failed" >&2; exit 1; }
 
