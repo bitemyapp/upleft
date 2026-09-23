@@ -24,7 +24,7 @@ This file covers the whole app-core port on `port/app-core`: Downright's app lay
 | `Review/` | ReviewAnchorResolver, ReviewSidecar |
 | `Security/` | DocumentTrust, TrustStore |
 | `Support/` | AppPaths, CommandPaletteModel, Commands, FindEngine, JumpHistory, Keybindings, Preferences, QuickOpenProviders, ReaderProfiles, SpeechCoordinator, SystemIntegration, WelcomeTour |
-| `Updater/` | DownrightUpdateDriver, ReleaseWatch, UpdateCoordinator, UpdateEngine, UpdateMetadata, UpdateStateMachine |
+| `Updater/` | DownrightUpdateDriver, ReleaseWatch, UpdateCoordinator, UpdateEngine, UpdateMetadata, UpdateStateMachine; `sparkle` holds the Sparkle half of UpdateEngine and DownrightUpdateDriver (see "Sparkle" below) |
 | `Workspace/` | WorkspaceIndex, WorkspaceLinkGraph, WorkspaceSearch |
 
 ## Conformance
@@ -52,7 +52,7 @@ Every Swift file in scope is ported. The two exceptions are `LocalAI.swift` and 
 ## Left
 
 - **UI-bound code** goes to the UI port: `DocumentWindowController`, `MainMenu`, the panels, the Settings window, and the update panel (`UpdateNotesSummary` and the release-notes reduction live in `Panels/`). About 90 window-bound Swift tests wait with it; each area's list is in the commit messages and the section notes below.
-- **Sparkle linkage** comes with app packaging. `updater::update_engine` has the marked `SpuUpdater` seam, and until a factory is installed the updater stays disabled.
+- **Sparkle in the app binary.** `updater::sparkle` reaches Sparkle 2.9.6 at run time. The app binary still has to link and embed the framework and call `updater::sparkle::install(mtm)` at start-up (see "Sparkle" below). A real update cycle is unverified.
 - **Behaviour that is ported but unverified**, because exercising it would launch apps, change system state or write the real Spotlight index:
   - the success paths of `down open`, `--reveal`, `watch` and `notify`;
   - `ExternalEditor.open`;
@@ -71,6 +71,38 @@ Every Swift file in scope is ported. The two exceptions are `LocalAI.swift` and 
 2. Add each new check to the relevant suite. Where Swift has a seam (an injectable store, clock or URL), drive both sides through it. Never touch `UserDefaults.standard`, `Preferences.shared` or the real home.
 3. `cargo test --workspace`, the nine suites above and `just app-bench` must stay green.
 
+
+## Sparkle (`updater::sparkle`)
+
+Downright imports Sparkle in `UpdateEngine.swift` and `DownrightUpdateDriver.swift`, and only its host app links it. In Upleft, upleft-app never references a Sparkle symbol. `updater::sparkle` declares what the two Swift files use (`SPUUpdater`, `SUAppcastItem`, `SPUUserUpdateState`, `SPUDownloadData`, `SPUUpdatePermissionRequest`, `SUUpdatePermissionResponse`, and the `SPUUserDriver` and `SPUUpdaterDelegate` protocols) with objc2, resolved through the Objective-C runtime. Only the app binary links the framework.
+
+- `SparkleUpdater` implements the engine's `SpuUpdater` over a real `SPUUpdater`. It holds the updater and both bridge objects, because `SPUUpdater` keeps its delegate only weakly.
+- `DownrightUpdateDriverObject` (runtime name `DownrightUpdateDriver`) is the `SPUUserDriver`. `BackgroundDownloadNotifierObject` (runtime name `BackgroundDownloadNotifier`) is the `SPUUpdaterDelegate`. Each forwards to the ported `DownrightUpdateDriver` or `BackgroundDownloadNotifier` on the main thread. A call that arrives on another thread is carried to the main queue (see `docs/KNOWN-DIFFERENCES.md`, "Sparkle bridge").
+- `make_updater` answers `None` when Sparkle is not loaded, and the updater then stays disabled.
+
+**Start-up.** Before `UpdateCoordinator::shared(mtm).start()` (Downright's `applicationDidFinishLaunching`), the app calls:
+
+```rust
+upleft_app::updater::sparkle::install(mtm);
+UpdateCoordinator::shared(mtm).start();
+```
+
+**Link and bundle.** `scripts/sparkle-framework.sh` prints the path of the SwiftPM-resolved `Sparkle.framework`. It checks that the version is 2.9.6, and resolves `oracle/app` first if the framework is missing. The app binary's build script passes the following only to that binary (`cargo::rustc-link-arg-bin=<bin>=…`), so no other target links Sparkle:
+
+- `-F<directory containing Sparkle.framework>`
+- `-Wl,-needed_framework,Sparkle`. `-framework Sparkle` also works: rustc passes `-dead_strip` but not `-dead_strip_dylibs`, so both keep the load command (checked with a scratch binary).
+- `-Wl,-rpath,@executable_path/../Frameworks`
+
+The framework's install name is `@rpath/Sparkle.framework/Versions/B/Sparkle`. The bundle copies `Sparkle.framework` into `Contents/Frameworks` and signs it before the app, as `Scripts/bundle-app.sh` does. A dev bundle leaves out the `SU*` Info.plist keys, which keeps the updater disabled.
+
+**Tests.** `tests/sparkle_bridge_tests.rs` `dlopen`s the framework from `UPLEFT_SPARKLE_FRAMEWORK`, or else from the script's path, and skips with a message when it is absent. It covers:
+
+- the build contract;
+- the protocol conformance and method type encodings against Sparkle's compiled protocols;
+- the coordinator flows through Sparkle's own objects and reply blocks;
+- a real `SPUUpdater`'s settings and its start-up failure.
+
+The `SPUUpdater`s belong to a throw-away bundle with no feed and no key, so `startUpdater:` fails before anything is scheduled. They use a unique `upleft.conformance.sparkle.<uuid>` defaults suite, which each test removes. The tests never check for updates, touch the network or show UI.
 
 ## Swift shim (`swift-shim/`)
 
