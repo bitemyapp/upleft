@@ -87,6 +87,44 @@ pub fn toggle_options(bar: &FindBarView, options: &[String], mtm: MainThreadMark
     }
 }
 
+/// `FindBarViewScene.applyFindState(_:_:)`: `selectionScope`, `options`,
+/// `query` (with the document's find session), `status` and `valid`, in
+/// that order.
+pub fn apply_find_state(
+    bar: &FindBarView,
+    scenario: &PanelScenario,
+    mtm: MainThreadMarker,
+) -> Result<Option<FindSession>, Failure> {
+    let mut session = None;
+    let scope: Vec<i64> = scenario.array("selectionScope").iter().filter_map(|value| value.as_i64()).collect();
+    if scope.len() == 2 {
+        bar.set_selection_scope(Some(NSRange::new(scope[0] as isize, scope[1] as isize)));
+    }
+    toggle_options(bar, &scenario.strings("options"), mtm);
+    if let Some(query) = scenario.string("query") {
+        bar.set_query_text(&query, true);
+        if scenario.document_path.is_some() {
+            let text = scenario.document_text().map_err(Failure::Error)?;
+            let current = bar.current_query();
+            let mut found = FindSession::new();
+            found.update(current.clone(), &text, scenario.int_or("caret", 0) as isize);
+            for _ in 0..scenario.int_or("advance", 0) {
+                let _ = found.advance(true);
+            }
+            bar.set_status_text(&found.status_text());
+            bar.set_is_query_valid(FindEngine::is_valid(&current));
+            session = Some(found);
+        }
+    }
+    if let Some(status) = scenario.string("status") {
+        bar.set_status_text(&status);
+    }
+    if scenario.state.contains_key("valid") {
+        bar.set_is_query_valid(scenario.bool("valid"));
+    }
+    Ok(session)
+}
+
 impl PanelScene for FindBarViewScene {
     fn build(
         &mut self,
@@ -108,32 +146,7 @@ impl PanelScene for FindBarViewScene {
         };
         let recorder: Rc<dyn FindBarDelegate> = self.recorder.clone();
         bar.set_delegate(Some(Rc::downgrade(&recorder)));
-        let scope: Vec<i64> = scenario.array("selectionScope").iter().filter_map(|value| value.as_i64()).collect();
-        if scope.len() == 2 {
-            bar.set_selection_scope(Some(NSRange::new(scope[0] as isize, scope[1] as isize)));
-        }
-        toggle_options(&bar, &scenario.strings("options"), mtm);
-        if let Some(query) = scenario.string("query") {
-            bar.set_query_text(&query, true);
-            if scenario.document_path.is_some() {
-                let text = scenario.document_text().map_err(Failure::Error)?;
-                let current = bar.current_query();
-                let mut session = FindSession::new();
-                session.update(current.clone(), &text, scenario.int_or("caret", 0) as isize);
-                for _ in 0..scenario.int_or("advance", 0) {
-                    let _ = session.advance(true);
-                }
-                bar.set_status_text(&session.status_text());
-                bar.set_is_query_valid(FindEngine::is_valid(&current));
-                self.session = Some(session);
-            }
-        }
-        if let Some(status) = scenario.string("status") {
-            bar.set_status_text(&status);
-        }
-        if scenario.state.contains_key("valid") {
-            bar.set_is_query_valid(scenario.bool("valid"));
-        }
+        self.session = apply_find_state(&bar, scenario, mtm)?;
         if scenario.bool("showsReplace") {
             bar.set_shows_replace(true);
         }

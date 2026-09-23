@@ -40,6 +40,21 @@ final class FindBarViewScene: PanelScene {
             bar = FindBarView(styleSheet: styleSheet, presentation: inspector ? .inspector : .bar)
         }
         bar.delegate = recorder
+        session = try Self.applyFindState(bar, scenario)
+        if scenario.bool("showsReplace") { bar.showsReplace = true }
+        if let replacement = scenario.string("replacement"),
+           let field = Self.textField("Replace with", in: bar) {
+            field.stringValue = replacement
+        }
+        inset = CGFloat(scenario.double("inset", 20))
+        self.bar = bar
+        return bar
+    }
+
+    /// `selectionScope`, `options`, `query` (with the document's find
+    /// session), `status` and `valid`, in that order.
+    static func applyFindState(_ bar: FindBarView, _ scenario: PanelScenario) throws -> FindSession? {
+        var session: FindSession?
         let scope = scenario.array("selectionScope").compactMap { ($0 as? NSNumber)?.intValue }
         if scope.count == 2 {
             bar.selectionScope = NSRange(location: scope[0], length: scope[1])
@@ -57,26 +72,19 @@ final class FindBarViewScene: PanelScene {
             if scenario.documentPath != nil {
                 let text = try scenario.documentText()
                 let current = bar.currentQuery
-                let session = FindSession()
-                session.update(query: current, in: text, caret: scenario.int("caret", 0))
+                let found = FindSession()
+                found.update(query: current, in: text, caret: scenario.int("caret", 0))
                 for _ in 0..<scenario.int("advance", 0) {
-                    _ = session.advance(forward: true)
+                    _ = found.advance(forward: true)
                 }
-                bar.statusText = session.statusText
+                bar.statusText = found.statusText
                 bar.isQueryValid = FindEngine.isValid(current)
-                self.session = session
+                session = found
             }
         }
         if let status = scenario.string("status") { bar.statusText = status }
         if scenario.state["valid"] != nil { bar.isQueryValid = scenario.bool("valid") }
-        if scenario.bool("showsReplace") { bar.showsReplace = true }
-        if let replacement = scenario.string("replacement"),
-           let field = Self.textField("Replace with", in: bar) {
-            field.stringValue = replacement
-        }
-        inset = CGFloat(scenario.double("inset", 20))
-        self.bar = bar
-        return bar
+        return session
     }
 
     func host(_ panel: NSView, in window: NSWindow, scenario: PanelScenario) {

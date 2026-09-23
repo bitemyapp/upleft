@@ -191,6 +191,7 @@ struct Session {
     settle_view: Option<Retained<NSView>>,
     previous_capture: Option<Vec<u8>>,
     stable_captures: u32,
+    previous_server_capture: Option<Vec<u8>>,
     deadline: Option<Instant>,
 }
 
@@ -252,6 +253,7 @@ pub fn run_capture(request: &Request) -> Result<(), Failure> {
             settle_view: None,
             previous_capture: None,
             stable_captures: 0,
+            previous_server_capture: None,
             deadline: None,
         })
     });
@@ -366,6 +368,18 @@ fn check_settled() {
         if session.stable_captures < 2 {
             eprintln!("warning: panel did not settle before the timeout");
         }
+        // The window server composites glass and materials on its own
+        // clock, after the view tree has settled: capture it until two
+        // consecutive captures agree.
+        let server = crate::dump::app_window::window_server::png(std::slice::from_ref(&window))?;
+        let expired = session.deadline.is_some_and(|deadline| Instant::now() > deadline);
+        if session.previous_server_capture.as_ref() != Some(&server) && !expired {
+            session.previous_server_capture = Some(server);
+            return Ok(Next::Wait);
+        }
+        if session.previous_server_capture.as_ref() != Some(&server) {
+            eprintln!("warning: the window server capture did not settle before the timeout");
+        }
         if let Some(layout) = &session.output_layout {
             let mut object = Map::new();
             object.insert("window".into(), tree::window(&window));
@@ -377,8 +391,7 @@ fn check_settled() {
         crate::dump::app_window::off_screen::verify(std::slice::from_ref(&window), window.mtm());
         // The window server's composite of the off-screen window (glass,
         // materials and layers included); see `WindowServerCapture`.
-        let data = crate::dump::app_window::window_server::png(std::slice::from_ref(&window))?;
-        std::fs::write(&session.output_png, &data).map_err(|error| format!("write failed: {error}"))?;
+        std::fs::write(&session.output_png, &server).map_err(|error| format!("write failed: {error}"))?;
         Ok(Next::Written)
     });
     match next {
