@@ -35,7 +35,7 @@ func usage() -> Never {
       downright-oracle parse    <file.md> <out.json>
       downright-oracle markup   <file.md> <out.json>
       downright-oracle decorate <file.md> <out.json> [--mode read|live|source] [--theme NAME] [--dark]
-      downright-oracle render   <file.md> <out.png> [--layout out.json] [--mode M] [--theme NAME] [--dark] [--width W] [--height H] [--capture screen|view]
+      downright-oracle render   <file.md> <out.png> [--layout out.json] [--mode M] [--theme NAME] [--dark] [--width W] [--height H] [--capture headless|view|screen]
 
     """.data(using: .utf8)!)
     exit(64)
@@ -53,7 +53,8 @@ struct Flags {
     var width: CGFloat = 1000
     var height: CGFloat = 1400
     var layout: URL?
-    var captureFromScreen = true
+    var captureFromScreen = false
+    var headless = true
     /// `--density leading|trailing`: attach the density gutter as the app does.
     var density: String?
     /// `--hover`: which state `density-hover` drives the gutter into.
@@ -75,8 +76,9 @@ struct Flags {
             case "--hover": hover = required(iterator.next())
             case "--capture":
                 switch required(iterator.next()) {
-                case "screen": captureFromScreen = true
-                case "view": captureFromScreen = false
+                case "screen": captureFromScreen = true; headless = false
+                case "view": captureFromScreen = false; headless = false
+                case "headless": captureFromScreen = false; headless = true
                 default: usage()
                 }
             default: usage()
@@ -168,7 +170,8 @@ do {
             dark: flags.dark,
             width: flags.width,
             height: flags.height,
-            captureFromScreen: flags.captureFromScreen
+            captureFromScreen: flags.captureFromScreen,
+            headless: flags.headless
         )
         CaptureSession.run(
             request: request,
@@ -187,7 +190,8 @@ do {
         let request = RenderRequest(
             input: input, outputPNG: URL(fileURLWithPath: output), outputLayout: nil, mode: flags.mode,
             themeName: flags.theme, dark: flags.dark, width: flags.width, height: flags.height,
-            captureFromScreen: flags.captureFromScreen
+            captureFromScreen: flags.captureFromScreen,
+            headless: flags.headless
         )
         CaptureSession.run(
             request: request,

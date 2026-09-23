@@ -40,6 +40,9 @@ pub struct CaptureRequest {
     pub height: f64,
     pub settle_timeout: Duration,
     pub capture_from_screen: bool,
+    /// See `RenderRequest.headless` in the Swift oracle: off-screen, never
+    /// activated, captured with `cacheDisplay`. The default.
+    pub headless: bool,
 }
 
 /// Matches the Swift `CaptureScene` protocol.
@@ -172,8 +175,12 @@ fn start(mtm: MainThreadMarker) -> Result<(), String> {
         window.setColorSpace(Some(&NSColorSpace::sRGBColorSpace()));
         let settle_view = session.scene.build(&window, &request, mtm)?;
 
-        #[allow(deprecated)]
-        NSApplication::sharedApplication(mtm).activateIgnoringOtherApps(true);
+        if request.headless {
+            window.setFrameOrigin(NSPoint::new(-30000.0, -30000.0));
+        } else {
+            #[allow(deprecated)]
+            NSApplication::sharedApplication(mtm).activateIgnoringOtherApps(true);
+        }
         window.orderFrontRegardless();
         session.scene.after_show(&window);
         session.deadline = Some(Instant::now() + request.settle_timeout);

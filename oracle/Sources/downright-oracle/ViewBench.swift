@@ -50,13 +50,15 @@ final class ViewBench: NSObject, NSApplicationDelegate {
         }
         let styleSheet = StyleSheet(theme: theme, appearance: appearance, reduceMotionOverride: true)
         let runs = Int(ProcessInfo.processInfo.environment["VIEW_BENCH_RUNS"] ?? "") ?? 10
-        NSApp.activate(ignoringOtherApps: true)
+        // Headless, as every capture is by default: never activated, the
+        // window placed outside every screen.
 
         var update: [Double] = [], firstFrame: [Double] = [], settle: [Double] = [], total: [Double] = []
         var fragments = 0
         for index in 0...runs {
             let frame = NSRect(x: 0, y: 0, width: request.width, height: request.height)
             let window = NSWindow(contentRect: frame, styleMask: [.borderless], backing: .buffered, defer: false)
+            window.setFrameOrigin(NSPoint(x: -30000, y: -30000))
             window.isReleasedWhenClosed = false
             window.appearance = appearance
             window.colorSpace = .sRGB

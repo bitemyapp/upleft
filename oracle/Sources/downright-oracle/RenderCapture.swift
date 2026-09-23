@@ -16,8 +16,13 @@ struct RenderRequest {
     /// Upper bound on waiting for the view to settle (images decode off the
     /// main thread; motion must finish).
     var settleTimeout: TimeInterval = 8
-    /// Capture the composited window (default) rather than `cacheDisplay`.
-    var captureFromScreen = true
+    /// Capture the composited window rather than `cacheDisplay`. Opt-in only:
+    /// an on-screen capture activates the app and shows a window.
+    var captureFromScreen = false
+    /// The default: the window sits far outside every screen and the app is
+    /// never activated, so nothing appears or takes focus. TextKit still lays
+    /// out and draws in the window's display cycle; `cacheDisplay` records it.
+    var headless = true
 }
 
 /// What a capture shows. `CaptureSession` owns the window, the settle loop
@@ -92,7 +97,11 @@ final class CaptureSession: NSObject, NSApplicationDelegate {
         window.colorSpace = .sRGB
         settleView = try scene.build(in: window, request: request)
 
-        NSApp.activate(ignoringOtherApps: true)
+        if request.headless {
+            window.setFrameOrigin(NSPoint(x: -30000, y: -30000))
+        } else {
+            NSApp.activate(ignoringOtherApps: true)
+        }
         window.orderFrontRegardless()
         scene.afterShow(window: window)
         deadline = Date().addingTimeInterval(request.settleTimeout)

@@ -85,8 +85,8 @@ fn bench(request: &Request, mtm: MainThreadMarker) -> Result<(), String> {
     let style_sheet = Rc::new(StyleSheet::new(theme, &appearance, Some(true)));
     let mode = RenderMode::from_raw_value(&request.mode).unwrap_or(RenderMode::Live);
     let runs: usize = std::env::var("VIEW_BENCH_RUNS").ok().and_then(|value| value.parse().ok()).unwrap_or(10);
-    #[allow(deprecated)]
-    NSApplication::sharedApplication(mtm).activateIgnoringOtherApps(true);
+    // Headless, as the Swift side: never activated, the window placed
+    // outside every screen.
 
     let (mut update, mut first_frame, mut settle, mut total) = (Vec::new(), Vec::new(), Vec::new(), Vec::new());
     let mut fragments = 0usize;
@@ -101,6 +101,7 @@ fn bench(request: &Request, mtm: MainThreadMarker) -> Result<(), String> {
                 false,
             )
         };
+        window.setFrameOrigin(NSPoint::new(-30000.0, -30000.0));
         unsafe { window.setReleasedWhenClosed(false) };
         window.setAppearance(Some(&appearance));
         window.setColorSpace(Some(&NSColorSpace::sRGBColorSpace()));

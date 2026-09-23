@@ -244,6 +244,9 @@ fn checkbox_double_click_does_not_toggle_twice(mtm: MainThreadMarker) {
     };
     unsafe { window.setReleasedWhenClosed(false) };
     window.setContentView(Some(&container));
+    // Off-screen: the clicks below are delivered to the window directly, so
+    // its position is irrelevant and nothing appears on the user's display.
+    window.setFrameOrigin(NSPoint::new(-30000.0, -30000.0));
     window.makeKeyAndOrderFront(None);
     let location = view.convertPoint_toView(NSPoint::new(target.mid_x(), target.mid_y()), None);
 

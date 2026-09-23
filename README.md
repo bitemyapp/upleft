@@ -57,7 +57,7 @@ corpus/                     documents the conformance runner checks
 
 - `parse` dumps the parsed document tree: every block, inline span, range, hash, and derived structure.
 - `decorate` dumps every attribute run on the decorated `NSTextStorage`. Fonts, colors, and paragraph styles are compared bit for bit.
-- `render` captures a PNG of the real `MarkdownContainerView` in an activated app, along with a dump of the layout fragments.
+- `render` captures a PNG of the real `MarkdownContainerView`, along with a dump of the layout fragments. It runs headless by default: the app is never activated, its window sits off-screen, and `cacheDisplay` records it. An on-screen ScreenCaptureKit capture (`--capture screen`) is opt-in, for a handful of spot checks.
 
 `upleft-oracle` takes the same arguments and writes the same formats. The runner compares the two outputs structurally and decodes the PNGs to compare pixels exactly. A render request can also be sent to the full app. Downright's `DOWNRIGHT_DEBUG_LAYOUT` and `DOWNRIGHT_DEBUG_CAPTURE` hooks capture the whole window, and Upleft implements the same hooks.
 

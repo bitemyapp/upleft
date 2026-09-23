@@ -35,6 +35,12 @@ FoundationModels (Downright's optional on-device AI, `AI/LocalAI.swift`) and App
 
 By the owner's decision (2026-09-23), the app is always **Upleft**. It has its own name in every visible string, bundle id `com.bitemyapp.upleft`, and its own Application Support folder and preferences domain, so it never shares state with a real Downright install. To keep window-level conformance exact, the Swift reference app for those suites is Downright built from a scripted copy that rebrands only visible strings and identifiers ("Downright" to "Upleft"). `vendor/` is never modified, and the rebranding script's substitutions are listed and reviewed. The pure library layers are unaffected.
 
+## Window captures are headless
+
+Never run a long series of on-screen window captures; the owner stopped one on 2026-09-23 because it made the machine unusable. Every windowed oracle command (`render`, `probe`, the density suites, `bench-view`) runs headless by default. The app is never activated, the window sits outside every screen, and `cacheDisplay` records it. Nothing appears on screen and nothing takes focus.
+
+`--capture screen` (activation plus a ScreenCaptureKit capture of the on-screen window) is opt-in. Use it only for a handful of representative cases, to confirm that headless and on-screen pixels still agree after a change to the capture path. Tests that need a window put it off-screen too.
+
 ## Gates
 
 - `cargo test --workspace` must pass.

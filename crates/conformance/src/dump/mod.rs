@@ -68,6 +68,8 @@ pub struct Request {
     pub layout: Option<PathBuf>,
     /// Capture the composited window (default) rather than `cacheDisplay`.
     pub capture_from_screen: bool,
+    /// Off-screen, never activated, `cacheDisplay` capture (the default).
+    pub headless: bool,
     /// The flags exactly as given, for the app-layer commands.
     pub flags: Vec<String>,
     /// `--density leading|trailing`: attach the density gutter as the app does.
@@ -91,7 +93,8 @@ impl Request {
             width: 1000.0,
             height: 1400.0,
             layout: None,
-            capture_from_screen: true,
+            capture_from_screen: false,
+            headless: true,
             flags: flags.to_vec(),
             density: None,
             hover: None,
@@ -124,9 +127,10 @@ impl Request {
                 }
                 "--hover" => request.hover = Some(value()?),
                 "--capture" => {
-                    request.capture_from_screen = match value()?.as_str() {
-                        "screen" => true,
-                        "view" => false,
+                    (request.capture_from_screen, request.headless) = match value()?.as_str() {
+                        "screen" => (true, false),
+                        "view" => (false, false),
+                        "headless" => (false, true),
                         other => return Err(format!("unknown capture {other}")),
                     }
                 }
@@ -227,6 +231,7 @@ impl Request {
             height: self.height,
             settle_timeout: std::time::Duration::from_secs(8),
             capture_from_screen: self.capture_from_screen,
+            headless: self.headless,
         }
     }
 }
