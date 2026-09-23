@@ -47,3 +47,7 @@ harness = false
 [[test]]
 name = "app_intents_tests"
 harness = false
+
+[[test]]
+name = "file_watcher_tests"
+harness = false
