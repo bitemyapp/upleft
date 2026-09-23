@@ -1,0 +1,1 @@
+{"panel": "FindBarView", "theme": "Solarized Light", "dark": false, "width": 560, "height": 136, "document": "corpus/generated/agent/agent-5000.md", "state": {"options": ["Match Case", "Whole Word"], "query": "task", "caret": 60000, "showsReplace": true, "replacement": "chore"}}

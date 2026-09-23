@@ -57,6 +57,20 @@ pub fn yield_main() {
 
 pub type TestFn = fn();
 
+/// [`run`] for view tests (the panels'): `constrainFrameRect:toScreen:` is
+/// the identity for the whole run ([`keep_windows_off_screen`]), and after
+/// every test [`assert_off_screen`] stops the run if any visible window of
+/// the process touches a display.
+pub fn run_off_screen(tests: &[(&str, TestFn)]) {
+    keep_windows_off_screen();
+    OFF_SCREEN_CHECKS.with(|checks| checks.set(true));
+    run(tests);
+}
+
+thread_local! {
+    static OFF_SCREEN_CHECKS: std::cell::Cell<bool> = const { std::cell::Cell::new(false) };
+}
+
 /// Runs `tests` in order on the main thread and exits non-zero on failure.
 pub fn run(tests: &[(&str, TestFn)]) {
     assert!(objc2::MainThreadMarker::new().is_some(), "main-thread tests must run on the main thread");
@@ -91,6 +105,9 @@ pub fn run(tests: &[(&str, TestFn)]) {
     for (name, test) in &selected {
         let started = Instant::now();
         let outcome = catch_unwind(AssertUnwindSafe(test));
+        if OFF_SCREEN_CHECKS.with(std::cell::Cell::get) {
+            assert_off_screen();
+        }
         let elapsed = started.elapsed().as_secs_f64();
         match outcome {
             Ok(()) => println!("test {name} ... ok ({elapsed:.2}s)"),
@@ -110,5 +127,65 @@ pub fn run(tests: &[(&str, TestFn)]) {
         }
         println!("\ntest result: FAILED. {passed} passed; {} failed\n", failed.len());
         std::process::exit(101);
+    }
+}
+
+// MARK: - Windows that must be ordered in
+
+/// AppKit pulls a *titled* window back onto a display when it is ordered in
+/// (`-[NSWindow constrainFrameRect:toScreen:]`), even one parked at
+/// (-30000, -30000), and a borderless child ordered in with `addChildWindow`
+/// orders its titled parent in too. A test that genuinely needs a window
+/// ordered in calls this first: the method becomes the identity for the
+/// test process, as in the app-window harness (crates/app/PORTING.md), and
+/// [`assert_off_screen`] then proves the window stayed off every display.
+pub fn keep_windows_off_screen() {
+    use objc2::runtime::{AnyObject, Imp, Sel};
+    use objc2::{ClassType, sel};
+    use objc2_foundation::NSRect;
+    static ONCE: std::sync::Once = std::sync::Once::new();
+    extern "C-unwind" fn identity(_this: &AnyObject, _cmd: Sel, rect: NSRect, _screen: *mut AnyObject) -> NSRect {
+        rect
+    }
+    ONCE.call_once(|| {
+        let Some(method) = objc2_app_kit::NSWindow::class().instance_method(sel!(constrainFrameRect:toScreen:)) else {
+            return;
+        };
+        // SAFETY: the replacement has the method's exact signature.
+        unsafe {
+            let imp: Imp = std::mem::transmute::<
+                extern "C-unwind" fn(&AnyObject, Sel, NSRect, *mut AnyObject) -> NSRect,
+                Imp,
+            >(identity);
+            method.set_implementation(imp);
+        }
+    });
+}
+
+/// Orders every window out and aborts the test run if any visible window of
+/// this process touches a display.
+pub fn assert_off_screen() {
+    let mtm = objc2::MainThreadMarker::new().expect("main thread");
+    let app = objc2_app_kit::NSApplication::sharedApplication(mtm);
+    let screens = objc2_app_kit::NSScreen::screens(mtm);
+    for window in app.windows().iter() {
+        if !window.isVisible() {
+            continue;
+        }
+        let frame = window.frame();
+        let touches = screens.iter().any(|screen| {
+            let s = screen.frame();
+            frame.origin.x < s.origin.x + s.size.width
+                && s.origin.x < frame.origin.x + frame.size.width
+                && frame.origin.y < s.origin.y + s.size.height
+                && s.origin.y < frame.origin.y + frame.size.height
+        });
+        if touches {
+            for window in app.windows().iter() {
+                window.orderOut(None);
+            }
+            eprintln!("a test window reached a display at {frame:?}; stopping");
+            std::process::exit(101);
+        }
     }
 }

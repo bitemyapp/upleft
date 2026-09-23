@@ -1,0 +1,1 @@
+{"panel": "SearchInspectorView", "theme": "Nord", "dark": true, "width": 336, "height": 600, "document": "corpus/generated/agent/agent-400.md", "state": {"directory": "corpus/generated/agent", "query": "task", "showsReplace": true, "replacement": "chore", "results": true, "limitPerFile": 5}}

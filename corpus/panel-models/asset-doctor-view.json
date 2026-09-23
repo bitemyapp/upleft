@@ -1,0 +1,29 @@
+{
+ "panel": "AssetDoctorView",
+ "theme": "Solarized Light",
+ "width": 336,
+ "height": 560,
+ "document": "corpus/panel-documents/diagnostics-assets.md",
+ "state": {},
+ "states": [
+  {
+   "name": "findings"
+  },
+  {
+   "name": "large files",
+   "maximumBytes": 1000
+  },
+  {
+   "name": "tiny limit",
+   "maximumBytes": 1
+  },
+  {
+   "name": "no diagnostics",
+   "empty": true
+  },
+  {
+   "name": "restyled",
+   "restyle": true
+  }
+ ]
+}

@@ -1,0 +1,335 @@
+{
+ "panel": "TableEditorView",
+ "theme": "Paper Light",
+ "width": 520,
+ "height": 400,
+ "document": "corpus/generated/docs/Docs__sample.md",
+ "state": {},
+ "states": [
+  {
+   "name": "test table",
+   "text": "| Name | Count |\n| :--- | ---: |\n| Ada | 3 |\n| Grace | 4 |\n"
+  },
+  {
+   "name": "sample document"
+  },
+  {
+   "name": "second table",
+   "text": "# Downright Performance\n\nPerformance is a product promise. Use release builds and measure the real\npipeline. Do not replace a failed measurement with a claim.\n\n## Budgets\n\n| Metric | Target | Method | Pass condition |\n|---|---:|---|---|\n| Cold launch to first rendered pixel, 100 KB | <250 ms | App launch capture | p95 below target · *manual release gate* |\n| Keystroke response, 5,000-line file | <8 ms | Source edit, paragraph map, dirty decoration (`drbench`, release) | p95 below target |\n| Scroll | 120 fps on ProMotion | Long-document scroll trace | No sustained frame drop · *manual release gate* |\n| Structural zoom | <300 ms | Level 1–5 transition trace | Anchor stays fixed; no dropped frames · *manual release gate* |\n| Document↔Source swipe, engage and abandon (give path) | <8 ms | `PresentationSwipeBudgetTests`, 2,000-line file | Below target; nothing rendered inside the gesture |\n| Document↔Source swipe, engage (drag path) | <50 ms | `PresentationSwitchBudget`, documents under its line budget | Below target; measured 6 ms at 240 lines, 26 ms at 950 |\n| Document↔Source swipe, per tracking frame | <1 ms | `PresentationSwipeBudgetTests` | Below target |\n| Quick Look preview | <400 ms | Preview extension render | p95 below target · *no automated measurement yet — manual* |\n| Quick Look peak memory | <60 MB | Resident memory polling | Never exceeds target |\n| 1 MB document memory | <150 MB | App open and idle measurement | Peak below target · *manual release gate* |\n| Quick Look safety fallback | 60 MB | Memory guard | Plain text fallback above guard |\n| Large Quick Look file | 2 MB | Preview policy | Initial blocks plus Open in App |\n\nRows marked *manual release gate* have no automated enforcement vehicle in\nthe repository today. They are claims to re-measure at release time, not\ngates a CI run proves; do not cite them as enforced. The memory-guard and\npolicy rows are asserted by unit tests, the swipe rows by dedicated budget\nsuites, and the keystroke/convergence rows by `drbench` with\n`RUN_DRBENCH=1`.\n\nThe swipe budgets exist because the obvious implementation misses them by an\norder of magnitude. Dragging the Source presentation in under the fingers\nrequires rendering it first, which is a whole-document TextKit rebuild. The\ngesture therefore measures before it promises: `PresentationSwitchBudget` holds\na per-line cost, seeded from a release sweep and recalibrated from every switch\nthe app performs, and the swipe takes the drag only where the estimate fits\ninside the engagement budget. Above it the gesture translates one layer instead\nand switches on release through the same path the toolbar rail uses, for the\nsame cost and no more.\n\nTwo things make the drag affordable at all. The outgoing page is captured by\n`CALayer.render` at half resolution — 3 ms, against 30 ms for a full-resolution\n`cacheDisplay`, because it composites what is already rasterised rather than\nre-running TextKit — and the incoming side is not captured at all, since it is\nthe live text view with the mode change already applied behind the still.\n\nThe 8 ms keystroke target is the P0 architecture gate. Semantic parsing runs\noutside this synchronous path. Its result is revision checked before the app\napplies dirty decoration.\n\n## Current local benchmark\n\nMeasured with the release executable from `Sources/drbench/main.swift` on\n2026-08-06. Corpus: 120,825 characters and 4,885 lines of generated agent-like\nMarkdown. The host machine is not recorded here, so use these numbers as a\nbaseline, not a cross-machine claim.\n\n| Measurement | p50 | p95 | Result |\n|---|---:|---:|---|\n| cmark parse | 12.827 ms | 13.309 ms | Informational |\n| Full MarkdownParser.parse | 29.463 ms | 30.372 ms | Runs outside typing path |\n| AST dirty set, one-character edit | 0.030 ms | 0.031 ms | Runs outside typing path |\n| Text diff, external rewrite | 2.099 ms | 2.164 ms | Informational |\n| Incremental decoration | 0.097 ms | 0.104 ms | Under 8 ms budget |\n| Wholesale decoration | 103.722 ms | 171.493 ms | Informational |\n| Source edit and paragraph map | 0.146 ms | 0.153 ms | Under 8 ms budget |\n| End-to-end semantic convergence | 30.583 ms | 31.445 ms | Under 100 ms budget |\n| Parse 100 KB | 12.078 ms | 12.395 ms | Under 250 ms parse gate |\n| Syntax highlight, 10 KB Swift | 0.093 ms | 0.094 ms | Informational |\n\nThe synchronous typing work and incremental decoration now fit the 8 ms\nbudget. The benchmark does not yet measure TextKit layout, scroll-frame\ndelivery, IME input, or live window frame time. Those checks remain release\ngates. The end-to-end convergence row measures the full parse, diff, and\ndecoration work. Production performs parse and diff away from the main actor,\nthen applies the newest result on the main actor.\n\n## Measurement procedure\n\nRun from the repository root:\n\n```bash\nScripts/check.sh\nswift run -c release drbench\n```\n\nFor a render capture:\n\n```bash\nswift run -c release drbench render Docs/sample.md /tmp/downright.png read 1000 1400\n```\n\nThe benchmark warms each case, then reports p50, p95, the maximum, and the\nsample count. Keep the corpus shape, build mode, and budget labels stable, and\nadd a focused case when a new pipeline or document type can change the cost.\n\nPercentiles are nearest-rank, which makes the sample count part of the gate's\nmeaning: the nearest-rank p95 of fewer than 20 samples **is** the maximum\nsample (the index is `ceil(0.95n) - 1`, which reaches `n - 1` for every\n`n` below 20). A budgeted case measured over 15 runs is really asserting \"the worst of\n15 runs passes\", so on a shared CI runner a single scheduler stall fails a\nsigned release on unchanged code. Budgeted cases therefore take enough runs for\nthe 95th percentile to be a percentile; do not lower the run count of a case\nthat gates a release.\n\nThe convergence case always prints its parse, diff, and decoration phases, so a\nmiss is diagnosable from the log the failing run already wrote rather than\nneeding a rerun on a machine that is no longer stalling. Full release benchmark\noutput is retained in gate failure logs, and the benchmark's scratch directory\nfollows `SCRATCH` (or an explicit `BENCH_SCRATCH`) to isolate concurrent checks.\n\nThe cold-open corpus is truncated to exactly 100 KB, the size §12 states the\nbudget for; generate past the target before truncating, because `prefix` on a\nshorter document silently measures the shorter document.\n\n## Phase gates\n\n- P0: record baseline; decide whether the 8 ms target is attainable.\n- P1: keep parse and first-pixel budgets below target on representative files.\n- P2: test Quick Look time, resident memory, and fallback behavior.\n- P3: test typing, IME, mode switch, and marker reveal under the keystroke gate.\n- P4–P6: test watcher, diff, zoom, search, and task actions on large files.\n- P7–P8: repeat with themes, accessibility settings, bundled app, and release\n  signing.\n\n## Engineering rules\n\nKeep parser, diff, and policy helpers pure. Reparse the full document when that\nis simpler, but restyle only dirty blocks. Cancel stale asynchronous work.\nMeasure layout and decoration separately from parsing. Keep Quick Look on the\nsame render path, with lazy fragments and a hard memory guard.\n",
+   "tableIndex": 1
+  },
+  {
+   "name": "no table",
+   "tableIndex": 7
+  },
+  {
+   "name": "no table text",
+   "text": "# Heading\n\nNo tables here.\n"
+  },
+  {
+   "name": "select cell",
+   "text": "| Name | Count |\n| :--- | ---: |\n| Ada | 3 |\n| Grace | 4 |\n",
+   "select": [
+    2,
+    1
+   ]
+  },
+  {
+   "name": "select header",
+   "text": "| Name | Count |\n| :--- | ---: |\n| Ada | 3 |\n| Grace | 4 |\n",
+   "select": [
+    0,
+    0
+   ]
+  },
+  {
+   "name": "select out of range",
+   "text": "| Name | Count |\n| :--- | ---: |\n| Ada | 3 |\n| Grace | 4 |\n",
+   "select": [
+    9,
+    0
+   ]
+  },
+  {
+   "name": "set cell (host)",
+   "text": "| Name | Count |\n| :--- | ---: |\n| Ada | 3 |\n| Grace | 4 |\n",
+   "host": true,
+   "operations": [
+    {
+     "op": "setCell",
+     "row": 1,
+     "column": 0,
+     "text": "Ada Lovelace"
+    }
+   ]
+  },
+  {
+   "name": "structure (recorder)",
+   "text": "| Name | Count |\n| :--- | ---: |\n| Ada | 3 |\n| Grace | 4 |\n",
+   "operations": [
+    {
+     "op": "insertColumn",
+     "index": 1,
+     "header": "Tag",
+     "cells": [
+      "a",
+      "b"
+     ]
+    },
+    {
+     "op": "setAlignment",
+     "column": 0,
+     "alignment": "center"
+    }
+   ]
+  },
+  {
+   "name": "invalid operation",
+   "text": "| Name | Count |\n| :--- | ---: |\n| Ada | 3 |\n| Grace | 4 |\n",
+   "operations": [
+    {
+     "op": "deleteRow",
+     "index": 0
+    }
+   ]
+  },
+  {
+   "name": "add row after selection (host)",
+   "text": "| Name | Count |\n| :--- | ---: |\n| Ada | 3 |\n| Grace | 4 |\n",
+   "host": true,
+   "select": [
+    1,
+    0
+   ],
+   "actions": [
+    "addRow:"
+   ]
+  },
+  {
+   "name": "add row without selection (host)",
+   "text": "| Name | Count |\n| :--- | ---: |\n| Ada | 3 |\n| Grace | 4 |\n",
+   "host": true,
+   "actions": [
+    "addRow:",
+    "addColumn:"
+   ]
+  },
+  {
+   "name": "column actions without selection",
+   "text": "| Name | Count |\n| :--- | ---: |\n| Ada | 3 |\n| Grace | 4 |\n",
+   "actions": [
+    "deleteColumn:",
+    "moveColumnLeft:",
+    "moveColumnRight:",
+    "moveRowUp:",
+    "moveRowDown:",
+    "deleteRow:"
+   ]
+  },
+  {
+   "name": "move row down then up (host)",
+   "text": "| Name | Count |\n| :--- | ---: |\n| Ada | 3 |\n| Grace | 4 |\n",
+   "host": true,
+   "select": [
+    1,
+    1
+   ],
+   "actions": [
+    "moveRowDown:",
+    "moveRowUp:"
+   ]
+  },
+  {
+   "name": "move column right (host)",
+   "text": "| Name | Count |\n| :--- | ---: |\n| Ada | 3 |\n| Grace | 4 |\n",
+   "host": true,
+   "select": [
+    2,
+    0
+   ],
+   "actions": [
+    "moveColumnRight:"
+   ]
+  },
+  {
+   "name": "delete column (host)",
+   "text": "| Name | Count |\n| :--- | ---: |\n| Ada | 3 |\n| Grace | 4 |\n",
+   "host": true,
+   "select": [
+    2,
+    1
+   ],
+   "actions": [
+    "deleteColumn:"
+   ]
+  },
+  {
+   "name": "alignment popup (host)",
+   "text": "| Name | Count |\n| :--- | ---: |\n| Ada | 3 |\n| Grace | 4 |\n",
+   "host": true,
+   "select": [
+    1,
+    1
+   ],
+   "alignment": 3
+  },
+  {
+   "name": "alignment popup without column",
+   "text": "| Name | Count |\n| :--- | ---: |\n| Ada | 3 |\n| Grace | 4 |\n",
+   "alignment": 2
+  },
+  {
+   "name": "source, cancel, finish",
+   "text": "| Name | Count |\n| :--- | ---: |\n| Ada | 3 |\n| Grace | 4 |\n",
+   "actions": [
+    "requestSource:",
+    "cancel:",
+    "finish:",
+    "cancelOperation:",
+    "cellClicked:"
+   ]
+  },
+  {
+   "name": "source request without table",
+   "text": "plain\n",
+   "actions": [
+    "requestSource:"
+   ]
+  },
+  {
+   "name": "update to another table",
+   "text": "| Name | Count |\n| :--- | ---: |\n| Ada | 3 |\n| Grace | 4 |\n",
+   "select": [
+    3,
+    1
+   ],
+   "update": "| A | B | C |\n|---|:-:|--|\n| 1 | 2 | 3 |\n"
+  },
+  {
+   "name": "update to no table",
+   "text": "| Name | Count |\n| :--- | ---: |\n| Ada | 3 |\n| Grace | 4 |\n",
+   "select": [
+    1,
+    1
+   ],
+   "update": "Nothing\n"
+  },
+  {
+   "name": "reload",
+   "text": "| Name | Count |\n| :--- | ---: |\n| Ada | 3 |\n| Grace | 4 |\n",
+   "select": [
+    1,
+    1
+   ],
+   "reload": true
+  },
+  {
+   "name": "current style sheet",
+   "current": true,
+   "text": "| Name | Count |\n| :--- | ---: |\n| Ada | 3 |\n| Grace | 4 |\n"
+  },
+  {
+   "name": "feature matrix",
+   "text": "# Downright Feature Matrix\n\nThis matrix defines the 1.0 scope. Internal phases are build order. They are\nnot public releases.\n\n## Product scope\n\n| Area | 1.0 commitment | Phase | Acceptance signal |\n|---|---|---:|---|\n| Platform | macOS 14+, direct download, MIT source | P8 | App launches on supported macOS |\n| Source safety | Exact text, byte-stable save and copy | P0 | Round-trip corpus stays byte-identical |\n| Modes | Read, Live, Source on one TextKit 2 view | P0/P3 | Mode switch keeps selection and scroll |\n| Markdown | CommonMark and GFM | P1 | Parser and render corpus passes |\n| Extensions | Math, front matter, callouts, wikilinks, paths, Mermaid | P1 | Extension tests pass, no false math in shell text |\n| Code | Native syntax highlighting, diff fences, copy | P1/P7 | Canonical language tests pass |\n| Tables | Render, wrap, numeric alignment, edit in Live | P1/P3 | Long cells remain readable and editable |\n| Images | Native render, caption, lightbox | P1 | Missing image has safe fallback |\n| Navigation | Outline, heading jump, folding, structural zoom | P1/P5 | Levels 1–5 preserve anchor position |\n| Tasks | Grouped task panel and direct checkbox toggle | P5 | Toggle writes one source edit |\n| Density gutter | Shape, changes, search, tasks, progress | P5 | Gutter state matches document ranges |\n| Find | Text, regex, replace, hidden and folded text | P1/P6 | Matches map to source ranges |\n| External writes | Watch, rendered diff, unread marks, conflicts | P4 | Dirty buffer never gets clobbered |\n| History | Local content-addressed snapshots and timeline | P4 | Restore is undoable and local |\n| Paths | Resolve document and git-root paths; open editor | P5 | Existing and missing paths are distinct |\n| Workspace | Optional folder tree, local index, search, links, and backlinks | P7 | One file works without workspace |\n| Workflow | Tidy, move/promote/demote, split, compare, export | P6 | Commands preserve source invariants |\n| Smart Paste | URL, HTML, TSV, code-safe plain text | P3 | One reversible source edit |\n| Front matter | Visual fields with exact source fallback | P3 | Unknown fields and formatting survive |\n| Asset Doctor | Find, relink, copy, rename, optimise, and inspect assets | P3/P5 | Actions preview their source changes |\n| Document Lens | Structure, health, links, assets, tasks, and changes | P4/P5 | A selection maps to an exact source range |\n| Document Health | Structure, access, references, links, media, syntax, prose | P5 | Stable findings and safe local fixes |\n| Render Targets | Built-in and custom renderer profiles | P5 | Exact findings and reversible proposals |\n| Review | Local comments, suggestions, and resolved state in sidecars | P6 | Markdown stays clean; stale anchors are visible |\n| Reader profiles | Saved typography, width, chrome, and motion sets | P4/P10 | Profiles do not change source |\n| Visual Debugger | Source range, AST block, style, target, and asset state | P5 | A render element explains its inputs |\n| Command palette | Searchable actions, keys, scope, and recent use | P4 | Every action has one command owner |\n| Trust | Per-file and per-folder link, asset, and automation trust | P7/P8 | Untrusted content cannot cause an external effect |\n| Quick Look | Preview and thumbnail extensions | P2 | Preview meets time and memory limits |\n| Themes | JSON themes, warm light/dark, VS Code/Shiki import | P7 | Theme reload changes semantic tokens |\n| Preferences | Appearance, typography, editor, keys, advanced | P8 | Settings round-trip and apply live |\n| Accessibility | VoiceOver, keyboard, contrast, motion, transparency | P8 | Accessibility audit has no release blocker |\n| CLI | `down` and `md` open files and stdin | P8 | Terminal launch opens the target document |\n| System integration | Quick Look, unopened-file Spotlight metadata, Services, Share, App Intents | P8 | Each entry opens or indexes the exact file or command |\n| AI | Optional on-device Apple Intelligence tools only | P9 | Core path works with AI absent or disabled |\n\n## Explicitly out of scope\n\n| Feature | Decision |\n|---|---|\n| Required vault or global content database | Excluded; files and optional folder workspaces are equal entry points |\n| Cloud graph or social knowledge network | Excluded; local workspace links and backlinks are allowed |\n| Sync, collaboration, multiplayer | Excluded |\n| Plugin system or marketplace | Excluded |\n| Code execution, shell, notebook evaluation | Excluded |\n| Cloud AI or required account | Excluded for 1.0 |\n| Windows, Linux, iOS, Mac App Store target | Excluded for 1.0 |\n| Reverse editor integration | Deferred; one-way path opening is enough |\n\n## Full phase matrix\n\n| Phase | Scope | Exit gate |\n|---|---|---|\n| P0 | Baseline, product docs, source contracts, tests, performance gates | Byte identity and test execution are proven |\n| P1 | Complete and verify the current reader and UI plan | The existing surface has no known release blocker |\n| P2 | Correctness, concurrency, incremental render, large-file policy | Typing stays under budget; stale work cannot commit |\n| P3 | Smart Paste, visual tables, front matter, assets, Source mode | Each tool creates one safe source edit and one undo step |\n| P4 | Navigation, command palette, reader profiles, Document Lens | Large documents are direct to inspect and move through |\n| P5 | Document Health, Render Targets, Asset Doctor, Visual Debugger | Findings have exact ranges, clear reasons, and safe proposals |\n| P6 | Review sidecars, suggestions, and history | Review state stays local and never pollutes Markdown |\n| P7 | Optional folder workspace, local links, backlinks, search, trust | A single file stays first class |\n| P8 | Quick Look, Spotlight, Services, Share, App Intents, CLI, updates | Native entry points share safe command owners |\n| P9 | Optional on-device Apple Intelligence tools | AI never delays open, render, edit, search, or save |\n| P10 | Accessibility, motion, themes, reader profiles, micro-interactions | Keyboard, VoiceOver, contrast, motion, and polish pass |\n| P11 | Packaging, signing, notarisation, docs, launch verification | A clean Mac installs, opens, edits, previews, and updates safely |\n\nRun focused tests during each phase. Run the full suite and release benchmark\nat every phase boundary.\n\n## UI refinement sequence\n\nThe UI plan has a second sequence for visual and interaction refinement. It\nfits inside the product phases above and does not change the 1.0 scope.\n\n| Sequence | Work | Exit gate | Estimate |\n|---|---|---|---:|\n| A | Verified visual defects: lists, spacing, code, callouts, themes | Defect list has a test or documented reason | 3 days |\n| B | List ornaments, heading scale, rhythm, optical margins | Golden render cases pass | 1 week |\n| C | Code, tables, callouts, inline elements, front matter, images | Long content stays readable | 1.5 weeks |\n| D | Toolbar, sidebar, breadcrumb, inspector, find bar | Chrome has one owner and stable state | 2 weeks |\n| E | Density gutter and keyboard equivalent | Rail agrees with document structure | 1 week |\n| F | Motion system, spring zoom, Reduce Motion | Motion budgets and accessibility checks pass | 1 week |\n| G | Themes, preferences, and launch state | Settings preview and recent-file start state work | 1 week |\n| H | Hard-wrapped paragraph reflow | Source ranges and caret mapping stay exact | 1–2 weeks |\n"
+  },
+  {
+   "name": "ragged and empty headers",
+   "text": "|  | x |  |\n|---|---|---|\n| 1 |\n| 1 | 2 | 3 | 4 |\n"
+  },
+  {
+   "name": "unicode cells",
+   "text": "| Café | 名前 | 🧪 |\n|:--|:-:|--:|\n| é | 日本 | 👩‍🔬 |\n"
+  },
+  {
+   "name": "tab to next cell",
+   "text": "| Name | Count |\n| :--- | ---: |\n| Ada | 3 |\n| Grace | 4 |\n",
+   "keys": [
+    {
+     "row": 1,
+     "column": 0,
+     "keyCode": 48
+    }
+   ]
+  },
+  {
+   "name": "shift-tab to previous row",
+   "text": "| Name | Count |\n| :--- | ---: |\n| Ada | 3 |\n| Grace | 4 |\n",
+   "keys": [
+    {
+     "row": 1,
+     "column": 0,
+     "keyCode": 48,
+     "shift": true
+    }
+   ]
+  },
+  {
+   "name": "tab past last cell (host)",
+   "text": "| Name | Count |\n| :--- | ---: |\n| Ada | 3 |\n| Grace | 4 |\n",
+   "host": true,
+   "keys": [
+    {
+     "row": 2,
+     "column": 1,
+     "keyCode": 48
+    }
+   ]
+  },
+  {
+   "name": "return moves down",
+   "text": "| Name | Count |\n| :--- | ---: |\n| Ada | 3 |\n| Grace | 4 |\n",
+   "keys": [
+    {
+     "row": 1,
+     "column": 1,
+     "keyCode": 36
+    }
+   ]
+  },
+  {
+   "name": "keypad enter at last row (host)",
+   "text": "| Name | Count |\n| :--- | ---: |\n| Ada | 3 |\n| Grace | 4 |\n",
+   "host": true,
+   "keys": [
+    {
+     "row": 2,
+     "column": 0,
+     "keyCode": 76
+    }
+   ]
+  },
+  {
+   "name": "end editing a changed cell (host)",
+   "text": "| Name | Count |\n| :--- | ---: |\n| Ada | 3 |\n| Grace | 4 |\n",
+   "host": true,
+   "endEditing": [
+    {
+     "row": 1,
+     "column": 0,
+     "text": "Ada Lovelace"
+    }
+   ]
+  },
+  {
+   "name": "end editing an unchanged cell",
+   "text": "| Name | Count |\n| :--- | ---: |\n| Ada | 3 |\n| Grace | 4 |\n",
+   "endEditing": [
+    {
+     "row": 1,
+     "column": 0,
+     "text": "Ada"
+    }
+   ]
+  },
+  {
+   "name": "begin editing selects the column",
+   "text": "| Name | Count |\n| :--- | ---: |\n| Ada | 3 |\n| Grace | 4 |\n",
+   "beginEditing": [
+    [
+     2,
+     1
+    ]
+   ]
+  }
+ ]
+}

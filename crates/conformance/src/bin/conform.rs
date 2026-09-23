@@ -57,6 +57,15 @@ struct Suite {
     /// exported document's title is its file name), so the input's path
     /// from the repository root folds into the cache key too.
     key_path: bool,
+    /// Swift outcomes to collect per case (`"samples"`, default 1). Where
+    /// Downright's own output depends on a race (the app-window suite: the
+    /// order in which an asynchronous parse and the first-frame restore land
+    /// decides a document's estimated height), every distinct Swift outcome
+    /// is a valid answer, and the Rust output must equal one of them.
+    samples: usize,
+    /// Extra Rust runs allowed before a case fails (`"retries"`, default 0),
+    /// for the same races.
+    retries: usize,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -179,6 +188,8 @@ fn load_suites(root: &Path) -> (Vec<PathBuf>, Vec<String>, Vec<Suite>) {
             stamps: strings(&suite["stamps"]),
             depends: strings(&suite["depends"]),
             key_path: suite["keyPath"].as_bool().unwrap_or(false),
+            samples: suite["samples"].as_u64().unwrap_or(1).max(1) as usize,
+            retries: suite["retries"].as_u64().unwrap_or(0) as usize,
         })
         .collect();
     (corpus, exclude, suites)
@@ -289,7 +300,11 @@ fn run_case(context: &Context, case: &Case) -> (Outcome, String) {
     fs::create_dir_all(&scratch).unwrap();
     let layout_flags = |path: &Path| -> Vec<String> {
         let mut flags = flags.clone();
-        if suite.command == "render" {
+        if suite.command == "render"
+            || suite.command == "app-window"
+            || suite.command == "panel"
+            || suite.command == "quicklook-thumbnail"
+        {
             flags.push("--layout".into());
             flags.push(path.to_string_lossy().into_owned());
         }
@@ -315,73 +330,81 @@ fn run_case(context: &Context, case: &Case) -> (Outcome, String) {
         Some(cache) => (cache.join(format!("{key}.{extension}")), cache.join(format!("{key}.layout.json"))),
         None => (scratch.join(format!("swift.{extension}")), scratch.join("swift.layout.json")),
     };
-    if !swift_output.exists() {
+    // Sample 0 is `swift_output`; further samples sit beside it as
+    // `<key>.altN.<ext>` (and `<key>.layout.altN.json`).
+    let sample = |path: &Path, index: usize| -> PathBuf {
+        if index == 0 {
+            return path.to_path_buf();
+        }
+        let extension = path.extension().map(|e| e.to_string_lossy().into_owned()).unwrap_or_default();
+        path.with_extension(format!("alt{index}.{extension}"))
+    };
+    for index in 0..suite.samples {
+        let output = sample(&swift_output, index);
+        if output.exists() {
+            continue;
+        }
         let (code, stderr) = run_oracle(
             &swift_oracle,
             &context.home,
             &suite.command,
             &case.input,
-            &swift_output,
-            &layout_flags(&swift_layout),
+            &output,
+            &layout_flags(&sample(&swift_layout, index)),
         );
         if code != Some(0) {
-            let _ = fs::remove_file(&swift_output);
+            let _ = fs::remove_file(&output);
             return (Outcome::Error, format!("downright-oracle exited {code:?}: {}", stderr.trim()));
         }
     }
 
     let rust_output = scratch.join(format!("rust.{extension}"));
     let rust_layout = scratch.join("rust.layout.json");
-    let (code, stderr) = run_oracle(
-        &context.rust_oracle,
-        &context.home,
-        &suite.command,
-        &case.input,
-        &rust_output,
-        &layout_flags(&rust_layout),
-    );
-    match code {
-        Some(0) => {}
-        Some(NOT_PORTED) => {
-            let _ = fs::remove_dir_all(&scratch);
-            return (Outcome::NotPorted, String::new());
-        }
-        other => {
-            let _ = fs::remove_dir_all(&scratch);
-            return (Outcome::Error, format!("upleft-oracle exited {other:?}: {}", stderr.trim()));
-        }
-    }
-
     let mut report = Vec::new();
-    let mut pass = true;
-    if extension == "png" {
-        let result = read_png(&swift_output)
-            .and_then(|swift| read_png(&rust_output).map(|rust| (swift, rust)))
-            .and_then(|(swift, rust)| {
-                let diff = scratch.join("diff.png");
-                compare_images(&swift, &rust, Some(&diff))
-            });
-        match result {
-            Ok(comparison) if comparison.is_identical() => {}
-            Ok(comparison) => {
-                pass = false;
-                report.push(format!("pixels: {comparison}"));
+    let mut pass = false;
+    for _attempt in 0..=suite.retries {
+        let (code, stderr) = run_oracle(
+            &context.rust_oracle,
+            &context.home,
+            &suite.command,
+            &case.input,
+            &rust_output,
+            &layout_flags(&rust_layout),
+        );
+        match code {
+            Some(0) => {}
+            Some(NOT_PORTED) => {
+                let _ = fs::remove_dir_all(&scratch);
+                return (Outcome::NotPorted, String::new());
             }
-            Err(error) => return (Outcome::Error, error),
-        }
-        if swift_layout.exists() && rust_layout.exists() {
-            let differences = compare_files(&swift_layout, &rust_layout, 40);
-            if !differences.is_empty() {
-                pass = false;
-                report.push("layout:".into());
-                report.extend(differences);
+            other => {
+                let _ = fs::remove_dir_all(&scratch);
+                return (Outcome::Error, format!("upleft-oracle exited {other:?}: {}", stderr.trim()));
             }
         }
-    } else {
-        let differences = compare_files(&swift_output, &rust_output, 40);
-        if !differences.is_empty() {
-            pass = false;
-            report.extend(differences);
+        // Against every Swift sample; the report is the first sample's.
+        for index in 0..suite.samples {
+            let differences = match compare_outputs(
+                extension,
+                &sample(&swift_output, index),
+                &sample(&swift_layout, index),
+                &rust_output,
+                &rust_layout,
+                &scratch,
+            ) {
+                Ok(differences) => differences,
+                Err(error) => return (Outcome::Error, error),
+            };
+            if differences.is_empty() {
+                pass = true;
+                break;
+            }
+            if index == 0 {
+                report = differences;
+            }
+        }
+        if pass {
+            break;
         }
     }
 
@@ -408,6 +431,37 @@ fn run_case(context: &Context, case: &Case) -> (Outcome, String) {
     );
     let _ = fs::write(directory.join("differences.txt"), &text);
     (Outcome::Fail, report.into_iter().take(6).collect::<Vec<_>>().join("\n      "))
+}
+
+/// Differences between one Swift output (and its layout) and the Rust one;
+/// empty when they agree.
+fn compare_outputs(
+    extension: &str,
+    swift_output: &Path,
+    swift_layout: &Path,
+    rust_output: &Path,
+    rust_layout: &Path,
+    scratch: &Path,
+) -> Result<Vec<String>, String> {
+    let mut report = Vec::new();
+    if extension == "png" {
+        let swift = read_png(swift_output)?;
+        let rust = read_png(rust_output)?;
+        let comparison = compare_images(&swift, &rust, Some(&scratch.join("diff.png")))?;
+        if !comparison.is_identical() {
+            report.push(format!("pixels: {comparison}"));
+        }
+        if swift_layout.exists() && rust_layout.exists() {
+            let differences = compare_files(swift_layout, rust_layout, 40);
+            if !differences.is_empty() {
+                report.push("layout:".into());
+                report.extend(differences);
+            }
+        }
+    } else {
+        report.extend(compare_files(swift_output, rust_output, 40));
+    }
+    Ok(report)
 }
 
 fn compare_files(swift: &Path, rust: &Path, limit: usize) -> Vec<String> {

@@ -17,6 +17,15 @@ import AppKit
 //   bench-export    <file.md>     HTMLExporter timings (AppBench.swift)
 //   bench-workspace <folder>      WorkspaceIndex, graph and search timings (AppBench.swift)
 //   bench-find      <file.md>     FindEngine and FindSession timings (AppBench.swift)
+//   app-window       <scenario.json> <out.png> [--layout out.json]
+//                                 a real app window, captured off-screen (AppWindowCapture.swift)
+//   bench-app-window <scenario.json> document open and mode-switch timings (AppWindowCapture.swift)
+//   app-menu         <scenario.json> the main menu, every submenu refreshed (AppWindowCapture.swift)
+//   panel        <scenario.json>  a panel built off-screen and captured (Panels/PanelHarness.swift)
+//   panel-model  <scenario.json>  panels built windowless, laid out and dumped (Panels/PanelHarness.swift)
+//   bench-panel  <scenario.json>  panel build, layout and draw timings (Panels/PanelBench.swift)
+//   quicklook-thumbnail <file.md> <out.png> [--width W --height H --scale S --layout out.json]
+//                                 the Quick Look thumbnail extension's drawing (QuickLookThumbnailDump.swift)
 //
 // Each command parses its own flags. `upleft-oracle` (crates/conformance)
 // takes identical arguments and writes identical formats. The runner selects
@@ -72,6 +81,21 @@ do {
     case "bench-export": try write(AppBench.export(input: input), to: output)
     case "bench-workspace": try write(MainActor.assumeIsolated { try AppBench.workspace(folder: input) }, to: output)
     case "bench-find": try write(AppBench.find(input: input), to: output)
+    case "app-window":
+        try MainActor.assumeIsolated {
+            try AppWindowSession.run(input: input, output: output, flags: flags, repositoryRoot: repositoryRoot)
+        }
+    case "app-menu":
+        try write(MainActor.assumeIsolated { try AppMenuDump.run(input: input, repositoryRoot: repositoryRoot) }, to: output)
+    case "bench-app-window":
+        try MainActor.assumeIsolated {
+            try AppWindowBench.run(input: input, output: output, repositoryRoot: repositoryRoot)
+        }
+    case "panel": try MainActor.assumeIsolated { try PanelCaptureSession.run(input: input, output: output, flags: flags) }
+    case "panel-model": try write(MainActor.assumeIsolated { try PanelModelDump.run(input: input, flags: flags) }, to: output)
+    case "bench-panel": try write(MainActor.assumeIsolated { try PanelBench.run(input: input) }, to: output)
+    case "quicklook-thumbnail":
+        try MainActor.assumeIsolated { try QuickLookThumbnailDump.run(input: input, output: output, flags: flags) }
     default: usage()
     }
 } catch {

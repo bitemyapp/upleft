@@ -280,20 +280,27 @@ impl CommandPaletteModel {
         let recency = |command: Option<Command>| {
             command.and_then(|command| recents.iter().position(|recent| *recent == command)).unwrap_or(usize::MAX)
         };
-        swift_text::sort::sorted_by(items, |lhs, rhs| {
-            if lhs.score != rhs.score {
-                return lhs.score > rhs.score;
-            }
-            let left = recency(lhs.command);
-            let right = recency(rhs.command);
-            if left != right {
-                return left < right;
-            }
-            swift_text::ns::foundation::localized_standard_compare(&lhs.title, &rhs.title) == std::cmp::Ordering::Less
+        // Each title is bridged to NSString once rather than on every
+        // comparison (Swift's bridge of a native String is lazy and cheap;
+        // building an NSString per comparison was most of the sort).
+        objc2::rc::autoreleasepool(|_| {
+            let keyed: Vec<(Ranked<Value>, Retained<NSString>)> =
+                items.into_iter().map(|item| { let title = swift_text::ns::foundation::ns(&item.title); (item, title) }).collect();
+            swift_text::sort::sorted_by(keyed, |(lhs, lhs_title), (rhs, rhs_title)| {
+                if lhs.score != rhs.score {
+                    return lhs.score > rhs.score;
+                }
+                let left = recency(lhs.command);
+                let right = recency(rhs.command);
+                if left != right {
+                    return left < right;
+                }
+                swift_text::ns::foundation::localized_standard_compare_ns(lhs_title, rhs_title) == std::cmp::Ordering::Less
+            })
+            .into_iter()
+            .map(|(ranked, _)| ranked.value)
+            .collect()
         })
-        .into_iter()
-        .map(|ranked| ranked.value)
-        .collect()
     }
 
     fn ranked_entries(entries: &[CommandPaletteEntry], query: &str) -> Vec<Ranked<CommandPaletteEntry>> {
@@ -340,6 +347,21 @@ impl CommandPaletteModel {
             cache.quick_query = Some(self.query.clone());
         }
         cache.quick_results.clone().unwrap_or_default()
+    }
+
+    /// `quickResults` read in place: the cached list, computed if stale,
+    /// handed to `body` without copying it (the palette reads its count and
+    /// one row at a time). `body` must not call back into the model.
+    pub fn with_quick_results<R>(&self, body: impl FnOnce(&[QuickOpenResult]) -> R) -> R {
+        let mut cache = self.cache.borrow_mut();
+        let stale = cache.quick_results.is_none()
+            || !cache.quick_query.as_deref().is_some_and(|query| swift_text::str_eq(query, &self.query));
+        if stale {
+            cache.quick_results =
+                Some(Self::compute_quick_results(&self.entries, &self.recent_commands, &self.providers, &self.query));
+            cache.quick_query = Some(self.query.clone());
+        }
+        body(cache.quick_results.as_deref().unwrap_or(&[]))
     }
 
     fn compute_quick_results(
@@ -390,18 +412,25 @@ impl CommandPaletteModel {
             .enumerate()
             .map(|(offset, command)| (format!("command:{}", command.raw_value()), offset))
             .collect();
-        swift_text::sort::sorted_by(ranked, |lhs, rhs| {
-            let left_recent = recent_rank.get(&lhs.id).copied().unwrap_or(usize::MAX);
-            let right_recent = recent_rank.get(&rhs.id).copied().unwrap_or(usize::MAX);
-            if left_recent != right_recent {
-                return left_recent < right_recent;
-            }
-            let left_kind = lhs.kind.index();
-            let right_kind = rhs.kind.index();
-            if left_kind != right_kind {
-                return left_kind < right_kind;
-            }
-            swift_text::ns::foundation::localized_standard_compare(&lhs.title, &rhs.title) == std::cmp::Ordering::Less
+        objc2::rc::autoreleasepool(|_| {
+            let keyed: Vec<(QuickOpenResult, Retained<NSString>)> =
+                ranked.into_iter().map(|result| { let title = swift_text::ns::foundation::ns(&result.title); (result, title) }).collect();
+            swift_text::sort::sorted_by(keyed, |(lhs, lhs_title), (rhs, rhs_title)| {
+                let left_recent = recent_rank.get(&lhs.id).copied().unwrap_or(usize::MAX);
+                let right_recent = recent_rank.get(&rhs.id).copied().unwrap_or(usize::MAX);
+                if left_recent != right_recent {
+                    return left_recent < right_recent;
+                }
+                let left_kind = lhs.kind.index();
+                let right_kind = rhs.kind.index();
+                if left_kind != right_kind {
+                    return left_kind < right_kind;
+                }
+                swift_text::ns::foundation::localized_standard_compare_ns(lhs_title, rhs_title) == std::cmp::Ordering::Less
+            })
+            .into_iter()
+            .map(|(result, _)| result)
+            .collect()
         })
     }
 

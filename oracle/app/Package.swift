@@ -2,7 +2,8 @@
 import PackageDescription
 
 // The Swift side of Upleft's app-layer conformance suites (html-export,
-// spotlight, down-cli, workspace, find, palette, formats, updater).
+// spotlight, down-cli, workspace, find, palette, formats, updater, the
+// window and panel suites, and the Quick Look suites).
 //
 // Downright's app is an executable target, which another package cannot
 // import, and a second target named `DownrightApp` may not sit in the same
@@ -67,6 +68,21 @@ let package = Package(
             // changes symbol visibility only.
             swiftSettings: [.swiftLanguageMode(.v5), .unsafeFlags(["-enable-private-imports"])]
         ),
+        // The Quick Look extensions' sources (Downright builds them as library
+        // targets and links them into .appex executables with a generated
+        // `main.swift`). `-enable-private-imports` lets the quicklook-preview
+        // scene read the controller's private state and retire its memory
+        // watch, as the Rust harness does through test hooks.
+        .target(
+            name: "DownrightQL",
+            dependencies: ["MarkdownCore", "MarkdownRender"],
+            swiftSettings: [.swiftLanguageMode(.v5), .unsafeFlags(["-enable-private-imports"])]
+        ),
+        .target(
+            name: "DownrightThumb",
+            dependencies: ["MarkdownCore", "MarkdownRender"],
+            swiftSettings: [.swiftLanguageMode(.v5)]
+        ),
         .executableTarget(
             name: "downright-app-oracle",
             dependencies: [
@@ -75,6 +91,8 @@ let package = Package(
                 "MarkdownRender",
                 "DownrightSpotlightMetadata",
                 "drdownright",
+                "DownrightQL",
+                "DownrightThumb",
             ],
             swiftSettings: [.swiftLanguageMode(.v5)]
         ),

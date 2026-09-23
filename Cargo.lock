@@ -266,6 +266,7 @@ dependencies = [
  "objc2",
  "objc2-core-foundation",
  "objc2-core-graphics",
+ "objc2-core-text",
  "objc2-foundation",
  "objc2-quartz-core",
  "objc2-uniform-type-identifiers",
@@ -323,6 +324,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "0cde0dfb48d25d2b4862161a4d5fcc0e3c24367869ad306b0c9ec0073bfed92d"
 dependencies = [
  "bitflags",
+ "objc2",
  "objc2-core-foundation",
  "objc2-core-graphics",
 ]
@@ -385,6 +387,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "96c1358452b371bf9f104e21ec536d37a650eb10f7ee379fff67d2e08d537f1f"
 dependencies = [
  "bitflags",
+ "block2",
  "objc2",
  "objc2-core-foundation",
  "objc2-core-graphics",
@@ -580,6 +583,21 @@ dependencies = [
 ]
 
 [[package]]
+name = "upleft"
+version = "0.1.0"
+dependencies = [
+ "objc2",
+ "objc2-app-kit",
+ "objc2-foundation",
+ "serde_json",
+ "upleft-app",
+ "upleft-foundation",
+ "upleft-math",
+ "upleft-mermaid",
+ "upleft-render",
+]
+
+[[package]]
 name = "upleft-app"
 version = "0.1.0"
 dependencies = [
@@ -590,7 +608,10 @@ dependencies = [
  "objc2-app-kit",
  "objc2-avf-audio",
  "objc2-core-foundation",
+ "objc2-core-graphics",
+ "objc2-core-text",
  "objc2-foundation",
+ "objc2-quartz-core",
  "objc2-uniform-type-identifiers",
  "serde_json",
  "sha2",
@@ -666,9 +687,11 @@ dependencies = [
  "upleft-markup",
  "upleft-math",
  "upleft-mermaid",
+ "upleft-quicklook",
  "upleft-render",
  "upleft-spotlight-metadata",
  "upleft-swift-text",
+ "upleft-thumb",
 ]
 
 [[package]]
@@ -746,11 +769,15 @@ dependencies = [
 name = "upleft-quicklook"
 version = "0.1.0"
 dependencies = [
+ "block2",
+ "dispatch2",
  "libc",
  "objc2",
  "objc2-app-kit",
+ "objc2-core-foundation",
  "objc2-foundation",
  "upleft-core",
+ "upleft-mermaid",
  "upleft-render",
  "upleft-swift-text",
 ]
@@ -777,6 +804,13 @@ dependencies = [
 ]
 
 [[package]]
+name = "upleft-spotlight-importer"
+version = "0.1.0"
+dependencies = [
+ "upleft-spotlight-metadata",
+]
+
+[[package]]
 name = "upleft-spotlight-metadata"
 version = "0.1.0"
 dependencies = [
@@ -797,6 +831,22 @@ dependencies = [
  "objc2-core-foundation",
  "objc2-foundation",
  "unicode-normalization",
+]
+
+[[package]]
+name = "upleft-thumb"
+version = "0.1.0"
+dependencies = [
+ "block2",
+ "objc2",
+ "objc2-app-kit",
+ "objc2-core-foundation",
+ "objc2-core-graphics",
+ "objc2-foundation",
+ "upleft-core",
+ "upleft-foundation",
+ "upleft-render",
+ "upleft-swift-text",
 ]
 
 [[package]]

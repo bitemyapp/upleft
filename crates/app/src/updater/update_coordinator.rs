@@ -5,9 +5,11 @@
 //! out (a capability, the engine, the panel, a notification observer), so
 //! every one of those may call back into it, as they can in Swift.
 //!
-//! Views stay with the UI port: the panel (`UpdateWindowController`) is
-//! reached through [`UpdatePanelController`], installed with
-//! [`UpdateCoordinator::set_panel_factory`] (SEAM(UI port)). The
+//! The panel (`UpdateWindowController`, `panels::update_window_controller`)
+//! is reached through [`UpdatePanelController`]: every coordinator is born
+//! with the factory that builds it (`update_window_controller::panel_factory`,
+//! as Swift's `showPanel()` builds the controller directly), and
+//! [`UpdateCoordinator::set_panel_factory`] replaces it. The
 //! `#if DEBUG` `presentDemoUpdateForDebugging` is not ported: the reference
 //! builds release.
 
@@ -179,10 +181,10 @@ pub enum UpdateReleaseNotesState {
     Failed,
 }
 
-/// SEAM(UI port): the calls the coordinator makes on its
-/// `UpdateWindowController`. The UI port implements this over the real
-/// window controller and installs a factory with
-/// [`UpdateCoordinator::set_panel_factory`].
+/// The calls the coordinator makes on its `UpdateWindowController`,
+/// implemented over the real window controller in
+/// `panels::update_window_controller`; a test can install another factory
+/// with [`UpdateCoordinator::set_panel_factory`].
 pub trait UpdatePanelController {
     /// `panel?.showWindow(nil)`.
     fn show_window(&self);
@@ -192,7 +194,7 @@ pub trait UpdatePanelController {
     fn perform_close(&self);
 }
 
-/// SEAM(UI port): `UpdateWindowController(coordinator: self)`.
+/// `UpdateWindowController(coordinator: self)`.
 pub type UpdatePanelFactory = Rc<dyn Fn(&Rc<UpdateCoordinator>) -> Rc<dyn UpdatePanelController>>;
 
 /// The single owner of the updater: `SPUUpdater` lifecycle, the user driver,
@@ -327,7 +329,7 @@ impl UpdateCoordinator {
             engine: RefCell::new(engine),
             driver: RefCell::new(None),
             panel: RefCell::new(None),
-            panel_factory: RefCell::new(None),
+            panel_factory: RefCell::new(Some(crate::panels::update_window_controller::panel_factory())),
             startup_failure: RefCell::new(None),
             release_watch: RefCell::new(None),
             suppress_ui_for_testing: Cell::new(false),
@@ -343,9 +345,11 @@ impl UpdateCoordinator {
     }
 
     /// `{ [weak self] version in … self?.backgroundDownloadCompleted(version) }`.
-    /// Swift hops to the main actor when Sparkle calls from another thread;
-    /// the port's handler is not `Send`, so it only ever runs on the
-    /// coordinator's own (main) thread and calls straight through.
+    /// Swift hops to the main actor when Sparkle calls from another thread.
+    /// The port's handler is not `Send`: it only ever runs on the main
+    /// thread and calls straight through, because the `SPUUpdaterDelegate`
+    /// (`super::sparkle::BackgroundDownloadNotifierObject`) makes that hop
+    /// before it calls the notifier.
     fn background_download_handler(&self) -> BackgroundDownloadHandler {
         let weak = self.weak_self.clone();
         Rc::new(move |version: &str| {
@@ -418,7 +422,9 @@ impl UpdateCoordinator {
         &self.notification_object
     }
 
-    /// SEAM(UI port): how `showPanel()` builds its `UpdateWindowController`.
+    /// How `showPanel()` builds its `UpdateWindowController` (by default,
+    /// `update_window_controller::panel_factory()`; `None` leaves
+    /// `showPanel()` counting only).
     pub fn set_panel_factory(&self, factory: Option<UpdatePanelFactory>) {
         *self.panel_factory.borrow_mut() = factory;
     }

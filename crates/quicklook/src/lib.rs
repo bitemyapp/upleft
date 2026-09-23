@@ -1,8 +1,6 @@
-//! Upleft's port of the non-view parts of Downright's `DownrightQL` target
-//! (`Sources/DownrightQL`): the Quick Look resource policy, the bounded
-//! loader, and the pure helpers of `PreviewViewController`. The view
-//! controller itself (TextKit, the density gutter, the open-in-app bar) is
-//! ported with the UI.
+//! Upleft's port of Downright's `DownrightQL` target (`Sources/DownrightQL`):
+//! the Quick Look preview extension's view controller, the resource policy,
+//! and the bounded loader. The extension executable is `src/main.rs`.
 //!
 //! One module per Swift file, same names in snake_case.
 

@@ -1,0 +1,229 @@
+{
+ "panel": "TaskPanelView",
+ "theme": "Paper Light",
+ "dark": false,
+ "width": 336,
+ "height": 480,
+ "document": "corpus/panel-documents/task-panel-nested.md",
+ "state": {},
+ "states": [
+  {
+   "name": "default"
+  },
+  {
+   "name": "pile-expanded",
+   "actions": [
+    [
+     "expandPile",
+     0
+    ]
+   ]
+  },
+  {
+   "name": "pile-expanded-then-collapsed",
+   "actions": [
+    [
+     "expandPile",
+     0
+    ],
+    [
+     "collapsePile",
+     0
+    ]
+   ]
+  },
+  {
+   "name": "section-collapsed",
+   "actions": [
+    [
+     "select",
+     7
+    ],
+    [
+     "key",
+     123
+    ]
+   ]
+  },
+  {
+   "name": "section-reexpanded",
+   "actions": [
+    [
+     "select",
+     7
+    ],
+    [
+     "key",
+     123
+    ],
+    [
+     "key",
+     124
+    ]
+   ]
+  },
+  {
+   "name": "pile-expanded-by-key",
+   "actions": [
+    [
+     "select",
+     6
+    ],
+    [
+     "key",
+     124
+    ]
+   ]
+  },
+  {
+   "name": "task-selected",
+   "actions": [
+    [
+     "select",
+     2
+    ]
+   ]
+  },
+  {
+   "name": "left-walks-to-header",
+   "actions": [
+    [
+     "select",
+     3
+    ],
+    [
+     "key",
+     123
+    ]
+   ]
+  },
+  {
+   "name": "space-ticks-up-next",
+   "actions": [
+    [
+     "key",
+     49
+    ]
+   ]
+  },
+  {
+   "name": "space-ticks-selection",
+   "actions": [
+    [
+     "select",
+     11
+    ],
+    [
+     "key",
+     49
+    ]
+   ]
+  },
+  {
+   "name": "return-jumps-to-up-next",
+   "actions": [
+    [
+     "key",
+     36
+    ]
+   ]
+  },
+  {
+   "name": "return-on-selection",
+   "actions": [
+    [
+     "select",
+     12
+    ],
+    [
+     "key",
+     36
+    ]
+   ]
+  },
+  {
+   "name": "undo-pill",
+   "actions": [
+    [
+     "undo",
+     "  Draft the announcement  "
+    ]
+   ]
+  },
+  {
+   "name": "undo-dismissed",
+   "actions": [
+    [
+     "undo",
+     "Draft"
+    ],
+    [
+     "dismissUndo"
+    ]
+   ]
+  },
+  {
+   "name": "quick-add",
+   "actions": [
+    [
+     "beginNewTask"
+    ]
+   ]
+  },
+  {
+   "name": "quick-add-in-selected-section",
+   "actions": [
+    [
+     "select",
+     11
+    ],
+    [
+     "beginNewTask"
+    ]
+   ]
+  },
+  {
+   "name": "quick-add-commit",
+   "actions": [
+    [
+     "beginNewTask"
+    ],
+    [
+     "commit",
+     "Write the FAQ"
+    ]
+   ]
+  },
+  {
+   "name": "quick-add-blank-commit",
+   "actions": [
+    [
+     "beginNewTask"
+    ],
+    [
+     "commit",
+     "  \n "
+    ]
+   ]
+  },
+  {
+   "name": "quick-add-cancel",
+   "actions": [
+    [
+     "beginNewTask"
+    ],
+    [
+     "cancel"
+    ]
+   ]
+  },
+  {
+   "name": "command-n",
+   "actions": [
+    [
+     "commandN"
+    ]
+   ]
+  }
+ ]
+}

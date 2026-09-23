@@ -1,12 +1,13 @@
 //! Port of `Sources/DownrightApp/Updater/DownrightUpdateDriver.swift`.
 //!
-//! The driver is Downright's `SPUUserDriver`. Sparkle is not linked yet, so
-//! the Sparkle types it touches are modelled here by value (`SPUUserUpdateChoice`,
-//! `SPUUserUpdateStage`, `SPUUserUpdateState`, `SUUpdatePermissionResponse`)
-//! or by the accessors the driver reads (`SUAppcastItem`). SEAM(Sparkle): the
-//! packaging layer declares the Objective-C `SPUUserDriver` conformer with
-//! `define_class!` and forwards each protocol method to the method of the same
-//! name here, converting Sparkle's arguments with these types.
+//! The driver is Downright's `SPUUserDriver`. So that upleft-app need not
+//! link Sparkle, the Sparkle types it touches are modelled here by value
+//! (`SPUUserUpdateChoice`, `SPUUserUpdateStage`, `SPUUserUpdateState`,
+//! `SUUpdatePermissionResponse`) or by the accessors the driver reads
+//! (`SUAppcastItem`). The Objective-C `SPUUserDriver` conformer is
+//! `super::sparkle::DownrightUpdateDriverObject` (runtime name
+//! `DownrightUpdateDriver`): it forwards each protocol method to the method
+//! of the same name here, converting Sparkle's arguments with these types.
 
 use std::cell::RefCell;
 use std::rc::{Rc, Weak};
@@ -52,8 +53,8 @@ pub struct SpuUserUpdateState {
 
 /// Sparkle's `SUAppcastItem`, reduced to the properties
 /// `UpdateMetadata(appcastItem:)` and `BackgroundDownloadNotifier` read.
-/// SEAM(Sparkle): implemented over the real `SUAppcastItem` when Sparkle is
-/// linked. Downright never parses an appcast itself; Sparkle does.
+/// `super::sparkle` implements it over the real `SUAppcastItem`. Downright
+/// never parses an appcast itself; Sparkle does.
 pub trait SuAppcastItem {
     /// `versionString` (nonnull).
     fn version_string(&self) -> String;

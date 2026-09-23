@@ -21,19 +21,117 @@ dispatch2 = "0.3.1"
 libc = "0.2"
 sha2 = "0.10"
 objc2-foundation = { workspace = true, features = [
-    "NSAppleEventDescriptor", "NSAppleScript", "NSArray", "NSAttributedString", "NSBundle", "NSCharacterSet", "NSData", "NSDate", "NSDateFormatter",
-    "NSDictionary", "NSEnumerator", "NSError", "NSFileCoordinator", "NSFileManager", "NSFilePresenter",
-    "NSFileVersion", "NSFileWrapper", "NSFormatter", "NSHTTPCookieStorage", "NSISO8601DateFormatter", "NSIndexSet", "NSJSONSerialization",
-    "NSLocale", "NSLock", "NSNotification", "NSNull", "NSObjCRuntime", "NSObject", "NSOperation", "NSPathUtilities",
-    "NSProcessInfo", "NSRange", "NSRegularExpression", "NSRunLoop", "NSString", "NSTextCheckingResult", "NSThread", "NSTimer", "NSURL", "NSURLCache", "NSURLRequest", "NSURLResponse", "NSURLSession", "NSUUID", "NSUndoManager", "NSUserDefaults",
-    "NSValue", "NSXMLDocument", "NSXMLElement", "NSXMLNode", "NSXMLParser", "block2",
+    "NSAffineTransform", "NSAppleEventDescriptor", "NSAppleEventManager", "NSAppleScript", "NSArchiver",
+    "NSArray", "NSAttributedString", "NSAutoreleasePool", "NSBackgroundActivityScheduler", "NSBundle",
+    "NSByteCountFormatter", "NSByteOrder", "NSCache", "NSCalendar", "NSCalendarDate", "NSCharacterSet",
+    "NSClassDescription", "NSCoder", "NSComparisonPredicate", "NSCompoundPredicate", "NSConnection",
+    "NSData", "NSDate", "NSDateComponentsFormatter", "NSDateFormatter", "NSDateInterval",
+    "NSDateIntervalFormatter", "NSDebug", "NSDecimal", "NSDecimalNumber", "NSDictionary", "NSDistantObject",
+    "NSDistributedLock", "NSDistributedNotificationCenter", "NSEnergyFormatter", "NSEnumerator", "NSError",
+    "NSException", "NSExpression", "NSExtensionContext", "NSExtensionItem", "NSExtensionRequestHandling",
+    "NSFileCoordinator", "NSFileHandle", "NSFileManager", "NSFilePresenter", "NSFileVersion",
+    "NSFileWrapper", "NSFormatter", "NSGarbageCollector", "NSGeometry", "NSHFSFileTypes", "NSHTTPCookie",
+    "NSHTTPCookieStorage", "NSHashTable", "NSHost", "NSISO8601DateFormatter", "NSIndexPath", "NSIndexSet",
+    "NSInflectionRule", "NSInvocation", "NSItemProvider", "NSJSONSerialization", "NSKeyValueCoding",
+    "NSKeyValueObserving", "NSKeyValueSharedObservers", "NSKeyedArchiver", "NSLengthFormatter",
+    "NSLinguisticTagger", "NSListFormatter", "NSLocale", "NSLocalizedNumberFormatRule", "NSLock",
+    "NSMapTable", "NSMassFormatter", "NSMeasurement", "NSMeasurementFormatter", "NSMetadata",
+    "NSMetadataAttributes", "NSMethodSignature", "NSMorphology", "NSNetServices", "NSNotification",
+    "NSNotificationQueue", "NSNull", "NSNumberFormatter", "NSObjCRuntime", "NSObject", "NSObjectScripting",
+    "NSOperation", "NSOrderedCollectionChange", "NSOrderedCollectionDifference", "NSOrderedSet",
+    "NSOrthography", "NSPathUtilities", "NSPersonNameComponents", "NSPersonNameComponentsFormatter",
+    "NSPointerArray", "NSPointerFunctions", "NSPort", "NSPortCoder", "NSPortMessage", "NSPortNameServer",
+    "NSPredicate", "NSProcessInfo", "NSProgress", "NSPropertyList", "NSProtocolChecker", "NSProxy",
+    "NSRange", "NSRegularExpression", "NSRelativeDateTimeFormatter", "NSRunLoop", "NSScanner",
+    "NSScriptClassDescription", "NSScriptCoercionHandler", "NSScriptCommand", "NSScriptCommandDescription",
+    "NSScriptExecutionContext", "NSScriptKeyValueCoding", "NSScriptObjectSpecifiers",
+    "NSScriptStandardSuiteCommands", "NSScriptSuiteRegistry", "NSScriptWhoseTests", "NSSet",
+    "NSSortDescriptor", "NSSpellServer", "NSStream", "NSString", "NSTask", "NSTermOfAddress",
+    "NSTextCheckingResult", "NSThread", "NSTimeZone", "NSTimer", "NSURL", "NSURLAuthenticationChallenge",
+    "NSURLCache", "NSURLConnection", "NSURLCredential", "NSURLCredentialStorage", "NSURLDownload",
+    "NSURLError", "NSURLHandle", "NSURLProtectionSpace", "NSURLProtocol", "NSURLRequest", "NSURLResponse",
+    "NSURLSession", "NSUUID", "NSUbiquitousKeyValueStore", "NSUndoManager", "NSUnit", "NSUserActivity",
+    "NSUserDefaults", "NSUserNotification", "NSUserScriptTask", "NSValue", "NSValueTransformer", "NSXMLDTD",
+    "NSXMLDTDNode", "NSXMLDocument", "NSXMLElement", "NSXMLNode", "NSXMLNodeOptions", "NSXMLParser",
+    "NSXPCConnection", "NSZone", "block2",
 ] }
 objc2-app-kit = { workspace = true, features = [
-    "NSAlert", "NSAppearance", "NSApplication", "NSAttributedString", "NSBitmapImageRep", "NSColor", "NSColorSpace", "NSEvent", "NSFont", "NSGraphics", "NSImage", "NSImageRep", "NSParagraphStyle", "NSPasteboard", "NSResponder", "NSRunningApplication", "NSSpeechSynthesizer", "NSText", "NSTextStorage", "NSWorkspace", "block2", "objc2-core-foundation", "objc2-uniform-type-identifiers",
+    "NSATSTypesetter", "NSAccessibility", "NSAccessibilityColor", "NSAccessibilityConstants",
+    "NSAccessibilityCustomAction", "NSAccessibilityCustomRotor", "NSAccessibilityElement",
+    "NSAccessibilityProtocols", "NSActionCell", "NSAdaptiveImageGlyph", "NSAffineTransform", "NSAlert",
+    "NSAlignmentFeedbackFilter", "NSAnimation", "NSAnimationContext", "NSAppearance",
+    "NSAppleScriptExtensions", "NSApplication", "NSApplicationScripting", "NSArrayController",
+    "NSAttributedString", "NSBackgroundExtensionView", "NSBezierPath", "NSBitmapImageRep", "NSBox",
+    "NSBrowser", "NSBrowserCell", "NSButton", "NSButtonCell", "NSButtonTouchBarItem", "NSCIImageRep",
+    "NSCachedImageRep", "NSCandidateListTouchBarItem", "NSCell", "NSClickGestureRecognizer", "NSClipView",
+    "NSCollectionView", "NSCollectionViewCompositionalLayout", "NSCollectionViewFlowLayout",
+    "NSCollectionViewGridLayout", "NSCollectionViewLayout", "NSCollectionViewTransitionLayout", "NSColor",
+    "NSColorList", "NSColorPanel", "NSColorPicker", "NSColorPickerTouchBarItem", "NSColorPicking",
+    "NSColorSampler", "NSColorSpace", "NSColorWell", "NSComboBox", "NSComboBoxCell", "NSComboButton",
+    "NSControl", "NSController", "NSCursor", "NSCustomImageRep", "NSCustomTouchBarItem", "NSDataAsset",
+    "NSDatePicker", "NSDatePickerCell", "NSDictionaryController", "NSDiffableDataSource", "NSDirection",
+    "NSDockTile", "NSDocument", "NSDocumentController", "NSDocumentScripting", "NSDragging",
+    "NSDraggingItem", "NSDraggingSession", "NSDrawer", "NSEPSImageRep", "NSErrors", "NSEvent",
+    "NSFilePromiseProvider", "NSFilePromiseReceiver", "NSFileWrapperExtensions", "NSFont",
+    "NSFontAssetRequest", "NSFontCollection", "NSFontDescriptor", "NSFontManager", "NSFontPanel", "NSForm",
+    "NSFormCell", "NSGestureRecognizer", "NSGlassEffectView", "NSGlyphGenerator", "NSGlyphInfo",
+    "NSGradient", "NSGraphics", "NSGraphicsContext", "NSGridView", "NSGroupTouchBarItem", "NSHapticFeedback",
+    "NSHelpManager", "NSImage", "NSImageCell", "NSImageRep", "NSImageView", "NSInputManager",
+    "NSInputServer", "NSInterfaceStyle", "NSItemBadge", "NSItemProvider", "NSKeyValueBinding",
+    "NSLayoutAnchor", "NSLayoutConstraint", "NSLayoutGuide", "NSLayoutManager", "NSLevelIndicator",
+    "NSLevelIndicatorCell", "NSMagnificationGestureRecognizer", "NSMatrix",
+    "NSMediaLibraryBrowserController", "NSMenu", "NSMenuItem", "NSMenuItemBadge", "NSMenuItemCell",
+    "NSMenuToolbarItem", "NSMovie", "NSNib", "NSNibConnector", "NSNibControlConnector", "NSNibDeclarations",
+    "NSNibLoading", "NSNibOutletConnector", "NSObjectController", "NSOpenPanel", "NSOutlineView",
+    "NSPDFImageRep", "NSPDFInfo", "NSPDFPanel", "NSPICTImageRep", "NSPageController", "NSPageLayout",
+    "NSPanGestureRecognizer", "NSPanel", "NSParagraphStyle", "NSPasteboard", "NSPasteboardItem",
+    "NSPathCell", "NSPathComponentCell", "NSPathControl", "NSPathControlItem", "NSPersistentDocument",
+    "NSPickerTouchBarItem", "NSPopUpButton", "NSPopUpButtonCell", "NSPopover", "NSPopoverTouchBarItem",
+    "NSPredicateEditor", "NSPredicateEditorRowTemplate", "NSPressGestureRecognizer",
+    "NSPressureConfiguration", "NSPreviewRepresentingActivityItem", "NSPrintInfo", "NSPrintOperation",
+    "NSPrintPanel", "NSPrinter", "NSProgressIndicator", "NSResponder", "NSRotationGestureRecognizer",
+    "NSRuleEditor", "NSRulerMarker", "NSRulerView", "NSRunningApplication", "NSSavePanel", "NSScreen",
+    "NSScrollView", "NSScroller", "NSScrubber", "NSScrubberItemView", "NSScrubberLayout", "NSSearchField",
+    "NSSearchFieldCell", "NSSearchToolbarItem", "NSSecureTextField", "NSSegmentedCell", "NSSegmentedControl",
+    "NSShadow", "NSSharingCollaborationModeRestriction", "NSSharingService",
+    "NSSharingServicePickerToolbarItem", "NSSharingServicePickerTouchBarItem", "NSSlider",
+    "NSSliderAccessory", "NSSliderCell", "NSSliderTouchBarItem", "NSSound", "NSSpeechRecognizer",
+    "NSSpeechSynthesizer", "NSSpellChecker", "NSSpellProtocol", "NSSplitView", "NSSplitViewController",
+    "NSSplitViewItem", "NSSplitViewItemAccessoryViewController", "NSStackView", "NSStatusBar",
+    "NSStatusBarButton", "NSStatusItem", "NSStepper", "NSStepperCell", "NSStepperTouchBarItem",
+    "NSStoryboard", "NSStoryboardSegue", "NSStringDrawing", "NSSwitch", "NSTabView", "NSTabViewController",
+    "NSTabViewItem", "NSTableCellView", "NSTableColumn", "NSTableHeaderCell", "NSTableHeaderView",
+    "NSTableRowView", "NSTableView", "NSTableViewDiffableDataSource", "NSTableViewRowAction", "NSText",
+    "NSTextAlternatives", "NSTextAttachment", "NSTextAttachmentCell", "NSTextCheckingClient",
+    "NSTextCheckingController", "NSTextContainer", "NSTextContent", "NSTextContentManager", "NSTextElement",
+    "NSTextField", "NSTextFieldCell", "NSTextFinder", "NSTextInputClient", "NSTextInputContext",
+    "NSTextInsertionIndicator", "NSTextLayoutFragment", "NSTextLayoutManager", "NSTextLineFragment",
+    "NSTextList", "NSTextListElement", "NSTextRange", "NSTextSelection", "NSTextSelectionNavigation",
+    "NSTextStorage", "NSTextStorageScripting", "NSTextTable", "NSTextView", "NSTextViewportLayoutController",
+    "NSTintConfiguration", "NSTintProminence", "NSTitlebarAccessoryViewController", "NSTokenField",
+    "NSTokenFieldCell", "NSToolbar", "NSToolbarItem", "NSToolbarItemGroup", "NSTouch", "NSTouchBar",
+    "NSTouchBarItem", "NSTrackingArea", "NSTrackingSeparatorToolbarItem", "NSTreeController", "NSTreeNode",
+    "NSTypesetter", "NSUserActivity", "NSUserDefaultsController", "NSUserInterfaceCompression",
+    "NSUserInterfaceItemIdentification", "NSUserInterfaceItemSearching", "NSUserInterfaceLayout",
+    "NSUserInterfaceValidation", "NSView", "NSViewController", "NSViewLayoutRegion", "NSVisualEffectView",
+    "NSWindow", "NSWindowController", "NSWindowRestoration", "NSWindowScripting", "NSWindowTab",
+    "NSWindowTabGroup", "NSWorkspace", "NSWritingToolsCoordinator",
+    "NSWritingToolsCoordinatorAnimationParameters", "NSWritingToolsCoordinatorContext", "block2",
+    "objc2-core-foundation", "objc2-uniform-type-identifiers", "objc2-core-graphics", "objc2-quartz-core",
+    "objc2-core-text",
 ] }
+objc2-quartz-core = { version = "0.3.2", default-features = false, features = ["std", "CAAnimation", "CABase", "CADisplayLink", "CAFrameRateRange", "CAGradientLayer", "CALayer", "CAMediaTiming", "CAMediaTimingFunction", "CAReplicatorLayer", "CAScrollLayer", "CAShapeLayer", "CATextLayer", "CATransaction", "CATransform3D", "CATransformLayer", "CAValueFunction", "objc2-core-foundation", "objc2-core-graphics", "block2"] }
+objc2-core-text = { workspace = true, features = ["CTFont", "CTFontDescriptor", "objc2-core-graphics"] }
 objc2-avf-audio = { version = "0.3.2", default-features = false, features = ["std", "AVSpeechSynthesis"] }
 objc2-uniform-type-identifiers = { version = "0.3.2", default-features = false, features = ["std", "UTType", "UTCoreTypes"] }
-objc2-core-foundation = { workspace = true, features = ["CFArray", "CFBase", "CFDate", "CFRunLoop", "CFString", "CFURL"] }
+objc2-core-foundation = { workspace = true, features = [
+    "CFArray", "CFAttributedString", "CFBase", "CFBundle", "CFCGTypes", "CFData", "CFDate", "CFDictionary", "CFError",
+    "CFNumber", "CFPlugIn", "CFPlugInCOM", "CFPreferences", "CFPropertyList", "CFRunLoop", "CFString", "CFURL", "CFUUID",
+] }
+objc2-core-graphics = { workspace = true, features = [
+    "CGAffineTransform", "CGBase", "CGBitmapContext", "CGColor", "CGColorSpace", "CGContext", "CGDataProvider", "CGDirectDisplay",
+    "CGEvent", "CGEventSource", "CGEventTypes", "CGGeometry", "CGGradient", "CGImage", "CGPath", "CGWindow", "CGWindowLevel",
+] }
 
 [dev-dependencies]
 serde_json.workspace = true
@@ -43,6 +141,10 @@ objc2-foundation = { workspace = true, features = ["NSURLProtocol"] }
 # these tests own the main thread (no libtest harness) and run its run loop.
 [[test]]
 name = "update_coordinator_tests"
+harness = false
+
+[[test]]
+name = "sparkle_bridge_tests"
 harness = false
 
 [[test]]
@@ -99,4 +201,165 @@ harness = false
 
 [[test]]
 name = "workspace_tests"
+harness = false
+
+[[test]]
+name = "command_table_tests_menu"
+harness = false
+
+[[test]]
+name = "document_quick_look_tests_menu"
+harness = false
+
+[[test]]
+name = "share_and_capture_tests_menu"
+harness = false
+
+[[test]]
+name = "app_shell_menu_objects"
+harness = false
+
+# The document scroll gestures (`App/DocumentScrollGestures.swift` and the
+# swipes and zoom built on it): `@MainActor` suites over AppKit views and
+# `NSEvent`s, on the main thread (tests/main_thread/mod.rs).
+[[test]]
+name = "history_swipe_tests"
+harness = false
+
+[[test]]
+name = "presentation_drag_tests"
+harness = false
+
+[[test]]
+name = "presentation_swipe_tests"
+harness = false
+
+[[test]]
+name = "presentation_swipe_budget_tests"
+harness = false
+
+[[test]]
+name = "scroll_gesture_chain_tests"
+harness = false
+
+[[test]]
+name = "scroll_zoom_tests"
+harness = false
+[[test]]
+name = "settings_pane_tests"
+harness = false
+
+# The panels' view-level tests (DownrightAppTests), one binary per group of
+# panels; each runs on the main thread (tests/main_thread/mod.rs) and puts any
+# window it needs off-screen, never activated.
+
+[[test]]
+name = "panels_chrome_tests"
+harness = false
+
+[[test]]
+name = "panels_toolbar_tests"
+harness = false
+
+[[test]]
+name = "panels_find_tests"
+harness = false
+
+[[test]]
+name = "panels_task_tests"
+harness = false
+
+[[test]]
+name = "panels_update_tests"
+harness = false
+
+[[test]]
+name = "panels_editor_tests"
+harness = false
+
+[[test]]
+name = "panels_diagnostics_tests"
+harness = false
+
+[[test]]
+name = "panels_sidebar_tests"
+harness = false
+
+# The toolbar controls, `ToolbarGlassBand` and `DocumentWindow`
+# (`App/ToolbarControls.swift`, `App/ToolbarGlassBand.swift`,
+# `App/DocumentWindow.swift`): `@MainActor` suites over AppKit views, on the
+# main thread (tests/main_thread/mod.rs).
+[[test]]
+name = "window_chrome_tests"
+harness = false
+
+[[test]]
+name = "toolbar_controls_tests"
+harness = false
+
+# The start window (`App/StartWindowController.swift`): the `@MainActor`
+# StartWindowTests and RecentRowSubtitleTests, on the main thread
+# (tests/main_thread/mod.rs), in a sandboxed home.
+[[test]]
+name = "start_window_tests_window"
+harness = false
+
+# `DocumentWindowController` (`App/DocumentWindowController.swift` and its
+# +Support/+Trust/+Speech/+CommandLine/+ContinuityCamera extensions): the
+# `@MainActor` suites that build the controller, on the main thread
+# (tests/main_thread/mod.rs), in a sandboxed home
+# (tests/document_window_support/mod.rs); no window is ordered in.
+[[test]]
+name = "window_chrome_tests_document"
+harness = false
+
+[[test]]
+name = "document_chrome_layout_tests"
+harness = false
+
+[[test]]
+name = "autosave_lifecycle_tests_window"
+harness = false
+
+[[test]]
+name = "export_snapshot_tests"
+harness = false
+
+# `DocumentWindowController`'s `+Actions`, `+Commands` and `+Delegates`
+# (`App/DocumentWindowController+….swift`): `@MainActor` suites over a real
+# controller whose window is never ordered in (tests/controller_support).
+[[test]]
+name = "editing_key_repro_tests"
+harness = false
+
+[[test]]
+name = "window_chrome_tests_controller"
+harness = false
+
+[[test]]
+name = "document_chrome_layout_tests_commands"
+harness = false
+
+[[test]]
+name = "document_quick_look_tests_controller"
+harness = false
+
+[[test]]
+name = "presentation_swipe_tests_controller"
+harness = false
+
+# Window-level cases of the DocumentWindowController panel extensions
+# (`+AssetInsertion`, `+ContinuityCamera`, `+CommandPalette`): `@MainActor`
+# suites over a real controller whose window is never ordered in
+# (tests/controller_support).
+[[test]]
+name = "document_drop_tests_window"
+harness = false
+
+[[test]]
+name = "share_and_capture_tests_window"
+harness = false
+
+[[test]]
+name = "command_palette_navigation_regression_tests"
 harness = false

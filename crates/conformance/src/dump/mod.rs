@@ -23,6 +23,10 @@ pub mod unicode;
 
 // App-layer suites (Swift side: oracle/app, `downright-app-oracle`).
 pub mod app_bench;
+pub mod app_window;
+pub mod app_window_bench;
+pub mod panel;
+pub mod quicklook_thumbnail;
 pub mod down_cli;
 pub mod find;
 pub mod formats;
@@ -49,6 +53,13 @@ pub const APP_COMMANDS: &[&str] = &[
     "bench-export",
     "bench-workspace",
     "bench-find",
+    "app-window",
+    "bench-app-window",
+    "app-menu",
+    "panel",
+    "panel-model",
+    "bench-panel",
+    "quicklook-thumbnail",
 ];
 
 use std::path::PathBuf;
@@ -215,6 +226,13 @@ pub fn run(request: &Request) -> Result<(), Failure> {
         "bench-export" => app_bench::export(request),
         "bench-workspace" => app_bench::workspace(request),
         "bench-find" => app_bench::find(request),
+        "app-window" => app_window::run(request),
+        "bench-app-window" => app_window_bench::run(request),
+        "app-menu" => app_window::menu(request),
+        "panel" => panel::run_capture(request),
+        "panel-model" => panel::run_model(request),
+        "bench-panel" => panel::run_bench(request),
+        "quicklook-thumbnail" => quicklook_thumbnail::run(request),
         _ => Err(Failure::NotPorted),
     }
 }

@@ -1,0 +1,1 @@
+{"panel": "UpdateStatusPill", "theme": "High Contrast", "dark": false, "width": 240, "height": 44, "state": {"steps": [{"do": "driverDidFindUpdate", "metadata": {"versionString": "50", "displayVersionString": "1.2.0", "isInformationOnly": true, "infoURL": "https://updates.example.invalid/notes/1.2.0"}, "stage": "notDownloaded", "userInitiated": false}]}}

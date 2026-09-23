@@ -11,8 +11,11 @@
 
 pub mod ai;
 pub mod app;
+pub mod assets;
+pub mod debugging;
 pub mod export;
 pub mod integrations;
+pub mod lens;
 pub mod panels;
 pub mod review;
 pub mod security;

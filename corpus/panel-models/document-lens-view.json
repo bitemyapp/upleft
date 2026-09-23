@@ -1,0 +1,100 @@
+{
+ "panel": "DocumentLensView",
+ "theme": "Warm Dark",
+ "dark": true,
+ "width": 336,
+ "height": 560,
+ "document": "corpus/panel-documents/diagnostics-lens.md",
+ "state": {},
+ "states": [
+  {
+   "name": "structure"
+  },
+  {
+   "name": "health",
+   "tab": "health"
+  },
+  {
+   "name": "links",
+   "tab": "links"
+  },
+  {
+   "name": "assets",
+   "tab": "assets"
+  },
+  {
+   "name": "tasks",
+   "tab": "tasks"
+  },
+  {
+   "name": "changes (none)",
+   "tab": "changes"
+  },
+  {
+   "name": "changes",
+   "tab": "changes",
+   "changes": [
+    {
+     "kind": "inserted",
+     "location": 0,
+     "length": 15
+    },
+    {
+     "kind": "modified",
+     "location": 118,
+     "length": 10
+    },
+    {
+     "kind": "deleted",
+     "location": 200,
+     "length": 0
+    }
+   ]
+  },
+  {
+   "name": "render target",
+   "tab": "renderTarget"
+  },
+  {
+   "name": "render target CommonMark",
+   "tab": "renderTarget",
+   "target": "commonMark"
+  },
+  {
+   "name": "render target Downright",
+   "tab": "renderTarget",
+   "target": "downright"
+  },
+  {
+   "name": "select a task",
+   "tab": "tasks",
+   "select": 1
+  },
+  {
+   "name": "select a heading",
+   "select": 1
+  },
+  {
+   "name": "select a group row",
+   "select": 0
+  },
+  {
+   "name": "empty model",
+   "empty": true
+  },
+  {
+   "name": "empty model, tasks",
+   "empty": true,
+   "tab": "tasks"
+  },
+  {
+   "name": "bogus tab",
+   "tab": "nope"
+  },
+  {
+   "name": "restyled",
+   "tab": "links",
+   "restyle": true
+  }
+ ]
+}

@@ -83,3 +83,29 @@ corpus:
 conform *args: corpus
     cargo build --release -p upleft-conformance -p upleft-cli
     target/release/conform {{args}}
+
+# Assemble target/upleft-app/Upleft.app (Scripts/bundle-app.sh's layout with the
+# Upleft identity: Info.plist from the rebranded template, `down`, the math
+# fonts, Welcome.md, Sparkle.framework 2.9.6, the Spotlight importer, the Quick
+# Look extensions, ad-hoc signature). Builds it; never registers or launches it.
+upleft-app: rebrand
+    scripts/bundle-upleft-app.sh
+
+# Rebuild and re-embed only the Quick Look extensions (DownrightQL.appex,
+# DownrightThumb.appex) in an existing Upleft.app; re-signs and verifies it.
+# Never registers them with pluginkit or launches them.
+upleft-quicklook app="target/upleft-app/Upleft.app": rebrand
+    scripts/bundle-upleft-quicklook.sh APP={{app}}
+
+# Compare the panels' build, layout and draw timings (corpus/panel-bench)
+# between downright-app-oracle and upleft-oracle; fails on a slower stage.
+panel-bench *args: corpus
+    cargo build --release -p upleft-conformance
+    python3 scripts/panel-bench-compare.py {{args}}
+
+# Compare the document window's timings (open to first frame, mode switch)
+# between downright-app-oracle and upleft-oracle; fails on a slower stage.
+# Windows are off-screen and never activated.
+app-window-bench *args: corpus
+    cargo build --release -p upleft-conformance
+    python3 scripts/app-window-bench-compare.py {{args}}

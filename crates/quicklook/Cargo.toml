@@ -1,18 +1,48 @@
 [package]
 name = "upleft-quicklook"
-description = "Port of Downright's DownrightQL policy: Quick Look resource limits, the bounded loader and the preview controller's pure helpers (the view code is ported with the UI)"
+description = "Port of Downright's DownrightQL: the Quick Look preview extension (PreviewViewController), its resource policy and bounded loader, and the extension executable"
 version.workspace = true
 edition.workspace = true
 license.workspace = true
 publish.workspace = true
 
+# The extension executable (Downright's generated `main.swift`): `main` calls
+# Foundation's `NSExtensionMain`. scripts/bundle-upleft-quicklook.sh copies it
+# into DownrightQL.appex as `DownrightQL`. It is never run by `cargo test`
+# (`test = false`): outside an extension host NSExtensionMain aborts.
+[[bin]]
+name = "upleft-ql"
+path = "src/main.rs"
+test = false
+bench = false
+
 [dependencies]
 upleft-core.workspace = true
+upleft-render.workspace = true
+upleft-mermaid.workspace = true
 upleft-swift-text.workspace = true
 libc = "0.2"
+block2.workspace = true
+dispatch2 = "0.3.1"
+objc2.workspace = true
+objc2-core-foundation = { workspace = true, features = ["CFCGTypes"] }
+objc2-foundation = { workspace = true, features = [
+    "NSArray", "NSBundle", "NSDictionary", "NSError", "NSFormatter", "NSGeometry", "NSLocale", "NSNotification",
+    "NSNumberFormatter", "NSObjCRuntime", "NSOperation", "NSRange", "NSRunLoop", "NSString", "NSTimer", "NSURL",
+    "NSValue", "block2",
+] }
+objc2-app-kit = { workspace = true, features = [
+    "NSAccessibilityProtocols", "NSAppearance", "NSAttributedString", "NSButton", "NSCell", "NSClipView", "NSColor",
+    "NSControl", "NSEvent", "NSFont", "NSFontDescriptor", "NSGraphics", "NSImage", "NSImageView", "NSLayoutAnchor",
+    "NSLayoutConstraint", "NSParagraphStyle", "NSResponder", "NSScrollView", "NSStackView", "NSText", "NSTextField",
+    "NSTextStorage", "NSTextView", "NSUserInterfaceLayout", "NSView", "NSViewController", "NSVisualEffectView",
+    "NSWindow", "NSWorkspace", "NSButtonCell", "NSImageCell", "block2", "objc2-core-foundation",
+] }
 
 [dev-dependencies]
-upleft-render.workspace = true
-objc2.workspace = true
-objc2-foundation = { workspace = true, features = ["NSArray", "NSString"] }
-objc2-app-kit = { workspace = true, features = ["NSAppearance"] }
+objc2-foundation = { workspace = true, features = ["NSArray", "NSString", "NSPathUtilities"] }
+objc2-app-kit = { workspace = true, features = ["NSAppearance", "NSBitmapImageRep", "NSImageRep", "NSGraphicsContext", "NSWindow"] }
+
+[[test]]
+name = "preview_view_controller_tests"
+harness = false

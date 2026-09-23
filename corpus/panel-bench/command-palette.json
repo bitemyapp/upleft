@@ -1,0 +1,34 @@
+{
+ "panel": "CommandPaletteView",
+ "theme": "Paper Light",
+ "width": 520,
+ "height": 420,
+ "document": "corpus/generated/agent/agent-5000.md",
+ "runs": 60,
+ "warmup": 5,
+ "state": {},
+ "states": [
+  {
+   "name": "no query (all commands + headings)"
+  },
+  {
+   "name": "no query + draw",
+   "draw": true
+  },
+  {
+   "name": "ranking 'to' + draw",
+   "query": "to",
+   "draw": true
+  },
+  {
+   "name": "ranking 'sect' + draw",
+   "query": "sect",
+   "draw": true
+  },
+  {
+   "name": "ranking 'zzqx' (no results) + draw",
+   "query": "zzqx",
+   "draw": true
+  }
+ ]
+}

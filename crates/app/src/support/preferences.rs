@@ -345,6 +345,25 @@ impl Preferences {
         })
     }
 
+    /// Makes `preferences` the instance [`Preferences::shared`] returns, so a
+    /// test process can run code that reads `Preferences.shared` (the
+    /// Settings window) without publishing to the user's real preferences
+    /// domain. Works only before the first `shared()` call, and answers
+    /// whether it did. Not called by the app.
+    pub fn install_shared(preferences: Preferences) -> bool {
+        SHARED.set(preferences).is_ok()
+    }
+
+    /// Test seam: makes `preferences` (a [`Preferences::for_testing`]
+    /// instance) what `Preferences::shared()` returns, so a test binary that
+    /// builds panels (`PanelFont` reads the shared text size adjustment)
+    /// never loads the real one, whose load publishes the Quick Look
+    /// appearance to the user's global preferences. Call before anything
+    /// reads `shared()`; false when it was already loaded.
+    pub fn install_shared_for_testing(preferences: Preferences) -> bool {
+        SHARED.set(preferences).is_ok()
+    }
+
     /// A `Preferences` reading and writing `preferences_file` only: no Quick
     /// Look publication and no notification. `snapshot_store`, when given,
     /// receives the history limits as `SnapshotStore.shared` does.
@@ -408,6 +427,12 @@ impl Preferences {
 
     pub fn values(&self) -> Values {
         self.state.lock().unwrap().values.clone()
+    }
+
+    /// `values.textSizeAdjustment` without copying the whole `Values`
+    /// (`PanelFont` reads it for every label a panel builds).
+    pub fn text_size_adjustment(&self) -> f64 {
+        self.state.lock().unwrap().values.text_size_adjustment
     }
 
     /// What happened when the settings file was read.

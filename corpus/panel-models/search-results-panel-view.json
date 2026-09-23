@@ -1,0 +1,28 @@
+{
+ "panel": "SearchResultsPanelView",
+ "theme": "Paper Light",
+ "width": 336,
+ "height": 480,
+ "state": {"directory": "corpus/generated/docs"},
+ "states": [
+  {"name": "nothing searched"},
+  {"name": "current", "current": true},
+  {"name": "searching", "query": "Markdown", "isSearching": true},
+  {"name": "searching unknown count", "query": "Markdown", "isSearching": true, "files": ["corpus/generated/docs/README.md"], "searchedFileCount": 0},
+  {"name": "searching one file", "query": "Markdown", "isSearching": true, "files": ["corpus/generated/docs/README.md"]},
+  {"name": "markdown", "query": "Markdown"},
+  {"name": "markdown one per file", "query": "Markdown", "limitPerFile": 1},
+  {"name": "case sensitive", "query": "markdown", "options": ["caseSensitive"]},
+  {"name": "whole word", "query": "mark", "options": ["wholeWord"]},
+  {"name": "regex", "query": "Quick ?Look", "options": ["regex"]},
+  {"name": "invalid regex", "query": "(unclosed", "options": ["regex"]},
+  {"name": "no matches", "query": "zebraquux"},
+  {"name": "no matches one file", "query": "zebraquux", "files": ["corpus/generated/docs/README.md"]},
+  {"name": "no matches no files", "query": "zebraquux", "files": ["corpus/generated/docs/missing.md"]},
+  {"name": "long query", "query": "an unusually long query that nobody would ever type into a find field twice"},
+  {"name": "count override", "query": "zebraquux", "searchedFileCount": 1},
+  {"name": "select and activate", "query": "Markdown", "select": 1, "activate": true},
+  {"name": "activate group row", "query": "Markdown", "select": 0, "activate": true},
+  {"name": "agent files", "directory": "corpus/generated/agent", "query": "task"}
+ ]
+}

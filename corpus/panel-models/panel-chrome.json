@@ -1,0 +1,260 @@
+{
+ "panel": "PanelChrome",
+ "theme": "Paper Light",
+ "width": 320,
+ "height": 60,
+ "document": "corpus/generated/agent/agent-400.md",
+ "state": {},
+ "states": [
+  {
+   "name": "line index",
+   "kind": "lineIndex",
+   "ranges": [
+    [
+     0,
+     0
+    ],
+    [
+     0,
+     1
+    ],
+    [
+     10,
+     200
+    ],
+    [
+     500,
+     3
+    ],
+    [
+     4000,
+     20
+    ],
+    [
+     12345,
+     0
+    ],
+    [
+     99999,
+     1
+    ]
+   ]
+  },
+  {
+   "name": "relative time",
+   "kind": "relativeTime",
+   "offsets": [
+    0,
+    30,
+    59,
+    60,
+    61,
+    3600,
+    7200,
+    86400,
+    172800,
+    604800,
+    2592000,
+    31536000
+   ]
+  },
+  {
+   "name": "metrics",
+   "kind": "metrics",
+   "heights": [
+    0,
+    4,
+    18,
+    22,
+    26,
+    30,
+    46,
+    60
+   ],
+   "radius": 12
+  },
+  {
+   "name": "metrics big radius",
+   "kind": "metrics",
+   "heights": [
+    1
+   ],
+   "radius": 400
+  },
+  {
+   "name": "segmented",
+   "kind": "segmented",
+   "items": [
+    "Open",
+    "Done",
+    "All"
+   ],
+   "selectedIndex": 2,
+   "frame": [
+    10,
+    10,
+    200,
+    26
+   ]
+  },
+  {
+   "name": "segmented squeezed",
+   "kind": "segmented",
+   "items": [
+    "Tasks",
+    "History",
+    "Document",
+    "Search"
+   ],
+   "select": 3,
+   "disabled": [
+    1
+   ],
+   "frame": [
+    0,
+    0,
+    120,
+    22
+   ]
+  },
+  {
+   "name": "progress half",
+   "kind": "progress",
+   "fraction": 0.5,
+   "frame": [
+    10,
+    10,
+    200,
+    4
+   ]
+  },
+  {
+   "name": "progress clamp",
+   "kind": "progress",
+   "fraction": 1.7,
+   "frame": [
+    10,
+    10,
+    200,
+    4
+   ]
+  },
+  {
+   "name": "progress tiny",
+   "kind": "progress",
+   "fraction": 0.001,
+   "frame": [
+    10,
+    10,
+    200,
+    4
+   ]
+  },
+  {
+   "name": "checkbox mixed",
+   "kind": "checkbox",
+   "checkState": "mixed",
+   "frame": [
+    4,
+    4,
+    16,
+    16
+   ]
+  },
+  {
+   "name": "checkbox toggled",
+   "kind": "checkbox",
+   "toggle": true,
+   "frame": [
+    4,
+    4,
+    20,
+    20
+   ],
+   "side": 20
+  },
+  {
+   "name": "message bar",
+   "kind": "messageBar",
+   "message": "Changed on disk",
+   "actions": [
+    "Reload"
+   ],
+   "status": "3"
+  },
+  {
+   "name": "message bar review",
+   "kind": "messageBar",
+   "message": "Reviewing 4 changes",
+   "symbols": [
+    "chevron.up",
+    "chevron.down",
+    "checkmark"
+   ],
+   "reviewLayout": true,
+   "status": "2 of 4"
+  },
+  {
+   "name": "empty state",
+   "kind": "emptyState",
+   "symbol": "checklist",
+   "title": "No tasks",
+   "subtitle": "Add a task with - [ ] in the document.",
+   "bias": 0.9
+  },
+  {
+   "name": "group row",
+   "kind": "groupRow",
+   "text": "INTRODUCTION  \u00b7  4"
+  },
+  {
+   "name": "symbol button",
+   "kind": "symbolButton",
+   "symbol": "chevron.up",
+   "label": "Previous",
+   "tinted": true,
+   "frame": [
+    0,
+    0,
+    28,
+    28
+   ]
+  },
+  {
+   "name": "text button",
+   "kind": "textButton",
+   "title": "Apply 3 Safe Fixes",
+   "isDefault": true,
+   "frame": [
+    0,
+    0,
+    150,
+    24
+   ]
+  },
+  {
+   "name": "toggle",
+   "kind": "toggle",
+   "title": ".*",
+   "label": "Regular expression",
+   "on": true,
+   "frame": [
+    0,
+    0,
+    40,
+    22
+   ]
+  },
+  {
+   "name": "backdrop surface",
+   "kind": "backdrop",
+   "usesSurfaceFill": true,
+   "veilAlpha": 0.4
+  },
+  {
+   "name": "selection row",
+   "kind": "selectionRow",
+   "selected": true
+  }
+ ]
+}

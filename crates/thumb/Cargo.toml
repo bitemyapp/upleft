@@ -1,0 +1,40 @@
+[package]
+name = "upleft-thumb"
+description = "Port of Downright's DownrightThumb: the Quick Look thumbnail extension (ThumbnailProvider) and its executable"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+publish.workspace = true
+
+# The library holds `ThumbnailProvider`; the binary (src/main.rs) is the
+# extension executable, Downright's generated `main.swift`: `main` calls
+# Foundation's `NSExtensionMain`. scripts/bundle-upleft-quicklook.sh copies it
+# into DownrightThumb.appex as `DownrightThumb`. It is never run by `cargo
+# test` (`test = false`): outside an extension host NSExtensionMain aborts.
+[[bin]]
+name = "upleft-thumb"
+path = "src/main.rs"
+test = false
+bench = false
+
+[dependencies]
+upleft-core.workspace = true
+upleft-foundation.workspace = true
+upleft-render.workspace = true
+upleft-swift-text.workspace = true
+block2.workspace = true
+objc2.workspace = true
+objc2-core-foundation = { workspace = true, features = ["CFCGTypes"] }
+objc2-core-graphics = { workspace = true, features = ["CGContext"] }
+objc2-foundation = { workspace = true, features = [
+    "NSArray", "NSAttributedString", "NSDictionary", "NSError", "NSGeometry", "NSObject", "NSRange", "NSString", "NSURL",
+    "block2",
+] }
+objc2-app-kit = { workspace = true, features = [
+    "NSAttributedString", "NSBezierPath", "NSColor", "NSFont", "NSFontDescriptor", "NSGraphics", "NSGraphicsContext",
+    "NSLayoutManager", "NSParagraphStyle", "NSStringDrawing", "NSText", "NSTextContainer", "NSTextStorage",
+    "objc2-core-foundation", "objc2-core-graphics",
+] }
+
+[dev-dependencies]
+objc2-core-graphics = { workspace = true, features = ["CGBitmapContext", "CGColorSpace", "CGContext", "CGImage"] }
