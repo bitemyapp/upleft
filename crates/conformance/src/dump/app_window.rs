@@ -570,7 +570,7 @@ mod geometry {
         } else if let Some(button) = view.downcast_ref::<NSButton>() {
             object = object.with("title", button.title().to_string()).with("state", button.state());
         } else if let Some(text_view) = view.downcast_ref::<objc2_app_kit::NSTextView>()
-            && let Some(layout) = unsafe { text_view.textLayoutManager() }
+            && let Some(layout) = text_view.textLayoutManager()
         {
             object = object.with("fragments", fragments(&layout));
         }
@@ -582,34 +582,32 @@ mod geometry {
     /// far, without laying out anything more.
     fn fragments(layout: &objc2_app_kit::NSTextLayoutManager) -> Value {
         use objc2_app_kit::{NSTextElementProvider, NSTextLayoutFragment, NSTextLayoutFragmentEnumerationOptions};
-        let Some(content) = (unsafe { layout.textContentManager() }) else { return Value::Null };
-        let start = unsafe { content.documentRange() }.location();
+        let Some(content) = layout.textContentManager() else { return Value::Null };
+        let start = content.documentRange().location();
         let fragments = std::rc::Rc::new(std::cell::RefCell::new(Vec::new()));
         let collected = fragments.clone();
         let content_for_block = content.clone();
         let start_for_block = start.clone();
         let block = block2::RcBlock::new(move |fragment: std::ptr::NonNull<NSTextLayoutFragment>| -> objc2::runtime::Bool {
             let fragment = unsafe { fragment.as_ref() };
-            let range = unsafe { fragment.rangeInElement() };
-            let location = unsafe { content_for_block.offsetFromLocation_toLocation(&start_for_block, &range.location()) };
-            let end = unsafe { content_for_block.offsetFromLocation_toLocation(&start_for_block, &range.endLocation()) };
+            let range = fragment.rangeInElement();
+            let location = content_for_block.offsetFromLocation_toLocation(&start_for_block, &range.location());
+            let end = content_for_block.offsetFromLocation_toLocation(&start_for_block, &range.endLocation());
             collected.borrow_mut().push(
                 Object::new()
                     .with("class", class_name(fragment.class()))
                     .with("range", Value::Array(vec![location.into(), (end - location).into()]))
-                    .with("frame", rect(unsafe { fragment.layoutFragmentFrame() }))
-                    .with("state", unsafe { fragment.state() }.0 as i64)
+                    .with("frame", rect(fragment.layoutFragmentFrame()))
+                    .with("state", fragment.state().0 as i64)
                     .build(),
             );
             objc2::runtime::Bool::YES
         });
-        unsafe {
-            layout.enumerateTextLayoutFragmentsFromLocation_options_usingBlock(
-                Some(&start),
-                NSTextLayoutFragmentEnumerationOptions::empty(),
-                &block,
-            )
-        };
+        layout.enumerateTextLayoutFragmentsFromLocation_options_usingBlock(
+            Some(&start),
+            NSTextLayoutFragmentEnumerationOptions::empty(),
+            &block,
+        );
         drop(block);
         let fragments = fragments.borrow().clone();
         Value::Array(fragments)

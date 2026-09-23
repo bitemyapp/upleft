@@ -1,0 +1,22 @@
+[package]
+name = "upleft"
+description = "The Upleft application: port of Downright's app target entry point (Sources/DownrightApp/main.swift)"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+publish.workspace = true
+
+[[bin]]
+name = "upleft"
+path = "src/main.rs"
+
+[dependencies]
+upleft-app.workspace = true
+upleft-math.workspace = true
+upleft-mermaid.workspace = true
+upleft-render.workspace = true
+upleft-foundation.workspace = true
+objc2.workspace = true
+objc2-foundation = { workspace = true, features = ["NSString", "NSProcessInfo", "NSGeometry"] }
+objc2-app-kit = { workspace = true, features = ["NSApplication", "NSResponder", "NSRunningApplication", "NSMenu", "NSWindow", "NSWindowController", "NSView", "NSGraphics"] }
+serde_json.workspace = true

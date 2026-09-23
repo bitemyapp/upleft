@@ -583,6 +583,21 @@ dependencies = [
 ]
 
 [[package]]
+name = "upleft"
+version = "0.1.0"
+dependencies = [
+ "objc2",
+ "objc2-app-kit",
+ "objc2-foundation",
+ "serde_json",
+ "upleft-app",
+ "upleft-foundation",
+ "upleft-math",
+ "upleft-mermaid",
+ "upleft-render",
+]
+
+[[package]]
 name = "upleft-app"
 version = "0.1.0"
 dependencies = [

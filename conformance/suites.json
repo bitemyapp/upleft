@@ -1548,6 +1548,8 @@
       "output": "png",
       "input": "json",
       "serial": true,
+      "samples": 4,
+      "retries": 3,
       "only": [
         "corpus/app-window/"
       ],
