@@ -1,0 +1,8 @@
+sequenceDiagram
+    participant A
+    participant B
+    A->>B: request
+    opt cache miss
+        B->>B: recompute
+    end
+    B-->>A: response

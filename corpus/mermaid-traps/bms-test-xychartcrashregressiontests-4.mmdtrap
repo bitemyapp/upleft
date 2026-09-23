@@ -1,0 +1,6 @@
+xychart-beta
+    title "Overflow coords"
+    x-axis [A, B, C]
+    y-axis "v" 0 --> 1e308
+    bar [1e300, 2e300, 3e300]
+    line [1e300, 2e300, 3e300]

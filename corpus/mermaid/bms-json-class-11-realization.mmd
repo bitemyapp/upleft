@@ -1,0 +1,10 @@
+classDiagram
+  class Flyable {
+    <<interface>>
+    +fly() void
+  }
+  class Bird {
+    +fly() void
+    +sing() void
+  }
+  Bird ..|> Flyable

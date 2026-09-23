@@ -1,0 +1,9 @@
+sequenceDiagram
+  participant A as App
+  participant DB as Database
+  A->>DB: BEGIN
+  critical Transaction
+    A->>DB: UPDATE accounts
+    A->>DB: INSERT log
+  end
+  A->>DB: COMMIT

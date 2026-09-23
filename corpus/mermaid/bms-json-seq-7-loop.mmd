@@ -1,0 +1,9 @@
+sequenceDiagram
+  participant C as Client
+  participant S as Server
+  C->>S: Connect
+  loop Every 30s
+    C->>S: Heartbeat
+    S-->>C: Ack
+  end
+  C->>S: Disconnect

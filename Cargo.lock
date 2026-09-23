@@ -548,6 +548,7 @@ dependencies = [
  "upleft-elk",
  "upleft-markup",
  "upleft-math",
+ "upleft-mermaid",
  "upleft-render",
  "upleft-swift-text",
 ]
@@ -593,6 +594,22 @@ dependencies = [
  "objc2-core-graphics",
  "objc2-core-text",
  "objc2-foundation",
+ "upleft-swift-text",
+]
+
+[[package]]
+name = "upleft-mermaid"
+version = "0.1.0"
+dependencies = [
+ "objc2",
+ "objc2-app-kit",
+ "objc2-core-foundation",
+ "objc2-core-graphics",
+ "objc2-core-text",
+ "objc2-foundation",
+ "serde_json",
+ "upleft-elk",
+ "upleft-render",
  "upleft-swift-text",
 ]
 

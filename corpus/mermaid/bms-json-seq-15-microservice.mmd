@@ -1,0 +1,18 @@
+sequenceDiagram
+  participant G as Gateway
+  participant A as Auth
+  participant U as Users
+  participant O as Orders
+  participant N as Notify
+  G->>A: Validate token
+  A-->>G: Valid
+  par Fetch data
+    G->>U: Get user
+    U-->>G: User data
+  and
+    G->>O: Get orders
+    O-->>G: Order list
+  end
+  G->>N: Send notification
+  N-->>G: Queued
+  Note over G: Aggregate response

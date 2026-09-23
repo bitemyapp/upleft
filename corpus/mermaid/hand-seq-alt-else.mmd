@@ -1,0 +1,9 @@
+sequenceDiagram
+    participant A
+    participant B
+    A->>B: login
+    alt credentials valid
+        B-->>A: token
+    else credentials invalid
+        B-->>A: 401 error
+    end

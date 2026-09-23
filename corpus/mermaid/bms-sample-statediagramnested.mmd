@@ -1,0 +1,12 @@
+stateDiagram-v2
+    [*] --> Active
+
+    state Active {
+        [*] --> Running
+        Running --> Paused : Pause
+        Paused --> Running : Resume
+        Running --> [*] : Stop
+    }
+
+    Active --> Finished : Complete
+    Finished --> [*]

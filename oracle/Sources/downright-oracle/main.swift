@@ -12,6 +12,9 @@ import MarkdownRender
 //   downright-oracle stylesheet   <file.md> <out.json> [--theme NAME] [--dark]
 //   downright-oracle highlight    <file.md> <out.json>
 //   downright-oracle vscode-theme <theme.json> <out.json>
+//   downright-oracle mermaid-parse  <file.mmd> <out.json>
+//   downright-oracle mermaid-layout <file.mmd> <out.json> [--theme NAME] [--dark]
+//   downright-oracle mermaid        <file.mmd> <out.png>  [--theme NAME] [--dark]
 //   downright-oracle math         <file.tex> <out.png>  [--theme NAME] [--dark]
 //   downright-oracle math-tree    <file.tex> <out.json> [--theme NAME] [--dark]
 //   downright-oracle bench-math   <dir> <out.json>
@@ -141,6 +144,23 @@ do {
             captureFromScreen: flags.captureFromScreen
         )
         CaptureSession.run(request: request, scene: command == "render" ? MarkdownScene() : ProbeScene())
+
+    case "mermaid-parse":
+        try MermaidDump.parse(input, to: output)
+
+    case "mermaid-layout":
+        try MermaidDump.layout(input, to: output, themeName: flags.theme, dark: flags.dark)
+
+    case "mermaid":
+        try MermaidDump.image(input, to: output, themeName: flags.theme, dark: flags.dark)
+
+    case "mermaid-bench":
+        try MermaidBench.run(input, output: output)
+
+    case "mermaid-replay":
+        // A `.elkrec` is Swift's own record of one layout (see
+        // crates/mermaid/tools/elk-capture): it is the expected output.
+        try Data(contentsOf: input).write(to: URL(fileURLWithPath: output))
 
     case "stylesheet":
         try write(StyleSheetDump.dump(themeName: flags.theme, dark: flags.dark), to: output)

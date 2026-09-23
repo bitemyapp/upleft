@@ -1,0 +1,10 @@
+graph TD
+  A[Start] --> B{Decision}
+  B -->|Yes| C[Accept]
+  B -->|No| D[Reject]
+  C --> E[Done]
+  D --> E
+  linkStyle 0 stroke:#7aa2f7,stroke-width:3px
+  linkStyle 1 stroke:#9ece6a,stroke-width:2px
+  linkStyle 2 stroke:#f7768e,stroke-width:2px
+  linkStyle default stroke:#565f89

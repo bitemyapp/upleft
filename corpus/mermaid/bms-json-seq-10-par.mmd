@@ -1,0 +1,12 @@
+sequenceDiagram
+  participant C as Client
+  participant A as AuthService
+  participant U as UserService
+  participant O as OrderService
+  C->>A: Authenticate
+  par Fetch user data
+    A->>U: Get profile
+  and Fetch orders
+    A->>O: Get orders
+  end
+  A-->>C: Combined response

@@ -7,6 +7,7 @@ pub mod elk;
 pub mod highlight;
 pub mod json;
 pub mod markup;
+pub mod mermaid;
 pub mod math;
 pub mod math_bench;
 pub mod parse;
@@ -115,6 +116,11 @@ pub fn run(request: &Request) -> Result<(), Failure> {
             let data = std::fs::read(&request.input)?;
             Ok(json::write(&highlight::vscode_theme(&data, &request.input), &request.output)?)
         }
+        "mermaid-parse" => mermaid::parse(&request.input, &request.output),
+        "mermaid-layout" => mermaid::layout(&request.input, &request.output, &request.theme, request.dark),
+        "mermaid" => mermaid::image(&request.input, &request.output, &request.theme, request.dark),
+        "mermaid-bench" => mermaid::bench(&request.input, &request.output),
+        "mermaid-replay" => mermaid::replay_record(&request.input, &request.output),
         "elk" => elk::run(&request.input, &request.output),
         "probe" => crate::capture::run(request.capture(), Box::new(crate::capture::ProbeScene)),
         _ => Err(Failure::NotPorted),
