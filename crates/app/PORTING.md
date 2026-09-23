@@ -51,7 +51,7 @@ Every Swift file in scope is ported. The two exceptions are `LocalAI.swift` and 
 
 ## Left
 
-- **UI-bound code** goes to the UI port: `DocumentWindowController`, `MainMenu`, the panels, the Settings window, and the update panel (`UpdateNotesSummary` and the release-notes reduction live in `Panels/`). About 90 window-bound Swift tests wait with it; each area's list is in the commit messages and the section notes below.
+- **UI-bound code** goes to the UI port: `DocumentWindowController`, `MainMenu` and the Settings window. The panels, the update panel, `UpdateNotesSummary` and the release-notes reduction are ported (`src/panels/PORTING.md`). About 90 window-bound Swift tests wait with it; each area's list is in the commit messages and the section notes below.
 - **Sparkle in the app binary.** `updater::sparkle` reaches Sparkle 2.9.6 at run time. The app binary still has to link and embed the framework and call `updater::sparkle::install(mtm)` at start-up (see "Sparkle" below). A real update cycle is unverified.
 - **Behaviour that is ported but unverified**, because exercising it would launch apps, change system state or write the real Spotlight index:
   - the success paths of `down open`, `--reveal`, `watch` and `notify`;
