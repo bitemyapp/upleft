@@ -16,6 +16,9 @@ The port of `Sources/MarkdownRender/View`, `Fragments/FragmentBase.swift`,
 | `View/GutterRailView.swift` | `view/gutter_rail_view.rs` |
 | `View/FootnoteMarginView.swift` | `view/footnote_margin_view.rs` |
 | `View/TrackingArea.swift` | `view/tracking_area.rs` |
+| `View/DensityGutterView.swift` | `view/density_gutter_view.rs` (`DensityGutterView`, `DensityBand`, `MarkSimulation`, `PipSimulation`, the stack model) |
+| `View/DensityGutterPreviewWindow.swift` | `view/density_gutter_preview_window.rs` (`DensityGutterPreviewWindow`, `PreviewContentView`) |
+| `View/DensityOutlineWindow.swift` | `view/density_outline_window.rs` (`DensityOutlineEntry`, `DensityOutlineWindow`, `OutlineTableView`, `DensityOutlineRow`, `OutlineBackdrop`) |
 | `View/MarkdownTextViewDelegate.swift` | `view/markdown_text_view_delegate.rs` |
 | `View/MarkdownSmartPaste.swift` | `view/markdown_smart_paste.rs` |
 | `MarkdownTextView.rebuildBaseDisplayMap` and helpers | `view/base_display_map.rs` (ported on `port/engine`; the text view calls it) |
@@ -29,7 +32,9 @@ Objective-C class names equal the Swift ones: `MarkdownTextView`,
 `ParagraphSubstitution`, `FragmentProvider`, `GutterRailView`,
 `FootnoteMarginView`, `FragmentAccessibilityElement`, `HeadingMenuAction`,
 `DownrightFragment`, `ProseFragment`, `ElidedFragment`, `ElisionCueFragment`,
-`SpringSurfaceView`.
+`SpringSurfaceView`, `DensityGutterView`, `DensityGutterPreviewWindow`,
+`PreviewContentView`, `DensityOutlineWindow`, `OutlineTableView`,
+`DensityOutlineRow`, `OutlineBackdrop`.
 
 ## How the Swift maps
 
@@ -83,26 +88,74 @@ everything Swift's does; `table_layouts` stores the table fragment's
 `TableLayout` type-erased (`Rc<dyn Any>`). `tests/view_tests/fragment_seam_tests.rs`
 pins the mechanism.
 
+## The density gutter
+
+`DensityGutterView` is a `define_class!` subclass of the ported
+`SpringSurfaceView` (`#[unsafe(super(SpringSurfaceView, NSView, NSResponder))]`)
+and overrides `springTick:`, `springApply` and `springsSettleImmediately` as
+Objective-C methods, so the base driver dispatches to it the way Swift's
+`open` methods do. Swift's `didSet` properties are `set_…` methods
+(`set_bands`, `set_visible_range` as a `(lower, upper)` pair, …);
+`DensityGutterDelegate` is a Rust trait held weakly. The Swift test hooks
+are public: `drive_hover_for_testing`, `mark_positions_for_testing`,
+`set_perform_haptic_feedback`, `PipSimulation`. `MarkdownContainerView`
+recognises the gutter by type and calls `container_geometry_did_change`.
+The preview card and the outline panel are the gutter's child windows
+(`preview_window()`, `outline_window()`).
+
+Conformance (2026-09-23; the screen was locked for the whole session, so
+ScreenCaptureKit could not run and the two windowed suites were run with
+`--capture view` appended to every variant, a temporary edit of
+`suites.json`):
+
+- `density-model` (windowless: bands with synthetic change and search
+  overlays, thinning, pips, stack geometry, hover sweep, the mark layers in
+  each driven state, click and scrub hit testing, hand-stepped spring
+  frames, outline rows): 1818/1818 (909 documents × {Paper Light, Nord
+  dark}).
+- `render-density` (`render --density leading|trailing`, gated to the 563
+  documents whose live decoration carries no object-fragment payload):
+  1126/1126 with `--capture view`. Screen capture: not run (unverified).
+- `density-hover` (40 documents, Source mode so no object fragments,
+  1400×1000; leading 0.25/0.5/0.75/outline, trailing dark 0.5/outline):
+  240/240 with `--capture view`. Screen capture: not run (unverified).
+  One case first failed because the Swift oracle was rebuilt, unstamped,
+  while the run was in progress; re-run, it passes.
+
+To run them: `just conform --suite density-model` (any time),
+`--suite render-density`, `--suite density-hover` (need an unlocked,
+awake display). Once the object fragments land, drop `render-density`'s
+`only` list and switch `density-hover` to Live mode.
+
+`bench-density` (both oracles, agent-5000.md, 1160 bands, 18 marks,
+windowless, 200 runs after 20 warm-up, best p50 of three interleaved
+rounds):
+
+| stage | Swift | Rust |
+|---|---:|---:|
+| `bands(for:)` | 45.6 µs | 17.4 µs |
+| `bands(for:)` with overlays | 47.8 µs | 17.8 µs |
+| `selection(for:capacity:)` | 7.9 µs | 4.8 µs |
+| selection with pips | 15.3 µs | 12.0 µs |
+| `bands` assignment (selection + layers) | 29.6 µs | 25.6 µs |
+| redraw (`layout`) | 21.7 µs | 19.5 µs |
+| hover step | 24.2 µs | 22.1 µs |
+
 ## Tests
 
 `cargo test -p upleft-render --test view_tests` runs the view-level
-MarkdownRenderTests in a main-thread harness (65 tests: ClickStability,
+MarkdownRenderTests in a main-thread harness (98 tests: ClickStability,
 ContentResize, LayoutFiller, SpeechAccessibility, SmartPasteIntegration,
-DropAndQuickLook, plus the fragment seam). `content_storage_tiling_tests`,
-`motion_system_tests` and `geometry_probe_tests` are ordinary test binaries
+DropAndQuickLook, DensityRail (all 33), plus the fragment seam). `content_storage_tiling_tests`,
+`motion_system_tests` (including `delayedSpringsReleaseOnTheirOwn`, which
+drives `PipSimulation`) and `geometry_probe_tests` are ordinary test binaries
 (GeometryProbeTests' two `MathRenderer` tests live in `upleft-math`). Not ported, because
-they need unported code: `ClickStabilityTests.checkboxDoubleClickDoesNotToggleTwice`
-(`ListOrnamentFragment.taskHitRect`), `SpeechAccessibilityTests`'
-`DensityGutterView` assertions, `MotionSystemTests.delayedSpringsReleaseOnTheirOwn`
-(`DensityGutterView.PipSimulation`).
+it needs unported code: `ClickStabilityTests.checkboxDoubleClickDoesNotToggleTwice`
+(`ListOrnamentFragment.taskHitRect`).
 
 ## Left
 
-- The object fragments (see the seam above) and `DensityGutterView`,
-  `DensityGutterPreviewWindow`, `DensityOutlineWindow`.
-  `MarkdownContainerView` recognises a density gutter accessory by its
-  Objective-C class name (`DensityGutterView`) and calls
-  `containerGeometryDidChange` on it by selector.
+- The object fragments (see the seam above).
 - `render` conformance for documents that use object fragments waits on
   those ports.
 
