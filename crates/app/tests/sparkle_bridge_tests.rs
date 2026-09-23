@@ -366,7 +366,8 @@ unsafe extern "C" {
 /// MarkdownRender, the CLI, or the Quick Look targets. In Upleft: this test
 /// binary links upleft-app and its whole dependency graph, and Sparkle is not
 /// loaded until the test `dlopen`s it; only `crates/app` names Sparkle, and
-/// no build script links it outside a `rustc-link-arg-bin` for the app.
+/// no build script links it outside the app: a `rustc-link-arg-bin`, or the
+/// app binary's own crate, `crates/upleft`, whose only target is the app.
 fn sparkle_is_imported_only_by_the_host_app() {
     assert!(!sparkle::is_available(), "Sparkle is loaded before the test loads it");
     // SAFETY: dyld's image list, read on one thread.
@@ -385,8 +386,12 @@ fn sparkle_is_imported_only_by_the_host_app() {
     let mut offenders = Vec::new();
     for entry in std::fs::read_dir(root.join("crates")).unwrap() {
         let crate_dir = entry.unwrap().path();
-        let is_host_app = crate_dir.file_name().is_some_and(|name| name == "app");
+        let is_host_app = crate_dir.file_name().is_some_and(|name| name == "app" || name == "upleft");
+        let is_app_binary = crate_dir.file_name().is_some_and(|name| name == "upleft");
         for manifest in ["build.rs", "Cargo.toml"] {
+            if is_app_binary {
+                continue;
+            }
             let Ok(text) = std::fs::read_to_string(crate_dir.join(manifest)) else { continue };
             for line in text.lines() {
                 let links_sparkle =
@@ -413,7 +418,7 @@ fn sparkle_is_imported_only_by_the_host_app() {
                     .iter()
                     .any(|needle| text.contains(needle));
                 let uses_bridge = text.contains("updater::sparkle");
-                let is_bridge = path.ends_with("crates/app/src/updater/sparkle.rs");
+                let is_bridge = path.ends_with("crates/app/src/updater/sparkle.rs") || is_app_binary;
                 if (names_sparkle && !is_bridge) || (uses_bridge && !is_host_app) {
                     offenders.push(path.strip_prefix(&root).unwrap().display().to_string());
                 }
