@@ -130,6 +130,29 @@
 //! | `sharingServicePicker:delegateForSharingService:` | `sharing_service_picker_delegate_for(&NSSharingServicePicker, &NSSharingService) -> Option<Retained<AnyObject>>` | `+Share` |
 //! | `sharingServicePicker:didChooseSharingService:` | `sharing_service_picker_did_choose(&NSSharingServicePicker, Option<&NSSharingService>)` | `+Share` |
 //! | `sharingService:sourceWindowForShareItems:sharingContentScope:` | `sharing_service_source_window(&NSSharingService, &NSArray, NonNull<NSSharingContentScope>) -> Option<Retained<NSWindow>>` | `+Share` |
+//! | `acceptsPreviewPanelControl:`, `beginPreviewPanelControl:`, `endPreviewPanelControl:`, `numberOfPreviewItemsInPreviewPanel:`, `previewPanel:previewItemAtIndex:`, `previewPanel:sourceFrameOnScreenForPreviewItem:` | `QuickLookHost::{accepts_preview_panel_control, begin_preview_panel_control, end_preview_panel_control, number_of_preview_items, preview_item_at, source_frame_on_screen}` | `Panels/DocumentQuickLook.swift` (`QuickLookHost` impl in `+Delegates`) |
+//!
+//! # Status (2026-09-23)
+//!
+//! Done: this file, `+Support`, `+Trust`, `+Speech`, `+CommandLine`,
+//! `+ContinuityCamera`; the `app-window` `document` scenarios and
+//! `bench-app-window`; the tests listed in `crates/app/PORTING.md`
+//! ("Document window").
+//!
+//! Left: the crate builds once `SearchInspectorView` and
+//! `SearchResultsPanelView` land on `port/panels`, and the other extensions
+//! (`port/app-shell-dwc-c`) are merged. Their assumed APIs, as this file calls
+//! them: `SearchInspectorView::new(Rc<StyleSheet>, mtm)`, `find_bar() ->
+//! Retained<FindBarView>`, `set_shows_replace(bool)`,
+//! `set_results(Option<&NSView>)`, `set_style_sheet`;
+//! `SearchResultsPanelView::new_current(mtm)`,
+//! `set_delegate(Option<Weak<dyn SearchResultsDelegate>>)`, `set_style_sheet`,
+//! `set_query(&str)`, `set_searched_file_count(isize)`,
+//! `set_hits(Vec<SiblingHit>)`, `set_is_searching(bool)`. Then run
+//! `target/release/conform --suite app-window --filter document`: with
+//! stand-ins for those two panels and before `+Actions` landed, every
+//! scenario without commands matched Swift pixel for pixel outside the
+//! toolbar row, and `splitView`/`focusMode` matched too once performed.
 
 mod construction;
 mod derived_ui;
