@@ -256,8 +256,7 @@ impl KeyValueObservation {
         let observer = KeyValueObserver::alloc(mtm).set_ivars(KeyValueObserverIvars { handler: Box::new(handler) });
         let observer: Retained<KeyValueObserver> = unsafe { msg_send![super(observer), init] };
         let key_path = NSString::from_str(key_path);
-        let observation =
-            KeyValueObservation { observer, object: RefCell::new(ObjcWeak::from(object)), key_path };
+        let observation = KeyValueObservation { observer, object: RefCell::new(ObjcWeak::from(object)), key_path };
         // SAFETY: the observer outlives its registration: `invalidate` (run
         // on drop at the latest) removes it.
         unsafe {
@@ -346,12 +345,9 @@ impl Drop for ToolbarDocumentIdentityViewIvars {
     /// `deinit`: invalidate the observations, then remove the activation
     /// observers.
     fn drop(&mut self) {
-        for observation in [
-            &self.title_observation,
-            &self.subtitle_observation,
-            &self.edited_observation,
-            &self.url_observation,
-        ] {
+        for observation in
+            [&self.title_observation, &self.subtitle_observation, &self.edited_observation, &self.url_observation]
+        {
             if let Some(observation) = observation.borrow_mut().take() {
                 observation.invalidate();
             }
@@ -500,23 +496,29 @@ impl ToolbarDocumentIdentityView {
         state_label.setHidden(true);
         let (required, default_low) = (NSLayoutPriorityRequired, NSLayoutPriorityDefaultLow);
         state_label.setContentHuggingPriority_forOrientation(required, NSLayoutConstraintOrientation::Horizontal);
-        state_label
-            .setContentCompressionResistancePriority_forOrientation(required, NSLayoutConstraintOrientation::Horizontal);
+        state_label.setContentCompressionResistancePriority_forOrientation(
+            required,
+            NSLayoutConstraintOrientation::Horizontal,
+        );
 
         let title_label = &ivars.title_label;
         title_label.setLineBreakMode(NSLineBreakMode::ByTruncatingMiddle);
         title_label.setMaximumNumberOfLines(1);
         title_label.setFont(Some(&system_font(IdentityMetrics::TITLE_SIZE, weight_semibold())));
-        title_label
-            .setContentCompressionResistancePriority_forOrientation(default_low, NSLayoutConstraintOrientation::Horizontal);
+        title_label.setContentCompressionResistancePriority_forOrientation(
+            default_low,
+            NSLayoutConstraintOrientation::Horizontal,
+        );
         title_label.setContentHuggingPriority_forOrientation(default_low, NSLayoutConstraintOrientation::Horizontal);
 
         let context_label = &ivars.context_label;
         context_label.setLineBreakMode(NSLineBreakMode::ByTruncatingMiddle);
         context_label.setMaximumNumberOfLines(1);
         context_label.setFont(Some(&system_font(IdentityMetrics::CONTEXT_SIZE, weight_medium())));
-        context_label
-            .setContentCompressionResistancePriority_forOrientation(default_low, NSLayoutConstraintOrientation::Horizontal);
+        context_label.setContentCompressionResistancePriority_forOrientation(
+            default_low,
+            NSLayoutConstraintOrientation::Horizontal,
+        );
         context_label.setContentHuggingPriority_forOrientation(default_low, NSLayoutConstraintOrientation::Horizontal);
 
         let title_row = &ivars.title_row;
@@ -545,7 +547,10 @@ impl ToolbarDocumentIdentityView {
         self.addSubview(proxy_button);
         self.addSubview(text_column);
 
-        self.setContentCompressionResistancePriority_forOrientation(default_low, NSLayoutConstraintOrientation::Horizontal);
+        self.setContentCompressionResistancePriority_forOrientation(
+            default_low,
+            NSLayoutConstraintOrientation::Horizontal,
+        );
         self.setContentHuggingPriority_forOrientation(default_low, NSLayoutConstraintOrientation::Horizontal);
 
         activate(&[
@@ -725,7 +730,9 @@ impl ToolbarDocumentIdentityView {
         let icon = NSWorkspace::sharedWorkspace().iconForFile(&url_path(&url));
         icon.setSize(NSSize::new(32.0, 32.0));
         // SAFETY: an `NSImage` is valid dragging contents.
-        unsafe { item.setDraggingFrame_contents(rect(start.x - 16.0, start.y - 16.0, 32.0, 32.0), Some(object(&*icon))) };
+        unsafe {
+            item.setDraggingFrame_contents(rect(start.x - 16.0, start.y - 16.0, 32.0, 32.0), Some(object(&*icon)))
+        };
         let items = NSArray::from_retained_slice(&[item]);
         self.beginDraggingSessionWithItems_event_source(&items, event, ProtocolObject::from_ref(self));
     }
@@ -857,9 +864,11 @@ impl ToolbarDocumentIdentityView {
         let state = self.ivars().document_state.borrow();
         match state.phase {
             Phase::Neutral | Phase::Edited | Phase::Saving | Phase::Saved => None,
-            Phase::ChangedOnDisk => {
-                Some(if state.detail.as_deref() == Some("File missing") { "File missing" } else { "Changed externally" })
-            }
+            Phase::ChangedOnDisk => Some(if state.detail.as_deref() == Some("File missing") {
+                "File missing"
+            } else {
+                "Changed externally"
+            }),
             Phase::Conflict => Some("Conflict"),
             Phase::SaveFailed => Some("Save failed"),
         }
@@ -1424,7 +1433,10 @@ impl ToolbarPresentationControl {
             return;
         }
         let animation = CABasicAnimation::animationWithKeyPath(Some(&NSString::from_str("opacity")));
-        let from = indicator.__presentation().map(|presentation| presentation.opacity()).unwrap_or_else(|| indicator.opacity());
+        let from = indicator
+            .__presentation()
+            .map(|presentation| presentation.opacity())
+            .unwrap_or_else(|| indicator.opacity());
         set_number_values(&animation, Some(from as f64), opacity as f64);
         animation.setDuration(ToolbarChromePolicy::EMPHASIS_DURATION);
         animation.setTimingFunction(Some(&ToolbarChromePolicy::timing_function()));
@@ -1904,7 +1916,8 @@ impl ToolbarMenuButton {
         this.set_feedback_inset_y(1.0);
         this.set_feedback_corner_radius(ButtonMetrics::CORNER_RADIUS);
         this.setImage(
-            configured_symbol("ellipsis", Some("More actions"), &symbol_configuration(13.0, weight_medium())).as_deref(),
+            configured_symbol("ellipsis", Some("More actions"), &symbol_configuration(13.0, weight_medium()))
+                .as_deref(),
         );
         this.setImagePosition(NSCellImagePosition::ImageOnly);
         this.setImageScaling(NSImageScaling::ScaleProportionallyDown);

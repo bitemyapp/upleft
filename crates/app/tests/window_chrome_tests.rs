@@ -48,18 +48,18 @@
 
 mod main_thread;
 
-use objc2::{MainThreadMarker, MainThreadOnly};
 use objc2::rc::Retained;
+use objc2::{MainThreadMarker, MainThreadOnly};
 use objc2_app_kit::{NSBackingStoreType, NSWindow, NSWindowStyleMask};
 use objc2_foundation::{NSPoint, NSRect, NSSize};
+use std::cell::{Cell, RefCell};
+use std::rc::Rc;
 use upleft_app::ai::markdown_document::{Phase, PresentationState};
 use upleft_app::app::toolbar_controls::{
     InteractionState, ScrubState, ToolbarChromePolicy, ToolbarDocumentIdentityView, ToolbarPresentationControl,
     ToolbarScrubPhase,
 };
 use upleft_app::panels::appkit_support::{RectExt, accessibility_label};
-use std::cell::{Cell, RefCell};
-use std::rc::Rc;
 
 fn mtm() -> MainThreadMarker {
     MainThreadMarker::new().expect("main thread")
@@ -128,9 +128,18 @@ fn document_identity_shows_only_exceptional_states() {
 }
 
 fn toolbar_scrub_policy_clamps_movement_and_crosses_at_the_midpoint() {
-    assert_eq!(ToolbarChromePolicy::scrub_state(-20.0, 44.0, 132.0), ScrubState { indicator_center_x: 44.0, segment: 0 });
-    assert_eq!(ToolbarChromePolicy::scrub_state(87.0, 44.0, 132.0), ScrubState { indicator_center_x: 87.0, segment: 0 });
-    assert_eq!(ToolbarChromePolicy::scrub_state(88.0, 44.0, 132.0), ScrubState { indicator_center_x: 88.0, segment: 1 });
+    assert_eq!(
+        ToolbarChromePolicy::scrub_state(-20.0, 44.0, 132.0),
+        ScrubState { indicator_center_x: 44.0, segment: 0 }
+    );
+    assert_eq!(
+        ToolbarChromePolicy::scrub_state(87.0, 44.0, 132.0),
+        ScrubState { indicator_center_x: 87.0, segment: 0 }
+    );
+    assert_eq!(
+        ToolbarChromePolicy::scrub_state(88.0, 44.0, 132.0),
+        ScrubState { indicator_center_x: 88.0, segment: 1 }
+    );
     assert_eq!(
         ToolbarChromePolicy::scrub_state(240.0, 44.0, 132.0),
         ScrubState { indicator_center_x: 132.0, segment: 1 }

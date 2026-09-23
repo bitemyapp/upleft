@@ -67,7 +67,9 @@ impl ToolbarGlassBand {
         glass.set_shadow_radius(12.0);
         glass.set_shadow_offset(CGSize::new(0.0, -3.0));
         glass.set_shadow_opacity(Some(0.10));
-        glass.setAutoresizingMask(NSAutoresizingMaskOptions::ViewWidthSizable | NSAutoresizingMaskOptions::ViewHeightSizable);
+        glass.setAutoresizingMask(
+            NSAutoresizingMaskOptions::ViewWidthSizable | NSAutoresizingMaskOptions::ViewHeightSizable,
+        );
         this.addSubview(glass);
         this.setAccessibilityElement(false);
         this

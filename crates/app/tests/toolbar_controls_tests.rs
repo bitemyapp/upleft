@@ -427,7 +427,10 @@ fn upleft_document_window_routes_escape_and_glass_clicks() {
 
 fn main() {
     main_thread::run(&[
-        ("rail_tracks_the_swipe_and_lands_without_switching_twice", rail_tracks_the_swipe_and_lands_without_switching_twice),
+        (
+            "rail_tracks_the_swipe_and_lands_without_switching_twice",
+            rail_tracks_the_swipe_and_lands_without_switching_twice,
+        ),
         (
             "rail_returns_to_where_it_started_when_the_swipe_is_abandoned",
             rail_returns_to_where_it_started_when_the_swipe_is_abandoned,
@@ -440,6 +443,9 @@ fn main() {
         ("upleft_document_identity_follows_its_window", upleft_document_identity_follows_its_window),
         ("upleft_mode_buttons_follow_selection_and_arrow_keys", upleft_mode_buttons_follow_selection_and_arrow_keys),
         ("upleft_glass_band_passes_every_hit_through", upleft_glass_band_passes_every_hit_through),
-        ("upleft_document_window_routes_escape_and_glass_clicks", upleft_document_window_routes_escape_and_glass_clicks),
+        (
+            "upleft_document_window_routes_escape_and_glass_clicks",
+            upleft_document_window_routes_escape_and_glass_clicks,
+        ),
     ]);
 }
