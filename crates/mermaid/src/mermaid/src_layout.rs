@@ -667,7 +667,7 @@ fn collect_edge_segments(elk_node: &Map<String, Value>, segments: &mut HashMap<i
                 .and_then(|a| a.first())
                 .and_then(Value::as_str)
                 .unwrap_or("");
-            if src.contains("_in_") || src.contains("_out_") {
+            if swift::contains(src, "_in_") || swift::contains(src, "_out_") {
                 seg.incoming = Some(points);
             } else {
                 seg.outgoing = Some(points);

@@ -72,3 +72,4 @@ objc2-core-text = { workspace = true, features = [
 elk = []
 
 [dev-dependencies]
+objc2-app-kit = { workspace = true, features = ["NSAppearance", "NSBitmapImageRep", "NSImage", "NSImageRep"] }

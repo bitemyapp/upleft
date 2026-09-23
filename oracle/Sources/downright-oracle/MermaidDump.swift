@@ -575,83 +575,61 @@ enum MermaidDump {
     }
 }
 
-/// `downright-oracle mermaid-bench <dir> <out.json>`: prepare and render every
-/// `.mmd` under `dir` the way `MermaidRendererBridge` does, uncached, and
-/// report the best-of-N wall time per stage.
+/// `downright-oracle mermaid-bench <dir> <out.json>`: for every `.mmd`
+/// under `dir`, the best-of-N wall time of
+///
+/// - `prepareMs`: `MermaidImageRenderer.prepare(from:)` (parse + layout), and
+/// - `bridgeMs`: `MermaidRendererBridge.image(source:styleSheet:)` with its
+///   cache emptied first — the whole path a fragment takes on a cache miss
+///   (trim, prepare, draw, ink crop, `NSImage`).
 enum MermaidBench {
     static func run(_ directory: URL, output: String) throws {
         let sheet = try MermaidDump.styleSheet(themeName: "Paper Light", dark: false)
         let theme = MermaidRendererBridge.theme(from: sheet)
-        let scale = NSScreen.main?.backingScaleFactor ?? 2
         let files = try FileManager.default.contentsOfDirectory(at: directory, includingPropertiesForKeys: nil)
             .filter { $0.pathExtension == "mmd" }
             .sorted { $0.path < $1.path }
-        let sources = try files.map { try String(contentsOf: $0, encoding: .utf8).trimmingCharacters(in: .whitespacesAndNewlines) }
-            .filter { !$0.isEmpty }
+        let sources = try files.map { try String(contentsOf: $0, encoding: .utf8) }
+            .filter { !$0.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty }
         let rounds = Int(ProcessInfo.processInfo.environment["MERMAID_BENCH_ROUNDS"] ?? "") ?? 5
 
-        func once() -> (prepare: Double, render: Double) {
+        func once() -> (prepare: Double, bridge: Double, images: Int) {
             var prepareTime = 0.0
-            var renderTime = 0.0
+            var bridgeTime = 0.0
+            var images = 0
             for source in sources {
-                let start = DispatchTime.now().uptimeNanoseconds
+                let trimmed = source.trimmingCharacters(in: .whitespacesAndNewlines)
+                var start = DispatchTime.now().uptimeNanoseconds
                 let renderer = MermaidImageRenderer(theme: theme, config: LayoutConfig())
-                let prepared = try? renderer.prepare(from: source)
-                let middle = DispatchTime.now().uptimeNanoseconds
-                if let prepared { _ = draw(prepared, scale: scale) }
-                let end = DispatchTime.now().uptimeNanoseconds
-                prepareTime += Double(middle - start) / 1e6
-                renderTime += Double(end - middle) / 1e6
+                _ = try? renderer.prepare(from: trimmed)
+                var end = DispatchTime.now().uptimeNanoseconds
+                prepareTime += Double(end - start) / 1e6
+
+                MarkdownFragmentImageCaches.mermaid.removeAll()
+                start = DispatchTime.now().uptimeNanoseconds
+                autoreleasepool {
+                    if MermaidRendererBridge.image(source: source, styleSheet: sheet) != nil { images += 1 }
+                }
+                end = DispatchTime.now().uptimeNanoseconds
+                bridgeTime += Double(end - start) / 1e6
             }
-            return (prepareTime, renderTime)
+            return (prepareTime, bridgeTime, images)
         }
 
         _ = once()
-        var best = (prepare: Double.infinity, render: Double.infinity)
+        var best = (prepare: Double.infinity, bridge: Double.infinity, images: 0)
         for _ in 0..<rounds {
             let r = once()
             best.prepare = min(best.prepare, r.prepare)
-            best.render = min(best.render, r.render)
+            best.bridge = min(best.bridge, r.bridge)
+            best.images = r.images
         }
         try write(.object([
             ("diagrams", .int(sources.count)),
+            ("images", .int(best.images)),
             ("rounds", .int(rounds)),
             ("prepareMs", .double(best.prepare)),
-            ("renderMs", .double(best.render)),
-            ("totalMs", .double(best.prepare + best.render)),
+            ("bridgeMs", .double(best.bridge)),
         ]), to: output)
-    }
-
-    /// `MermaidRendererBridge.render` up to the crop (the crop is a scan of
-    /// the alpha channel and is included).
-    static func draw(_ prepared: PreparedDiagram, scale: CGFloat) -> CGImage? {
-        let bounds = prepared.bounds
-        guard bounds.width > 0, bounds.height > 0 else { return nil }
-        let padded = bounds.insetBy(dx: -32, dy: -32)
-        let pixelWidth = Int((padded.width * scale).rounded())
-        let pixelHeight = Int((padded.height * scale).rounded())
-        guard pixelWidth > 0, pixelHeight > 0,
-              let ctx = CGContext(
-                  data: nil, width: pixelWidth, height: pixelHeight,
-                  bitsPerComponent: 8, bytesPerRow: 0,
-                  space: CGColorSpaceCreateDeviceRGB(),
-                  bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue | CGBitmapInfo.byteOrder32Big.rawValue
-              ) else { return nil }
-        ctx.translateBy(x: 0, y: CGFloat(pixelHeight))
-        ctx.scaleBy(x: 1, y: -1)
-        ctx.scaleBy(x: scale, y: scale)
-        ctx.translateBy(x: -padded.minX, y: -padded.minY)
-        prepared.render(ctx, bounds)
-        guard let image = ctx.makeImage(), let base = ctx.data else { return nil }
-        let pixels = base.assumingMemoryBound(to: UInt8.self)
-        var minX = pixelWidth, maxX = -1
-        for y in 0..<pixelHeight {
-            let row = pixels + y * ctx.bytesPerRow
-            for x in 0..<pixelWidth where row[x * 4 + 3] > 8 {
-                minX = min(minX, x); maxX = max(maxX, x)
-            }
-        }
-        _ = maxX
-        return image
     }
 }

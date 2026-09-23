@@ -32,6 +32,7 @@ pub mod render;
 pub mod swift;
 pub mod theme;
 pub mod types;
+pub mod views;
 
 pub use error::MermaidError;
 pub use image_renderer::{MermaidImageRenderer, PreparedDiagram};

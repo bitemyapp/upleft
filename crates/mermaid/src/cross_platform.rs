@@ -15,7 +15,7 @@ pub const IDENTITY: CGAffineTransform = CGAffineTransform { a: 1.0, b: 0.0, c: 0
 
 /// `BMColor(hex:)`.
 pub fn color_from_hex(hex: &str) -> Retained<NSColor> {
-    let raw = swift::trim_whitespaces_and_newlines(hex).replace('#', "");
+    let raw = swift::replacing_occurrences(swift::trim_whitespaces_and_newlines(hex), "#", "");
     let mut value: u64 = 0;
     let scanner = NSScanner::scannerWithString(&NSString::from_str(&raw));
     #[allow(deprecated)]

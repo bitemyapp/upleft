@@ -97,7 +97,7 @@ impl DiagramRenderer {
         if text.is_empty() {
             return;
         }
-        if text.contains('\n') {
+        if crate::swift::contains(text, "\n") {
             // A wide rect centred on the point; drawMultilineText centres the block vertically.
             let rect = cg::rect(point.x - 500.0, point.y - 500.0, 1000.0, 1000.0);
             self.label_renderer.draw_multiline_text(text, rect, context, color, font, TextAlignment::Center);

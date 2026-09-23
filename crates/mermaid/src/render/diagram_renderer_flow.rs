@@ -14,7 +14,7 @@ use crate::types::{EdgeStyle, PositionedGraph};
 
 /// `_parseCSSLength(_:)`: "2px", "1.5", "3pt" → points.
 pub fn parse_css_length(value: &str) -> Option<CGFloat> {
-    let stripped = swift::trim_whitespaces_and_newlines(value).replace("px", "").replace("pt", "");
+    let stripped = swift::replacing_occurrences(&swift::replacing_occurrences(swift::trim_whitespaces_and_newlines(value), "px", ""), "pt", "");
     swift::parse_double(&stripped)
 }
 
@@ -69,7 +69,7 @@ impl DiagramRenderer {
                     }
                     let text_color = self.theme.node_text_color(&node.inline_style);
                     let node_font = self.config.node_label_font();
-                    if node.label.contains('\n') {
+                    if swift::contains(&node.label, "\n") {
                         let rect = cg::rect(node.x, node.y, node.width, node.height);
                         let inset = cg::inset(rect, 4.0, 2.0);
                         self.label_renderer.draw_multiline_text(

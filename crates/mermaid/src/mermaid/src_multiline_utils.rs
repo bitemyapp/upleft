@@ -18,9 +18,7 @@ pub fn normalize_br_tags(label: &str) -> String {
     if result.contains('<') {
         result = swift::regex_replace(&result, r"<br\s*/?>", "\n", true);
     }
-    if result.contains("\\n") {
-        result = result.replace("\\n", "\n");
-    }
+    result = swift::replacing_occurrences(&result, "\\n", "\n");
     if result.contains('<') {
         result = swift::regex_replace(&result, r"</?(?:sub|sup|small|mark)\s*>", "", true);
     }

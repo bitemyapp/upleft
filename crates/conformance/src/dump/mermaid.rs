@@ -950,7 +950,6 @@ fn positioned_chart(c: &PositionedXYChart) -> Value {
 pub fn bench(directory: &Path, output: &Path) -> Result<(), Failure> {
     let sheet = style_sheet("Paper Light", false)?;
     let theme = bridge::theme(&sheet);
-    let scale = bridge::scale();
     let mut files: Vec<_> = std::fs::read_dir(directory)?
         .flatten()
         .map(|e| e.path())
@@ -959,45 +958,49 @@ pub fn bench(directory: &Path, output: &Path) -> Result<(), Failure> {
     files.sort();
     let mut sources = Vec::new();
     for f in &files {
-        let text = trimmed(&read_text(f)?);
-        if !text.is_empty() {
+        let text = read_text(f)?;
+        if !trimmed(&text).is_empty() {
             sources.push(text);
         }
     }
     let rounds: usize = std::env::var("MERMAID_BENCH_ROUNDS").ok().and_then(|v| v.parse().ok()).unwrap_or(5);
 
+    // `prepareMs`: `MermaidImageRenderer.prepare`; `bridgeMs`: the whole
+    // uncached `MermaidRendererBridge.image` path, `NSImage` included.
     let once = || {
-        let (mut prepare, mut render) = (0.0f64, 0.0f64);
+        let (mut prepare, mut whole, mut images) = (0.0f64, 0.0f64, 0usize);
         for source in &sources {
             let start = Instant::now();
             let renderer = upleft_mermaid::MermaidImageRenderer::new(theme.clone(), LayoutConfig::default());
-            let prepared = renderer.prepare(source).ok().flatten();
-            let middle = Instant::now();
-            if let Some(prepared) = &prepared {
-                objc2::rc::autoreleasepool(|_| {
-                    let _ = bridge::render(prepared, scale);
-                });
-            }
-            let end = Instant::now();
-            prepare += (middle - start).as_secs_f64() * 1e3;
-            render += (end - middle).as_secs_f64() * 1e3;
+            let _ = renderer.prepare(&trimmed(source));
+            prepare += start.elapsed().as_secs_f64() * 1e3;
+
+            let start = Instant::now();
+            objc2::rc::autoreleasepool(|_| {
+                if let Some(image) = bridge::image(source, &sheet) {
+                    let _ = image.ns_image();
+                    images += 1;
+                }
+            });
+            whole += start.elapsed().as_secs_f64() * 1e3;
         }
-        (prepare, render)
+        (prepare, whole, images)
     };
 
     let _ = once();
-    let (mut best_prepare, mut best_render) = (f64::INFINITY, f64::INFINITY);
+    let (mut best_prepare, mut best_bridge, mut images) = (f64::INFINITY, f64::INFINITY, 0);
     for _ in 0..rounds {
-        let (p, r) = once();
+        let (p, b, n) = once();
         best_prepare = best_prepare.min(p);
-        best_render = best_render.min(r);
+        best_bridge = best_bridge.min(b);
+        images = n;
     }
     let value = Object::new()
         .with("diagrams", sources.len())
+        .with("images", images)
         .with("rounds", rounds)
         .with("prepareMs", double(best_prepare))
-        .with("renderMs", double(best_render))
-        .with("totalMs", double(best_prepare + best_render))
+        .with("bridgeMs", double(best_bridge))
         .build();
     Ok(write(&value, output)?)
 }

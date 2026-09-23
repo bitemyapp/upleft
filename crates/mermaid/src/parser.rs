@@ -25,7 +25,11 @@ fn decode_xml_entities(s: &str) -> String {
     if !s.contains('&') {
         return s.to_owned();
     }
-    s.replace("&amp;", "&").replace("&lt;", "<").replace("&gt;", ">").replace("&quot;", "\"").replace("&#39;", "'")
+    let s = swift::replacing_occurrences(s, "&amp;", "&");
+    let s = swift::replacing_occurrences(&s, "&lt;", "<");
+    let s = swift::replacing_occurrences(&s, "&gt;", ">");
+    let s = swift::replacing_occurrences(&s, "&quot;", "\"");
+    swift::replacing_occurrences(&s, "&#39;", "'")
 }
 
 /// `MermaidParser.parse(_:)`.

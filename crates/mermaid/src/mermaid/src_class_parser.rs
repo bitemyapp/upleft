@@ -265,8 +265,8 @@ fn parse_member(line: &str) -> Option<ParsedMember> {
         if let Some(name_raw) = g.get(1) {
             let params = g.get(2).map(|p| swift::trim_whitespaces_and_newlines(p).to_owned());
             let r#type = g.get(3).map(|t| swift::trim_whitespaces_and_newlines(t).to_owned());
-            let is_static = swift::has_suffix(name_raw, "$") || rest.contains('$');
-            let is_abstract = swift::has_suffix(name_raw, "*") || rest.contains('*');
+            let is_static = swift::has_suffix(name_raw, "$") || swift::contains(&rest, "$");
+            let is_abstract = swift::has_suffix(name_raw, "*") || swift::contains(&rest, "*");
             let clean_name = swift::regex_replace(name_raw, r"[$*]$", "", false);
             return Some(ParsedMember {
                 member: ClassMember {

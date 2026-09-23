@@ -12,7 +12,7 @@ fn hex_pair(h: &str, skip: usize) -> i64 {
 }
 
 fn hex_to_hsl(hex: &str) -> (f64, f64, f64) {
-    let h = hex.replace('#', "");
+    let h = swift::replacing_occurrences(hex, "#", "");
     let ri = hex_pair(&h, 0) as f64 / 255.0;
     let gi = hex_pair(&h, 2) as f64 / 255.0;
     let bi = hex_pair(&h, 4) as f64 / 255.0;
@@ -71,7 +71,7 @@ fn hsl_to_hex(h: f64, s: f64, l: f64) -> String {
 }
 
 fn hex_to_rgb(hex: &str) -> (i64, i64, i64) {
-    let h = hex.replace('#', "");
+    let h = swift::replacing_occurrences(hex, "#", "");
     (hex_pair(&h, 0), hex_pair(&h, 2), hex_pair(&h, 4))
 }
 

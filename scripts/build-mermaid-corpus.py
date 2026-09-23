@@ -411,6 +411,18 @@ def bms_test_downright_files():
 # main
 # --------------------------------------------------------------------------
 
+# Diagrams that make Downright itself trap (a Swift runtime error), so neither
+# oracle can produce an output to compare. They go to corpus/mermaid-traps/
+# with a `.mmdtrap` extension, which no suite reads; crates/mermaid's tests
+# check that Upleft traps the same way.
+TRAPS = {
+    # xychart with values near 1e300: nice ticks overflow to inf and the
+    # renderer's `Int((xBase / 20).rounded())` traps.
+    "bms-test-xychartcrashregressiontests-4.mmd",
+}
+CORPUS_TRAPS = os.path.join(ROOT, "corpus", "mermaid-traps")
+
+
 def normalize(body):
     """Diagram text verbatim, ending with exactly one trailing newline."""
     return body.rstrip("\n") + "\n"
@@ -451,10 +463,14 @@ def main():
     for name, body in all_results.items():
         text = normalize(body)
         text.encode("utf-8")  # fail loudly on anything not valid Unicode
-        with open(os.path.join(CORPUS_MERMAID, name), "w", encoding="utf-8", newline="\n") as handle:
+        path = os.path.join(CORPUS_MERMAID, name)
+        if name in TRAPS:
+            os.makedirs(CORPUS_TRAPS, exist_ok=True)
+            path = os.path.join(CORPUS_TRAPS, name + "trap")
+        with open(path, "w", encoding="utf-8", newline="\n") as handle:
             handle.write(text)
 
-    stale = existing - set(all_results)
+    stale = existing - (set(all_results) - TRAPS)
     for name in stale:
         os.remove(os.path.join(CORPUS_MERMAID, name))
 

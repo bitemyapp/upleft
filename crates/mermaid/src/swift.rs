@@ -400,13 +400,42 @@ pub fn split_whitespace_characters(text: &str) -> Vec<&str> {
     pieces
 }
 
-/// `text.replacingOccurrences(of: target, with: replacement)` for an ASCII
-/// target: a literal search that only matches on `Character` boundaries.
+/// `text.replacingOccurrences(of: target, with: replacement)`: Foundation's
+/// NSString search, which compares composed character sequences (a match
+/// cannot end before a combining mark) but, unlike `Character`, does not
+/// join CR LF. ASCII text has no composed sequences and is replaced bytewise.
 pub fn replacing_occurrences(text: &str, target: &str, replacement: &str) -> String {
     if !text.contains(target) {
         return text.to_owned();
     }
-    text.replace(target, replacement)
+    if text.is_ascii() {
+        return text.replace(target, replacement);
+    }
+    let ns = NSString::from_str(text);
+    ns.stringByReplacingOccurrencesOfString_withString(&NSString::from_str(target), &NSString::from_str(replacement))
+        .to_string()
+}
+
+/// `text.contains(needle)` (the standard library's `Character`-wise
+/// search): the needle's characters must equal consecutive characters of
+/// the text, so `"\r\n"` does not contain `"\n"` and `"$\u{301}"` does not
+/// contain `"$"`.
+pub fn contains(text: &str, needle: &str) -> bool {
+    if needle.is_empty() {
+        return true;
+    }
+    if !text.contains(needle) && text.is_ascii() {
+        return false;
+    }
+    if text.is_ascii() && !text.contains('\r') && needle.is_ascii() {
+        return true;
+    }
+    let hay: Vec<&str> = text.graphemes(true).collect();
+    let pins: Vec<&str> = needle.graphemes(true).collect();
+    if pins.len() > hay.len() {
+        return false;
+    }
+    hay.windows(pins.len()).any(|w| w.iter().zip(&pins).all(|(a, b)| string_eq(a, b)))
 }
 
 /// NFC form of a grapheme, for canonical-equivalence comparisons.

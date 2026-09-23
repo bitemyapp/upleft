@@ -158,7 +158,7 @@ fn match_axis_range(line: &str, prefix: &str) -> Option<(Option<String>, f64, f6
     if !swift::has_prefix(line, prefix) {
         return None;
     }
-    if !line.contains("-->") {
+    if !swift::contains(line, "-->") {
         return None;
     }
 

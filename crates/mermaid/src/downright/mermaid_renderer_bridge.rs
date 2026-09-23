@@ -139,11 +139,15 @@ pub fn ink_bounds(ctx: &CGContext) -> Option<CGRect> {
         let mut row_min_x: i64 = -1;
         let mut row_max_x: i64 = -1;
         // First and last inked pixel of the row (the Swift scans every pixel;
-        // the extremes are the same).
-        if let Some(first) = row.chunks_exact(4).position(|p| p[3] > alpha_floor) {
-            row_min_x = first as i64;
-            let last = row.chunks_exact(4).rposition(|p| p[3] > alpha_floor).unwrap();
-            row_max_x = last as i64;
+        // the extremes are the same). Rows are mostly blank, so test eight
+        // pixels at a time first: alpha is the high byte of each
+        // little-endian RGBA word.
+        if row_has_ink(row, alpha_floor) {
+            if let Some(first) = row.chunks_exact(4).position(|p| p[3] > alpha_floor) {
+                row_min_x = first as i64;
+                let last = row.chunks_exact(4).rposition(|p| p[3] > alpha_floor).unwrap();
+                row_max_x = last as i64;
+            }
         }
         if row_min_x < 0 {
             continue;
@@ -157,6 +161,22 @@ pub fn ink_bounds(ctx: &CGContext) -> Option<CGRect> {
         return None;
     }
     Some(cg::rect(min_x as f64, min_y as f64, (max_x - min_x + 1) as f64, (max_y - min_y + 1) as f64))
+}
+
+/// Whether any pixel of an RGBA row has alpha above `floor`.
+fn row_has_ink(row: &[u8], floor: u8) -> bool {
+    let threshold = ((floor as u32) << 24) | 0x00FF_FFFF;
+    let mut chunks = row.chunks_exact(32);
+    for chunk in &mut chunks {
+        let mut high = 0u32;
+        for pixel in chunk.chunks_exact(4) {
+            high = high.max(u32::from_le_bytes([pixel[0], pixel[1], pixel[2], pixel[3]]));
+        }
+        if high > threshold {
+            return true;
+        }
+    }
+    chunks.remainder().chunks_exact(4).any(|p| p[3] > floor)
 }
 
 /// `theme(from:)`: the style sheet's palette as a diagram theme.
