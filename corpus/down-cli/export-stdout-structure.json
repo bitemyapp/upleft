@@ -1,0 +1,12 @@
+{
+ "files": [
+  {
+   "path": "work/doc.md",
+   "text": "# Title <with> \"quotes\" & more\n## Second **bold** and *em* and `code`\n####### not a heading\n#no space\n\nParagraph line one\nline two with [link](https://example.com/a?b=1&c=2) and [rel](./guide.md#part)\n\n- item one\n* item two\n+ [x] done item\n- [X] done upper\n- [ ] open item\n1. first\n2) second\n   3. nested ordered\n\n> quoted *text*\n>not a quote\n\n---\n***\n___\n\n```swift\nlet a = 1 < 2 && \"x\"\n```\n\n```\nunterminated fence\nline\n"
+  }
+ ],
+ "argv": [
+  "export",
+  "doc.md"
+ ]
+}

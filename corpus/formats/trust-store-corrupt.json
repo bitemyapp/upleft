@@ -1,0 +1,34 @@
+{
+ "supportDirectory": "support",
+ "steps": [
+  {
+   "op": "write",
+   "path": "support/trust.json",
+   "text": "[{\"scope\":\"file\"}]"
+  },
+  {
+   "op": "trust.open",
+   "store": "shared"
+  },
+  {
+   "op": "trust.grant",
+   "store": "shared",
+   "scope": "folder",
+   "path": "workspace",
+   "effects": [
+    "readLocalAsset"
+   ]
+  },
+  {
+   "op": "trust.revoke",
+   "store": "shared",
+   "scope": "folder",
+   "path": "workspace"
+  },
+  {
+   "op": "trust.state",
+   "store": "shared",
+   "doc": "workspace/x.md"
+  }
+ ]
+}

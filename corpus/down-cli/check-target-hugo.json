@@ -1,0 +1,14 @@
+{
+ "files": [
+  {
+   "path": "work/doc.md",
+   "text": "---\ntitle: Checked\ntags: [a, b]\n---\n\n# Checked\n\nPlain paragraph with [present](present.md) and [missing](missing.md#frag).\n![alt](images/missing.png) ![](present.md)\n[abs](/definitely/not/here.md) [home](~/home-note.md) [up](../outside.md) [web](https://example.com)\n[bad](javascript:alert(1)) [ref][nothing]\n\n| a | b |\n|---|---|\n| 1 | 2 |\n\n- [ ] task\n~~strike~~ $x^2$\n\n[^1]: footnote\n"
+  }
+ ],
+ "argv": [
+  "check",
+  "--target",
+  "hugo",
+  "doc.md"
+ ]
+}

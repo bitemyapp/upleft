@@ -1,0 +1,8 @@
+{
+ "argv": [
+  "read"
+ ],
+ "stdin": {
+  "text": "from stdin\nno newline at end"
+ }
+}

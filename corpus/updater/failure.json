@@ -1,0 +1,179 @@
+{
+ "kind": "failure",
+ "errors": [
+  {
+   "name": "plain sparkle",
+   "error": {
+    "domain": "sparkle",
+    "code": 2001
+   }
+  },
+  {
+   "name": "Sparkle with description",
+   "error": {
+    "domain": "Sparkle",
+    "code": 1002,
+    "userInfo": {
+     "NSLocalizedDescription": "The feed couldn't be loaded."
+    }
+   }
+  },
+  {
+   "name": "empty description",
+   "error": {
+    "domain": "x",
+    "code": 1,
+    "userInfo": {
+     "NSLocalizedDescription": ""
+    }
+   }
+  },
+  {
+   "name": "failure reason only",
+   "error": {
+    "domain": "x",
+    "code": 7,
+    "userInfo": {
+     "NSLocalizedFailureReason": "because"
+    }
+   }
+  },
+  {
+   "name": "recovery suggestion wins over reason",
+   "error": {
+    "domain": "x",
+    "code": 8,
+    "userInfo": {
+     "NSLocalizedDescription": "Can't update.",
+     "NSLocalizedFailureReason": "because",
+     "NSLocalizedRecoverySuggestion": "Try again later."
+    }
+   }
+  },
+  {
+   "name": "recovery suggestion only",
+   "error": {
+    "domain": "x",
+    "code": 9,
+    "userInfo": {
+     "NSLocalizedRecoverySuggestion": "Check your connection."
+    }
+   }
+  },
+  {
+   "name": "empty reason",
+   "error": {
+    "domain": "x",
+    "code": 10,
+    "userInfo": {
+     "NSLocalizedFailureReason": ""
+    }
+   }
+  },
+  {
+   "name": "negative code",
+   "error": {
+    "domain": "NSURLErrorDomain",
+    "code": -1009
+   }
+  },
+  {
+   "name": "URL timed out",
+   "error": {
+    "domain": "NSURLErrorDomain",
+    "code": -1001
+   }
+  },
+  {
+   "name": "URL cannot find host",
+   "error": {
+    "domain": "NSURLErrorDomain",
+    "code": -1003
+   }
+  },
+  {
+   "name": "Cocoa file not found",
+   "error": {
+    "domain": "NSCocoaErrorDomain",
+    "code": 4
+   }
+  },
+  {
+   "name": "Cocoa write no permission",
+   "error": {
+    "domain": "NSCocoaErrorDomain",
+    "code": 513
+   }
+  },
+  {
+   "name": "Cocoa user cancelled",
+   "error": {
+    "domain": "NSCocoaErrorDomain",
+    "code": 3072
+   }
+  },
+  {
+   "name": "POSIX EACCES",
+   "error": {
+    "domain": "NSPOSIXErrorDomain",
+    "code": 13
+   }
+  },
+  {
+   "name": "OSStatus",
+   "error": {
+    "domain": "NSOSStatusErrorDomain",
+    "code": -43
+   }
+  },
+  {
+   "name": "Sparkle signature",
+   "error": {
+    "domain": "SUSparkleErrorDomain",
+    "code": 3001
+   }
+  },
+  {
+   "name": "Sparkle installation",
+   "error": {
+    "domain": "SUSparkleErrorDomain",
+    "code": 4005,
+    "userInfo": {
+     "NSLocalizedDescription": "An error occurred while installing the update."
+    }
+   }
+  },
+  {
+   "name": "non-ASCII",
+   "error": {
+    "domain": "Sparkle",
+    "code": 1,
+    "userInfo": {
+     "NSLocalizedDescription": "Mise à jour impossible — été 🌞",
+     "NSLocalizedFailureReason": "réseau"
+    }
+   }
+  },
+  {
+   "name": "huge code",
+   "error": {
+    "domain": "x",
+    "code": 9223372036854775807
+   }
+  },
+  {
+   "name": "min code",
+   "error": {
+    "domain": "x",
+    "code": -9223372036854775808
+   }
+  },
+  {
+   "name": "empty domain",
+   "error": {
+    "domain": "",
+    "code": 0
+   }
+  }
+ ]
+}

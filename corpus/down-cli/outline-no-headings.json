@@ -1,0 +1,12 @@
+{
+ "files": [
+  {
+   "path": "work/p.md",
+   "text": "plain\n"
+  }
+ ],
+ "argv": [
+  "outline",
+  "p.md"
+ ]
+}

@@ -1,0 +1,15 @@
+{
+ "root": "../workspace/docs",
+ "policy": {
+  "readConcurrency": 2
+ },
+ "searches": [
+  {
+   "text": "reference"
+  },
+  {
+   "text": "chapter \\d+",
+   "isRegex": true
+  }
+ ]
+}

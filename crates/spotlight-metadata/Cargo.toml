@@ -1,0 +1,19 @@
+[package]
+name = "upleft-spotlight-metadata"
+description = "Port of Downright's DownrightSpotlightMetadata: the Spotlight attributes the app and the filesystem importer derive from a Markdown file"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+publish.workspace = true
+
+[dependencies]
+upleft-core.workspace = true
+upleft-swift-text.workspace = true
+upleft-foundation.workspace = true
+objc2.workspace = true
+objc2-foundation = { workspace = true, features = [
+    "NSArray", "NSData", "NSDate", "NSDictionary", "NSEnumerator", "NSError", "NSFileManager", "NSObjCRuntime",
+    "NSString", "NSURL", "NSValue",
+] }
+objc2-core-foundation = { workspace = true, features = ["CFArray", "CFBase", "CFDictionary", "CFString", "CFURL"] }
+objc2-core-services = { version = "0.3.2", default-features = false, features = ["std", "Metadata", "MDItem"] }

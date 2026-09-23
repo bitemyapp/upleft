@@ -1,0 +1,3 @@
+# Leaf (qmd)
+
+A Quarto file. Up: [note](../../note.md).

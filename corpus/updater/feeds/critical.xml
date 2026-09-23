@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<rss version="2.0" xmlns:sparkle="http://www.andymatuschak.org/xml-namespaces/sparkle">
+  <channel>
+    <title>Downright</title>
+    <item>
+      <title>Downright 1.1.2 (security)</title>
+      <sparkle:version>49</sparkle:version>
+      <sparkle:shortVersionString>1.1.2</sparkle:shortVersionString>
+      <sparkle:criticalUpdate sparkle:version="48"></sparkle:criticalUpdate>
+      <sparkle:tags><sparkle:criticalUpdate/></sparkle:tags>
+      <sparkle:phasedRolloutInterval>86400</sparkle:phasedRolloutInterval>
+      <description><![CDATA[<p>Fixes a <strong>security</strong> issue in link handling.</p>]]></description>
+      <enclosure url="https://updates.example.invalid/Downright-1.1.2.zip" length="4060000" type="application/octet-stream" sparkle:edSignature="HHHH"/>
+    </item>
+  </channel>
+</rss>

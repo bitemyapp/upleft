@@ -1,0 +1,555 @@
+{
+ "kind": "feed-probe",
+ "feeds": [
+  "feeds/basic.xml",
+  "feeds/non-ascii.xml"
+ ],
+ "scenarios": [
+  {
+   "name": "etag unchanged by a 200 with the same etag",
+   "probes": [
+    {
+     "response": {
+      "status": 200,
+      "body": "feed",
+      "headers": {
+       "ETag": "\"v2\""
+      }
+     }
+    },
+    {
+     "response": {
+      "status": 200,
+      "body": {
+       "text": "different body"
+      },
+      "headers": {
+       "ETag": "\"v2\""
+      }
+     },
+     "offer": {
+      "held": true
+     }
+    }
+   ]
+  },
+  {
+   "name": "etag moves",
+   "probes": [
+    {
+     "response": {
+      "status": 200,
+      "body": "feed",
+      "headers": {
+       "ETag": "\"v2\""
+      }
+     }
+    },
+    {
+     "response": {
+      "status": 200,
+      "body": "feed",
+      "headers": {
+       "ETag": "\"v3\""
+      }
+     },
+     "offer": {
+      "held": true
+     }
+    }
+   ]
+  },
+  {
+   "name": "weak etag",
+   "probes": [
+    {
+     "response": {
+      "status": 200,
+      "body": "feed",
+      "headers": {
+       "ETag": "W/\"abc\""
+      }
+     }
+    },
+    {
+     "response": {
+      "status": 304,
+      "body": "empty"
+     },
+     "offer": {
+      "held": true
+     }
+    }
+   ]
+  },
+  {
+   "name": "empty etag falls back to last-modified",
+   "probes": [
+    {
+     "response": {
+      "status": 200,
+      "body": "feed",
+      "headers": {
+       "ETag": "",
+       "Last-Modified": "Wed, 21 Oct 2026 07:28:00 GMT"
+      }
+     }
+    },
+    {
+     "response": {
+      "status": 304,
+      "body": "empty"
+     },
+     "offer": {
+      "held": true
+     }
+    }
+   ]
+  },
+  {
+   "name": "empty etag and last-modified fall back to the hash",
+   "probes": [
+    {
+     "response": {
+      "status": 200,
+      "body": "feed",
+      "headers": {
+       "ETag": "",
+       "Last-Modified": ""
+      }
+     }
+    },
+    {
+     "response": {
+      "status": 200,
+      "body": "feed",
+      "headers": {
+       "ETag": "",
+       "Last-Modified": ""
+      }
+     },
+     "offer": {
+      "held": true
+     }
+    }
+   ]
+  },
+  {
+   "name": "lower-case etag header",
+   "probes": [
+    {
+     "response": {
+      "status": 200,
+      "body": "feed",
+      "headers": {
+       "etag": "\"lc\""
+      }
+     }
+    },
+    {
+     "response": {
+      "status": 304,
+      "body": "empty"
+     },
+     "offer": {
+      "held": true
+     }
+    }
+   ]
+  },
+  {
+   "name": "upper-case last-modified header",
+   "probes": [
+    {
+     "response": {
+      "status": 200,
+      "body": "feed",
+      "headers": {
+       "LAST-MODIFIED": "Wed, 21 Oct 2026 07:28:00 GMT"
+      }
+     }
+    },
+    {
+     "response": {
+      "status": 304,
+      "body": "empty"
+     },
+     "offer": {
+      "held": true
+     }
+    }
+   ]
+  },
+  {
+   "name": "etag with spaces and non-ASCII",
+   "probes": [
+    {
+     "response": {
+      "status": 200,
+      "body": "feed",
+      "headers": {
+       "ETag": "  \"été 夏\"  "
+      }
+     }
+    },
+    {
+     "response": {
+      "status": 304,
+      "body": "empty"
+     },
+     "offer": {
+      "held": true
+     }
+    }
+   ]
+  },
+  {
+   "name": "etag switch to last-modified only",
+   "probes": [
+    {
+     "response": {
+      "status": 200,
+      "body": "feed",
+      "headers": {
+       "ETag": "\"v2\""
+      }
+     }
+    },
+    {
+     "response": {
+      "status": 200,
+      "body": "feed",
+      "headers": {
+       "Last-Modified": "Wed, 21 Oct 2026 07:28:00 GMT"
+      }
+     },
+     "offer": {
+      "held": true
+     }
+    },
+    {
+     "response": {
+      "status": 200,
+      "body": "feed",
+      "headers": {
+       "Last-Modified": "Wed, 21 Oct 2026 07:28:00 GMT"
+      }
+     },
+     "offer": {
+      "held": true
+     }
+    }
+   ]
+  },
+  {
+   "name": "hash then etag",
+   "probes": [
+    {
+     "response": {
+      "status": 200,
+      "body": "feed"
+     }
+    },
+    {
+     "response": {
+      "status": 200,
+      "body": "feed",
+      "headers": {
+       "ETag": "\"v9\""
+      }
+     },
+     "offer": {
+      "held": true
+     }
+    }
+   ]
+  },
+  {
+   "name": "status 200 201 204 226 299",
+   "probes": [
+    {
+     "response": {
+      "status": 200,
+      "body": "feed"
+     }
+    },
+    {
+     "response": {
+      "status": 201,
+      "body": "feed"
+     }
+    },
+    {
+     "response": {
+      "status": 204,
+      "body": "feed"
+     }
+    },
+    {
+     "response": {
+      "status": 226,
+      "body": "feed"
+     }
+    },
+    {
+     "response": {
+      "status": 299,
+      "body": "feed"
+     }
+    }
+   ]
+  },
+  {
+   "name": "status 300 301 302 304 307 400 401 403 404 410 418 429 500 502 503",
+   "probes": [
+    {
+     "response": {
+      "status": 300,
+      "body": "feed"
+     }
+    },
+    {
+     "response": {
+      "status": 301,
+      "body": "feed"
+     }
+    },
+    {
+     "response": {
+      "status": 302,
+      "body": "feed"
+     }
+    },
+    {
+     "response": {
+      "status": 304,
+      "body": "feed"
+     }
+    },
+    {
+     "response": {
+      "status": 307,
+      "body": "feed"
+     }
+    },
+    {
+     "response": {
+      "status": 400,
+      "body": "feed"
+     }
+    },
+    {
+     "response": {
+      "status": 401,
+      "body": "feed"
+     }
+    },
+    {
+     "response": {
+      "status": 403,
+      "body": "feed"
+     }
+    },
+    {
+     "response": {
+      "status": 404,
+      "body": "feed"
+     }
+    },
+    {
+     "response": {
+      "status": 410,
+      "body": "feed"
+     }
+    },
+    {
+     "response": {
+      "status": 418,
+      "body": "feed"
+     }
+    },
+    {
+     "response": {
+      "status": 429,
+      "body": "feed"
+     }
+    },
+    {
+     "response": {
+      "status": 500,
+      "body": "feed"
+     }
+    },
+    {
+     "response": {
+      "status": 502,
+      "body": "feed"
+     }
+    },
+    {
+     "response": {
+      "status": 503,
+      "body": "feed"
+     }
+    }
+   ]
+  },
+  {
+   "name": "offered etag sends If-None-Match",
+   "probes": [
+    {
+     "response": {
+      "status": 304,
+      "body": "empty"
+     },
+     "offer": "etag:\"v1\""
+    }
+   ]
+  },
+  {
+   "name": "offered last-modified sends If-Modified-Since",
+   "probes": [
+    {
+     "response": {
+      "status": 304,
+      "body": "empty"
+     },
+     "offer": "lastModified:Wed, 21 Oct 2026 07:28:00 GMT"
+    }
+   ]
+  },
+  {
+   "name": "offered empty last-modified",
+   "probes": [
+    {
+     "response": {
+      "status": 200,
+      "body": "feed"
+     },
+     "offer": "lastModified:"
+    }
+   ]
+  },
+  {
+   "name": "offered empty etag",
+   "probes": [
+    {
+     "response": {
+      "status": 200,
+      "body": "feed"
+     },
+     "offer": "etag:"
+    }
+   ]
+  },
+  {
+   "name": "offered hash sends nothing",
+   "probes": [
+    {
+     "response": {
+      "status": 200,
+      "body": "feed"
+     },
+     "offer": "sha256:0000"
+    }
+   ]
+  },
+  {
+   "name": "prefixes are case-sensitive",
+   "probes": [
+    {
+     "response": {
+      "status": 200,
+      "body": "feed"
+     },
+     "offer": "ETAG:\"v1\""
+    },
+    {
+     "response": {
+      "status": 200,
+      "body": "feed"
+     },
+     "offer": "LastModified:Wed, 21 Oct 2026 07:28:00 GMT"
+    },
+    {
+     "response": {
+      "status": 200,
+      "body": "feed"
+     },
+     "offer": "lastmodified:Wed, 21 Oct 2026 07:28:00 GMT"
+    }
+   ]
+  },
+  {
+   "name": "a combining mark after the prefix breaks it",
+   "probes": [
+    {
+     "response": {
+      "status": 200,
+      "body": "feed"
+     },
+     "offer": "etag:́\"v1\""
+    },
+    {
+     "response": {
+      "status": 200,
+      "body": "feed"
+     },
+     "offer": "lastModified:́x"
+    }
+   ]
+  },
+  {
+   "name": "a decomposed etag equals the composed one",
+   "probes": [
+    {
+     "response": {
+      "status": 200,
+      "body": "feed",
+      "headers": {
+       "ETag": "\"é\""
+      }
+     },
+     "offer": "etag:\"é\""
+    },
+    {
+     "response": {
+      "status": 200,
+      "body": "feed",
+      "headers": {
+       "ETag": "\"é\""
+      }
+     },
+     "offer": "etag:\"é\""
+    }
+   ]
+  },
+  {
+   "name": "the same last-modified is unchanged",
+   "probes": [
+    {
+     "response": {
+      "status": 200,
+      "body": "feed",
+      "headers": {
+       "Last-Modified": "Wed, 21 Oct 2026 07:28:00 GMT"
+      }
+     },
+     "offer": "lastModified:Wed, 21 Oct 2026 07:28:00 GMT"
+    }
+   ]
+  },
+  {
+   "name": "a hash offered as an etag",
+   "probes": [
+    {
+     "response": {
+      "status": 200,
+      "body": "feed"
+     },
+     "offer": "etag:sha256:abc"
+    }
+   ]
+  }
+ ]
+}

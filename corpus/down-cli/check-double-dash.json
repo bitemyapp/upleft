@@ -1,0 +1,13 @@
+{
+ "files": [
+  {
+   "path": "work/-notes.md",
+   "text": "# N\n"
+  }
+ ],
+ "argv": [
+  "check",
+  "--",
+  "-notes.md"
+ ]
+}

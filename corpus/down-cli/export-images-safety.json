@@ -1,0 +1,12 @@
+{
+ "files": [
+  {
+   "path": "work/images.md",
+   "text": "![relative](images/photo.png)\n![web](https://tracker.example/pixel.png)\n![data](data:image/svg+xml,bad)\n![file](file:///private/etc/passwd)\n![protocol](//tracker.example/pixel.png)\n![absolute](/private/etc/passwd)\n![traversal](../private/photo.png)\n![encoded](%2e%2e/private/photo.png)\n![backslash](..\\\\x.png) ![lead](\\\\x.png)\n![query](a.png?x=../y) ![frag](a.png#../y) ![bad-percent](%zz.png) ![bad-utf8](%ff.png) ![nul](%00.png)\n![tabbed](http\t://tracking.example/x.png) ![empty-alt](x.png) ![alt with *stars*](y.png)\n"
+  }
+ ],
+ "argv": [
+  "export",
+  "images.md"
+ ]
+}

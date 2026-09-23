@@ -36,6 +36,7 @@ pub mod graphemes;
 pub mod ns;
 pub mod normalization;
 pub mod ns_range;
+pub mod sort;
 pub mod tables;
 
 pub use normalization::{swift_nfc, swift_nfd};

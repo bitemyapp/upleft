@@ -1,0 +1,122 @@
+{
+ "kind": "feed-probe",
+ "feeds": [
+  "feeds/basic.xml"
+ ],
+ "scenarios": [
+  {
+   "name": "empty body",
+   "probes": [
+    {
+     "response": {
+      "status": 200,
+      "body": "empty"
+     }
+    },
+    {
+     "response": {
+      "status": 200,
+      "body": "empty"
+     },
+     "offer": {
+      "held": true
+     }
+    }
+   ]
+  },
+  {
+   "name": "one byte",
+   "probes": [
+    {
+     "response": {
+      "status": 200,
+      "body": {
+       "text": "a"
+      }
+     }
+    }
+   ]
+  },
+  {
+   "name": "exactly the limit",
+   "probes": [
+    {
+     "response": {
+      "status": 200,
+      "body": {
+       "repeat": {
+        "byte": 97,
+        "count": 4194304
+       }
+      }
+     }
+    },
+    {
+     "response": {
+      "status": 200,
+      "body": {
+       "repeat": {
+        "byte": 97,
+        "count": 4194304
+       }
+      }
+     },
+     "offer": {
+      "held": true
+     }
+    }
+   ]
+  },
+  {
+   "name": "one byte over the limit",
+   "probes": [
+    {
+     "response": {
+      "status": 200,
+      "body": {
+       "repeat": {
+        "byte": 97,
+        "count": 4194305
+       }
+      }
+     }
+    }
+   ]
+  },
+  {
+   "name": "over the limit with an etag",
+   "probes": [
+    {
+     "response": {
+      "status": 200,
+      "body": {
+       "repeat": {
+        "byte": 0,
+        "count": 4194305
+       }
+      },
+      "headers": {
+       "ETag": "\"big\""
+      }
+     }
+    }
+   ]
+  },
+  {
+   "name": "304 over the limit",
+   "probes": [
+    {
+     "response": {
+      "status": 304,
+      "body": {
+       "repeat": {
+        "byte": 1,
+        "count": 4194305
+       }
+      }
+     }
+    }
+   ]
+  }
+ ]
+}

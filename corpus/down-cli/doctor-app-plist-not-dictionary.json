@@ -1,0 +1,18 @@
+{
+ "files": [
+  {
+   "path": "work/apps/Downright.app/Contents/Info.plist",
+   "text": "<?xml version=\"1.0\"?><plist version=\"1.0\"><array/></plist>"
+  },
+  {
+   "path": "work/apps/Downright.app/Contents/MacOS/Downright",
+   "text": "#!/bin/sh\nexit 0\n",
+   "mode": "755"
+  }
+ ],
+ "argv": [
+  "doctor",
+  "--app",
+  "apps/Downright.app"
+ ]
+}

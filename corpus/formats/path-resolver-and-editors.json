@@ -1,0 +1,303 @@
+{
+ "steps": [
+  {
+   "op": "mkdir",
+   "path": "repo/.git"
+  },
+  {
+   "op": "write",
+   "path": "repo/src/auth/session.ts",
+   "text": "// real\n"
+  },
+  {
+   "op": "write",
+   "path": "repo/docs/PLAN.md",
+   "text": "# Plan\n"
+  },
+  {
+   "op": "write",
+   "path": "repo/docs/local.md",
+   "text": "local\n"
+  },
+  {
+   "op": "write",
+   "path": "repo/README.md",
+   "text": "readme\n"
+  },
+  {
+   "op": "write",
+   "path": "repo/lib/util.rs",
+   "text": "fn main() {}\n"
+  },
+  {
+   "op": "mkdir",
+   "path": "repo/docs/images"
+  },
+  {
+   "op": "write",
+   "path": "loose/doc.md",
+   "text": "no repo\n"
+  },
+  {
+   "op": "write",
+   "path": "sibling.md",
+   "text": "parent of loose\n"
+  },
+  {
+   "op": "resolver.open",
+   "doc": "repo/docs/PLAN.md"
+  },
+  {
+   "op": "resolver.resolve",
+   "raw": "local.md"
+  },
+  {
+   "op": "resolver.resolve",
+   "raw": "README.md",
+   "line": 3
+  },
+  {
+   "op": "resolver.resolve",
+   "raw": "auth/session.ts",
+   "line": 42
+  },
+  {
+   "op": "resolver.resolve",
+   "raw": "src/auth/session.ts"
+  },
+  {
+   "op": "resolver.resolve",
+   "raw": "lib/util.rs"
+  },
+  {
+   "op": "resolver.resolve",
+   "raw": "images"
+  },
+  {
+   "op": "resolver.resolve",
+   "raw": "images/"
+  },
+  {
+   "op": "resolver.resolve",
+   "raw": "src/auth/missing.ts",
+   "line": 7
+  },
+  {
+   "op": "resolver.resolve",
+   "raw": "../README.md"
+  },
+  {
+   "op": "resolver.resolve",
+   "raw": "<root>/repo/README.md"
+  },
+  {
+   "op": "resolver.resolve",
+   "raw": "<root>/repo/nope.md"
+  },
+  {
+   "op": "resolver.resolve",
+   "raw": "/"
+  },
+  {
+   "op": "resolver.resolve",
+   "raw": "~/definitely-not-here-upleft.md"
+  },
+  {
+   "op": "resolver.resolve",
+   "raw": "./local.md"
+  },
+  {
+   "op": "resolver.resolve",
+   "raw": ""
+  },
+  {
+   "op": "write",
+   "path": "repo/docs/late.md",
+   "text": "created after\n"
+  },
+  {
+   "op": "resolver.resolve",
+   "raw": "late.md"
+  },
+  {
+   "op": "remove",
+   "path": "repo/docs/local.md"
+  },
+  {
+   "op": "resolver.resolve",
+   "raw": "local.md"
+  },
+  {
+   "op": "resolver.invalidate"
+  },
+  {
+   "op": "resolver.resolve",
+   "raw": "local.md"
+  },
+  {
+   "op": "resolver.resolve",
+   "raw": "late.md"
+  },
+  {
+   "op": "resolver.open",
+   "resolver": "loose",
+   "doc": "loose/doc.md"
+  },
+  {
+   "op": "resolver.resolve",
+   "resolver": "loose",
+   "raw": "sibling.md"
+  },
+  {
+   "op": "resolver.resolve",
+   "resolver": "loose",
+   "raw": "src/x.md"
+  },
+  {
+   "op": "resolver.gitRoot",
+   "path": "repo/docs/images"
+  },
+  {
+   "op": "resolver.gitRoot",
+   "path": "repo"
+  },
+  {
+   "op": "resolver.gitRoot",
+   "path": "loose"
+  },
+  {
+   "op": "editor.all"
+  },
+  {
+   "op": "editor.url",
+   "editor": "vscode",
+   "path": "/src/auth/session.ts",
+   "line": 42
+  },
+  {
+   "op": "editor.url",
+   "editor": "cursor",
+   "path": "/src/auth/session.ts",
+   "line": 42
+  },
+  {
+   "op": "editor.url",
+   "editor": "zed",
+   "path": "/src/auth/session.ts",
+   "line": 42
+  },
+  {
+   "op": "editor.url",
+   "editor": "xcode",
+   "path": "/src/auth/session.ts",
+   "line": 42
+  },
+  {
+   "op": "editor.url",
+   "editor": "sublime",
+   "path": "/src/auth/session.ts",
+   "line": 42
+  },
+  {
+   "op": "editor.url",
+   "editor": "bbedit",
+   "path": "/src/auth/session.ts",
+   "line": 42
+  },
+  {
+   "op": "editor.url",
+   "editor": "nova",
+   "path": "/src/auth/session.ts",
+   "line": 42
+  },
+  {
+   "op": "editor.url",
+   "editor": "systemDefault",
+   "path": "/src/auth/session.ts",
+   "line": 42
+  },
+  {
+   "op": "editor.url",
+   "editor": "envEditor",
+   "path": "/src/auth/session.ts",
+   "line": 42
+  },
+  {
+   "op": "editor.url",
+   "editor": "vscode",
+   "path": "/notes/Design #2/plan.md",
+   "line": 7
+  },
+  {
+   "op": "editor.url",
+   "editor": "zed",
+   "path": "/notes/Design #2/plan.md"
+  },
+  {
+   "op": "editor.url",
+   "editor": "vscode",
+   "path": "/notes/why?/plan.md",
+   "line": 7
+  },
+  {
+   "op": "editor.url",
+   "editor": "zed",
+   "path": "/notes/why?/plan.md"
+  },
+  {
+   "op": "editor.url",
+   "editor": "vscode",
+   "path": "/notes/100%/plan.md",
+   "line": 7
+  },
+  {
+   "op": "editor.url",
+   "editor": "zed",
+   "path": "/notes/100%/plan.md"
+  },
+  {
+   "op": "editor.url",
+   "editor": "vscode",
+   "path": "/notes/My Notes/plan.md",
+   "line": 7
+  },
+  {
+   "op": "editor.url",
+   "editor": "zed",
+   "path": "/notes/My Notes/plan.md"
+  },
+  {
+   "op": "editor.url",
+   "editor": "vscode",
+   "path": "/notes/a;b=c&d/plan.md",
+   "line": 7
+  },
+  {
+   "op": "editor.url",
+   "editor": "zed",
+   "path": "/notes/a;b=c&d/plan.md"
+  },
+  {
+   "op": "editor.url",
+   "editor": "vscode",
+   "path": "/notes/café/[x]{y}|z^`/plan.md",
+   "line": 7
+  },
+  {
+   "op": "editor.url",
+   "editor": "zed",
+   "path": "/notes/café/[x]{y}|z^`/plan.md"
+  },
+  {
+   "op": "editor.url",
+   "editor": "vscode",
+   "path": "/notes/😀/plan.md",
+   "line": 7
+  },
+  {
+   "op": "editor.url",
+   "editor": "zed",
+   "path": "/notes/😀/plan.md"
+  }
+ ]
+}

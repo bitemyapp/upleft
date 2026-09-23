@@ -1,0 +1,115 @@
+{
+ "quickOpenQueries": [
+  "",
+  "   ",
+  "> format",
+  ">format",
+  ">",
+  "@head",
+  "@",
+  "#task fix",
+  "#tasks",
+  "#task",
+  "#tasksfoo",
+  "#TASK Fix",
+  "task: notes",
+  "TASK:x",
+  "file: notes",
+  "FILE:notes",
+  "asset: logo",
+  "link: docs",
+  "#intro",
+  "# intro",
+  "#",
+  "##",
+  " #  intro  ",
+  "\n> find\n",
+  "task:",
+  "file:  ",
+  "link:\tdocs",
+  "asset:　logo",
+  "files: x",
+  "@@x",
+  ">>x",
+  "Kask: x",
+  "task:́x",
+  "#́x",
+  "Ａsset: x",
+  "#tàsk",
+  "linkage",
+  "filé: x"
+ ],
+ "integration": {
+  "accepts": [
+   "/tmp/readme.md",
+   "/tmp/NOTE.MDX",
+   "/tmp/readme.txt",
+   "https://example.com/readme.md",
+   "/tmp/a.markdown",
+   "/tmp/a.Markdown",
+   "/tmp/a.mdown",
+   "/tmp/a.mkd",
+   "/tmp/a.mdc",
+   "/tmp/a.qmd",
+   "/tmp/a.Rmd",
+   "/tmp/a.md.txt",
+   "/tmp/.md",
+   "/tmp/md",
+   "/tmp/a.",
+   "file:///tmp/x.md",
+   "/tmp/dir.md/",
+   "/tmp/résumé.md",
+   "/tmp/x.ḾD"
+  ],
+  "normalized": [
+   "/tmp/readme.md",
+   "~/notes.md",
+   "/tmp/../tmp/./a.md",
+   "/tmp/a.txt",
+   "relative/a.md",
+   "",
+   "/tmp/a.md/",
+   "~",
+   "/tmp/a b.md",
+   "/tmp//double//a.md"
+  ],
+  "pluginkit": [
+   {
+    "listing": "     com.ezzy.downright.quicklook(1.0)\t6DFDA989-A19F-510C-999F-175575BC16CF\t2026-07-23 03:00:13 +0000\t/Applications/Downright.app/Contents/PlugIns/DownrightQL.appex\n (1 plug-in)",
+    "identifier": "com.ezzy.downright.quicklook"
+   },
+   {
+    "listing": "+    com.ezzy.downright.quicklook(1.0)\tUUID\t2026-07-23 03:00:13 +0000\t/Applications/Downright.app/Contents/PlugIns/DownrightQL.appex\n (1 plug-in)",
+    "identifier": "com.ezzy.downright.quicklook"
+   },
+   {
+    "listing": "-    com.ezzy.downright.quicklook(1.0)\tUUID\t2026-07-23 03:00:13 +0000\t/Applications/Downright.app/Contents/PlugIns/DownrightQL.appex\n (1 plug-in)",
+    "identifier": "com.ezzy.downright.quicklook"
+   },
+   {
+    "listing": "  (no matches)\n",
+    "identifier": "com.ezzy.downright.quicklook"
+   },
+   {
+    "listing": "     com.apple.HydraQLPreviewExtension(1.0)\tUUID\n (1 plug-in)",
+    "identifier": "com.ezzy.downright.quicklook"
+   },
+   {
+    "listing": "",
+    "identifier": "com.ezzy.downright.quicklook"
+   },
+   {
+    "listing": "-com.ezzy.downright.quicklook\r\n+com.ezzy.downright.quicklook",
+    "identifier": "com.ezzy.downright.quicklook"
+   },
+   {
+    "listing": "\n\n-    com.ezzy.downright.quicklook\n     com.ezzy.downright.quicklook",
+    "identifier": "com.ezzy.downright.quicklook"
+   },
+   {
+    "listing": "     com.ezzy.downright.thumbnail(1.0)",
+    "identifier": "com.ezzy.downright.thumbnail"
+   }
+  ]
+ }
+}

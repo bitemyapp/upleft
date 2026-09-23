@@ -1,0 +1,12 @@
+{
+ "files": [
+  {
+   "path": "work/dangling.md",
+   "symlink": "nowhere.md"
+  }
+ ],
+ "argv": [
+  "read",
+  "dangling.md"
+ ]
+}

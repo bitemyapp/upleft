@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<rss version="2.0" xmlns:sparkle="http://www.andymatuschak.org/xml-namespaces/sparkle">
+  <channel>
+    <title>Downright</title>
+    <item>
+      <title>Downright 1.0.17</title>
+      <sparkle:version>40</sparkle:version>
+      <sparkle:shortVersionString>1.0.17</sparkle:shortVersionString>
+      <sparkle:releaseNotesLink>https://updates.example.invalid/notes/1.0.17.html</sparkle:releaseNotesLink>
+      <sparkle:fullReleaseNotesLink>https://updates.example.invalid/notes/all.html</sparkle:fullReleaseNotesLink>
+      <description><![CDATA[<html><head><style>body { color: red }</style><script>alert(1)</script></head>
+<body><h1>Downright 1.0.17</h1><p>First &amp; second &#8212; line</p>
+<ul><li>one</li><li>two</li></ul><p>Bye<br/>now</p></body></html>]]></description>
+      <enclosure url="https://updates.example.invalid/Downright-1.0.17.zip" length="3900000" type="application/octet-stream" sparkle:edSignature="LLLL"/>
+    </item>
+  </channel>
+</rss>

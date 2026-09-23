@@ -1,0 +1,15 @@
+{
+ "files": [
+  {
+   "path": "work/.claude/settings.json",
+   "repeat": " ",
+   "count": 1048574,
+   "prefix": "{",
+   "suffix": "}"
+  }
+ ],
+ "argv": [
+  "hook",
+  "--install"
+ ]
+}

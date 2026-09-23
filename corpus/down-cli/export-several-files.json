@@ -1,0 +1,17 @@
+{
+ "files": [
+  {
+   "path": "work/a.md",
+   "text": "# A\n"
+  },
+  {
+   "path": "work/b.md",
+   "text": "- b\n"
+  }
+ ],
+ "argv": [
+  "export",
+  "a.md",
+  "b.md"
+ ]
+}

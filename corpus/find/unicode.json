@@ -1,0 +1,161 @@
+{
+ "documents": [
+  "../workspace/unicode/combining.md",
+  "../workspace/unicode/café.md",
+  "../workspace/unicode/日本語.md",
+  "../workspace/unicode/emoji 🎉.md",
+  "../workspace/unicode/rtl.md",
+  "../generated/docs/Docs__UI-PLAN.md"
+ ],
+ "queries": [
+  {
+   "text": "café"
+  },
+  {
+   "text": "café"
+  },
+  {
+   "text": "CAFÉ"
+  },
+  {
+   "text": "CAFÉ",
+   "caseSensitive": true
+  },
+  {
+   "text": "é",
+   "wholeWord": true
+  },
+  {
+   "text": "e"
+  },
+  {
+   "text": "́"
+  },
+  {
+   "text": "straße"
+  },
+  {
+   "text": "STRASSE"
+  },
+  {
+   "text": "ﬁle"
+  },
+  {
+   "text": "istanbul"
+  },
+  {
+   "text": "İstanbul"
+  },
+  {
+   "text": "ΟΔΟΣ"
+  },
+  {
+   "text": "σ"
+  },
+  {
+   "text": "ǅ"
+  },
+  {
+   "text": "🎉",
+   "template": "(party)"
+  },
+  {
+   "text": "👍"
+  },
+  {
+   "text": "👨‍👩‍👧‍👦"
+  },
+  {
+   "text": "🇫"
+  },
+  {
+   "text": "𝒳",
+   "caret": 60
+  },
+  {
+   "text": "日本語"
+  },
+  {
+   "text": "ガイド",
+   "wholeWord": true
+  },
+  {
+   "text": "ｶﾀｶﾅ"
+  },
+  {
+   "text": "naïve",
+   "wholeWord": true
+  },
+  {
+   "text": "naïve",
+   "wholeWord": true
+  },
+  {
+   "text": "\\p{Mn}+",
+   "isRegex": true,
+   "template": "<$0>"
+  },
+  {
+   "text": "\\X",
+   "isRegex": true,
+   "scope": [
+    0,
+    60
+   ]
+  },
+  {
+   "text": "(?w)\\bnaïve\\b",
+   "isRegex": true
+  },
+  {
+   "text": "\\N{GREEK SMALL LETTER SIGMA}",
+   "isRegex": true
+  },
+  {
+   "text": "[\\u0590-\\u05FF]+",
+   "isRegex": true,
+   "template": "«$0»"
+  },
+  {
+   "text": "‍"
+  },
+  {
+   "text": " "
+  },
+  {
+   "text": "co­operate"
+  },
+  {
+   "text": ".",
+   "isRegex": true,
+   "scope": [
+    15,
+    3
+   ]
+  },
+  {
+   "text": "(🎉)",
+   "isRegex": true,
+   "template": "[$1]"
+  },
+  {
+   "text": "\\p{Emoji_Presentation}",
+   "isRegex": true
+  },
+  {
+   "text": "[٠-٩]+",
+   "isRegex": true,
+   "template": "#"
+  },
+  {
+   "text": "—"
+  },
+  {
+   "text": "§"
+  },
+  {
+   "text": "→",
+   "wholeWord": true
+  }
+ ]
+}

@@ -2,6 +2,10 @@
   "corpus": [
     "corpus"
   ],
+  "exclude": [
+    "corpus/workspace/",
+    "corpus/spotlight/"
+  ],
   "suites": [
     {
       "name": "probe",
@@ -345,6 +349,126 @@
         ["--theme", "System"],
         ["--theme", "System", "--dark"]
       ]
+    },
+    {
+      "name": "html-export",
+      "command": "html-export",
+      "oracle": "app",
+      "output": "json",
+      "only": ["corpus/"],
+      "keyPath": true,
+      "depends": ["corpus/workspace/"],
+      "variants": [
+        ["--theme", "High Contrast"],
+        ["--theme", "High Contrast", "--dark"],
+        ["--theme", "Nord"],
+        ["--theme", "Nord", "--dark"],
+        ["--theme", "Paper Light"],
+        ["--theme", "Paper Light", "--dark"],
+        ["--theme", "Solarized Light"],
+        ["--theme", "Solarized Light", "--dark"],
+        ["--theme", "System"],
+        ["--theme", "System", "--dark"],
+        ["--theme", "Warm Dark"],
+        ["--theme", "Warm Dark", "--dark"],
+        ["--theme", "Paper Light", "--print"],
+        ["--theme", "Warm Dark", "--dark", "--print"]
+      ]
+    },
+    {
+      "name": "spotlight",
+      "command": "spotlight",
+      "oracle": "app",
+      "output": "json",
+      "keyPath": true,
+      "only": ["corpus/generated/", "corpus/highlight/", "corpus/spotlight/"],
+      "variants": [[]]
+    },
+    {
+      "name": "down-cli",
+      "command": "down-cli",
+      "oracle": "app",
+      "output": "json",
+      "input": "json",
+      "only": ["corpus/down-cli/"],
+      "stamps": ["target/downright-cli/release/down"],
+      "variants": [[]]
+    },
+    {
+      "name": "workspace",
+      "command": "workspace",
+      "oracle": "app",
+      "output": "json",
+      "input": "json",
+      "only": ["corpus/workspace-queries/"],
+      "depends": ["corpus/workspace/"],
+      "variants": [[]]
+    },
+    {
+      "name": "find",
+      "command": "find",
+      "oracle": "app",
+      "output": "json",
+      "input": "json",
+      "only": ["corpus/find/"],
+      "depends": ["corpus/workspace/", "corpus/generated/agent/", "corpus/generated/docs/"],
+      "variants": [[]]
+    },
+    {
+      "name": "palette",
+      "command": "palette",
+      "oracle": "app",
+      "output": "json",
+      "input": "json",
+      "only": ["corpus/palette/"],
+      "variants": [[]]
+    },
+    {
+      "name": "formats",
+      "command": "formats",
+      "oracle": "app",
+      "output": "json",
+      "input": "json",
+      "only": ["corpus/formats/"],
+      "variants": [[]]
+    },
+    {
+      "name": "updater",
+      "command": "updater",
+      "oracle": "app",
+      "output": "json",
+      "input": "json",
+      "only": ["corpus/updater/"],
+      "variants": [[]],
+      "stamps": [
+        "corpus/updater/feeds/basic.xml",
+        "corpus/updater/feeds/binary-junk.xml",
+        "corpus/updater/feeds/bom-crlf.xml",
+        "corpus/updater/feeds/channels.xml",
+        "corpus/updater/feeds/critical.xml",
+        "corpus/updater/feeds/deltas.xml",
+        "corpus/updater/feeds/empty.xml",
+        "corpus/updater/feeds/html-release-notes.xml",
+        "corpus/updater/feeds/informational.xml",
+        "corpus/updater/feeds/latin1.xml",
+        "corpus/updater/feeds/malformed-not-xml.xml",
+        "corpus/updater/feeds/malformed-unclosed.xml",
+        "corpus/updater/feeds/markdown-release-notes.xml",
+        "corpus/updater/feeds/minimum-system-version.xml",
+        "corpus/updater/feeds/missing-fields.xml",
+        "corpus/updater/feeds/multiple-items.xml",
+        "corpus/updater/feeds/non-ascii.xml",
+        "corpus/updater/feeds/odd-versions.xml"
+      ]
+    },
+    {
+      "name": "local-ai",
+      "command": "local-ai",
+      "oracle": "app",
+      "output": "json",
+      "input": "json",
+      "only": ["corpus/local-ai/"],
+      "variants": [[]]
     }
   ]
 }

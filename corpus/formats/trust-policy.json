@@ -1,0 +1,405 @@
+{
+ "steps": [
+  {
+   "op": "trust.titles"
+  },
+  {
+   "op": "mkdir",
+   "path": "workspace/assets"
+  },
+  {
+   "op": "write",
+   "path": "workspace/assets/image.png",
+   "text": "image"
+  },
+  {
+   "op": "mkdir",
+   "path": "workspace-other"
+  },
+  {
+   "op": "symlink",
+   "path": "link",
+   "target": "workspace"
+  },
+  {
+   "op": "trust.decide",
+   "effect": "openExternalLink",
+   "displayName": "https://example.com",
+   "externalURL": "https://example.com",
+   "doc": "notes.md",
+   "grants": []
+  },
+  {
+   "op": "trust.decide",
+   "state": "rawSource",
+   "effect": "openExternalLink",
+   "externalURL": "https://example.com",
+   "doc": "notes.md",
+   "grants": [
+    {
+     "scope": "folder",
+     "path": "",
+     "effects": [
+      "openExternalLink"
+     ],
+     "externalURL": "https://example.com"
+    }
+   ]
+  },
+  {
+   "op": "trust.decide",
+   "effect": "readLocalAsset",
+   "grants": [
+    {
+     "scope": "folder",
+     "path": "",
+     "effects": [
+      "readLocalAsset"
+     ]
+    }
+   ]
+  },
+  {
+   "op": "trust.decide",
+   "effect": "readLocalAsset",
+   "canonicalPath": "workspace/assets/image.png",
+   "doc": "notes.md",
+   "grants": [
+    {
+     "scope": "folder",
+     "path": "workspace",
+     "effects": [
+      "readLocalAsset"
+     ]
+    }
+   ]
+  },
+  {
+   "op": "trust.decide",
+   "effect": "readLocalAsset",
+   "canonicalPath": "workspace-other/image.png",
+   "doc": "notes.md",
+   "grants": [
+    {
+     "scope": "folder",
+     "path": "workspace",
+     "effects": [
+      "readLocalAsset"
+     ]
+    }
+   ]
+  },
+  {
+   "op": "trust.decide",
+   "effect": "readLocalAsset",
+   "canonicalPath": "workspace",
+   "grants": [
+    {
+     "scope": "folder",
+     "path": "workspace/",
+     "effects": [
+      "readLocalAsset"
+     ]
+    }
+   ]
+  },
+  {
+   "op": "trust.decide",
+   "effect": "launchPathOrEditor",
+   "canonicalPath": "workspace/assets/image.png",
+   "grants": [
+    {
+     "scope": "file",
+     "path": "workspace/assets/image.png",
+     "effects": [
+      "launchPathOrEditor"
+     ]
+    }
+   ]
+  },
+  {
+   "op": "trust.decide",
+   "effect": "launchPathOrEditor",
+   "canonicalPath": "workspace/assets/../assets/image.png",
+   "grants": [
+    {
+     "scope": "file",
+     "path": "workspace/assets/image.png",
+     "effects": [
+      "launchPathOrEditor"
+     ]
+    }
+   ]
+  },
+  {
+   "op": "trust.decide",
+   "effect": "launchPathOrEditor",
+   "canonicalPath": "workspace/assets",
+   "grants": [
+    {
+     "scope": "file",
+     "path": "workspace/assets/",
+     "effects": [
+      "launchPathOrEditor"
+     ]
+    }
+   ]
+  },
+  {
+   "op": "trust.decide",
+   "effect": "loadRemoteAsset",
+   "externalURL": "https://tracker.example/pixel.png",
+   "doc": "workspace/README.md",
+   "grants": [
+    {
+     "scope": "file",
+     "path": "workspace/README.md",
+     "effects": [
+      "openExternalLink"
+     ]
+    }
+   ]
+  },
+  {
+   "op": "trust.decide",
+   "effect": "automationAppIntent",
+   "externalURL": "vscode://file/tmp/note.md",
+   "doc": "workspace/README.md",
+   "grants": [
+    {
+     "scope": "folder",
+     "path": "workspace",
+     "effects": [
+      "automationAppIntent"
+     ],
+     "externalURL": "vscode://file/tmp/note.md"
+    }
+   ]
+  },
+  {
+   "op": "trust.decide",
+   "effect": "automationAppIntent",
+   "externalURL": "shortcuts://run-shortcut?name=Deploy",
+   "doc": "workspace/README.md",
+   "grants": [
+    {
+     "scope": "folder",
+     "path": "workspace",
+     "effects": [
+      "automationAppIntent"
+     ],
+     "externalURL": "vscode://file/tmp/note.md"
+    }
+   ]
+  },
+  {
+   "op": "trust.decide",
+   "effect": "openExternalLink",
+   "externalURL": "https://example.com",
+   "doc": "workspace/README.md",
+   "grants": [
+    {
+     "scope": "folder",
+     "path": "workspace",
+     "effects": [
+      "openExternalLink"
+     ]
+    }
+   ]
+  },
+  {
+   "op": "trust.decide",
+   "effect": "readLocalAsset",
+   "canonicalPath": "link/assets/image.png",
+   "doc": "link/README.md",
+   "grants": [
+    {
+     "scope": "folder",
+     "path": "workspace",
+     "effects": [
+      "readLocalAsset"
+     ]
+    }
+   ]
+  },
+  {
+   "op": "trust.decide",
+   "effect": "readLocalAsset",
+   "doc": "link/README.md",
+   "grants": [
+    {
+     "scope": "folder",
+     "path": "workspace",
+     "effects": [
+      "readLocalAsset"
+     ]
+    }
+   ]
+  },
+  {
+   "op": "trust.canonical",
+   "path": "link"
+  },
+  {
+   "op": "trust.canonical",
+   "path": "link/assets/image.png"
+  },
+  {
+   "op": "trust.canonical",
+   "path": "workspace/./assets/../assets"
+  },
+  {
+   "op": "trust.isWithin",
+   "child": "workspace/../outside",
+   "root": "workspace"
+  },
+  {
+   "op": "trust.isWithin",
+   "child": "workspace-other/x",
+   "root": "workspace"
+  },
+  {
+   "op": "trust.isWithin",
+   "child": "workspace",
+   "root": "workspace/"
+  },
+  {
+   "op": "trust.isWithin",
+   "child": "workspace/a/b",
+   "root": "workspace"
+  },
+  {
+   "op": "trust.isWithin",
+   "child": "",
+   "root": "workspace"
+  },
+  {
+   "op": "trust.folderScope",
+   "path": "workspace/assets/logo.png",
+   "isDirectory": false
+  },
+  {
+   "op": "trust.folderScope",
+   "path": "workspace/assets",
+   "isDirectory": true
+  },
+  {
+   "op": "trust.folderScope",
+   "path": "workspace/assets/",
+   "isDirectory": false
+  },
+  {
+   "op": "trust.decodeGrants",
+   "json": "[{\"scope\":\"file\",\"canonicalPath\":\"/tmp/n.md\",\"effects\":[\"readLocalAsset\"]}]"
+  },
+  {
+   "op": "trust.decodeGrants",
+   "json": "[{\"scope\":\"folder\",\"canonicalPath\":\"/tmp\",\"effects\":[\"readLocalAsset\",\"readLocalAsset\",\"openExternalLink\"],\"externalURL\":\"https://x\"}]"
+  },
+  {
+   "op": "trust.decodeGrants",
+   "json": "[{\"scope\":\"file\",\"canonicalPath\":\"/tmp/n.md\",\"effects\":[\"teleport\"]}]"
+  },
+  {
+   "op": "trust.decodeGrants",
+   "json": "[{\"scope\":\"file\",\"canonicalPath\":\"/tmp/n.md\"}]"
+  },
+  {
+   "op": "trust.decodeGrants",
+   "json": "[{\"scope\":\"file\",\"canonicalPath\":\"/tmp/n.md\",\"effects\":[],\"externalURL\":null}]"
+  },
+  {
+   "op": "trust.decodeGrants",
+   "json": "{}"
+  },
+  {
+   "op": "trust.open",
+   "store": "memory",
+   "grants": [
+    {
+     "scope": "folder",
+     "path": "workspace",
+     "effects": [
+      "readLocalAsset"
+     ]
+    }
+   ]
+  },
+  {
+   "op": "trust.state",
+   "store": "memory",
+   "doc": "workspace/notes.md"
+  },
+  {
+   "op": "trust.state",
+   "store": "memory",
+   "doc": "notes.md"
+  },
+  {
+   "op": "trust.state",
+   "store": "memory",
+   "doc": "link/notes.md"
+  },
+  {
+   "op": "trust.state",
+   "store": "memory"
+  },
+  {
+   "op": "trust.grant",
+   "store": "memory",
+   "scope": "file",
+   "path": "workspace/assets/image.png",
+   "effects": [
+    "launchPathOrEditor"
+   ]
+  },
+  {
+   "op": "trust.grant",
+   "store": "memory",
+   "scope": "file",
+   "path": "link/assets/image.png",
+   "effects": [
+    "readLocalAsset"
+   ]
+  },
+  {
+   "op": "trust.grant",
+   "store": "memory",
+   "scope": "file",
+   "path": "workspace/assets/image.png",
+   "effects": [
+    "openExternalLink"
+   ],
+   "externalURL": "https://a"
+  },
+  {
+   "op": "trust.decide",
+   "store": "memory",
+   "effect": "launchPathOrEditor",
+   "canonicalPath": "workspace/assets/image.png"
+  },
+  {
+   "op": "trust.revoke",
+   "store": "memory",
+   "scope": "file",
+   "path": "workspace/assets/image.png"
+  },
+  {
+   "op": "trust.decide",
+   "store": "memory",
+   "effect": "launchPathOrEditor",
+   "canonicalPath": "workspace/assets/image.png"
+  },
+  {
+   "op": "trust.revoke",
+   "store": "memory",
+   "scope": "folder",
+   "path": "link"
+  },
+  {
+   "op": "trust.state",
+   "store": "memory",
+   "doc": "workspace/notes.md"
+  }
+ ]
+}

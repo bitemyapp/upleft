@@ -1,0 +1,70 @@
+{
+ "documents": [
+  "../workspace/notes.md",
+  "../workspace/README.md",
+  "../workspace/docs/guide.md",
+  "../workspace/docs/api/reference.md",
+  "../workspace/crlf.md",
+  "../workspace/bom.md",
+  "../workspace/invalid-utf8.md",
+  "../workspace/empty.md",
+  "../workspace/unicode/café.md",
+  "../workspace/generated/agent-400.md",
+  "../generated/agent/agent-5000.md",
+  "../workspace/export/fragments.md"
+ ],
+ "siblings": true,
+ "queries": [
+  {
+   "text": "guide"
+  },
+  {
+   "text": "release"
+  },
+  {
+   "text": "Ship",
+   "caseSensitive": true
+  },
+  {
+   "text": "[["
+  },
+  {
+   "text": "é"
+  },
+  {
+   "text": "(?m)^#+ ",
+   "isRegex": true
+  },
+  {
+   "text": "a(",
+   "isRegex": true
+  },
+  {
+   "text": "note",
+   "wholeWord": true
+  },
+  {
+   "text": ""
+  },
+  {
+   "text": "Caf"
+  },
+  {
+   "text": "| `make`"
+  },
+  {
+   "text": "mermaid"
+  },
+  {
+   "text": "section",
+   "wholeWord": true
+  },
+  {
+   "text": "\\$[^$]+\\$",
+   "isRegex": true
+  },
+  {
+   "text": "---"
+  }
+ ]
+}

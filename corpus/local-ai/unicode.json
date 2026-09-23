@@ -1,0 +1,172 @@
+{
+ "requests": [
+  {
+   "task": "summarize",
+   "source": "Emoji 😀 first. Next",
+   "output": "Emoji 😀 first"
+  },
+  {
+   "task": "summarize",
+   "source": "é. After",
+   "output": "é"
+  },
+  {
+   "task": "summarize",
+   "source": "Mark .́ stays. Then",
+   "output": "x"
+  },
+  {
+   "task": "summarize",
+   "source": "Line one\r\nLine two. End",
+   "output": "Line one\r\n"
+  },
+  {
+   "task": "summarize",
+   "source": "Line Two. More",
+   "output": " Line "
+  },
+  {
+   "task": "summarize",
+   "source": "Ideographic。 full stop. x",
+   "output": "　y　"
+  },
+  {
+   "task": "suggestTitle",
+   "source": "ǆemal straße ﬁne i̇stanbul ÿ ışık",
+   "output": "t"
+  },
+  {
+   "task": "suggestTitle",
+   "source": "hello world foo",
+   "output": "t"
+  },
+  {
+   "task": "suggestTitle",
+   "source": "one two three four five six seven eight nine ten eleven twelve",
+   "output": "t"
+  },
+  {
+   "task": "suggestTitle",
+   "source": "a  b\n\nc",
+   "output": "t"
+  },
+  {
+   "task": "suggestTitle",
+   "source": " ́x y",
+   "output": "t"
+  },
+  {
+   "task": "suggestTitle",
+   "source": "école ÉCOLE mcdonald's o'neil x-ray 3d 42nd",
+   "output": "t"
+  },
+  {
+   "task": "suggestTitle",
+   "source": "σοφία слово שלום 日本語",
+   "output": "t"
+  },
+  {
+   "task": "improveClarity",
+   "source": "x in order to ́y",
+   "output": "x to ́y"
+  },
+  {
+   "task": "improveClarity",
+   "source": "x́ in order to y",
+   "output": "t"
+  },
+  {
+   "task": "improveClarity",
+   "source": "in order to start",
+   "output": "in order to start"
+  },
+  {
+   "task": "improveClarity",
+   "source": "a\u0000 in order to b",
+   "output": "a\u0000 to b"
+  },
+  {
+   "task": "improveClarity",
+   "source": "😀 in order to 😀",
+   "selection": [
+    2,
+    13
+   ],
+   "output": "😀 to"
+  },
+  {
+   "task": "improveClarity",
+   "source": "café in order to café",
+   "output": "café to café"
+  },
+  {
+   "task": "improveClarity",
+   "source": "IN ORDER TO a In Order To b  in order to  c",
+   "output": "t"
+  },
+  {
+   "task": "summarize",
+   "source": "Tab\tseparated. x",
+   "output": "​zero width​"
+  }
+ ],
+ "previews": [
+  {
+   "range": [
+    0,
+    2
+   ],
+   "originalSource": "é",
+   "proposedSource": "E",
+   "current": "é tail"
+  },
+  {
+   "range": [
+    0,
+    1
+   ],
+   "originalSource": "é",
+   "proposedSource": "E",
+   "current": "é tail"
+  },
+  {
+   "range": [
+    0,
+    1
+   ],
+   "originalSource": "é",
+   "proposedSource": "é",
+   "current": "é tail"
+  },
+  {
+   "range": [
+    0,
+    2
+   ],
+   "originalSource": "😀",
+   "proposedSource": "😁",
+   "current": "😀!"
+  },
+  {
+   "range": [
+    0,
+    3
+   ],
+   "originalSource": "Åx",
+   "proposedSource": "y",
+   "current": "Åxx"
+  }
+ ],
+ "controller": [
+  [
+   {
+    "task": "suggestTitle",
+    "source": "straße café"
+   },
+   {
+    "task": "suggestTitle",
+    "source": "ǆemal"
+   }
+  ]
+ ]
+}

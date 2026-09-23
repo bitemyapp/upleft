@@ -1,0 +1,240 @@
+{
+ "requests": [
+  {
+   "task": "summarize",
+   "source": "First sentence. Second sentence.",
+   "output": " First sentence. "
+  },
+  {
+   "task": "improveClarity",
+   "source": "Make this clear in order to help.",
+   "selection": [
+    0,
+    33
+   ],
+   "output": "Make this clear to help.\n"
+  },
+  {
+   "task": "improveClarity",
+   "source": "We do this in order to win. And in order to learn.",
+   "output": "We do this to win. And to learn."
+  },
+  {
+   "task": "improveClarity",
+   "source": "Nothing to improve here.",
+   "output": "Nothing to improve here."
+  },
+  {
+   "task": "improveClarity",
+   "source": "Say hello in order to greet.",
+   "selection": [
+    4,
+    23
+   ],
+   "output": "hello to greet"
+  },
+  {
+   "task": "suggestTitle",
+   "source": "the quick brown fox jumps over the lazy dog and more words here",
+   "output": "  The Quick Fox\n"
+  },
+  {
+   "task": "suggestTitle",
+   "source": "one\ntwo  three",
+   "output": "One Two Three"
+  },
+  {
+   "task": "summarize",
+   "source": "No terminator here",
+   "output": "No terminator here"
+  },
+  {
+   "task": "summarize",
+   "source": "...!!!",
+   "output": "..."
+  },
+  {
+   "task": "summarize",
+   "source": "Question? Answer.",
+   "output": "Question"
+  },
+  {
+   "task": "summarize",
+   "source": "\n\nLeading newlines. Then text",
+   "output": "\n\nLeading newlines\n\n"
+  },
+  {
+   "task": "summarize",
+   "source": "  Padded first sentence  . Then",
+   "output": "\t Padded \t"
+  },
+  {
+   "task": "summarize",
+   "source": ""
+  },
+  {
+   "task": "summarize",
+   "source": "   \n\t "
+  },
+  {
+   "task": "suggestTitle",
+   "source": "short",
+   "selection": [
+    5,
+    100
+   ],
+   "output": "x"
+  },
+  {
+   "task": "suggestTitle",
+   "source": "short",
+   "selection": [
+    -1,
+    2
+   ],
+   "output": "x"
+  },
+  {
+   "task": "summarize",
+   "source": "short text",
+   "selection": [
+    2,
+    0
+   ]
+  },
+  {
+   "task": "summarize",
+   "source": "a    b",
+   "selection": [
+    1,
+    3
+   ]
+  },
+  {
+   "task": "improveClarity",
+   "source": "keep in order to go",
+   "selection": [
+    5,
+    14
+   ],
+   "output": "in order to go"
+  },
+  {
+   "task": "summarize",
+   "source": "Trim NBSP. Next",
+   "output": " Result "
+  },
+  {
+   "task": "improveClarity",
+   "source": "# Heading\n\nParagraph in order to test.\n\n- item in order to list\n",
+   "output": "# Heading\n\nParagraph to test.\n\n- item to list\n"
+  }
+ ],
+ "previews": [
+  {
+   "range": [
+    0,
+    3
+   ],
+   "originalSource": "old",
+   "proposedSource": "new",
+   "current": "old text"
+  },
+  {
+   "range": [
+    0,
+    3
+   ],
+   "originalSource": "old",
+   "proposedSource": "new",
+   "current": "new text"
+  },
+  {
+   "range": [
+    5,
+    10
+   ],
+   "originalSource": "old",
+   "proposedSource": "new",
+   "current": "short"
+  },
+  {
+   "range": [
+    -1,
+    3
+   ],
+   "originalSource": "old",
+   "proposedSource": "new",
+   "current": "old text"
+  },
+  {
+   "range": [
+    0,
+    3
+   ],
+   "originalSource": "old",
+   "proposedSource": "old",
+   "current": "old text"
+  },
+  {
+   "range": [
+    4,
+    4
+   ],
+   "originalSource": "text",
+   "proposedSource": "TEXT\nmore",
+   "current": "old text"
+  },
+  {
+   "range": [
+    8,
+    0
+   ],
+   "originalSource": "",
+   "proposedSource": " appended",
+   "current": "old text"
+  }
+ ],
+ "controller": [
+  [
+   {
+    "task": "summarize",
+    "source": "first"
+   }
+  ],
+  [
+   {
+    "task": "summarize",
+    "source": "first"
+   },
+   {
+    "task": "summarize",
+    "source": "second"
+   }
+  ],
+  [
+   {
+    "task": "summarize",
+    "source": "first. one"
+   },
+   {
+    "task": "suggestTitle",
+    "source": "a title here"
+   },
+   {
+    "task": "improveClarity",
+    "source": "go in order to win"
+   }
+  ],
+  [
+   {
+    "task": "summarize",
+    "source": "first"
+   },
+   {
+    "task": "summarize",
+    "source": "  "
+   }
+  ]
+ ]
+}

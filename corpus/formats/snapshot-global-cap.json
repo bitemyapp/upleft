@@ -1,0 +1,122 @@
+{
+ "steps": [
+  {
+   "op": "snapshot.open",
+   "history": "support/history"
+  },
+  {
+   "op": "snapshot.record",
+   "doc": "a.md",
+   "text": "alpha one\n",
+   "kind": "baseline"
+  },
+  {
+   "op": "snapshot.record",
+   "doc": "a.md",
+   "text": "alpha two, longer\n",
+   "kind": "external"
+  },
+  {
+   "op": "snapshot.record",
+   "doc": "a.md",
+   "text": "alpha three, longest of all\n",
+   "kind": "external"
+  },
+  {
+   "op": "snapshot.record",
+   "doc": "b.md",
+   "text": "bravo one\n",
+   "kind": "baseline"
+  },
+  {
+   "op": "snapshot.record",
+   "doc": "b.md",
+   "text": "bravo two, longer\n",
+   "kind": "external"
+  },
+  {
+   "op": "snapshot.record",
+   "doc": "b.md",
+   "text": "bravo three, longest of all\n",
+   "kind": "external"
+  },
+  {
+   "op": "snapshot.wait"
+  },
+  {
+   "op": "snapshot.touchObject",
+   "hash": "37d3bbae66e1600c2b0008287a7789690108bf2e42dafa8b20af3d5e2874bb14",
+   "date": "2020-01-01T00:00:00Z"
+  },
+  {
+   "op": "snapshot.touchObject",
+   "hash": "d63bf47eb7349f90bc50a02c6843ee6a1feef5457718f630ab44a41b77c5a574",
+   "date": "2020-01-02T00:00:00Z"
+  },
+  {
+   "op": "snapshot.touchObject",
+   "hash": "db626f5e76f09cd14d667996fdf794408d52d2de08c1fc3b0fe96d5c871898b4",
+   "date": "2020-01-03T00:00:00Z"
+  },
+  {
+   "op": "snapshot.touchObject",
+   "hash": "2e39d894115cd33ab248c3f74043b4cd97dfc41355b46f8ae709c7f081bd819c",
+   "date": "2020-01-04T00:00:00Z"
+  },
+  {
+   "op": "snapshot.touchObject",
+   "hash": "cbc7b5828f44eeb13d98a3a27dd06959aec1f0e8d387dea7945d9141472fea05",
+   "date": "2020-01-05T00:00:00Z"
+  },
+  {
+   "op": "snapshot.touchObject",
+   "hash": "e6d6e803250e5e0e2b0c9ddf2f64a93da08840a1059f846a77cb70298c9af1d6",
+   "date": "2020-01-06T00:00:00Z"
+  },
+  {
+   "op": "snapshot.inventory"
+  },
+  {
+   "op": "snapshot.totalBytes"
+  },
+  {
+   "op": "snapshot.limits",
+   "maximumBytes": 110
+  },
+  {
+   "op": "snapshot.prune"
+  },
+  {
+   "op": "snapshot.versions",
+   "doc": "a.md"
+  },
+  {
+   "op": "snapshot.versions",
+   "doc": "b.md"
+  },
+  {
+   "op": "snapshot.inventory"
+  },
+  {
+   "op": "snapshot.limits",
+   "maximumBytes": 0
+  },
+  {
+   "op": "snapshot.prune"
+  },
+  {
+   "op": "snapshot.versions",
+   "doc": "a.md"
+  },
+  {
+   "op": "snapshot.versions",
+   "doc": "b.md"
+  },
+  {
+   "op": "snapshot.inventory"
+  },
+  {
+   "op": "snapshot.totalBytes"
+  }
+ ]
+}

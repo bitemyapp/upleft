@@ -14,6 +14,19 @@ oracle:
     cd oracle && swift build -c release -Xswiftc -enable-testing --scratch-path {{scratch}}/oracle
     just stamp {{scratch}}/oracle/release/downright-oracle
 
+# oracle/app compiles Downright's own module sources as libraries (see its
+# Package.swift). It is separate from `just oracle` so the core suites never
+# need the whole app or Sparkle.
+# Build downright-app-oracle, the Swift reference for the app-layer suites.
+app-oracle:
+    swift build --package-path oracle/app -c release -Xswiftc -enable-testing --scratch-path {{scratch}}/app-oracle
+    just stamp {{scratch}}/app-oracle/release/downright-app-oracle
+
+# Build Downright's real `down` from the submodule, stamped, for `down-cli`.
+downright-cli:
+    cd vendor/downright && swift build -c release --scratch-path ../../target/downright-cli --product down
+    just stamp {{scratch}}/downright-cli/release/down
+
 # Stamp a Swift binary with the canonical LC_BUILD_VERSION (minos 14.0, the
 # installed SDK) and re-sign it ad hoc. SwiftPM records sdk 14.0; an Xcode
 # build of Downright records the real SDK, and AppKit keys behaviour off it.
@@ -39,6 +52,13 @@ bench *args: drbench
     cargo build --release -p upleft-bench
     python3 scripts/bench-compare.py {{args}}
 
+# Runs downright-app-oracle (Swift) and upleft-oracle (Rust) stage by stage
+# and fails on any stage slower than Swift beyond run-to-run noise.
+# Compare the app layer's benchmarks: HTML export, workspace index, find.
+app-bench *args: app-oracle corpus
+    cargo build --release -p upleft-conformance
+    python3 scripts/app-bench-compare.py {{args}}
+
 # Build the original Downright.app from the submodule (for window-level conformance).
 downright-app:
     cd vendor/downright && SCRATCH=../../target/downright-app Scripts/bundle-app.sh
@@ -55,5 +75,5 @@ corpus:
 
 # Compare Upleft with Downright on the corpus. Pass suite filters through, e.g. `just conform --suite parse`.
 conform *args: corpus
-    cargo build --release -p upleft-conformance
+    cargo build --release -p upleft-conformance -p upleft-cli
     target/release/conform {{args}}

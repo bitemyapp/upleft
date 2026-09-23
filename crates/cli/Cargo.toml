@@ -1,0 +1,35 @@
+[package]
+name = "upleft-cli"
+description = "Port of Downright's drdownright library (MarkdownCLI, AgentBridge, AgentWatcher, Doctor) and the `down` command-line tool"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+publish.workspace = true
+
+[lib]
+name = "upleft_cli"
+
+[[bin]]
+name = "down"
+path = "src/bin/down/main.rs"
+
+[dependencies]
+upleft-core.workspace = true
+upleft-swift-text.workspace = true
+upleft-foundation.workspace = true
+objc2.workspace = true
+block2.workspace = true
+dispatch2 = "0.3.1"
+libc = "0.2"
+objc2-foundation = { workspace = true, features = [
+    "NSArray", "NSBundle", "NSData", "NSDate", "NSDictionary", "NSEnumerator", "NSError", "NSFileHandle",
+    "NSFileManager", "NSJSONSerialization", "NSNull", "NSObjCRuntime", "NSPathUtilities", "NSProcessInfo",
+    "NSPropertyList", "NSRange", "NSRegularExpression", "NSString", "NSTask", "NSTextCheckingResult", "NSURL", "NSUUID",
+    "NSValue", "block2",
+] }
+objc2-app-kit = { workspace = true, features = ["NSWorkspace", "block2", "objc2-uniform-type-identifiers"] }
+objc2-uniform-type-identifiers = { version = "0.3.2", default-features = false, features = ["std", "UTType", "UTCoreTypes"] }
+objc2-core-foundation = { workspace = true, features = ["CFArray", "CFBase", "CFRunLoop", "CFString", "CFURL"] }
+objc2-core-services = { version = "0.3.2", default-features = false, features = ["std", "FSEvents", "dispatch2"] }
+
+[dev-dependencies]

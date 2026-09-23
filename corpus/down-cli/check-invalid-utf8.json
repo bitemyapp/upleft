@@ -1,0 +1,12 @@
+{
+ "files": [
+  {
+   "path": "work/bad.md",
+   "hex": "5b615d286d2e6d6429ff"
+  }
+ ],
+ "argv": [
+  "check",
+  "bad.md"
+ ]
+}

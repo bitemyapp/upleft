@@ -1,0 +1,8 @@
+{
+ "argv": [
+  "hook",
+  "--install",
+  "--scope",
+  "user"
+ ]
+}

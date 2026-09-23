@@ -1,0 +1,8 @@
+{
+ "argv": [
+  "watch",
+  "--debounce",
+  "0x1p3",
+  "/nonexistent-upleft-root/x/y"
+ ]
+}

@@ -1,0 +1,12 @@
+{
+ "files": [
+  {
+   "path": "work/crlf.md",
+   "text": "# A\r\n\r\npara\r\ncontinued\r\n- x\r\n\ry\rz\n"
+  }
+ ],
+ "argv": [
+  "export",
+  "crlf.md"
+ ]
+}

@@ -1,0 +1,84 @@
+{
+ "supportDirectory": "support",
+ "steps": [
+  {
+   "op": "mkdir",
+   "path": "workspace/assets"
+  },
+  {
+   "op": "trust.open",
+   "store": "shared"
+  },
+  {
+   "op": "trust.grant",
+   "store": "shared",
+   "scope": "folder",
+   "path": "workspace",
+   "effects": [
+    "readLocalAsset"
+   ]
+  },
+  {
+   "op": "trust.grant",
+   "store": "shared",
+   "scope": "folder",
+   "path": "workspace",
+   "effects": [
+    "launchPathOrEditor",
+    "readLocalAsset"
+   ]
+  },
+  {
+   "op": "trust.grant",
+   "store": "shared",
+   "scope": "file",
+   "path": "workspace/README.md",
+   "effects": [
+    "openExternalLink",
+    "loadRemoteAsset",
+    "automationAppIntent"
+   ],
+   "externalURL": "https://example.com/a?b=c#d"
+  },
+  {
+   "op": "trust.grant",
+   "store": "shared",
+   "scope": "file",
+   "path": "workspace/README.md",
+   "effects": [
+    "openExternalLink"
+   ],
+   "externalURL": "vscode://file/x"
+  },
+  {
+   "op": "trust.state",
+   "store": "shared",
+   "doc": "workspace/README.md"
+  },
+  {
+   "op": "trust.revoke",
+   "store": "shared",
+   "scope": "file",
+   "path": "workspace/README.md"
+  },
+  {
+   "op": "trust.grant",
+   "store": "shared",
+   "scope": "file",
+   "path": "unicode é/😀 file.md",
+   "effects": [
+    "readLocalAsset",
+    "openExternalLink",
+    "loadRemoteAsset",
+    "launchPathOrEditor",
+    "automationAppIntent"
+   ]
+  },
+  {
+   "op": "trust.decide",
+   "store": "shared",
+   "effect": "readLocalAsset",
+   "canonicalPath": "workspace/assets/x.png"
+  }
+ ]
+}

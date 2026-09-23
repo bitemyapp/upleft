@@ -1,0 +1,16 @@
+{
+ "files": [
+  {
+   "path": "work/real.json",
+   "text": "{}"
+  },
+  {
+   "path": "work/.claude/settings.json",
+   "symlink": "../real.json"
+  }
+ ],
+ "argv": [
+  "hook",
+  "--install"
+ ]
+}

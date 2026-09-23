@@ -1,0 +1,8 @@
+{
+ "argv": [
+  "outline"
+ ],
+ "stdin": {
+  "text": "Line 1\r# Heading 1\rLine 3\r## Heading 2\r"
+ }
+}

@@ -1,0 +1,12 @@
+{
+ "files": [
+  {
+   "path": "work/o.md",
+   "text": "---\ntitle: Front\n---\n# First\nText\n## Child *em* `code`\n### Grand [link](x.md)\n## Child\nSetext\n======\n####### seven\n# Émoji 🌊 heading\n"
+  }
+ ],
+ "argv": [
+  "outline",
+  "o.md"
+ ]
+}

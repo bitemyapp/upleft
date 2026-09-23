@@ -18,6 +18,11 @@ upleft-render = { path = "crates/render" }
 upleft-mermaid = { path = "crates/mermaid" }
 upleft-elk = { path = "crates/elk" }
 upleft-math = { path = "crates/math" }
+upleft-foundation = { path = "crates/foundation" }
+upleft-spotlight-metadata = { path = "crates/spotlight-metadata" }
+upleft-cli = { path = "crates/cli" }
+upleft-app = { path = "crates/app" }
+upleft-quicklook = { path = "crates/quicklook" }
 block2 = "0.6"
 objc2 = "0.6.4"
 objc2-foundation = { version = "0.3.2", default-features = false, features = ["std"] }

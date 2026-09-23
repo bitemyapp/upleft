@@ -1,0 +1,12 @@
+{
+ "files": [
+  {
+   "path": "work/crlf.md",
+   "text": "Line 1\r\n# Heading 1\r\nLine 3\r\n## Heading 2\r\n"
+  }
+ ],
+ "argv": [
+  "outline",
+  "crlf.md"
+ ]
+}

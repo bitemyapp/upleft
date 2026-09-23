@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<rss version="2.0" xmlns:sparkle="http://www.andymatuschak.org/xml-namespaces/sparkle">
+  <channel>
+    <title>Downright</title>
+    <item><title>v</title><sparkle:version>1.0.0.0.0.1</sparkle:version><sparkle:shortVersionString>1.0.0.0.0.1</sparkle:shortVersionString><enclosure url="https://updates.example.invalid/a.zip" length="1" type="application/octet-stream"/></item>
+    <item><title>v</title><sparkle:version>2.0b10</sparkle:version><sparkle:shortVersionString>2.0 beta 10</sparkle:shortVersionString><enclosure url="https://updates.example.invalid/b.zip" length="1" type="application/octet-stream"/></item>
+    <item><title>v</title><sparkle:version>2.0rc1</sparkle:version><sparkle:shortVersionString>2.0-rc.1+build.7</sparkle:shortVersionString><enclosure url="https://updates.example.invalid/c.zip" length="1" type="application/octet-stream"/></item>
+    <item><title>v</title><sparkle:version>  47  </sparkle:version><sparkle:shortVersionString>	1.1.0	</sparkle:shortVersionString><enclosure url="https://updates.example.invalid/d.zip" length="1" type="application/octet-stream"/></item>
+    <item><title>v</title><sparkle:version>18446744073709551616</sparkle:version><sparkle:shortVersionString>999999999999999999999.0</sparkle:shortVersionString><enclosure url="https://updates.example.invalid/e.zip" length="18446744073709551615" type="application/octet-stream"/></item>
+    <item><title>v</title><sparkle:version>-1</sparkle:version><sparkle:shortVersionString>٣.٢.١</sparkle:shortVersionString><enclosure url="https://updates.example.invalid/f.zip" length="-5" type="application/octet-stream"/></item>
+    <item><title>v</title><sparkle:version></sparkle:version><sparkle:shortVersionString></sparkle:shortVersionString><enclosure url="https://updates.example.invalid/g.zip" length="abc" type="application/octet-stream"/></item>
+  </channel>
+</rss>

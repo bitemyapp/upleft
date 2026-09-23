@@ -1,0 +1,125 @@
+{
+ "parsed": [
+  "support/ReaderProfiles/profiles.json",
+  "empty/profiles.json"
+ ],
+ "steps": [
+  {
+   "op": "profiles.builtIns"
+  },
+  {
+   "op": "profiles.make",
+   "id": "x",
+   "name": "x",
+   "measureCharacters": 10
+  },
+  {
+   "op": "profiles.make",
+   "id": "x",
+   "name": "x",
+   "measureCharacters": 100
+  },
+  {
+   "op": "profiles.make",
+   "id": "x",
+   "name": "x",
+   "measureCharacters": 69.5
+  },
+  {
+   "op": "profiles.make",
+   "id": "y",
+   "name": "Wide",
+   "isBuiltIn": true,
+   "typographyScale": "extra-large",
+   "chromeDensity": "spacious",
+   "motionPreference": "reduced",
+   "measureCharacters": 72
+  },
+  {
+   "op": "profiles.custom",
+   "name": "  \n\t "
+  },
+  {
+   "op": "profiles.custom",
+   "name": " My setup "
+  },
+  {
+   "op": "profiles.custom",
+   "id": "fixed-id",
+   "name": ""
+  },
+  {
+   "op": "profiles.custom",
+   "id": "fixed-id-2",
+   "name": "Team"
+  },
+  {
+   "op": "profiles.save",
+   "path": "support/ReaderProfiles/profiles.json",
+   "profiles": [
+    {
+     "id": "team",
+     "name": "Team",
+     "typographyScale": "large",
+     "measureCharacters": 71,
+     "chromeDensity": "compact",
+     "motionPreference": "full"
+    },
+    {
+     "id": "documentation",
+     "name": "Documentation",
+     "isBuiltIn": true
+    },
+    {
+     "id": "late",
+     "name": "Late",
+     "measureCharacters": 5
+    }
+   ]
+  },
+  {
+   "op": "profiles.load",
+   "path": "support/ReaderProfiles/profiles.json"
+  },
+  {
+   "op": "profiles.load",
+   "path": "support/ReaderProfiles/missing.json"
+  },
+  {
+   "op": "write",
+   "path": "hand.json",
+   "text": "[{\"id\": \"a\", \"name\": \"A\", \"isBuiltIn\": false, \"typographyScale\": \"compact\", \"measureCharacters\": 10, \"chromeDensity\": \"spacious\", \"motionPreference\": \"follow-system\"}, {\"id\": \"b\", \"name\": \"B\", \"isBuiltIn\": true, \"typographyScale\": \"standard\", \"measureCharacters\": 70, \"chromeDensity\": \"comfortable\", \"motionPreference\": \"full\"}]"
+  },
+  {
+   "op": "profiles.load",
+   "path": "hand.json"
+  },
+  {
+   "op": "write",
+   "path": "bad.json",
+   "text": "[{\"id\": \"a\", \"name\": \"A\"}]"
+  },
+  {
+   "op": "profiles.load",
+   "path": "bad.json"
+  },
+  {
+   "op": "write",
+   "path": "bad2.json",
+   "text": "[{\"id\": \"a\", \"name\": \"A\", \"isBuiltIn\": false, \"typographyScale\": \"huge\", \"measureCharacters\": 70, \"chromeDensity\": \"comfortable\", \"motionPreference\": \"full\"}]"
+  },
+  {
+   "op": "profiles.load",
+   "path": "bad2.json"
+  },
+  {
+   "op": "profiles.save",
+   "path": "empty/profiles.json",
+   "profiles": []
+  },
+  {
+   "op": "profiles.load",
+   "path": "empty/profiles.json"
+  }
+ ]
+}

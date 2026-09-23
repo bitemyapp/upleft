@@ -1,0 +1,7 @@
+{
+ "argv": [
+  "watch",
+  "--focus",
+  "~/nope/x.md"
+ ]
+}

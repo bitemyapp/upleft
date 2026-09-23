@@ -20,6 +20,36 @@ pub mod view_bench;
 pub mod style_sheet;
 pub mod unicode;
 
+// App-layer suites (Swift side: oracle/app, `downright-app-oracle`).
+pub mod app_bench;
+pub mod down_cli;
+pub mod find;
+pub mod formats;
+pub mod html_export;
+pub mod local_ai;
+pub mod palette;
+pub mod spotlight;
+pub mod updater;
+pub mod workspace;
+
+/// Commands answered by the app layer. Their flags are not the core flags:
+/// each command parses its own from [`Request::flags`], as each
+/// `downright-app-oracle` dump does.
+pub const APP_COMMANDS: &[&str] = &[
+    "html-export",
+    "spotlight",
+    "down-cli",
+    "workspace",
+    "find",
+    "palette",
+    "formats",
+    "updater",
+    "local-ai",
+    "bench-export",
+    "bench-workspace",
+    "bench-find",
+];
+
 use std::path::PathBuf;
 
 /// The flags both oracles accept.
@@ -37,6 +67,8 @@ pub struct Request {
     pub layout: Option<PathBuf>,
     /// Capture the composited window (default) rather than `cacheDisplay`.
     pub capture_from_screen: bool,
+    /// The flags exactly as given, for the app-layer commands.
+    pub flags: Vec<String>,
 }
 
 impl Request {
@@ -55,7 +87,11 @@ impl Request {
             height: 1400.0,
             layout: None,
             capture_from_screen: true,
+            flags: flags.to_vec(),
         };
+        if APP_COMMANDS.contains(&command.as_str()) {
+            return Ok(request);
+        }
         let mut flags = flags.iter();
         while let Some(flag) = flags.next() {
             let mut value = || flags.next().cloned().ok_or_else(|| format!("{flag} needs a value"));
@@ -138,6 +174,18 @@ pub fn run(request: &Request) -> Result<(), Failure> {
             request.capture(),
             Box::new(render::MarkdownScene::new(&request.mode, &request.theme)),
         ),
+        "html-export" => html_export::run(request),
+        "spotlight" => spotlight::run(request),
+        "down-cli" => down_cli::run(request),
+        "workspace" => workspace::run(request),
+        "find" => find::run(request),
+        "palette" => palette::run(request),
+        "formats" => formats::run(request),
+        "updater" => updater::run(request),
+        "local-ai" => local_ai::run(request),
+        "bench-export" => app_bench::export(request),
+        "bench-workspace" => app_bench::workspace(request),
+        "bench-find" => app_bench::find(request),
         _ => Err(Failure::NotPorted),
     }
 }

@@ -1,0 +1,42 @@
+{
+ "supportDirectory": "support",
+ "steps": [
+  {
+   "op": "write",
+   "path": "support/trust.json",
+   "text": "[{\"scope\": \"folder\", \"canonicalPath\": \"<root>/workspace\", \"effects\": [\"openExternalLink\", \"readLocalAsset\"]}, {\"scope\": \"file\", \"canonicalPath\": \"<root>/workspace/a.md\", \"effects\": [\"launchPathOrEditor\"], \"externalURL\": null}]"
+  },
+  {
+   "op": "trust.open",
+   "store": "shared"
+  },
+  {
+   "op": "trust.decide",
+   "store": "shared",
+   "effect": "openExternalLink",
+   "externalURL": "https://example.com",
+   "doc": "workspace/a.md"
+  },
+  {
+   "op": "trust.decide",
+   "store": "shared",
+   "effect": "readLocalAsset",
+   "canonicalPath": "workspace/img.png",
+   "doc": "workspace/a.md"
+  },
+  {
+   "op": "trust.grant",
+   "store": "shared",
+   "scope": "file",
+   "path": "workspace/a.md",
+   "effects": [
+    "readLocalAsset"
+   ]
+  },
+  {
+   "op": "trust.state",
+   "store": "shared",
+   "doc": "workspace/a.md"
+  }
+ ]
+}

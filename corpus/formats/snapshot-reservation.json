@@ -1,0 +1,99 @@
+{
+ "steps": [
+  {
+   "op": "snapshot.open",
+   "history": "history"
+  },
+  {
+   "op": "snapshot.record",
+   "doc": "a.md",
+   "text": "v1\n",
+   "kind": "baseline"
+  },
+  {
+   "op": "snapshot.record",
+   "doc": "a.md",
+   "text": "v2\n",
+   "kind": "external"
+  },
+  {
+   "op": "snapshot.wait"
+  },
+  {
+   "op": "snapshot.open",
+   "store": "second",
+   "history": "history"
+  },
+  {
+   "op": "snapshot.record",
+   "store": "second",
+   "doc": "a.md",
+   "text": "v2\n",
+   "kind": "external"
+  },
+  {
+   "op": "snapshot.record",
+   "store": "second",
+   "doc": "a.md",
+   "text": "v1\n",
+   "kind": "local"
+  },
+  {
+   "op": "snapshot.wait",
+   "store": "second"
+  },
+  {
+   "op": "snapshot.record",
+   "doc": "a.md",
+   "text": "v1\n",
+   "kind": "local"
+  },
+  {
+   "op": "snapshot.record",
+   "doc": "a.md",
+   "text": "v3\n",
+   "kind": "local"
+  },
+  {
+   "op": "snapshot.wait"
+  },
+  {
+   "op": "snapshot.versions",
+   "doc": "a.md"
+  },
+  {
+   "op": "snapshot.versions",
+   "store": "second",
+   "doc": "a.md"
+  },
+  {
+   "op": "snapshot.open",
+   "store": "third",
+   "history": "history/"
+  },
+  {
+   "op": "snapshot.forget",
+   "store": "third",
+   "doc": "a.md"
+  },
+  {
+   "op": "snapshot.record",
+   "store": "third",
+   "doc": "a.md",
+   "text": "v3\n",
+   "kind": "baseline"
+  },
+  {
+   "op": "snapshot.wait",
+   "store": "third"
+  },
+  {
+   "op": "snapshot.versions",
+   "doc": "a.md"
+  },
+  {
+   "op": "snapshot.inventory",
+   "store": "third"
+  }
+ ]
+}

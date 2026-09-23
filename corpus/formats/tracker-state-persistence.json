@@ -1,0 +1,68 @@
+{
+ "steps": [
+  {
+   "op": "tracker.new"
+  },
+  {
+   "op": "tracker.apply",
+   "old": "a\ngone\nb\n",
+   "new": "a\nb\nnew\n"
+  },
+  {
+   "op": "tracker.visit",
+   "index": 0
+  },
+  {
+   "op": "state.open",
+   "support": "support"
+  },
+  {
+   "op": "state.save",
+   "doc": "note.md",
+   "base": "new",
+   "set": {
+    "marksFromTracker": "main",
+    "reviewBaselineHash": "abc123",
+    "lastOpened": "2030-01-01T00:00:00Z"
+   }
+  },
+  {
+   "op": "state.open",
+   "store": "reopened",
+   "support": "support"
+  },
+  {
+   "op": "state.get",
+   "store": "reopened",
+   "doc": "note.md"
+  },
+  {
+   "op": "tracker.new",
+   "tracker": "restored"
+  },
+  {
+   "op": "tracker.restore",
+   "tracker": "restored",
+   "fromState": "reopened",
+   "doc": "note.md",
+   "textLength": 8,
+   "now": "2030-01-01T00:00:00Z"
+  },
+  {
+   "op": "tracker.new",
+   "tracker": "fresh"
+  },
+  {
+   "op": "tracker.apply",
+   "tracker": "fresh",
+   "old": "a\ngone\nb\n",
+   "new": "a\nb\nnew\n"
+  },
+  {
+   "op": "tracker.merge",
+   "tracker": "fresh",
+   "fromState": "reopened",
+   "doc": "note.md"
+  }
+ ]
+}

@@ -1,0 +1,12 @@
+{
+ "files": [
+  {
+   "path": "work/.claude/settings.json",
+   "text": "{\"permissions\": {\"\\u00e9\": 1, \"e\\u0301\": 2, \"K\": 3, \"\\u212a\": 4}}"
+  }
+ ],
+ "argv": [
+  "hook",
+  "--install"
+ ]
+}

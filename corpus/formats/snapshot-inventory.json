@@ -1,0 +1,73 @@
+{
+ "steps": [
+  {
+   "op": "snapshot.open",
+   "history": "support/history"
+  },
+  {
+   "op": "snapshot.record",
+   "doc": "a.md",
+   "text": "kept\n",
+   "kind": "baseline"
+  },
+  {
+   "op": "snapshot.wait"
+  },
+  {
+   "op": "write",
+   "path": "support/history/objects/ff/ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+   "text": "stray object\n"
+  },
+  {
+   "op": "write",
+   "path": "support/history/objects/readme.txt",
+   "text": "not an object\n"
+  },
+  {
+   "op": "write",
+   "path": "support/history/objects/ab/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+   "text": "63 characters\n"
+  },
+  {
+   "op": "write",
+   "path": "support/history/objects/ab/éééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééé",
+   "text": "64 characters, 128 bytes\n"
+  },
+  {
+   "op": "mkdir",
+   "path": "support/history/objects/cd/cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
+  },
+  {
+   "op": "mkdir",
+   "path": "support/history/objects/ee"
+  },
+  {
+   "op": "symlink",
+   "path": "support/history/objects/ee/eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
+   "target": "support/history/objects/readme.txt"
+  },
+  {
+   "op": "snapshot.inventory"
+  },
+  {
+   "op": "snapshot.totalBytes"
+  },
+  {
+   "op": "snapshot.prune"
+  },
+  {
+   "op": "snapshot.inventory"
+  },
+  {
+   "op": "exists",
+   "path": "support/history/objects/readme.txt"
+  },
+  {
+   "op": "exists",
+   "path": "support/history/objects/ab/éééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééé"
+  },
+  {
+   "op": "snapshot.totalBytes"
+  }
+ ]
+}

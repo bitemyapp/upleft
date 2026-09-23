@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<rss version="2.0" xmlns:sparkle="http://www.andymatuschak.org/xml-namespaces/sparkle">
+  <channel>
+    <title>Downright — Mises à jour</title>
+    <item>
+      <title>Downright 1.1.0 « Été » 夏 🌞</title>
+      <sparkle:version>47</sparkle:version>
+      <sparkle:shortVersionString>1.1.0‑été</sparkle:shortVersionString>
+      <description><![CDATA[## Nouveautés
+- Analyse plus rapide (é = e + ́ : é)
+- Ελληνικά, русский, العربية, עברית, हिन्दी, 日本語
+- Zero-width joiner family: 👨‍👩‍👧 and flags 🇫🇷🇯🇵]]></description>
+      <enclosure url="https://updates.example.invalid/Downright-%C3%A9t%C3%A9.zip" length="4000000" type="application/octet-stream" sparkle:edSignature="NNNN"/>
+    </item>
+  </channel>
+</rss>

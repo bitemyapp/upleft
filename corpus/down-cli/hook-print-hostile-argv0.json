@@ -1,0 +1,6 @@
+{
+ "argv0": "/opt/My Tools/o'brien/\"$(touch /tmp/pwned)\"/down",
+ "argv": [
+  "hook"
+ ]
+}
