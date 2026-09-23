@@ -15,11 +15,17 @@
 //! * [`url`] reproduces Swift's `URL` for `file:` URLs, which differs from
 //!   `NSURL` (tilde expansion, file-system representation, some edge cases).
 //! * [`date`] holds the `Date` arithmetic both need.
+//! * [`decodable`] reproduces what `JSONDecoder` does with a parsed value:
+//!   keyed-container rules, value conversions, `.iso8601` dates, `UUID`.
+//! * [`file_manager`] makes the `FileManager` and `Data` calls the stores
+//!   make, through Foundation.
 //!
 //! Unlike the other crates this one has no Swift file of its own to mirror;
 //! each function names the Foundation API it reproduces.
 
 pub mod date;
+pub mod decodable;
+pub mod file_manager;
 pub mod json_decoder;
 pub mod json_encoder;
 pub mod json_serialization;
