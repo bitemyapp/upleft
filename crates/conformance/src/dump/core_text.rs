@@ -534,6 +534,83 @@ fn myers(old: &str, new: &str, max_distance: isize) -> Value {
 
 // MARK: - bench-core-text
 
+/// drbench's stages that need a parse tree, over the same documents.
+fn parse_stages(document5k: &str, edited_text: &str, sink: &mut usize) -> Vec<(&'static str, Value)> {
+    use upleft_core::ast_diff::ASTDiff;
+    use upleft_core::parser::MarkdownParser;
+    use upleft_core::structural_zoom::StructuralZoom;
+    use upleft_core::tidy::TidyDocument;
+    use upleft_core::{ParseOptions, ZoomLevel};
+
+    let mut results = Vec::new();
+    results.push(measure("MarkdownParser.parse, all passes", 15, || {
+        *sink = sink.wrapping_add(MarkdownParser::parse(document5k).length as usize)
+    }));
+    let off = ParseOptions {
+        detect_front_matter: false,
+        detect_math: false,
+        detect_callouts: false,
+        detect_wikilinks: false,
+        detect_path_tokens: false,
+        detect_mermaid: false,
+        ..ParseOptions::DEFAULT
+    };
+    results.push(measure("  … extension passes off", 15, || {
+        *sink = sink.wrapping_add(MarkdownParser::parse_with(document5k, off).length as usize)
+    }));
+    let variants: [(&'static str, ParseOptions); 4] = [
+        ("  … without path tokens", ParseOptions { detect_path_tokens: false, ..ParseOptions::DEFAULT }),
+        ("  … without math", ParseOptions { detect_math: false, ..ParseOptions::DEFAULT }),
+        ("  … without wikilinks", ParseOptions { detect_wikilinks: false, ..ParseOptions::DEFAULT }),
+        ("  … without callouts", ParseOptions { detect_callouts: false, ..ParseOptions::DEFAULT }),
+    ];
+    for (name, options) in variants {
+        results.push(measure(name, 15, || *sink = sink.wrapping_add(MarkdownParser::parse_with(document5k, options).length as usize)));
+    }
+    let baseline = MarkdownParser::parse(document5k);
+    let edited = MarkdownParser::parse(edited_text);
+    results.push(measure("ASTDiff.dirtySet, one-character edit", 25, || {
+        *sink = sink.wrapping_add(ASTDiff::dirty_set(Some(&baseline), &edited).ranges.len())
+    }));
+    let long = agent_document(6_000);
+    let document100k = swift_text::prefix(&long, 100_000).to_owned();
+    results.push(measure("parse 100 KB", 30, || *sink = sink.wrapping_add(MarkdownParser::parse(&document100k).length as usize)));
+    results.push(measure("StructuralZoom.plan, skeleton", 10, || {
+        *sink = sink.wrapping_add(StructuralZoom::plan(&baseline, ZoomLevel::Skeleton).visible_ranges.len())
+    }));
+    results.push(measure("Metrics.metrics", 10, || *sink = sink.wrapping_add(Metrics::metrics_for(document5k).words as usize)));
+    results.push(measure("TidyDocument.plan", 10, || *sink = sink.wrapping_add(TidyDocument::plan(&baseline).len())));
+    results
+}
+
+/// drbench's `agentDocument(lines:)`, verbatim.
+pub fn agent_document(target_lines: usize) -> String {
+    let mut out = String::new();
+    let mut line_count = 0;
+    let mut index = 0;
+    while line_count < target_lines {
+        index += 1;
+        let block = format!(
+            "## Section {index}\n\nA paragraph with **bold**, `code`, a [link](https://example.com), and a\npath reference `src/module{index}/file.ts:{index}` that resolves.\n\n- [ ] first task for section {index}\n- [x] second task\n- a plain item\n"
+        );
+        line_count += block.matches('\n').count();
+        out.push_str(&block);
+        if index % 7 == 0 {
+            out.push_str(&format!("```swift\nlet value{index} = {index}\nfunc compute{index}() -> Int {{ value{index} * 2 }}\n```\n\n"));
+            line_count += 6;
+        }
+        if index % 11 == 0 {
+            out.push_str(&format!("| column | value |\n|---|--:|\n| a | {index} |\n| b | {} |\n\n", index * 2));
+            line_count += 6;
+        }
+        if index % 13 == 0 {
+            out.push_str("> [!NOTE]\n> A callout, because agents emit these constantly.\n\n");
+            line_count += 3;
+        }
+    }
+    out
+}
+
 fn percentile(ascending: &[f64], p: f64) -> f64 {
     let rank = (p * ascending.len() as f64).ceil() as isize;
     ascending[((ascending.len() as isize - 1).min(0.max(rank - 1))) as usize]
@@ -612,6 +689,7 @@ pub fn bench(input: &Path, output: &Path) -> Result<(), Failure> {
     results.push(measure("DocumentIO.decodeSnapshot", 25, || {
         sink = sink.wrapping_add(DocumentIO::decode_snapshot(&data, dev_null).map_or(0, |(text, _)| text.len()))
     }));
+    results.extend(parse_stages(&text, &edited, &mut sink));
     if sink == 42 {
         println!();
     }

@@ -90,7 +90,82 @@ enum CoreTextBench {
         results.append(measure("DocumentIO.decodeSnapshot", runs: 25) {
             sink &+= (try? DocumentIO.decodeSnapshot(data, sourceURL: URL(fileURLWithPath: "/dev/null")))?.text.utf8.count ?? 0
         })
+        results.append(contentsOf: parseStages(text: text, edited: edited, sink: &sink))
         if sink == 42 { print("") }
         return .object(results)
+    }
+
+    /// drbench's stages that need a parse tree, over the same documents.
+    static func parseStages(text document5k: String, edited editedText: String, sink: inout Int) -> [(String, JSON)] {
+        var results: [(String, JSON)] = []
+        results.append(measure("MarkdownParser.parse, all passes", runs: 15) {
+            sink &+= MarkdownParser.parse(document5k).length
+        })
+        results.append(measure("  … extension passes off", runs: 15) {
+            sink &+= MarkdownParser.parse(document5k, options: MarkdownCore.ParseOptions(
+                detectFrontMatter: false, detectMath: false, detectCallouts: false,
+                detectWikilinks: false, detectPathTokens: false, detectMermaid: false
+            )).length
+        })
+        let variants: [(String, (inout MarkdownCore.ParseOptions) -> Void)] = [
+            ("  … without path tokens", { $0.detectPathTokens = false }),
+            ("  … without math", { $0.detectMath = false }),
+            ("  … without wikilinks", { $0.detectWikilinks = false }),
+            ("  … without callouts", { $0.detectCallouts = false }),
+        ]
+        for (name, mutate) in variants {
+            var options = MarkdownCore.ParseOptions.default
+            mutate(&options)
+            results.append(measure(name, runs: 15) { sink &+= MarkdownParser.parse(document5k, options: options).length })
+        }
+        let baseline = MarkdownParser.parse(document5k)
+        let edited = MarkdownParser.parse(editedText)
+        results.append(measure("ASTDiff.dirtySet, one-character edit", runs: 25) {
+            sink &+= ASTDiff.dirtySet(old: baseline, new: edited).ranges.count
+        })
+        let document100k = String(agentDocument(lines: 6_000).prefix(100_000))
+        results.append(measure("parse 100 KB", runs: 30) { sink &+= MarkdownParser.parse(document100k).length })
+        results.append(measure("StructuralZoom.plan, skeleton", runs: 10) {
+            sink &+= StructuralZoom.plan(baseline, level: .skeleton).visibleRanges.count
+        })
+        results.append(measure("Metrics.metrics", runs: 10) { sink &+= Metrics.metrics(for: document5k).words })
+        results.append(measure("TidyDocument.plan", runs: 10) { sink &+= TidyDocument.plan(baseline).count })
+        return results
+    }
+
+    /// drbench's `agentDocument(lines:)`, verbatim.
+    static func agentDocument(lines targetLines: Int) -> String {
+        var out = ""
+        var lineCount = 0
+        var index = 0
+        while lineCount < targetLines {
+            index += 1
+            let block = """
+            ## Section \(index)
+
+            A paragraph with **bold**, `code`, a [link](https://example.com), and a
+            path reference `src/module\(index)/file.ts:\(index)` that resolves.
+
+            - [ ] first task for section \(index)
+            - [x] second task
+            - a plain item
+
+            """
+            out += block
+            lineCount += block.count(where: { $0 == "\n" })
+            if index % 7 == 0 {
+                out += "```swift\nlet value\(index) = \(index)\nfunc compute\(index)() -> Int { value\(index) * 2 }\n```\n\n"
+                lineCount += 6
+            }
+            if index % 11 == 0 {
+                out += "| column | value |\n|---|--:|\n| a | \(index) |\n| b | \(index * 2) |\n\n"
+                lineCount += 6
+            }
+            if index % 13 == 0 {
+                out += "> [!NOTE]\n> A callout, because agents emit these constantly.\n\n"
+                lineCount += 3
+            }
+        }
+        return out
     }
 }
