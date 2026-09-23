@@ -1,0 +1,7 @@
+sequenceDiagram
+  participant C as Client
+  participant S as Server
+  C->>+S: Request
+  S->>+S: Process
+  S->>-S: Done
+  S-->>-C: Response

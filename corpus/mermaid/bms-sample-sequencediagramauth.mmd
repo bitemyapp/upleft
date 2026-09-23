@@ -1,0 +1,12 @@
+sequenceDiagram
+    participant U as User
+    participant C as Client
+    participant S as Server
+    participant D as Database
+
+    U->>C: Login Request
+    C->>S: POST /auth
+    S->>D: Query User
+    D-->>S: User Data
+    S-->>C: JWT Token
+    C-->>U: Login Success

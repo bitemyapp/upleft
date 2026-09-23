@@ -184,6 +184,37 @@
       ]
     },
     {
+      "name": "mermaid-parse",
+      "command": "mermaid-parse",
+      "output": "json",
+      "input": "mmd",
+      "variants": [[]]
+    },
+    {
+      "name": "mermaid-layout",
+      "command": "mermaid-layout",
+      "output": "json",
+      "input": "mmd",
+      "variants": [
+        [],
+        ["--dark"],
+        ["--theme", "Nord"],
+        ["--theme", "High Contrast"]
+      ]
+    },
+    {
+      "name": "mermaid",
+      "command": "mermaid",
+      "output": "png",
+      "input": "mmd",
+      "variants": [
+        [],
+        ["--dark"],
+        ["--theme", "Nord"],
+        ["--theme", "High Contrast"]
+      ]
+    },
+    {
       "name": "vscode-theme",
       "command": "vscode-theme",
       "output": "json",

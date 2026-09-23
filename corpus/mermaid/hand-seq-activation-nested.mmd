@@ -1,0 +1,5 @@
+sequenceDiagram
+    A->>+B: outer call
+    B->>+B: inner call
+    B-->>-B: inner done
+    B-->>-A: outer done

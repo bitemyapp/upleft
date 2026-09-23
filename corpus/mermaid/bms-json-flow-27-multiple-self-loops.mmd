@@ -1,0 +1,6 @@
+graph TD
+  A[Start] --> B[Validate]
+  B -->|invalid| B
+  B -->|valid| C[Process]
+  C -->|retry| C
+  C --> D[End]

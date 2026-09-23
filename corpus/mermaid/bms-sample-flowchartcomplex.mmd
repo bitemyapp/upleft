@@ -1,0 +1,16 @@
+graph TD
+    A[Client] --> B[Load Balancer]
+    B --> C[Server 1]
+    B --> D[Server 2]
+    B --> E[Server 3]
+
+    subgraph Servers[Server Cluster]
+        C --> F[(Database)]
+        D --> F
+        E --> F
+    end
+
+    F --> G[Cache]
+    G --> C
+    G --> D
+    G --> E

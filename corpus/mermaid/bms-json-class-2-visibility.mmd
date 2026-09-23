@@ -1,0 +1,11 @@
+classDiagram
+  class User {
+    +String name
+    -String password
+    #int internalId
+    ~String packageField
+    +login() bool
+    -hashPassword() String
+    #validate() void
+    ~notify() void
+  }

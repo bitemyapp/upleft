@@ -1,0 +1,15 @@
+graph TD
+    LB([Load Balancer])
+
+    LB --> WS1
+    LB --> WS2
+
+    subgraph Cloud
+        subgraph USEast[US East Region]
+            WS1[Web Server] --> AS1[App Server]
+        end
+
+        subgraph USWest[US West Region]
+            WS2[Web Server] --> AS2[App Server]
+        end
+    end

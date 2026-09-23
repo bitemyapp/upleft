@@ -1,0 +1,7 @@
+erDiagram
+    CUSTOMER ||--o{ ORDER : places
+    ORDER ||--|{ LINE_ITEM : contains
+    PRODUCT ||--o{ LINE_ITEM : includes
+    ORDER ||--o| INVOICE : generates
+    CUSTOMER ||--o| ADDRESS : has
+    PRODUCT }o--|| CATEGORY : belongs_to

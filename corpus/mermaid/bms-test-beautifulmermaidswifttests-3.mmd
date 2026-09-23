@@ -1,0 +1,7 @@
+graph TD
+  subgraph pipeline [Processing Pipeline]
+    direction LR
+    A[Input] --> B[Parse] --> C[Transform] --> D[Output]
+  end
+  E[Source] --> A
+  D --> F[Sink]

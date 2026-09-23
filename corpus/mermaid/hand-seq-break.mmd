@@ -1,0 +1,7 @@
+sequenceDiagram
+    participant A
+    participant B
+    A->>B: request
+    break on error
+        B-->>A: error response
+    end

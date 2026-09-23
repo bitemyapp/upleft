@@ -1,0 +1,6 @@
+sequenceDiagram
+    participant A
+    participant DB
+    critical acquire lock
+        A->>DB: write
+    end

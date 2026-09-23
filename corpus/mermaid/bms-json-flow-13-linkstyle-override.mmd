@@ -1,0 +1,8 @@
+graph LR
+  A[Request] --> B[Auth]
+  B --> C[Process]
+  C --> D[Response]
+  B --> E[Reject]
+  linkStyle default stroke:#6b7280,stroke-width:1px
+  linkStyle 0,1,2 stroke:#22c55e,stroke-width:2px
+  linkStyle 3 stroke:#ef4444,stroke-width:3px

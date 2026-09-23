@@ -384,12 +384,14 @@ dependencies = [
  "dispatch2",
  "objc2",
  "objc2-app-kit",
+ "objc2-core-foundation",
  "objc2-core-graphics",
  "objc2-foundation",
  "objc2-screen-capture-kit",
  "png",
  "serde_json",
  "upleft-markup",
+ "upleft-mermaid",
  "upleft-render",
 ]
 
@@ -400,6 +402,22 @@ dependencies = [
  "unicode-normalization",
  "unicode-segmentation",
  "upleft-cmark-gfm-sys",
+]
+
+[[package]]
+name = "upleft-mermaid"
+version = "0.1.0"
+dependencies = [
+ "objc2",
+ "objc2-app-kit",
+ "objc2-core-foundation",
+ "objc2-core-graphics",
+ "objc2-core-text",
+ "objc2-foundation",
+ "serde_json",
+ "unicode-normalization",
+ "unicode-segmentation",
+ "upleft-render",
 ]
 
 [[package]]

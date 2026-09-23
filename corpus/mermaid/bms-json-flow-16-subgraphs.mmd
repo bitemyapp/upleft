@@ -1,0 +1,8 @@
+graph TD
+  subgraph Frontend
+    A[React App] --> B[State Manager]
+  end
+  subgraph Backend
+    C[API Server] --> D[Database]
+  end
+  B --> C
