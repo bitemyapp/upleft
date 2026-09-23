@@ -1,0 +1,33 @@
+{
+ "panel": "FloatingPanelSurface",
+ "theme": "Paper Light",
+ "width": 420,
+ "height": 360,
+ "state": {},
+ "states": [
+  {
+   "name": "present"
+  },
+  {
+   "name": "sliver",
+   "presentation": "sliver"
+  },
+  {
+   "name": "dismiss",
+   "presentation": "dismiss"
+  },
+  {
+   "name": "narrow",
+   "panelWidth": 200,
+   "panelHeight": 140
+  },
+  {
+   "name": "tall",
+   "panelHeight": 320
+  },
+  {
+   "name": "wide label",
+   "label": "A floating surface label long enough to truncate somewhere in the panel"
+  }
+ ]
+}

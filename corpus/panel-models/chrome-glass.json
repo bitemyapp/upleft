@@ -1,0 +1,47 @@
+{
+ "panel": "ChromeGlass",
+ "theme": "Paper Light",
+ "width": 320,
+ "height": 160,
+ "state": {},
+ "states": [
+  {
+   "name": "panel",
+   "tint": "panel"
+  },
+  {
+   "name": "band",
+   "tint": "band"
+  },
+  {
+   "name": "control",
+   "tint": "control"
+  },
+  {
+   "name": "bottom only",
+   "corners": "bottomOnly"
+  },
+  {
+   "name": "focus",
+   "showsFocus": true
+  },
+  {
+   "name": "shadow",
+   "shadowOpacity": 0.5
+  },
+  {
+   "name": "tiny radius",
+   "cornerRadius": 2,
+   "frame": [
+    10,
+    10,
+    40,
+    20
+   ]
+  },
+  {
+   "name": "huge radius",
+   "cornerRadius": 400
+  }
+ ]
+}

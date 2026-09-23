@@ -1571,6 +1571,43 @@
       "variants": [
         []
       ]
+    },
+    {
+      "name": "panel",
+      "command": "panel",
+      "oracle": "app",
+      "output": "png",
+      "serial": true,
+      "input": "json",
+      "only": [
+        "corpus/panels/"
+      ],
+      "depends": [
+        "corpus/generated/agent/",
+        "corpus/generated/docs/",
+        "corpus/panel-documents/"
+      ],
+      "variants": [
+        []
+      ]
+    },
+    {
+      "name": "panel-model",
+      "command": "panel-model",
+      "oracle": "app",
+      "output": "json",
+      "input": "json",
+      "only": [
+        "corpus/panel-models/"
+      ],
+      "depends": [
+        "corpus/generated/agent/",
+        "corpus/generated/docs/",
+        "corpus/panel-documents/"
+      ],
+      "variants": [
+        []
+      ]
     }
   ]
 }

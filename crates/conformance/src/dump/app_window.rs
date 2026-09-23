@@ -147,7 +147,7 @@ mod sandbox {
 /// `OffScreenWindows`: `-[NSWindow constrainFrameRect:toScreen:]` becomes the
 /// identity for the whole process, so a titled window ordered in at
 /// (-30000, -30000) stays there instead of being pulled onto a display.
-mod off_screen {
+pub(crate) mod off_screen {
     use super::*;
 
     extern "C-unwind" fn identity(_this: &AnyObject, _cmd: Sel, rect: NSRect, _screen: *mut AnyObject) -> NSRect {
@@ -200,7 +200,7 @@ mod off_screen {
 // MARK: - Window-server capture
 
 /// `WindowServerCapture`.
-mod window_server {
+pub(crate) mod window_server {
     use super::*;
 
     type CreateImage = unsafe extern "C" fn(NSRect, u32, u32, u32) -> *mut CGImage;

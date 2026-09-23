@@ -37,12 +37,18 @@ objc2-app-kit = { workspace = true, features = [
     "NSTextTable", "NSEvent", "NSTableView", "NSTableCellView", "NSControl", "NSTextField", "NSPanel",
     "NSAccessibility", "NSAccessibilityProtocols",
     "NSButton", "NSButtonCell", "NSToolbar", "NSToolbarItem", "NSWindowController", "NSMenu", "NSMenuItem",
+    # The panel suites.
+    "NSButton", "NSButtonCell", "NSImageView", "NSStackView", "NSTextView", "NSText", "NSUserInterfaceLayout",
+    "NSVisualEffectView", "NSGlassEffectView", "NSProgressIndicator", "NSSegmentedControl", "NSPopUpButton", "NSMenu",
+    "NSMenuItem", "NSSearchField", "NSTableRowView", "NSTableColumn", "NSCell", "NSTextFieldCell", "block2",
+    "NSButton", "NSButtonCell", "NSToolbar", "NSToolbarItem", "NSWindowController",
 ] }
 objc2-quartz-core = { version = "0.3.2", default-features = false, features = [
-    "std", "objc2-core-foundation", "objc2-core-graphics", "CALayer",
+    "std", "objc2-core-foundation", "objc2-core-graphics", "CALayer", "CAShapeLayer", "CATextLayer", "CAGradientLayer",
+    "CATransform3D",
 ] }
 objc2-core-foundation = { workspace = true, features = ["CFArray", "CFCGTypes", "CFDictionary", "CFString"] }
-objc2-core-graphics = { workspace = true, features = ["CGBitmapContext", "CGColor", "CGColorSpace", "CGContext", "CGImage"] }
+objc2-core-graphics = { workspace = true, features = ["CGBitmapContext", "CGColor", "CGColorSpace", "CGContext", "CGImage", "CGPath"] }
 objc2-core-text = { workspace = true, features = ["objc2-core-graphics", "CTFont", "CTFontDescriptor", "CTLine", "CTRun", "CTStringAttributes"] }
 objc2-screen-capture-kit = { version = "0.3.2", default-features = false, features = [
     "std", "block2", "objc2-core-foundation", "objc2-core-graphics", "SCShareableContent", "SCStream", "SCScreenshotManager",

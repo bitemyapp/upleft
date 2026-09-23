@@ -626,7 +626,8 @@ pub struct PanelTableViewIvars {
 
 define_class!(
     /// Table view that reports `⏎` on the selected row (§11.4).
-    // SAFETY: `init` is forwarded in `new` after the ivars are set.
+    // SAFETY: `initWithFrame:` sets the ivars, so `PanelTableView()` and
+    // `PanelTableView(frame:)` both create valid instances.
     #[unsafe(super(NSTableView, NSControl, NSView, NSResponder))]
     #[thread_kind = MainThreadOnly]
     #[name = "PanelTableView"]
@@ -636,6 +637,12 @@ define_class!(
     unsafe impl NSObjectProtocol for PanelTableView {}
 
     impl PanelTableView {
+        #[unsafe(method_id(initWithFrame:))]
+        fn __init_with_frame(this: Allocated<Self>, frame: NSRect) -> Retained<Self> {
+            let this = this.set_ivars(PanelTableViewIvars::default());
+            unsafe { msg_send![super(this), initWithFrame: frame] }
+        }
+
         #[unsafe(method(keyDown:))]
         fn __key_down(&self, event: &NSEvent) {
             let on_key_event = self.ivars().on_key_event.borrow().clone();
@@ -691,10 +698,14 @@ define_class!(
 );
 
 impl PanelTableView {
-    /// `PanelTableView()`.
+    /// `PanelTableView()`: `-init`, which reaches `initWithFrame:`.
     pub fn new(mtm: MainThreadMarker) -> Retained<PanelTableView> {
-        let this = Self::alloc(mtm).set_ivars(PanelTableViewIvars::default());
-        unsafe { msg_send![super(this), init] }
+        unsafe { msg_send![PanelTableView::alloc(mtm), init] }
+    }
+
+    /// `PanelTableView(frame:)`.
+    pub fn with_frame(frame: NSRect, mtm: MainThreadMarker) -> Retained<PanelTableView> {
+        unsafe { msg_send![PanelTableView::alloc(mtm), initWithFrame: frame] }
     }
 
     fn perform_key_equivalent(&self, event: &NSEvent) -> bool {
@@ -1864,7 +1875,9 @@ impl PanelSegmentedControl {
         this.setAccessibilityElement(true);
         set_role(&*this, role::radio_group());
         set_label(&*this, &ivars.items.join("/"));
-        set_value(&*this, &ivars.items[selected as usize]);
+        // Swift reads the *parameter* here (it shadows the clamped
+        // property), so an out-of-range index traps; so does this.
+        set_value(&*this, &ivars.items[selected_index as usize]);
         this
     }
 
