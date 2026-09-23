@@ -20,6 +20,7 @@ import MarkdownRender
 ///   cancel                          cancelOperation(nil)
 ///   scrollRow row                   the task table's scrollRowToVisible(_:)
 ///   reload                          reload()
+///   truncateTasks n                 tasks = the first n tasks (a document edit)
 ///
 /// Hosting the panel in a window can reset its sheet to `StyleSheet.current`
 /// (`viewDidChangeEffectiveAppearance`), so `afterShow` assigns the scenario's
@@ -111,12 +112,39 @@ final class TaskPanelViewScene: PanelScene {
             case "cancel": panel.cancelOperation(nil)
             case "scrollRow": table?.scrollRowToVisible(number)
             case "reload": panel.reload()
+            case "truncateTasks": panel.tasks = Array(panel.tasks.prefix(number))
             default: break
             }
         }
         self.panel = panel
         self.styleSheet = styleSheet
+        Self.benchmark(document, scenario: scenario, styleSheet: styleSheet)
         return panel
+    }
+
+    /// `UPLEFT_PANEL_BENCH=N`: build, size, lay out and measure a fresh panel
+    /// N times (parsing excluded) and report the times on stderr. Off by
+    /// default; the dump is unaffected.
+    static func benchmark(_ document: ParsedDocument, scenario: PanelScenario, styleSheet: StyleSheet) {
+        guard let value = ProcessInfo.processInfo.environment["UPLEFT_PANEL_BENCH"], let runs = Int(value), runs > 0
+        else { return }
+        var times: [Double] = []
+        for _ in 0..<runs {
+            let start = DispatchTime.now().uptimeNanoseconds
+            let panel = TaskPanelView()
+            panel.styleSheet = styleSheet
+            panel.tasks = document.tasks
+            panel.headings = document.headings
+            panel.reload()
+            panel.frame = NSRect(x: 0, y: 0, width: scenario.width, height: scenario.height)
+            panel.layoutSubtreeIfNeeded()
+            _ = panel.fittedContentHeight
+            times.append(Double(DispatchTime.now().uptimeNanoseconds - start) / 1e6)
+        }
+        times.sort()
+        let line = String(format: "bench TaskPanelView swift: %d tasks, min %.2f ms, median %.2f ms\n",
+                          document.tasks.count, times[0], times[times.count / 2])
+        FileHandle.standardError.write(line.data(using: .utf8)!)
     }
 
     func afterShow(window: NSWindow, scenario: PanelScenario) {

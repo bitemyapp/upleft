@@ -1,0 +1,38 @@
+{
+ "panel": "FindBarView",
+ "theme": "Paper Light",
+ "width": 480,
+ "height": 42,
+ "document": "corpus/generated/agent/agent-5000.md",
+ "runs": 40,
+ "warmup": 5,
+ "state": {},
+ "states": [
+  {
+   "name": "agent-5000 'section'",
+   "query": "section",
+   "draw": true
+  },
+  {
+   "name": "agent-5000 'a' advanced",
+   "query": "a",
+   "caret": 60000,
+   "advance": 5
+  },
+  {
+   "name": "agent-5000 regex",
+   "options": [
+    "Regular Expression"
+   ],
+   "query": "module\\d+",
+   "draw": true
+  },
+  {
+   "name": "agent-5000 whole word",
+   "options": [
+    "Whole Word"
+   ],
+   "query": "task"
+  }
+ ]
+}

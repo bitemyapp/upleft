@@ -61,11 +61,25 @@ struct PanelScenario {
         self.state = state ?? (json["state"] as? [String: Any] ?? [:])
     }
 
-    /// The attached document's text (read as the app reads a file: UTF-8).
+    /// The attached document's text (read as the app reads a file: UTF-8),
+    /// read once per process.
     func documentText() throws -> String {
         guard let documentPath else { return "" }
+        if let cached = PanelScenarioCache.texts[documentPath] { return cached }
         let url = repositoryRoot.appendingPathComponent(documentPath)
-        return try String(contentsOf: url, encoding: .utf8)
+        let text = try String(contentsOf: url, encoding: .utf8)
+        PanelScenarioCache.texts[documentPath] = text
+        return text
+    }
+
+    /// `MarkdownParser.parse(documentText())`, parsed once per process, so
+    /// `bench-panel` times the panel rather than the parser.
+    func parsedDocument() throws -> ParsedDocument {
+        let key = documentPath ?? ""
+        if let cached = PanelScenarioCache.documents[key] { return cached }
+        let document = MarkdownParser.parse(try documentText())
+        PanelScenarioCache.documents[key] = document
+        return document
     }
 
     func string(_ key: String) -> String? { state[key] as? String }
@@ -78,6 +92,12 @@ struct PanelScenario {
     func array(_ key: String) -> [Any] { state[key] as? [Any] ?? [] }
     func object(_ key: String) -> [String: Any] { state[key] as? [String: Any] ?? [:] }
     func strings(_ key: String) -> [String] { array(key).compactMap { $0 as? String } }
+}
+
+/// Per-process caches behind `documentText()` and `parsedDocument()`.
+enum PanelScenarioCache {
+    nonisolated(unsafe) static var texts: [String: String] = [:]
+    nonisolated(unsafe) static var documents: [String: ParsedDocument] = [:]
 }
 
 /// What a panel scene provides. The harness owns the window, the settle loop
@@ -127,6 +147,17 @@ func panelStyleSheet(_ scenario: PanelScenario) throws -> (StyleSheet, NSAppeara
     return (StyleSheet(theme: theme, appearance: appearance, reduceMotionOverride: true), appearance)
 }
 
+/// Pins `ThemeStore`'s selection (`downright.theme.selected`) to its default
+/// in this process's argument domain, before `ThemeStore.shared` exists.
+/// Scenes that must select a theme (the update panels read
+/// `StyleSheet.current`) write the persistent key, which every other oracle
+/// process of the same executable, running in parallel, would otherwise read
+/// at launch. The argument domain wins over the persistent one, and the
+/// selecting process keeps its in-memory choice.
+func pinThemeSelection() {
+    UserDefaults.standard.setVolatileDomain(["downright.theme.selected": "Paper Light"], forName: UserDefaults.argumentDomain)
+}
+
 func readScenarioJSON(_ url: URL) throws -> [String: Any] {
     let data = try Data(contentsOf: url)
     guard let json = try JSONSerialization.jsonObject(with: data) as? [String: Any] else {
@@ -169,6 +200,7 @@ final class PanelCaptureSession: NSObject, NSApplicationDelegate {
             }
         }
         acquirePanelCaptureLock()
+        pinThemeSelection()
         OffScreenWindows.install()
         let app = NSApplication.shared
         app.setActivationPolicy(.accessory)
@@ -300,6 +332,7 @@ enum PanelModelDump {
     @MainActor
     static func run(input: URL, flags: [String]) throws -> JSON {
         let json = try readScenarioJSON(input)
+        pinThemeSelection()
         OffScreenWindows.install()
         _ = NSApplication.shared
         let base = json["state"] as? [String: Any] ?? [:]

@@ -61,11 +61,29 @@ impl PanelScenario {
         })
     }
 
-    /// The attached document's text (UTF-8, as the app reads a file).
+    /// The attached document's text (UTF-8, as the app reads a file), read
+    /// once per process.
     pub fn document_text(&self) -> Result<String, String> {
         let Some(path) = &self.document_path else { return Ok(String::new()) };
+        if let Some(cached) = DOCUMENT_TEXTS.with(|texts| texts.borrow().get(path).cloned()) {
+            return Ok(cached);
+        }
         let url = repository_root().join(path);
-        std::fs::read_to_string(&url).map_err(|error| format!("{}: {error}", url.display()))
+        let text = std::fs::read_to_string(&url).map_err(|error| format!("{}: {error}", url.display()))?;
+        DOCUMENT_TEXTS.with(|texts| texts.borrow_mut().insert(path.clone(), text.clone()));
+        Ok(text)
+    }
+
+    /// `MarkdownParser::parse(document_text())`, parsed once per process, so
+    /// `bench-panel` times the panel rather than the parser.
+    pub fn parsed_document(&self) -> Result<std::sync::Arc<upleft_core::model::ParsedDocument>, String> {
+        let key = self.document_path.clone().unwrap_or_default();
+        if let Some(cached) = PARSED_DOCUMENTS.with(|documents| documents.borrow().get(&key).cloned()) {
+            return Ok(cached);
+        }
+        let document = upleft_core::parser::MarkdownParser::parse(&self.document_text()?);
+        PARSED_DOCUMENTS.with(|documents| documents.borrow_mut().insert(key, document.clone()));
+        Ok(document)
     }
 
     pub fn string(&self, key: &str) -> Option<String> {
@@ -113,6 +131,13 @@ impl PanelScenario {
     pub fn strings(&self, key: &str) -> Vec<String> {
         self.array(key).iter().filter_map(|value| value.as_str().map(str::to_owned)).collect()
     }
+}
+
+thread_local! {
+    /// `PanelScenarioCache`.
+    static DOCUMENT_TEXTS: RefCell<std::collections::HashMap<String, String>> = RefCell::default();
+    static PARSED_DOCUMENTS: RefCell<std::collections::HashMap<String, std::sync::Arc<upleft_core::model::ParsedDocument>>> =
+        RefCell::default();
 }
 
 /// `repositoryRoot` in the Swift oracle.
@@ -172,6 +197,18 @@ pub fn panel_style_sheet(scenario: &PanelScenario) -> Result<(Rc<StyleSheet>, Re
         .find(|theme| theme.name == scenario.theme)
         .ok_or_else(|| Failure::Error(format!("unknown theme {}", scenario.theme)))?;
     Ok((Rc::new(StyleSheet::new(theme, &appearance, Some(true))), appearance))
+}
+
+/// `pinThemeSelection()`: `downright.theme.selected` pinned to its default
+/// in the argument domain, before `ThemeStore::shared` exists (see the Swift
+/// harness).
+pub fn pin_theme_selection() {
+    use objc2_foundation::{NSArgumentDomain, NSDictionary, NSString, NSUserDefaults};
+    let key = NSString::from_str("downright.theme.selected");
+    let value = NSString::from_str("Paper Light");
+    let domain = NSDictionary::from_slices(&[&*key], &[&*value as &objc2::runtime::AnyObject]);
+    // SAFETY: a volatile domain of property-list values.
+    unsafe { NSUserDefaults::standardUserDefaults().setVolatileDomain_forName(&domain, NSArgumentDomain) };
 }
 
 fn read_scenario_json(path: &Path) -> Result<Map<String, Value>, Failure> {
@@ -239,6 +276,7 @@ pub fn run_capture(request: &Request) -> Result<(), Failure> {
     }
     let scene = scenes::make(&scenario.panel)?;
     acquire_window_capture_lock();
+    pin_theme_selection();
     crate::dump::app_window::off_screen::install();
     let mtm = MainThreadMarker::new().expect("panel capture runs on the main thread");
     let app = NSApplication::sharedApplication(mtm);
@@ -408,6 +446,7 @@ fn check_settled() {
 /// `PanelModelDump.run(input:flags:)`.
 pub fn run_model(request: &Request) -> Result<(), Failure> {
     let json = read_scenario_json(&request.input)?;
+    pin_theme_selection();
     crate::dump::app_window::off_screen::install();
     let mtm = MainThreadMarker::new().expect("panel-model runs on the main thread");
     let _ = NSApplication::sharedApplication(mtm);
@@ -452,6 +491,7 @@ pub fn run_model(request: &Request) -> Result<(), Failure> {
 /// windowless; `prepare` is not timed.
 pub fn run_bench(request: &Request) -> Result<(), Failure> {
     let json = read_scenario_json(&request.input)?;
+    pin_theme_selection();
     crate::dump::app_window::off_screen::install();
     let mtm = MainThreadMarker::new().expect("bench-panel runs on the main thread");
     let _ = NSApplication::sharedApplication(mtm);
@@ -473,6 +513,10 @@ pub fn run_bench(request: &Request) -> Result<(), Failure> {
         let (style_sheet, appearance) = panel_style_sheet(&scenario)?;
         NSApplication::sharedApplication(mtm).setAppearance(Some(&appearance));
         let draw = scenario.bool("draw");
+        // The document is read and parsed before timing (cached per process).
+        if scenario.document_path.is_some() {
+            scenario.parsed_document().map_err(Failure::Error)?;
+        }
         let mut samples = Vec::with_capacity(runs);
         for index in 0..(warmup + runs) {
             let mut scene = scenes::make(&scenario.panel)?;

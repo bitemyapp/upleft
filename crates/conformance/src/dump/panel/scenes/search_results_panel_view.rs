@@ -59,7 +59,8 @@ pub fn sibling_urls(scenario: &PanelScenario) -> Result<Vec<FileUrl>, Failure> {
 /// `SearchResultsPanelViewScene.search(_:_:)`: the window controller's
 /// sibling pass, run synchronously.
 /// `given` is the find bar's current query when the panel sits in the
-/// search inspector.
+/// search inspector. (`var query = FindQuery()`, then field by field.)
+#[allow(clippy::field_reassign_with_default)]
 pub fn search(panel: &SearchResultsPanelView, scenario: &PanelScenario, given: Option<FindQuery>) -> Result<(), Failure> {
     if let Some(text) = scenario.string("query") {
         let options = scenario.strings("options");

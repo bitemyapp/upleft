@@ -87,6 +87,49 @@ fn table_in(panel: &NSView) -> Option<Retained<PanelTableView>> {
     None
 }
 
+/// `UPLEFT_PANEL_BENCH=N`: build, size, lay out and measure a fresh panel N
+/// times (parsing excluded) and report the times on stderr, as the Swift
+/// scene does. Off by default; the dump is unaffected. The tasks and headings
+/// are shared (`Rc`), as Swift's copy-on-write arrays are.
+fn benchmark(
+    document: &upleft_core::model::ParsedDocument,
+    scenario: &PanelScenario,
+    style_sheet: &Rc<StyleSheet>,
+    mtm: MainThreadMarker,
+) {
+    let Some(runs) = std::env::var("UPLEFT_PANEL_BENCH").ok().and_then(|value| value.parse::<usize>().ok()) else {
+        return;
+    };
+    if runs == 0 {
+        return;
+    }
+    let tasks = Rc::new(document.tasks.clone());
+    let headings = Rc::new(document.headings.clone());
+    let mut times: Vec<f64> = Vec::with_capacity(runs);
+    for _ in 0..runs {
+        let start = std::time::Instant::now();
+        let panel = TaskPanelView::new_current(mtm);
+        panel.set_style_sheet(style_sheet.clone());
+        panel.set_tasks(tasks.clone());
+        panel.set_headings(headings.clone());
+        panel.reload();
+        panel.setFrame(objc2_foundation::NSRect::new(
+            NSPoint::new(0.0, 0.0),
+            objc2_foundation::NSSize::new(scenario.width, scenario.height),
+        ));
+        panel.layoutSubtreeIfNeeded();
+        let _ = panel.fitted_content_height();
+        times.push(start.elapsed().as_secs_f64() * 1000.0);
+    }
+    times.sort_by(f64::total_cmp);
+    eprintln!(
+        "bench TaskPanelView rust: {} tasks, min {:.2} ms, median {:.2} ms",
+        document.tasks.len(),
+        times[0],
+        times[times.len() / 2]
+    );
+}
+
 impl PanelScene for TaskPanelViewScene {
     fn build(
         &mut self,
@@ -149,10 +192,15 @@ impl PanelScene for TaskPanelViewScene {
                     }
                 }
                 "reload" => panel.reload(),
+                "truncateTasks" => {
+                    let tasks = panel.tasks();
+                    panel.set_tasks(tasks[..(number.max(0) as usize).min(tasks.len())].to_vec());
+                }
                 _ => {}
             }
         }
         self.panel = Some(panel.clone());
+        benchmark(&document, scenario, &style_sheet, mtm);
         self.style_sheet = Some(style_sheet);
         Ok(Retained::into_super(panel))
     }

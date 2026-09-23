@@ -1368,7 +1368,8 @@ impl FindBarView {
         }
     }
 
-    /// `currentQuery`.
+    /// `currentQuery`: `var query = FindQuery()`, then field by field.
+    #[allow(clippy::field_reassign_with_default)]
     pub fn current_query(&self) -> FindQuery {
         let ivars = self.ivars();
         let mut query = FindQuery::default();

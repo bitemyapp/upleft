@@ -37,6 +37,8 @@ use upleft_render::view::style_sheet_defaults::PanelAlpha;
 use super::appkit_support::{RECT_ZERO, RectExt, cg, rect, role, set_label, set_role, set_value, smax};
 use super::panel_chrome::{PanelMetrics, refresh_tracking_area};
 
+type SegmentHandler = Rc<dyn Fn(isize)>;
+
 /// `TaskSectionBarView.SegmentLayers`.
 struct SegmentLayers {
     track: Retained<CALayer>,
@@ -52,7 +54,7 @@ impl SegmentLayers {
 pub struct TaskSectionBarViewIvars {
     segments: RefCell<Rc<Vec<Segment>>>,
     style_sheet: RefCell<Rc<StyleSheet>>,
-    on_select_segment: RefCell<Option<Rc<dyn Fn(isize)>>>,
+    on_select_segment: RefCell<Option<SegmentHandler>>,
     segment_layers: RefCell<Rc<Vec<SegmentLayers>>>,
     tracking_area_ref: RefCell<Option<Retained<NSTrackingArea>>>,
     hovered_index: Cell<Option<isize>>,
@@ -218,7 +220,7 @@ impl TaskSectionBarView {
 
     /// `onSelectSegment`: a click on a segment; the panel scrolls the
     /// matching section into view.
-    pub fn set_on_select_segment(&self, handler: Option<Rc<dyn Fn(isize)>>) {
+    pub fn set_on_select_segment(&self, handler: Option<SegmentHandler>) {
         *self.ivars().on_select_segment.borrow_mut() = handler;
     }
 

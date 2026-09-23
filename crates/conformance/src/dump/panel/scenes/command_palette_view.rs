@@ -19,7 +19,6 @@ use upleft_app::support::command_palette_model::{CommandPaletteModel, CommandPal
 use upleft_app::support::commands::Command;
 use upleft_app::support::keybindings::KeybindingDefaults;
 use upleft_app::support::quick_open_providers::{CurrentDocumentQuickOpenProvider, QuickOpenProvider, QuickOpenResult};
-use upleft_core::parser::MarkdownParser;
 use upleft_render::theme::style_sheet::StyleSheet;
 
 use crate::dump::Failure;
@@ -101,8 +100,7 @@ impl PanelScene for CommandPaletteViewScene {
             scenario.strings("recents").iter().filter_map(|raw| Command::from_raw_value(raw)).collect();
         let mut providers: Vec<Rc<dyn QuickOpenProvider>> = Vec::new();
         if scenario.document_path.is_some() {
-            let text = scenario.document_text().map_err(Failure::Error)?;
-            providers.push(Rc::new(CurrentDocumentQuickOpenProvider::new(MarkdownParser::parse(&text))));
+            providers.push(Rc::new(CurrentDocumentQuickOpenProvider::new(scenario.parsed_document().map_err(Failure::Error)?)));
         }
         let palette = if scenario.bool("current") {
             let palette = CommandPaletteView::new_current(mtm);
@@ -174,7 +172,7 @@ impl PanelScene for CommandPaletteViewScene {
     fn after_show(&mut self, window: &NSWindow, _scenario: &PanelScenario) {
         let mtm = window.mtm();
         for &key_code in &self.key_codes {
-            let event = unsafe {
+            let event = {
                 NSEvent::keyEventWithType_location_modifierFlags_timestamp_windowNumber_context_characters_charactersIgnoringModifiers_isARepeat_keyCode(
                     NSEventType::KeyDown,
                     NSPoint::new(0.0, 0.0),
