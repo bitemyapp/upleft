@@ -61,7 +61,10 @@ impl ListEditing {
 
         let mut next = indent.to_owned();
         if let Some(ordinal) = ordinal {
-            let punctuation = if swift_text::contains_char(&marker_text, ')') { ")" } else { "." };
+            // `markerText` is an `NSString` substring: bridged, with
+            // Foundation's `contains`, when the document is not all ASCII.
+            let bridged = swift_text::bridges_substrings(text);
+            let punctuation = if swift_text::contains_with(&marker_text, ")", bridged) { ")" } else { "." };
             next.push_str(&format!("{}{punctuation} ", ordinal + 1));
         } else {
             // `markerRange` excludes the container indentation, so the bullet

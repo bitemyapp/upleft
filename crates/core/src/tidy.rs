@@ -145,6 +145,9 @@ impl TidyDocument {
 
     fn code_fence_languages(context: &TidyContext) -> Vec<TextEdit> {
         let mut edits: Vec<TextEdit> = Vec::new();
+        // `code` below is an `NSString` substring, bridged (Foundation
+        // `contains` semantics) exactly when the document is not all ASCII.
+        let bridged = !context.map.is_ascii;
         context.doc.root.walk(&mut |block| {
             let BlockContent::CodeBlock { language, is_fenced, content_range } = &block.content else { return };
             if !*is_fenced || language.is_some() {
@@ -152,7 +155,7 @@ impl TidyDocument {
             }
             let Some(marker) = block.marker_range else { return };
             let code = context.text.substring(*content_range);
-            let Some(guess) = FenceLanguage::guess(&code) else { return };
+            let Some(guess) = FenceLanguage::guess_bridged(&code, bridged) else { return };
 
             // Insert straight after the fence characters, leaving the rest of
             // the marker (the newline) alone.
