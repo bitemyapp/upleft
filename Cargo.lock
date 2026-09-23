@@ -614,6 +614,7 @@ dependencies = [
  "unicode-normalization",
  "unicode-segmentation",
  "upleft-core",
+ "upleft-math",
 ]
 
 [[package]]

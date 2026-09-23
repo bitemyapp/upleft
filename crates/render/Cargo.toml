@@ -12,6 +12,7 @@ dispatch2 = "0.3"
 libc = "0.2"
 objc2.workspace = true
 upleft-core.workspace = true
+upleft-math.workspace = true
 unicode-normalization = "0.1.24"
 unicode-segmentation = "1.13"
 objc2-foundation = { workspace = true, features = [

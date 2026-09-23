@@ -17,6 +17,7 @@
 
 pub mod core_types;
 pub mod engine;
+pub mod fragments;
 pub mod render_contracts;
 pub mod swift_compat;
 pub mod swift_value;
