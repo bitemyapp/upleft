@@ -375,7 +375,8 @@ impl CompareWindowController {
             &NSString::from_str("link"),
             Some(&NSString::from_str("Scroll lock")),
         )
-        .unwrap_or_else(|| NSImage::new());
+        // `?? NSImage()`.
+        .unwrap_or_default();
         // SAFETY: `self` implements `toggleScrollLock:` and outlives its
         // toolbar.
         let button =
