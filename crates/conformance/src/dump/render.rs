@@ -62,6 +62,9 @@ impl CaptureScene for MarkdownScene {
         let style_sheet = Rc::new(StyleSheet::new(theme, &appearance, Some(true)));
         let storage = NSTextStorage::from_nsstring_storage(&NSString::from_str(&text));
         let container = MarkdownContainerView::new(&storage, style_sheet, mtm);
+        // As the app's `configureLocalAssetAccess`: relative images resolve
+        // against the document's directory.
+        container.text_view().set_document_url(Some(request.input.to_string_lossy().into_owned()));
         container.setFrame(CGRect::new(
             objc2_foundation::NSPoint::new(0.0, 0.0),
             objc2_foundation::NSSize::new(request.width, request.height),

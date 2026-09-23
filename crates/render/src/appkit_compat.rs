@@ -187,10 +187,48 @@ pub fn attributed_string(
     unsafe {
         NSAttributedString::initWithString_attributes(
             NSAttributedString::alloc(),
-            &NSString::from_str(text),
+            &ns_string(text),
             Some(&dictionary),
         )
     }
+}
+
+/// `[NSAttributedString.Key: Any]` from Swift's dictionary literal.
+pub fn attributes_dictionary(
+    attributes: &[(&NSString, &AnyObject)],
+) -> Retained<objc2_foundation::NSDictionary<NSString, AnyObject>> {
+    let keys: Vec<&NSString> = attributes.iter().map(|(key, _)| *key).collect();
+    let values: Vec<&AnyObject> = attributes.iter().map(|(_, value)| *value).collect();
+    objc2_foundation::NSDictionary::from_slices(&keys, &values)
+}
+
+/// `(text as NSString).boundingRect(with: size, options:
+/// [.usesLineFragmentOrigin, .usesFontLeading], attributes: attributes)`.
+pub fn string_bounding_rect(
+    text: &str,
+    size: CGSize,
+    attributes: &objc2_foundation::NSDictionary<NSString, AnyObject>,
+) -> CGRect {
+    use objc2_app_kit::{NSStringDrawingOptions, NSStringNSExtendedStringDrawing};
+    // SAFETY: every value is an Objective-C object of the type its key expects.
+    unsafe {
+        ns_string(text).boundingRectWithSize_options_attributes_context(
+            size,
+            NSStringDrawingOptions::UsesLineFragmentOrigin | NSStringDrawingOptions::UsesFontLeading,
+            Some(attributes),
+            None,
+        )
+    }
+}
+
+/// A Swift `String` bridged to `NSString` (`text as NSString`). Built from
+/// the UTF-16 units when the text is not ASCII: `NSString::from_str` decodes
+/// UTF-8 and would drop a leading U+FEFF, which a Swift string keeps.
+pub fn ns_string(text: &str) -> Retained<NSString> {
+    if text.is_ascii() {
+        return NSString::from_str(text);
+    }
+    upleft_swift_text::ns::foundation::ns_from_utf16(&upleft_swift_text::ns::utf16(text))
 }
 
 /// The AppKit attribute keys, as the `NSAttributedString.Key` statics Swift

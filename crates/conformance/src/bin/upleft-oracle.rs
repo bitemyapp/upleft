@@ -20,6 +20,8 @@ fn main() -> ExitCode {
             return ExitCode::from(64);
         }
     };
+    // The render layer reaches the Mermaid renderer through a hook.
+    upleft_mermaid::downright::mermaid_renderer_bridge::install_fragment_renderer();
     match dump::run(&request) {
         Ok(()) => ExitCode::SUCCESS,
         Err(dump::Failure::NotPorted) => {

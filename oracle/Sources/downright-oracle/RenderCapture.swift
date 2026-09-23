@@ -197,6 +197,10 @@ final class MarkdownScene: CaptureScene {
         let styleSheet = StyleSheet(theme: theme, appearance: appearance, reduceMotionOverride: true)
         let storage = NSTextStorage(string: text)
         container = MarkdownContainerView(storage: storage, styleSheet: styleSheet)
+        // As the app's `configureLocalAssetAccess`: relative images resolve
+        // against the document's directory (no trust store, so only safe
+        // relative destinations load).
+        container.textView.documentURL = request.input
         container.frame = NSRect(x: 0, y: 0, width: request.width, height: request.height)
         window.contentView = container
         // As in the app: the container is laid out in its window (which sets

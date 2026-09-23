@@ -375,31 +375,57 @@ fn code_block_fragment(
 
 /// `TableRowFragment.make(textElement:range:payload:context:)`, which may
 /// itself decline (`nil`) and leave the paragraph as prose.
-fn table_row_fragment(_request: &ObjectFragmentRequest<'_>) -> Option<Retained<NSTextLayoutFragment>> {
-    None
+fn table_row_fragment(request: &ObjectFragmentRequest<'_>) -> Option<Retained<NSTextLayoutFragment>> {
+    crate::fragments::table_fragment::make(
+        request.text_element,
+        Some(request.element_range),
+        request.payload,
+        request.context,
+    )
 }
 
 /// `MathFragment(textElement:range:payload:context:)`.
-fn math_fragment(_request: &ObjectFragmentRequest<'_>) -> Option<Retained<NSTextLayoutFragment>> {
-    None
+fn math_fragment(request: &ObjectFragmentRequest<'_>) -> Option<Retained<NSTextLayoutFragment>> {
+    Some(crate::fragments::math_fragment::make(
+        request.text_element,
+        Some(request.element_range),
+        request.payload,
+        request.context,
+    ))
 }
 
 /// `MermaidFragment(textElement:range:payload:context:)`.
-fn mermaid_fragment(_request: &ObjectFragmentRequest<'_>) -> Option<Retained<NSTextLayoutFragment>> {
-    None
+fn mermaid_fragment(request: &ObjectFragmentRequest<'_>) -> Option<Retained<NSTextLayoutFragment>> {
+    Some(crate::fragments::mermaid_fragment::make(
+        request.text_element,
+        Some(request.element_range),
+        request.payload,
+        request.context,
+    ))
 }
 
 /// `ImageFragment(textElement:range:payload:context:)`.
-fn image_fragment(_request: &ObjectFragmentRequest<'_>) -> Option<Retained<NSTextLayoutFragment>> {
-    None
+fn image_fragment(request: &ObjectFragmentRequest<'_>) -> Option<Retained<NSTextLayoutFragment>> {
+    Some(crate::fragments::image_fragment::make(
+        request.text_element,
+        Some(request.element_range),
+        request.payload,
+        request.context,
+    ))
 }
 
 /// `FrontMatterFragment(textElement:range:payload:context:fields:)`.
 fn front_matter_fragment(
-    _request: &ObjectFragmentRequest<'_>,
-    _fields: Vec<(String, String)>,
+    request: &ObjectFragmentRequest<'_>,
+    fields: Vec<(String, String)>,
 ) -> Option<Retained<NSTextLayoutFragment>> {
-    None
+    Some(crate::fragments::front_matter_fragment::make(
+        request.text_element,
+        Some(request.element_range),
+        request.payload,
+        request.context,
+        fields,
+    ))
 }
 
 /// `ThematicBreakFragment(textElement:range:payload:context:)`.

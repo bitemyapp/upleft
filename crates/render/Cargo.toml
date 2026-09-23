@@ -120,7 +120,8 @@ objc2-quartz-core = { version = "0.3.2", default-features = false, features = [
     "std", "objc2-core-foundation", "CABase", "CAAnimation", "CADisplayLink", "CAMediaTiming",
     "CAMediaTimingFunction", "CATransform3D", "CALayer",
 ] }
-objc2-core-foundation = { workspace = true, features = ["CFBase", "CFCGTypes", "CFPreferences", "CFPropertyList", "CFString"] }
+objc2-core-foundation = { workspace = true, features = ["CFBase", "CFCGTypes", "CFDictionary", "CFNumber", "CFPreferences", "CFPropertyList", "CFString", "CFURL"] }
+objc2-image-io = { version = "0.3.2", default-features = false, features = ["std", "CGImageProperties", "CGImageSource", "objc2-core-graphics"] }
 objc2-core-graphics = { workspace = true, features = ["CGContext", "CGPath", "CGColor", "CGImage", "CGColorSpace"] }
 objc2-core-text = { workspace = true, features = ["CTFont", "CTFontDescriptor", "SFNTLayoutTypes", "objc2-core-graphics"] }
 
