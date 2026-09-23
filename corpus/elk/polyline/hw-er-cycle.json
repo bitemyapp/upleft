@@ -1,0 +1,95 @@
+{
+ "children": [
+  {
+   "height": 56.0,
+   "id": "A",
+   "width": 140.0
+  },
+  {
+   "height": 56.0,
+   "id": "B",
+   "width": 140.0
+  },
+  {
+   "height": 56.0,
+   "id": "C",
+   "width": 140.0
+  }
+ ],
+ "edges": [
+  {
+   "id": "e0",
+   "labels": [
+    {
+     "height": 20.3,
+     "text": "ab",
+     "width": 21.53
+    }
+   ],
+   "sources": [
+    "A"
+   ],
+   "targets": [
+    "B"
+   ]
+  },
+  {
+   "id": "e1",
+   "labels": [
+    {
+     "height": 20.3,
+     "text": "bc",
+     "width": 21.53
+    }
+   ],
+   "sources": [
+    "B"
+   ],
+   "targets": [
+    "C"
+   ]
+  },
+  {
+   "id": "e2",
+   "labels": [
+    {
+     "height": 20.3,
+     "text": "ca",
+     "width": 21.53
+    }
+   ],
+   "sources": [
+    "C"
+   ],
+   "targets": [
+    "A"
+   ]
+  },
+  {
+   "id": "e3",
+   "labels": [
+    {
+     "height": 20.3,
+     "text": "self",
+     "width": 26.281999999999996
+    }
+   ],
+   "sources": [
+    "A"
+   ],
+   "targets": [
+    "A"
+   ]
+  }
+ ],
+ "id": "root",
+ "layoutOptions": {
+  "elk.algorithm": "layered",
+  "elk.direction": "RIGHT",
+  "elk.edgeLabels.placement": "CENTER",
+  "elk.edgeRouting": "POLYLINE",
+  "elk.layered.spacing.nodeNodeBetweenLayers": "90.0",
+  "elk.padding": "[top=40.0,left=40.0,bottom=40.0,right=40.0]",
+  "elk.spacing.nodeNode": "70.0"
+ }
+}

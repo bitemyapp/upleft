@@ -1,0 +1,76 @@
+{
+ "id": "root",
+ "layoutOptions": {
+  "elk.algorithm": "layered",
+  "elk.edgeRouting": "POLYLINE"
+ },
+ "children": [
+  {
+   "id": "n1",
+   "width": 40.0,
+   "height": 30.0
+  },
+  {
+   "id": "n2",
+   "width": 40.0,
+   "height": 30.0
+  },
+  {
+   "id": "n3",
+   "width": 40.0,
+   "height": 30.0
+  },
+  {
+   "id": "n4",
+   "width": 40.0,
+   "height": 30.0
+  }
+ ],
+ "edges": [
+  {
+   "id": "e1",
+   "sources": [
+    "n1"
+   ],
+   "targets": [
+    "n2"
+   ]
+  },
+  {
+   "id": "e2",
+   "sources": [
+    "n2"
+   ],
+   "targets": [
+    "n3"
+   ]
+  },
+  {
+   "id": "e3",
+   "sources": [
+    "n3"
+   ],
+   "targets": [
+    "n4"
+   ]
+  },
+  {
+   "id": "e4_back",
+   "sources": [
+    "n3"
+   ],
+   "targets": [
+    "n1"
+   ]
+  },
+  {
+   "id": "e5_back",
+   "sources": [
+    "n4"
+   ],
+   "targets": [
+    "n2"
+   ]
+  }
+ ]
+}

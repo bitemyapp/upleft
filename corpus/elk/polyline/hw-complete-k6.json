@@ -1,0 +1,358 @@
+{
+ "children": [
+  {
+   "height": 36.900000000000006,
+   "id": "k0",
+   "labels": [
+    {
+     "text": "k0"
+    }
+   ],
+   "width": 60.0
+  },
+  {
+   "height": 36.900000000000006,
+   "id": "k1",
+   "labels": [
+    {
+     "text": "k1"
+    }
+   ],
+   "width": 60.0
+  },
+  {
+   "height": 36.900000000000006,
+   "id": "k2",
+   "labels": [
+    {
+     "text": "k2"
+    }
+   ],
+   "width": 60.0
+  },
+  {
+   "height": 36.900000000000006,
+   "id": "k3",
+   "labels": [
+    {
+     "text": "k3"
+    }
+   ],
+   "width": 60.0
+  },
+  {
+   "height": 36.900000000000006,
+   "id": "k4",
+   "labels": [
+    {
+     "text": "k4"
+    }
+   ],
+   "width": 60.0
+  },
+  {
+   "height": 36.900000000000006,
+   "id": "k5",
+   "labels": [
+    {
+     "text": "k5"
+    }
+   ],
+   "width": 60.0
+  }
+ ],
+ "edges": [
+  {
+   "id": "e0",
+   "sources": [
+    "k0"
+   ],
+   "targets": [
+    "k1"
+   ]
+  },
+  {
+   "id": "e1",
+   "sources": [
+    "k0"
+   ],
+   "targets": [
+    "k2"
+   ]
+  },
+  {
+   "id": "e2",
+   "sources": [
+    "k0"
+   ],
+   "targets": [
+    "k3"
+   ]
+  },
+  {
+   "id": "e3",
+   "sources": [
+    "k0"
+   ],
+   "targets": [
+    "k4"
+   ]
+  },
+  {
+   "id": "e4",
+   "sources": [
+    "k0"
+   ],
+   "targets": [
+    "k5"
+   ]
+  },
+  {
+   "id": "e5",
+   "sources": [
+    "k1"
+   ],
+   "targets": [
+    "k0"
+   ]
+  },
+  {
+   "id": "e6",
+   "sources": [
+    "k1"
+   ],
+   "targets": [
+    "k2"
+   ]
+  },
+  {
+   "id": "e7",
+   "sources": [
+    "k1"
+   ],
+   "targets": [
+    "k3"
+   ]
+  },
+  {
+   "id": "e8",
+   "sources": [
+    "k1"
+   ],
+   "targets": [
+    "k4"
+   ]
+  },
+  {
+   "id": "e9",
+   "sources": [
+    "k1"
+   ],
+   "targets": [
+    "k5"
+   ]
+  },
+  {
+   "id": "e10",
+   "sources": [
+    "k2"
+   ],
+   "targets": [
+    "k0"
+   ]
+  },
+  {
+   "id": "e11",
+   "sources": [
+    "k2"
+   ],
+   "targets": [
+    "k1"
+   ]
+  },
+  {
+   "id": "e12",
+   "sources": [
+    "k2"
+   ],
+   "targets": [
+    "k3"
+   ]
+  },
+  {
+   "id": "e13",
+   "sources": [
+    "k2"
+   ],
+   "targets": [
+    "k4"
+   ]
+  },
+  {
+   "id": "e14",
+   "sources": [
+    "k2"
+   ],
+   "targets": [
+    "k5"
+   ]
+  },
+  {
+   "id": "e15",
+   "sources": [
+    "k3"
+   ],
+   "targets": [
+    "k0"
+   ]
+  },
+  {
+   "id": "e16",
+   "sources": [
+    "k3"
+   ],
+   "targets": [
+    "k1"
+   ]
+  },
+  {
+   "id": "e17",
+   "sources": [
+    "k3"
+   ],
+   "targets": [
+    "k2"
+   ]
+  },
+  {
+   "id": "e18",
+   "sources": [
+    "k3"
+   ],
+   "targets": [
+    "k4"
+   ]
+  },
+  {
+   "id": "e19",
+   "sources": [
+    "k3"
+   ],
+   "targets": [
+    "k5"
+   ]
+  },
+  {
+   "id": "e20",
+   "sources": [
+    "k4"
+   ],
+   "targets": [
+    "k0"
+   ]
+  },
+  {
+   "id": "e21",
+   "sources": [
+    "k4"
+   ],
+   "targets": [
+    "k1"
+   ]
+  },
+  {
+   "id": "e22",
+   "sources": [
+    "k4"
+   ],
+   "targets": [
+    "k2"
+   ]
+  },
+  {
+   "id": "e23",
+   "sources": [
+    "k4"
+   ],
+   "targets": [
+    "k3"
+   ]
+  },
+  {
+   "id": "e24",
+   "sources": [
+    "k4"
+   ],
+   "targets": [
+    "k5"
+   ]
+  },
+  {
+   "id": "e25",
+   "sources": [
+    "k5"
+   ],
+   "targets": [
+    "k0"
+   ]
+  },
+  {
+   "id": "e26",
+   "sources": [
+    "k5"
+   ],
+   "targets": [
+    "k1"
+   ]
+  },
+  {
+   "id": "e27",
+   "sources": [
+    "k5"
+   ],
+   "targets": [
+    "k2"
+   ]
+  },
+  {
+   "id": "e28",
+   "sources": [
+    "k5"
+   ],
+   "targets": [
+    "k3"
+   ]
+  },
+  {
+   "id": "e29",
+   "sources": [
+    "k5"
+   ],
+   "targets": [
+    "k4"
+   ]
+  }
+ ],
+ "id": "root",
+ "layoutOptions": {
+  "elk.algorithm": "layered",
+  "elk.contentAlignment": "H_CENTER V_CENTER",
+  "elk.direction": "DOWN",
+  "elk.edgeRouting": "POLYLINE",
+  "elk.hierarchyHandling": "INCLUDE_CHILDREN",
+  "elk.layered.compaction.postCompaction.strategy": "LEFT_RIGHT_CONSTRAINT_LOCKING",
+  "elk.layered.considerModelOrder.strategy": "NODES_AND_EDGES",
+  "elk.layered.highDegreeNodes.threshold": "8",
+  "elk.layered.highDegreeNodes.treatment": "true",
+  "elk.layered.nodePlacement.bk.fixedAlignment": "BALANCED",
+  "elk.layered.spacing.edgeEdgeBetweenLayers": "12",
+  "elk.layered.spacing.edgeNodeBetweenLayers": "12",
+  "elk.layered.spacing.nodeNodeBetweenLayers": "48",
+  "elk.layered.thoroughness": "3",
+  "elk.layered.wrapping.strategy": "OFF",
+  "elk.padding": "[top=40,left=40,bottom=40,right=40]",
+  "elk.spacing.componentComponent": "20",
+  "elk.spacing.edgeEdge": "12",
+  "elk.spacing.nodeNode": "28"
+ }
+}

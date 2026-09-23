@@ -1,0 +1,30 @@
+{
+ "id": "root",
+ "layoutOptions": {
+  "elk.algorithm": "layered",
+  "elk.edgeRouting": "POLYLINE"
+ },
+ "children": [
+  {
+   "id": "n1",
+   "width": 30.0,
+   "height": 30.0
+  },
+  {
+   "id": "n2",
+   "width": 30.0,
+   "height": 30.0
+  }
+ ],
+ "edges": [
+  {
+   "id": "e1",
+   "sources": [
+    "n1"
+   ],
+   "targets": [
+    "n2"
+   ]
+  }
+ ]
+}

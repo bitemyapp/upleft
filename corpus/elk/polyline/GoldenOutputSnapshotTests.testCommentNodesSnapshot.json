@@ -1,0 +1,78 @@
+{
+ "id": "root",
+ "layoutOptions": {
+  "elk.algorithm": "layered",
+  "elk.edgeRouting": "POLYLINE"
+ },
+ "children": [
+  {
+   "id": "n1",
+   "width": 60.0,
+   "height": 40.0
+  },
+  {
+   "id": "n2",
+   "width": 60.0,
+   "height": 40.0
+  },
+  {
+   "id": "n3",
+   "width": 60.0,
+   "height": 40.0
+  },
+  {
+   "id": "comment1",
+   "width": 80.0,
+   "height": 30.0,
+   "layoutOptions": {
+    "elk.commentBox": "true"
+   }
+  },
+  {
+   "id": "comment2",
+   "width": 80.0,
+   "height": 30.0,
+   "layoutOptions": {
+    "elk.commentBox": "true"
+   }
+  }
+ ],
+ "edges": [
+  {
+   "id": "e1",
+   "sources": [
+    "n1"
+   ],
+   "targets": [
+    "n2"
+   ]
+  },
+  {
+   "id": "e2",
+   "sources": [
+    "n2"
+   ],
+   "targets": [
+    "n3"
+   ]
+  },
+  {
+   "id": "e_c1",
+   "sources": [
+    "comment1"
+   ],
+   "targets": [
+    "n1"
+   ]
+  },
+  {
+   "id": "e_c2",
+   "sources": [
+    "comment2"
+   ],
+   "targets": [
+    "n2"
+   ]
+  }
+ ]
+}
