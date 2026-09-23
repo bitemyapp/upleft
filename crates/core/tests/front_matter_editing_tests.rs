@@ -249,3 +249,16 @@ fn differential_fallbacks() {
         check(source, fenced(source), operation, expected);
     }
 }
+
+/// The body's `components(separatedBy: .newlines)` are native strings, so an
+/// `&` joined to a zero-width joiner is not an anchor; `lineEnding` searches a
+/// bridged substring.
+#[test]
+fn differential_bridged_substrings() {
+    let a = "---\nk: a&\u{200D}b\n---\n";
+    let fa = Some(FrontMatter::new(vec![field("k", "a&\u{200D}b", r(4, 1), r(6, 5))], r(0, 16), r(4, 8)));
+    check(a, fa, add("z", text("v")), ("fm", Some((r(12, 0), "z: v\n", "Add z", "")), None, Some("---\nk: a&\u{200D}b\nz: v\n---\n")));
+    let b = "---\n\u{E9}: x\r\n---\r\n";
+    let fb = Some(FrontMatter::new(vec![field("\u{E9}", "x", r(4, 1), r(6, 2))], r(0, 15), r(4, 6)));
+    check(b, fb, add("z", text("v")), ("fm", Some((r(10, 0), "z: v\r\n", "Add z", "")), None, Some("---\n\u{E9}: x\r\nz: v\r\n---\r\n")));
+}

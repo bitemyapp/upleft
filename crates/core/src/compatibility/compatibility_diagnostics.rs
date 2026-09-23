@@ -163,6 +163,9 @@ pub struct MarkdownCompatibility;
 impl MarkdownCompatibility {
     pub fn diagnose(document: &ParsedDocument, profile: &RenderTargetProfile) -> CompatibilityReport {
         let capabilities = profile.capabilities;
+        // Whether `(document.text as NSString).substring(with:)` hands back
+        // bridged strings, whose `contains` is Foundation's search.
+        let bridged = swift_text::bridges_substrings(&document.utf16);
         let mut findings: Vec<Finding> = Vec::new();
 
         fn add(
@@ -375,7 +378,7 @@ impl MarkdownCompatibility {
             }
             if matches!(block.content, BlockContent::Heading { .. })
                 && !capabilities.contains(MarkdownCapabilities::HEADING_ATTRIBUTES)
-                && let Some(range) = Self::heading_attributes(document, block)
+                && let Some(range) = Self::heading_attributes(document, block, bridged)
             {
                 add(
                     &mut findings,
@@ -393,7 +396,7 @@ impl MarkdownCompatibility {
         });
 
         if !capabilities.contains(MarkdownCapabilities::STRIKETHROUGH) {
-            for range in Self::strikethrough_ranges(document) {
+            for range in Self::strikethrough_ranges(document, bridged) {
                 add(
                     &mut findings,
                     document,
@@ -407,7 +410,7 @@ impl MarkdownCompatibility {
         }
 
         if !capabilities.contains(MarkdownCapabilities::MATH) {
-            for range in Self::inline_math_ranges(document) {
+            for range in Self::inline_math_ranges(document, bridged) {
                 add(
                     &mut findings,
                     document,
@@ -487,7 +490,7 @@ impl MarkdownCompatibility {
         ranges
     }
 
-    fn strikethrough_ranges(document: &ParsedDocument) -> Vec<NSRange> {
+    fn strikethrough_ranges(document: &ParsedDocument, bridged: bool) -> Vec<NSRange> {
         let protected = Self::extension_protected_ranges(document);
         let text = document.utf16.as_slice();
         let length = text.length();
@@ -518,9 +521,13 @@ impl MarkdownCompatibility {
                 break;
             }
             let body = text.substring(NSRange::new(cursor + 2, close - cursor - 2));
-            // `String.contains("\n")` is Character-wise: a CR LF does not
-            // contain "\n".
-            if !body.is_empty() && !swift_text::contains(&body, "\n") && !swift_text::trim_whitespaces(&body).is_empty() {
+            // `body` is a substring of the document's `NSString`: Swift's
+            // `contains("\n")` is Character-wise (a CR LF holds no "\n") on a
+            // native string, Foundation's search on a bridged one.
+            if !body.is_empty()
+                && !swift_text::contains_with(&body, "\n", bridged)
+                && !swift_text::trim_whitespaces(&body).is_empty()
+            {
                 result.push(NSRange::new(cursor, close + 2 - cursor));
                 cursor = close + 2;
             } else {
@@ -530,16 +537,18 @@ impl MarkdownCompatibility {
         result
     }
 
-    fn inline_math_ranges(document: &ParsedDocument) -> Vec<NSRange> {
+    fn inline_math_ranges(document: &ParsedDocument, bridged: bool) -> Vec<NSRange> {
         let protected = Self::extension_protected_ranges(document);
-        MathScanner::matches(&document.utf16, NSRange::new(0, document.length))
+        MathScanner::matches_bridged(&document.utf16, NSRange::new(0, document.length), Some(bridged))
             .into_iter()
             .map(|m| m.range)
             .filter(|&candidate| !protected.iter().any(|range| range.intersection(candidate).is_some()))
             .collect()
     }
 
-    fn heading_attributes(document: &ParsedDocument, heading: &MDBlock) -> Option<NSRange> {
+    /// `bridged`: whether the document's substrings are bridged; `line` is
+    /// one, so the `NSString` substring of it is too.
+    fn heading_attributes(document: &ParsedDocument, heading: &MDBlock, bridged: bool) -> Option<NSRange> {
         // `document.substring(heading.range) as NSString`: empty when the
         // range is out of bounds.
         let range = heading.range;
@@ -561,7 +570,10 @@ impl MarkdownCompatibility {
         }
         let start = (0..end).rev().find(|&i| ns.character_at(i) == 0x7B)?;
         let body = ns.substring(NSRange::new(start + 1, end - start - 2));
-        if !(swift_text::contains(&body, "#") || swift_text::contains(&body, ".") || swift_text::contains(&body, "=")) {
+        if !(swift_text::contains_with(&body, "#", bridged)
+            || swift_text::contains_with(&body, ".", bridged)
+            || swift_text::contains_with(&body, "=", bridged))
+        {
             return None;
         }
         Some(NSRange::new(heading.range.location + start, end - start))

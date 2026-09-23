@@ -247,6 +247,9 @@ struct HealthPass<'a> {
     resolver: Option<&'a DocumentHealthResolver>,
     /// `document.text as NSString`, as UTF-16.
     source: &'a [u16],
+    /// Whether `source.substring(with:)` hands back bridged strings, whose
+    /// `contains` is Foundation's search rather than Character-wise.
+    bridged: bool,
     ignored: IntervalIndex,
     inline_code: IntervalIndex,
     /// `lines()`: a pure function of the document, computed once.
@@ -286,6 +289,7 @@ impl<'a> HealthPass<'a> {
             options,
             resolver,
             source,
+            bridged: swift_text::bridges_substrings(source),
             // Both sets are disjoint, so a binary-search index keeps the
             // prose/reference passes sub-linear per finding.
             ignored: IntervalIndex::new(ignored),
@@ -457,7 +461,10 @@ impl<'a> HealthPass<'a> {
                 if swift_text::str_eq(trimmed, "---") {
                     return; // closed: valid front matter
                 }
-                if !trimmed.is_empty() && swift_text::contains(trimmed, ":") {
+                // `trimmingCharacters` hands back the bridged substring itself
+                // when it trims nothing, and a native string otherwise.
+                let bridged = self.bridged && trimmed.len() == line_text.len();
+                if !trimmed.is_empty() && swift_text::contains_with(trimmed, ":", bridged) {
                     saw_field = true;
                 }
                 cursor = line.upper_bound();
@@ -578,6 +585,8 @@ impl<'a> HealthPass<'a> {
                 self.inspect(inline, out);
             }
         });
+        // The captured destination is a substring of the document's
+        // `NSString`: bridged exactly when the document's substrings are.
         for (_, definition) in self.reference_definitions().iter() {
             let text = NSString::from_str(&self.source.substring(definition.range));
             let Some(m) = first_match(Pattern::DefinitionDestination, &text) else {
@@ -585,7 +594,7 @@ impl<'a> HealthPass<'a> {
             };
             // Swift reads the capture, which is relative to the definition's
             // own text, out of the whole source: kept as is.
-            self.inspect_url(&self.source.substring(m.capture(1)), definition.range, false, out);
+            self.inspect_url(&self.source.substring(m.capture(1)), self.bridged, definition.range, false, out);
         }
     }
 
@@ -603,10 +612,11 @@ impl<'a> HealthPass<'a> {
                         None,
                     ));
                 }
-                self.inspect_url(source, span.range, true, out);
+                // Parser strings (swift-markdown's destinations) are native.
+                self.inspect_url(source, false, span.range, true, out);
             }
             InlineKind::Link { destination, .. } | InlineKind::Autolink { destination } => {
-                self.inspect_url(destination, span.range, false, out);
+                self.inspect_url(destination, false, span.range, false, out);
             }
             _ => {}
         }
@@ -615,11 +625,16 @@ impl<'a> HealthPass<'a> {
         }
     }
 
-    fn inspect_url(&self, value: &str, range: NSRange, is_image: bool, out: &mut Vec<DocumentHealthDiagnostic>) {
+    /// `bridged`: whether `value` is a bridged `NSString` substring, which
+    /// decides how `contains` searches it.
+    fn inspect_url(&self, value: &str, bridged: bool, range: NSRange, is_image: bool, out: &mut Vec<DocumentHealthDiagnostic>) {
         let destination = swift_text::trimming(swift_text::trim_whitespaces_and_newlines(value), CharSet::Chars("<>\"'"));
         if destination.is_empty() {
             return;
         }
+        // Each `trimmingCharacters` returns its receiver when it trims
+        // nothing and a new native string otherwise.
+        let bridged = bridged && destination.len() == value.len();
         if swift_text::has_prefix(destination, "/") && !swift_text::has_prefix(destination, "//") {
             out.push(diagnostic(
                 if is_image { "asset.absolute-path" } else { "link.absolute-path" },
@@ -661,7 +676,7 @@ impl<'a> HealthPass<'a> {
                 return;
             }
         }
-        if swift_text::contains(destination, "://")
+        if swift_text::contains_with(destination, "://", bridged)
             && !swift_text::has_prefix(destination, "http://")
             && !swift_text::has_prefix(destination, "https://")
         {
@@ -676,7 +691,7 @@ impl<'a> HealthPass<'a> {
             ));
             return;
         }
-        let Some(resolver) = self.resolver.filter(|_| is_local(destination)) else {
+        let Some(resolver) = self.resolver.filter(|_| is_local(destination, bridged)) else {
             return;
         };
         let path = swift_text::split(destination, '#', 1, false).first().copied().unwrap_or(destination);
@@ -883,11 +898,11 @@ fn line_string(source: &[u16], line: &Line) -> Retained<NSString> {
     ns_from_utf16(&source[line.range.as_usize_range()])
 }
 
-fn is_local(value: &str) -> bool {
+fn is_local(value: &str, bridged: bool) -> bool {
     if swift_text::has_prefix(value, "#") || swift_text::has_prefix(value, "//") {
         return false;
     }
-    !swift_text::contains(value, ":")
+    !swift_text::contains_with(value, ":", bridged)
 }
 
 fn slugify(title: &str) -> String {
@@ -1189,9 +1204,13 @@ mod tests {
         assert_eq!(slugify("--Title--"), "title");
         assert_eq!(word_count("don't stop—now 42x"), 5);
         assert_eq!(word_count("e\u{301}t\u{e9} 日本"), 2);
-        assert!(is_local("docs/a.md"));
-        assert!(!is_local("#anchor"));
-        assert!(!is_local("//cdn"));
-        assert!(!is_local("mailto:x"));
+        assert!(is_local("docs/a.md", false));
+        assert!(!is_local("#anchor", false));
+        assert!(!is_local("//cdn", true));
+        assert!(!is_local("mailto:x", false));
+        // `:` followed by a zero-width joiner: one Character, which only
+        // Foundation's search (a bridged string) matches.
+        assert!(is_local("a:\u{200D}b", false));
+        assert!(!is_local("a:\u{200D}b", true));
     }
 }

@@ -40,7 +40,7 @@ impl StructuralZoom {
         let tokenizer = SentenceTokenizer::new();
         let units = swift_text::ns::utf16(&prose);
         let mut sentences: Vec<String> = Vec::new();
-        tokenizer.enumerate(&prose, |token| {
+        tokenizer.enumerate_utf16(&units, |token| {
             let sentence = units.as_slice().substring(token);
             sentences.push(swift_text::trim_whitespaces_and_newlines(&sentence).to_owned());
             sentences.len() < 2 && swift_text::count(&sentences.join(" ")) < 220
