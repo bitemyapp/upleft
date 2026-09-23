@@ -13,7 +13,7 @@ use objc2_foundation::NSDictionary;
 use serde_json::Value;
 use upleft_mermaid::downright::mermaid_renderer_bridge as bridge;
 use upleft_mermaid::mermaid::src_class_parser::{ClassDiagram, ClassMember};
-use upleft_mermaid::mermaid::src_elk_instance::elk_available;
+use upleft_mermaid::mermaid::src_elk_instance::{elk_available, replay};
 use upleft_mermaid::mermaid::src_er_parser::{ErAttribute, ErDiagram};
 use upleft_mermaid::mermaid::src_layout::{PositionedEdgePayload, PositionedGroupPayload, PositionedNodePayload};
 use upleft_mermaid::mermaid::src_sequence_parser::SequenceDiagram;
@@ -47,6 +47,56 @@ fn is_elk_unavailable(error: &MermaidError) -> bool {
     matches!(error, MermaidError::Elk(_)) && !elk_available()
 }
 
+/// With `UPLEFT_MERMAID_ELK_REPLAY=<dir>`, answer ELK calls for `input` from
+/// Swift's record `<dir>/<stem>.elkrec` (see crates/mermaid/tools/elk-capture)
+/// instead of an engine. Returns whether a record was installed.
+fn install_env_replay(input: &Path) -> Result<bool, Failure> {
+    let Ok(dir) = std::env::var("UPLEFT_MERMAID_ELK_REPLAY") else { return Ok(false) };
+    let Some(stem) = input.file_stem() else { return Ok(false) };
+    let path = Path::new(&dir).join(stem).with_extension("elkrec");
+    if !path.exists() {
+        return Ok(false);
+    }
+    let record: Value = serde_json::from_str(&std::fs::read_to_string(&path)?)
+        .map_err(|e| Failure::Error(format!("{}: {e}", path.display())))?;
+    replay::install(recorded_outputs(&record));
+    Ok(true)
+}
+
+fn recorded_outputs(record: &Value) -> Vec<Option<Value>> {
+    record["calls"]
+        .as_array()
+        .map(|calls| calls.iter().map(|c| (!c["output"].is_null()).then(|| c["output"].clone())).collect())
+        .unwrap_or_default()
+}
+
+/// `mermaid-replay <x.elkrec> <out.json>`: lay the record's source out with
+/// ELK answered from the record, and write the record's shape back — the
+/// graphs this port handed ELK, the recorded answers, and the positioned
+/// graph. The Swift oracle writes the record itself.
+pub fn replay_record(input: &Path, output: &Path) -> Result<(), Failure> {
+    let record: Value = serde_json::from_str(&std::fs::read_to_string(input)?)
+        .map_err(|e| Failure::Error(format!("{}: {e}", input.display())))?;
+    let source = record["source"].as_str().ok_or_else(|| Failure::Error("record without source".into()))?.to_owned();
+    let outputs = recorded_outputs(&record);
+    replay::install(outputs.clone());
+    let result = upleft_mermaid::parser::parse(&source).and_then(|g| GraphLayout::new(LayoutConfig::default()).layout(&g));
+    let inputs = replay::finish();
+    let calls: Vec<Value> = inputs
+        .into_iter()
+        .enumerate()
+        .map(|(i, graph)| {
+            Object::new().with("input", graph).with("output", outputs.get(i).cloned().flatten().unwrap_or(Value::Null)).build()
+        })
+        .collect();
+    let mut out = Object::new().with("source", source.as_str()).with("calls", Value::Array(calls));
+    out = match result {
+        Ok(positioned) => out.with("positioned", positioned_graph_json(&positioned)),
+        Err(error) => out.with("layoutError", error_json(&error)),
+    };
+    Ok(write(&out.build(), output)?)
+}
+
 // MARK: - Commands
 
 pub fn parse(input: &Path, output: &Path) -> Result<(), Failure> {
@@ -62,6 +112,7 @@ pub fn parse(input: &Path, output: &Path) -> Result<(), Failure> {
 pub fn layout(input: &Path, output: &Path, theme_name: &str, dark: bool) -> Result<(), Failure> {
     let source = trimmed(&read_text(input)?);
     let sheet = style_sheet(theme_name, dark)?;
+    install_env_replay(input)?;
     let mut out = Object::new().with("empty", source.is_empty()).with("theme", theme_json(&bridge::theme(&sheet)));
     match upleft_mermaid::parser::parse(&source) {
         Ok(parsed) => {
@@ -87,6 +138,7 @@ pub fn image(input: &Path, output: &Path, theme_name: &str, dark: bool) -> Resul
     let source = read_text(input)?;
     let sheet = style_sheet(theme_name, dark)?;
     // Layouts that need ELK cannot be rendered without it.
+    install_env_replay(input)?;
     if let Some(t) = bridge::trimmed_source(&source) {
         if let Ok(graph) = upleft_mermaid::parser::parse(t) {
             if let Err(error) = GraphLayout::new(LayoutConfig::default()).layout(&graph) {
@@ -96,6 +148,8 @@ pub fn image(input: &Path, output: &Path, theme_name: &str, dark: bool) -> Resul
             }
         }
     }
+    replay::finish();
+    install_env_replay(input)?;
     let png = match bridge::image(&source, &sheet) {
         Some(image) => encode(&image.ns_image())?,
         None => sentinel()?,

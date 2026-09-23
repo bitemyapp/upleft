@@ -107,6 +107,7 @@ pub fn run(request: &Request) -> Result<(), Failure> {
         "mermaid-layout" => mermaid::layout(&request.input, &request.output, &request.theme, request.dark),
         "mermaid" => mermaid::image(&request.input, &request.output, &request.theme, request.dark),
         "mermaid-bench" => mermaid::bench(&request.input, &request.output),
+        "mermaid-replay" => mermaid::replay_record(&request.input, &request.output),
         "probe" => crate::capture::run(request.capture(), Box::new(crate::capture::ProbeScene)),
         _ => Err(Failure::NotPorted),
     }

@@ -1,0 +1,1 @@
+../../../../../../oracle/Sources/downright-oracle/MermaidModelDump.swift

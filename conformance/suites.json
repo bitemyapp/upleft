@@ -184,6 +184,13 @@
       ]
     },
     {
+      "name": "mermaid-replay",
+      "command": "mermaid-replay",
+      "output": "json",
+      "input": "elkrec",
+      "variants": [[]]
+    },
+    {
       "name": "mermaid-parse",
       "command": "mermaid-parse",
       "output": "json",

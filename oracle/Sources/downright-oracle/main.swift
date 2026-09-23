@@ -130,6 +130,11 @@ do {
     case "mermaid-bench":
         try MermaidBench.run(input, output: output)
 
+    case "mermaid-replay":
+        // A `.elkrec` is Swift's own record of one layout (see
+        // crates/mermaid/tools/elk-capture): it is the expected output.
+        try Data(contentsOf: input).write(to: URL(fileURLWithPath: output))
+
     case "stylesheet":
         try write(StyleSheetDump.dump(themeName: flags.theme, dark: flags.dark), to: output)
 
