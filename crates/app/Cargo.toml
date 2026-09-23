@@ -196,3 +196,19 @@ harness = false
 [[test]]
 name = "workspace_tests"
 harness = false
+
+[[test]]
+name = "command_table_tests_menu"
+harness = false
+
+[[test]]
+name = "document_quick_look_tests_menu"
+harness = false
+
+[[test]]
+name = "share_and_capture_tests_menu"
+harness = false
+
+[[test]]
+name = "app_shell_menu_objects"
+harness = false
