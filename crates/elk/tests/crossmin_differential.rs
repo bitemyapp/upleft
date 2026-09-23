@@ -397,6 +397,11 @@ fn cross_min_type(name: &str) -> CrossMinType {
     }
 }
 
+thread_local! {
+    /// Time spent inside `process`, for comparing with elk-swift's.
+    static PROCESS_TIME: std::cell::Cell<std::time::Duration> = const { std::cell::Cell::new(std::time::Duration::ZERO) };
+}
+
 /// Runs one dump pair; `Err` holds the differences (or the panic).
 fn run_case(pre_path: &Path) -> Result<(), Vec<String>> {
     let post_path = PathBuf::from(pre_path.to_string_lossy().replace("-pre.json", "-post.json"));
@@ -407,7 +412,9 @@ fn run_case(pre_path: &Path) -> Result<(), Vec<String>> {
     let ty = cross_min_type(pre["type"].as_str().unwrap());
     let result = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
         let mut minimizer = LayerSweepCrossingMinimizer::new(ty);
+        let start = std::time::Instant::now();
         minimizer.process(&mut b.lg, root, &mut BasicProgressMonitor::new());
+        PROCESS_TIME.with(|t| t.set(t.get() + start.elapsed()));
     }));
     if let Err(e) = result {
         let msg = e.downcast_ref::<String>().cloned().or_else(|| e.downcast_ref::<&str>().map(|s| s.to_string())).unwrap_or_default();
@@ -457,7 +464,12 @@ fn run_dir(dir: &Path) {
     }
     let show: Vec<String> = failures.iter().take(20).cloned().collect();
     assert!(failures.is_empty(), "{} of {} dumps differ:\n{}", failures.len(), cases.len(), show.join("\n"));
-    eprintln!("{} dumps identical, {} waiting for group A", cases.len() - waiting, waiting);
+    eprintln!(
+        "{} dumps identical, {} waiting for group A ({:?} in LayerSweepCrossingMinimizer.process)",
+        cases.len() - waiting,
+        waiting,
+        PROCESS_TIME.with(|t| t.get())
+    );
 }
 
 #[test]
