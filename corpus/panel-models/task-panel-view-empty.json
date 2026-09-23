@@ -1,0 +1,50 @@
+{
+ "panel": "TaskPanelView",
+ "theme": "Nord",
+ "dark": true,
+ "width": 300,
+ "height": 360,
+ "state": {},
+ "states": [
+  {
+   "name": "empty"
+  },
+  {
+   "name": "empty-quick-add",
+   "actions": [
+    [
+     "beginNewTask"
+    ]
+   ]
+  },
+  {
+   "name": "empty-quick-add-commit",
+   "actions": [
+    [
+     "beginNewTask"
+    ],
+    [
+     "commit",
+     "First task"
+    ]
+   ]
+  },
+  {
+   "name": "empty-escape-closes",
+   "actions": [
+    [
+     "cancel"
+    ]
+   ]
+  },
+  {
+   "name": "empty-undo",
+   "actions": [
+    [
+     "undo",
+     "Nothing"
+    ]
+   ]
+  }
+ ]
+}

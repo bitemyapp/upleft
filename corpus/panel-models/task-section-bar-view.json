@@ -1,0 +1,178 @@
+{
+ "panel": "TaskSectionBarView",
+ "theme": "Paper Light",
+ "dark": false,
+ "width": 336,
+ "height": 40,
+ "document": "corpus/generated/agent/agent-40.md",
+ "state": {},
+ "states": [
+  {
+   "name": "default"
+  },
+  {
+   "name": "hover-first",
+   "actions": [
+    [
+     "hover",
+     0.05
+    ]
+   ]
+  },
+  {
+   "name": "hover-middle",
+   "actions": [
+    [
+     "hover",
+     0.5
+    ]
+   ]
+  },
+  {
+   "name": "hover-gap-edge",
+   "actions": [
+    [
+     "hover",
+     0.199
+    ]
+   ]
+  },
+  {
+   "name": "hover-then-exit",
+   "actions": [
+    [
+     "hover",
+     0.5
+    ],
+    [
+     "exit"
+    ]
+   ]
+  },
+  {
+   "name": "press",
+   "actions": [
+    [
+     "press",
+     0.3
+    ]
+   ]
+  },
+  {
+   "name": "click",
+   "actions": [
+    [
+     "press",
+     0.3
+    ],
+    [
+     "release",
+     0.3
+    ]
+   ]
+  },
+  {
+   "name": "drag-off",
+   "actions": [
+    [
+     "press",
+     0.3
+    ],
+    [
+     "release",
+     0.9
+    ]
+   ]
+  },
+  {
+   "name": "keyboard",
+   "actions": [
+    [
+     "key",
+     124
+    ],
+    [
+     "key",
+     124
+    ],
+    [
+     "key",
+     36
+    ],
+    [
+     "key",
+     123
+    ],
+    [
+     "key",
+     49
+    ]
+   ]
+  },
+  {
+   "name": "keyboard-clamped",
+   "actions": [
+    [
+     "key",
+     123
+    ],
+    [
+     "key",
+     36
+    ],
+    [
+     "key",
+     124
+    ],
+    [
+     "key",
+     124
+    ],
+    [
+     "key",
+     124
+    ],
+    [
+     "key",
+     124
+    ],
+    [
+     "key",
+     124
+    ],
+    [
+     "key",
+     124
+    ],
+    [
+     "key",
+     36
+    ]
+   ]
+  },
+  {
+   "name": "cleared",
+   "actions": [
+    [
+     "clear"
+    ]
+   ]
+  },
+  {
+   "name": "cleared-keyboard",
+   "actions": [
+    [
+     "clear"
+    ],
+    [
+     "key",
+     36
+    ]
+   ]
+  },
+  {
+   "name": "top-offset",
+   "top": 4
+  }
+ ]
+}
