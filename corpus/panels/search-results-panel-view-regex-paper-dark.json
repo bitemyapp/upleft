@@ -1,0 +1,1 @@
+{"panel": "SearchResultsPanelView", "theme": "Paper Light", "dark": true, "width": 336, "height": 560, "state": {"directory": "corpus/generated/agent", "query": "module\\d{2}/file", "options": ["regex"], "limitPerFile": 6}}
