@@ -14,6 +14,7 @@ mod support;
 
 mod click_stability_tests;
 mod content_resize_tests;
+mod fragment_seam_tests;
 mod layout_filler_tests;
 mod speech_accessibility_tests;
 
@@ -34,6 +35,7 @@ fn main() {
     tests.extend(speech_accessibility_tests::TESTS);
     tests.extend(click_stability_tests::TESTS);
     tests.extend(content_resize_tests::TESTS);
+    tests.extend(fragment_seam_tests::TESTS);
 
     let selected: Vec<&Test> = tests
         .iter()

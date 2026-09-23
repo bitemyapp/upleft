@@ -146,6 +146,13 @@ do {
         )
         CaptureSession.run(request: request, scene: command == "render" ? MarkdownScene() : ProbeScene())
 
+    case "bench-view":
+        let request = RenderRequest(
+            input: input, outputPNG: URL(fileURLWithPath: output), outputLayout: nil, mode: flags.mode,
+            themeName: flags.theme, dark: flags.dark, width: flags.width, height: flags.height
+        )
+        ViewBench.run(request: request, output: output)
+
     case "stylesheet":
         try write(StyleSheetDump.dump(themeName: flags.theme, dark: flags.dark), to: output)
 

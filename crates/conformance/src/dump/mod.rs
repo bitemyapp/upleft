@@ -13,6 +13,7 @@ pub mod math;
 pub mod math_bench;
 pub mod parse;
 pub mod render;
+pub mod view_bench;
 pub mod style_sheet;
 pub mod unicode;
 
@@ -122,6 +123,7 @@ pub fn run(request: &Request) -> Result<(), Failure> {
             Ok(json::write(&highlight::vscode_theme(&data, &request.input), &request.output)?)
         }
         "probe" => crate::capture::run(request.capture(), Box::new(crate::capture::ProbeScene)),
+        "bench-view" => view_bench::run(request),
         "render" => crate::capture::run(
             request.capture(),
             Box::new(render::MarkdownScene::new(&request.mode, &request.theme)),
