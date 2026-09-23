@@ -1452,7 +1452,8 @@ impl MarkdownTextView {
 
     // MARK: - Dropping files and images onto the document (§7.1)
 
-    fn document_drop_types() -> Vec<Retained<NSString>> {
+    /// `MarkdownTextView.documentDropTypes`.
+    pub fn document_drop_types() -> Vec<Retained<NSString>> {
         unsafe {
             vec![
                 NSPasteboardTypeFileURL.retain(),
@@ -1620,7 +1621,7 @@ impl MarkdownTextView {
     }
 
     /// Space, but only where it can never be a character.
-    pub(crate) fn handle_quick_look_space(&self, event: &NSEvent) -> bool {
+    pub fn handle_quick_look_space(&self, event: &NSEvent) -> bool {
         if self.isEditable()
             || event.keyCode() != 49
             || !(event.modifierFlags() & NSEventModifierFlags::DeviceIndependentFlagsMask).is_empty()

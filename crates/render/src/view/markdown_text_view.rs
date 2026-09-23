@@ -936,6 +936,16 @@ impl MarkdownTextView {
         self.ivars().hovered_heading_index.set(index);
     }
 
+    /// Where a drag hovering over the surface would land, in source offsets.
+    pub fn drop_insertion_offset(&self) -> Option<isize> {
+        self.ivars().drop_insertion_offset.get()
+    }
+
+    /// True while the host has claimed the drag in flight.
+    pub fn claims_active_drag(&self) -> bool {
+        self.ivars().claims_active_drag.get()
+    }
+
     pub fn update_generation(&self) -> isize {
         self.ivars().update_generation.get()
     }

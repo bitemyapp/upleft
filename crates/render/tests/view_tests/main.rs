@@ -14,8 +14,10 @@ mod support;
 
 mod click_stability_tests;
 mod content_resize_tests;
+mod drop_and_quick_look_tests;
 mod fragment_seam_tests;
 mod layout_filler_tests;
+mod smart_paste_integration_tests;
 mod speech_accessibility_tests;
 
 use std::panic::{AssertUnwindSafe, catch_unwind};
@@ -36,6 +38,8 @@ fn main() {
     tests.extend(click_stability_tests::TESTS);
     tests.extend(content_resize_tests::TESTS);
     tests.extend(fragment_seam_tests::TESTS);
+    tests.extend(smart_paste_integration_tests::TESTS);
+    tests.extend(drop_and_quick_look_tests::TESTS);
 
     let selected: Vec<&Test> = tests
         .iter()
