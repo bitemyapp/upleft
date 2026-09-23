@@ -28,7 +28,7 @@ These follow LocalAI.swift line for line: prompt construction (including the non
 
 **App Intents metadata.** Xcode runs `appintentsmetadataprocessor` to register intents with the system. Downright's SwiftPM bundle script does not, and neither does this build. The app-bundle port should extract `Metadata.appintents` from the linked binary if Shortcuts integration is wanted.
 
-**Wiring still owed** (for the app-core merge): `integrations::app_intents::install_native_integration` takes `NativeIntegrationPolicy.normalizedPath` and `IntegrationRegistry.shared.open` from `integrations::native_integration`, which the palette branch ports. Until they are installed, `perform` answers `.unavailable`.
+`integrations::app_intents::perform` calls `NativeIntegrationPolicy::normalized_path` and `IntegrationRegistry::shared(mtm).open` from `integrations::native_integration` directly, as the Swift does.
 
 **Tests and conformance**
 

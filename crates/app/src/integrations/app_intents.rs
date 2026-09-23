@@ -8,17 +8,15 @@
 //! C function pointer [`register`] installs; this module owns the body:
 //! normalise the path, then open it on the main thread.
 //!
-//! `NativeIntegrationPolicy` and `IntegrationRegistry` belong to
-//! `integrations::native_integration`, ported separately. Until the app
-//! wires them in with [`install_native_integration`], `perform` answers as
-//! Downright does when the registry has no open handler: `.unavailable`.
+//! `perform` calls `integrations::native_integration` directly, as the
+//! Swift calls `NativeIntegrationPolicy` and `IntegrationRegistry`.
 
 use std::ffi::c_void;
-use std::sync::Mutex;
 
 use dispatch2::DispatchQueue;
 use objc2::MainThreadMarker;
-use upleft_foundation::url::FileUrl;
+
+use crate::integrations::native_integration::{IntegrationRegistry, NativeIntegrationPolicy};
 
 /// `OpenMarkdownIntent.title`.
 pub const OPEN_MARKDOWN_INTENT_TITLE: &str = "Open Markdown in Downright";
@@ -52,22 +50,6 @@ impl OpenMarkdownIntentError {
     }
 }
 
-/// The two calls `perform()` makes into NativeIntegration.swift.
-#[derive(Clone, Copy)]
-pub struct NativeIntegrationCalls {
-    /// `NativeIntegrationPolicy.normalizedPath(_:)`.
-    pub native_integration_policy_normalized_path: fn(&str) -> Option<FileUrl>,
-    /// `IntegrationRegistry.shared.open(_:)`, on the main actor.
-    pub integration_registry_shared_open: fn(&FileUrl, MainThreadMarker) -> bool,
-}
-
-static NATIVE_INTEGRATION: Mutex<Option<NativeIntegrationCalls>> = Mutex::new(None);
-
-/// Wires `perform` to `integrations::native_integration`.
-pub fn install_native_integration(calls: NativeIntegrationCalls) {
-    *NATIVE_INTEGRATION.lock().unwrap_or_else(|poisoned| poisoned.into_inner()) = Some(calls);
-}
-
 /// `OpenMarkdownIntent.perform()`:
 ///
 /// ```swift
@@ -83,18 +65,12 @@ pub fn install_native_integration(calls: NativeIntegrationCalls) {
 /// the main actor); the open hops to the main queue. `completion` runs once,
 /// on the main thread or, for an unsupported file, on the calling thread.
 pub fn perform(path: String, completion: impl FnOnce(Result<(), OpenMarkdownIntentError>) + Send + 'static) {
-    let calls = *NATIVE_INTEGRATION.lock().unwrap_or_else(|poisoned| poisoned.into_inner());
-    let Some(calls) = calls else {
-        // No registry: `IntegrationRegistry.shared.open` has no handler and
-        // returns false.
-        return completion(Err(OpenMarkdownIntentError::Unavailable));
-    };
-    let Some(url) = (calls.native_integration_policy_normalized_path)(&path) else {
+    let Some(url) = NativeIntegrationPolicy::normalized_path(&path) else {
         return completion(Err(OpenMarkdownIntentError::UnsupportedFile));
     };
     DispatchQueue::main().exec_async(move || {
         let mtm = MainThreadMarker::new().expect("the main queue runs on the main thread");
-        let opened = (calls.integration_registry_shared_open)(&url, mtm);
+        let opened = IntegrationRegistry::shared(mtm).open(&url);
         completion(if opened { Ok(()) } else { Err(OpenMarkdownIntentError::Unavailable) });
     });
 }

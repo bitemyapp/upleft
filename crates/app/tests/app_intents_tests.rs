@@ -6,22 +6,25 @@
 
 mod main_thread;
 
+use std::cell::RefCell;
+use std::rc::Rc;
 use std::sync::{Arc, Mutex};
 use std::time::Duration;
 
 use objc2::MainThreadMarker;
 use upleft_app::integrations::app_intents::*;
+use upleft_app::integrations::native_integration::{IntegrationRegistry, NativeIntegrationPolicy, OpenHandler};
 use upleft_foundation::url::FileUrl;
 
-static OPENED: Mutex<Vec<String>> = Mutex::new(Vec::new());
-
-fn normalized_path(path: &str) -> Option<FileUrl> {
-    path.ends_with(".md").then(|| FileUrl::from_path(path))
-}
-
-fn open(url: &FileUrl, _mtm: MainThreadMarker) -> bool {
-    OPENED.lock().unwrap().push(url.path());
-    !url.path().contains("refused")
+fn fixture() -> std::path::PathBuf {
+    static NEXT: std::sync::atomic::AtomicUsize = std::sync::atomic::AtomicUsize::new(0);
+    let directory = std::env::temp_dir().join(format!(
+        "upleft-intent-{}-{}",
+        std::process::id(),
+        NEXT.fetch_add(1, std::sync::atomic::Ordering::Relaxed)
+    ));
+    std::fs::create_dir_all(&directory).unwrap();
+    directory
 }
 
 fn perform_now(path: &str) -> Result<(), OpenMarkdownIntentError> {
@@ -34,23 +37,37 @@ fn perform_now(path: &str) -> Result<(), OpenMarkdownIntentError> {
     outcome.lock().unwrap().take().unwrap()
 }
 
-fn without_a_registry_the_intent_is_unavailable() {
-    assert_eq!(perform_now("/tmp/readme.md"), Err(OpenMarkdownIntentError::Unavailable));
+fn without_an_open_handler_the_intent_is_unavailable() {
+    let directory = fixture();
+    let file = directory.join("readme.md");
+    std::fs::write(&file, "# Readme\n").unwrap();
+    assert_eq!(perform_now(file.to_str().unwrap()), Err(OpenMarkdownIntentError::Unavailable));
+    let _ = std::fs::remove_dir_all(directory);
 }
 
 fn perform_routes_through_policy_then_registry() {
-    install_native_integration(NativeIntegrationCalls {
-        native_integration_policy_normalized_path: normalized_path,
-        integration_registry_shared_open: open,
-    });
-    assert_eq!(perform_now("/tmp/notes.txt"), Err(OpenMarkdownIntentError::UnsupportedFile));
-    assert!(OPENED.lock().unwrap().is_empty(), "an unsupported file never reaches the registry");
-    assert_eq!(perform_now("/tmp/upleft-intent/readme.md"), Ok(()));
-    assert_eq!(perform_now("/tmp/upleft-intent/refused.md"), Err(OpenMarkdownIntentError::Unavailable));
-    assert_eq!(
-        *OPENED.lock().unwrap(),
-        vec!["/tmp/upleft-intent/readme.md".to_owned(), "/tmp/upleft-intent/refused.md".to_owned()]
-    );
+    let mtm = MainThreadMarker::new().unwrap();
+    let opened: Rc<RefCell<Vec<String>>> = Rc::default();
+    let sink = opened.clone();
+    let handler: OpenHandler = Rc::new(move |url: &FileUrl| sink.borrow_mut().push(url.path()));
+    IntegrationRegistry::shared(mtm).set_open_handler(Some(handler));
+
+    let directory = fixture();
+    let readme = directory.join("readme.md");
+    std::fs::write(&readme, "# Readme\n").unwrap();
+    let notes = directory.join("notes.txt");
+    std::fs::write(&notes, "notes\n").unwrap();
+
+    assert_eq!(perform_now(notes.to_str().unwrap()), Err(OpenMarkdownIntentError::UnsupportedFile));
+    assert!(opened.borrow().is_empty(), "an unsupported file never reaches the registry");
+    assert_eq!(perform_now(readme.to_str().unwrap()), Ok(()));
+    let missing = directory.join("missing.md");
+    assert_eq!(perform_now(missing.to_str().unwrap()), Err(OpenMarkdownIntentError::Unavailable));
+    let expected = NativeIntegrationPolicy::normalized_path(readme.to_str().unwrap()).unwrap().path();
+    assert_eq!(*opened.borrow(), vec![expected]);
+
+    IntegrationRegistry::shared(mtm).set_open_handler(None);
+    let _ = std::fs::remove_dir_all(directory);
 }
 
 fn errors_describe_themselves_as_downright_does() {
@@ -63,7 +80,7 @@ fn errors_describe_themselves_as_downright_does() {
 
 fn main() {
     main_thread::run(&[
-        ("without_a_registry_the_intent_is_unavailable", without_a_registry_the_intent_is_unavailable),
+        ("without_an_open_handler_the_intent_is_unavailable", without_an_open_handler_the_intent_is_unavailable),
         ("perform_routes_through_policy_then_registry", perform_routes_through_policy_then_registry),
         ("errors_describe_themselves_as_downright_does", errors_describe_themselves_as_downright_does),
     ]);
