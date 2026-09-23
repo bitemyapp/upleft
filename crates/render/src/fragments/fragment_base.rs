@@ -28,7 +28,8 @@ use std::rc::{Rc, Weak};
 
 use objc2::rc::{Allocated, Retained, Weak as ObjcWeak};
 use objc2::runtime::{AnyClass, AnyObject, ClassBuilder};
-use objc2::{ClassType, DefinedClass, Message, define_class, msg_send};
+use objc2::{AllocAnyThread, ClassType, DefinedClass, Message, define_class, msg_send};
+use objc2_app_kit::NSTextElementProvider;
 use objc2_app_kit::{
     NSAttributedStringNSExtendedStringDrawing, NSAttributedStringNSStringDrawing, NSBezierPath, NSColor,
     NSColorSpace, NSFont, NSFontWeightMedium, NSGraphicsContext, NSImage, NSLineBreakMode, NSMutableParagraphStyle,
@@ -167,7 +168,7 @@ impl FragmentContext {
     pub fn new(style_sheet: Rc<StyleSheet>) -> Rc<FragmentContext> {
         let token = StyleToken::of(&style_sheet);
         Rc::new(FragmentContext {
-            text_view: RefCell::new(ObjcWeak::new(None)),
+            text_view: RefCell::new(ObjcWeak::default()),
             style_sheet: RefCell::new(style_sheet),
             style_token: Cell::new(token),
             mode: Cell::new(RenderMode::Read),

@@ -2,6 +2,7 @@
 
 use std::cell::RefCell;
 
+use objc2::AllocAnyThread;
 use objc2::rc::Retained;
 use objc2_app_kit::{NSTrackingArea, NSTrackingAreaOptions, NSView};
 

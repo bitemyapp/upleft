@@ -2,6 +2,7 @@
 //! text surface, kept independent of `NSPasteboard` where it can be.
 
 use objc2::rc::Retained;
+use objc2::AllocAnyThread;
 use objc2::runtime::AnyObject;
 use objc2_app_kit::{
     NSAttributedStringDocumentAttributeKey, NSAttributedStringDocumentReadingOptionKey, NSDocumentTypeDocumentAttribute,
@@ -10,7 +11,7 @@ use objc2_app_kit::{
     NSPasteboardTypeTIFF, NSPasteboardTypeURL, NSRTFDTextDocumentType, NSRTFTextDocumentType,
 };
 use objc2_foundation::{
-    NSAttributedString, NSData, NSDictionary, NSPropertyListSerialization, NSString, NSStringEncoding,
+    NSAttributedString, NSData, NSDictionary, NSPropertyListSerialization, NSPropertyListMutabilityOptions, NSString, NSStringEncoding,
 };
 use upleft_core::smart_paste::SmartPaste;
 use upleft_core::{BlockContent, MDBlock, ParsedDocument};
@@ -287,16 +288,16 @@ impl MarkdownSmartPaste {
                 Some(best) if !(block.range.length < best.range.length) => Some(best),
                 _ => Some(block),
             });
-            let chosen = smallest.copied().or_else(|| {
-                blocks
-                    .iter()
-                    .filter(|block| block.range.location >= range.location)
-                    .fold(None::<&&std::sync::Arc<MDBlock>>, |best, block| match best {
-                        Some(best) if !(block.range.location < best.range.location) => Some(best),
-                        _ => Some(block),
-                    })
+            let chosen: Option<&std::sync::Arc<MDBlock>> = smallest.copied().or_else(|| {
+                let mut best: Option<&std::sync::Arc<MDBlock>> = None;
+                for block in blocks.iter().filter(|block| block.range.location >= range.location) {
+                    if best.is_none_or(|best| block.range.location < best.range.location) {
+                        best = Some(block);
+                    }
+                }
+                best
             });
-            chosen.into_iter().copied().collect()
+            chosen.into_iter().collect()
         } else {
             blocks
                 .iter()
@@ -335,7 +336,7 @@ fn read_rich_text(data: &NSData, rtf: bool) -> Option<Retained<NSAttributedStrin
             NSAttributedString::alloc(),
             data,
             &options,
-            std::ptr::null_mut(),
+            None,
         )
     }
     .ok()
@@ -351,9 +352,11 @@ fn html_of(attributed: &NSAttributedString) -> Option<String> {
         (key, value)
     };
     let attributes = NSDictionary::<NSAttributedStringDocumentAttributeKey, AnyObject>::from_slices(&[key], &[value.as_ref()]);
-    let data = attributed
-        .dataFromRange_documentAttributes_error(objc2_foundation::NSRange::new(0, attributed.length()), &attributes)
-        .ok()?;
+    // SAFETY: the attributes dictionary holds the documented key and value.
+    let data = unsafe {
+        attributed.dataFromRange_documentAttributes_error(objc2_foundation::NSRange::new(0, attributed.length()), &attributes)
+    }
+    .ok()?;
     String::from_utf8(data.to_vec()).ok()
 }
 
@@ -367,7 +370,7 @@ fn web_archive_html(data: Option<&NSData>) -> Option<String> {
     let plist = unsafe {
         NSPropertyListSerialization::propertyListWithData_options_format_error(
             data,
-            objc2_foundation::NSPropertyListMutabilityOptions(0),
+            NSPropertyListMutabilityOptions(0),
             std::ptr::null_mut(),
         )
     }

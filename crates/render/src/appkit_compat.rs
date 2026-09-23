@@ -12,6 +12,7 @@
 use std::ptr::NonNull;
 
 use block2::StackBlock;
+use objc2::AllocAnyThread;
 use objc2::rc::Retained;
 use objc2::runtime::{AnyObject, Bool};
 use objc2_core_foundation::{CGFloat, CGPoint, CGRect, CGSize};
@@ -251,7 +252,7 @@ pub fn attributes_at(
 /// it on the main queue.
 pub fn main_async(work: impl FnOnce() + 'static) {
     let mtm = objc2::MainThreadMarker::new().expect("main_async is called on the main thread");
-    let bound = objc2::MainThreadBound::new(Box::new(work) as Box<dyn FnOnce()>, mtm);
+    let bound = dispatch2::MainThreadBound::new(Box::new(work) as Box<dyn FnOnce()>, mtm);
     dispatch2::DispatchQueue::main().exec_async(move || {
         let mtm = objc2::MainThreadMarker::new().expect("the main queue runs on the main thread");
         (bound.into_inner(mtm))()
@@ -261,7 +262,7 @@ pub fn main_async(work: impl FnOnce() + 'static) {
 /// `DispatchQueue.main.asyncAfter(deadline: .now() + delay) { … }`.
 pub fn main_after(delay: f64, work: impl FnOnce() + 'static) {
     let mtm = objc2::MainThreadMarker::new().expect("main_after is called on the main thread");
-    let bound = objc2::MainThreadBound::new(Box::new(work) as Box<dyn FnOnce()>, mtm);
+    let bound = dispatch2::MainThreadBound::new(Box::new(work) as Box<dyn FnOnce()>, mtm);
     let when = dispatch2::DispatchTime::try_from(std::time::Duration::from_secs_f64(delay.max(0.0)))
         .unwrap_or(dispatch2::DispatchTime::NOW);
     let _ = dispatch2::DispatchQueue::main().after(when, move || {

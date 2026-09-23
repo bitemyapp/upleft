@@ -12,12 +12,13 @@ use objc2::rc::{Retained, Weak as ObjcWeak};
 use objc2::runtime::{AnyClass, NSObjectProtocol, ProtocolObject};
 use objc2::{ClassType, DefinedClass, MainThreadMarker, MainThreadOnly, define_class, msg_send};
 use objc2_app_kit::{
-    NSAutoresizingMaskOptions, NSControlSize, NSEdgeInsets, NSResponder, NSScrollView, NSScroller, NSScrollerStyle,
+    NSAutoresizingMaskOptions, NSControlSize, NSResponder, NSScrollView, NSScroller, NSScrollerStyle,
     NSTextStorage, NSView, NSViewBoundsDidChangeNotification, NSWindowOrderingMode,
 };
 use objc2_core_foundation::CGFloat;
-use objc2_foundation::{NSNotification, NSNotificationCenter, NSOperationQueue, NSRect, NSSize};
+use objc2_foundation::{NSEdgeInsets, NSNotification, NSNotificationCenter, NSOperationQueue, NSRect, NSSize};
 
+use objc2_app_kit::NSAppearanceCustomization;
 use crate::appkit_compat::{RECT_ZERO, RectExt, rect, rect_fill};
 use crate::engine::render_metrics;
 use crate::render_contracts::RenderMode;
@@ -46,7 +47,7 @@ pub struct MarkdownContainerViewIvars {
 impl Drop for MarkdownContainerViewIvars {
     fn drop(&mut self) {
         if let Some(observer) = self.scroll_observer.get_mut().take() {
-            unsafe { NSNotificationCenter::defaultCenter().removeObserver(&observer) };
+            unsafe { NSNotificationCenter::defaultCenter().removeObserver(observer.as_ref()) };
         }
     }
 }

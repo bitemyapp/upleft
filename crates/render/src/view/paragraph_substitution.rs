@@ -11,7 +11,7 @@ use std::cell::RefCell;
 use objc2::rc::Retained;
 use objc2::runtime::{NSObject, NSObjectProtocol};
 use objc2::{AllocAnyThread, DefinedClass, define_class, msg_send};
-use objc2_app_kit::{NSTextContentManagerDelegate, NSTextContentStorage, NSTextContentStorageDelegate, NSTextParagraph};
+use objc2_app_kit::{NSTextStorageObserving, NSTextContentManagerDelegate, NSTextContentStorage, NSTextContentStorageDelegate, NSTextParagraph};
 use objc2_foundation::NSRange;
 
 use crate::appkit_compat::from_ns;
@@ -41,28 +41,32 @@ define_class!(
             text_content_storage: &NSTextContentStorage,
             range: NSRange,
         ) -> Option<Retained<NSTextParagraph>> {
-            let display_map = self.ivars().display_map.borrow();
-            if display_map.is_identity() {
-                return None;
-            }
-            let storage = unsafe { text_content_storage.textStorage() }?;
-            // Safety valve: between a text edit and the map rebuild the two are
-            // briefly out of step, so when the shapes disagree fall back to
-            // the storage and let the next rebuild fix it.
-            if display_map.paragraphs.length != storage.length() as isize {
-                return None;
-            }
-            let range = from_ns(range);
-            if display_map.paragraphs.paragraph_range_containing(range.location) != range {
-                return None;
-            }
-            let substituted = display_map.display_string_for_paragraph(range, &storage, true)?;
-            Some(NSTextParagraph::initWithAttributedString(NSTextParagraph::alloc(), Some(&substituted)))
+            self.text_paragraph(text_content_storage, range)
         }
     }
 );
 
 impl ParagraphSubstitution {
+    fn text_paragraph(&self, text_content_storage: &NSTextContentStorage, range: NSRange) -> Option<Retained<NSTextParagraph>> {
+        let display_map = self.ivars().display_map.borrow();
+        if display_map.is_identity() {
+            return None;
+        }
+        let storage = text_content_storage.textStorage()?;
+        // Safety valve: between a text edit and the map rebuild the two are
+        // briefly out of step, so when the shapes disagree fall back to
+        // the storage and let the next rebuild fix it.
+        if display_map.paragraphs.length != storage.length() as isize {
+            return None;
+        }
+        let range = from_ns(range);
+        if display_map.paragraphs.paragraph_range_containing(range.location) != range {
+            return None;
+        }
+        let substituted = display_map.display_string_for_paragraph(range, &storage, true)?;
+        Some(NSTextParagraph::initWithAttributedString(NSTextParagraph::alloc(), Some(&substituted)))
+    }
+
     pub fn new() -> Retained<ParagraphSubstitution> {
         let this = Self::alloc().set_ivars(ParagraphSubstitutionIvars { display_map: RefCell::new(DisplayMap::identity()) });
         // SAFETY: NSObject's designated initialiser.

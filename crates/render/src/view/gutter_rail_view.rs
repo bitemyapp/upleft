@@ -10,7 +10,8 @@ use std::cell::RefCell;
 use block2::RcBlock;
 use objc2::rc::{Retained, Weak as ObjcWeak};
 use objc2::runtime::{AnyObject, Bool, NSObjectProtocol};
-use objc2::{DefinedClass, MainThreadMarker, MainThreadOnly, define_class, msg_send, sel};
+use objc2_app_kit::NSAccessibility;
+use objc2::{AllocAnyThread, DefinedClass, MainThreadMarker, MainThreadOnly, define_class, msg_send, sel};
 use objc2_app_kit::{
     NSAccessibilityCustomAction, NSAttributedStringNSStringDrawing, NSBezierPath, NSColor, NSControlStateValueOff,
     NSControlStateValueOn, NSEvent, NSEventModifierFlags, NSFont, NSFontWeightMedium, NSMenu, NSMenuItem,

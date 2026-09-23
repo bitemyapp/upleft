@@ -21,6 +21,7 @@ use std::rc::Rc;
 
 use objc2::rc::Retained;
 use objc2::runtime::{NSObject, NSObjectProtocol, ProtocolObject};
+use objc2_app_kit::NSTextElementProvider;
 use objc2::{AllocAnyThread, DefinedClass, define_class, msg_send};
 use objc2_app_kit::{
     NSTextElement, NSTextLayoutFragment, NSTextLayoutManager, NSTextLayoutManagerDelegate, NSTextLocation, NSTextRange,

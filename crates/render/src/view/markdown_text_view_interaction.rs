@@ -9,20 +9,21 @@ use std::cell::Cell;
 
 use objc2::rc::{Retained, Weak as ObjcWeak};
 use objc2::runtime::{AnyObject, ProtocolObject};
-use objc2::{Message, msg_send};
+use objc2::{AllocAnyThread, DefinedClass, Message, msg_send};
+use objc2_app_kit::NSAttributedStringAppKitDocumentFormats;
 use objc2_app_kit::{
-    NSApplication, NSBezierPath, NSCursor, NSDragOperation, NSDraggingInfo, NSEvent, NSEventModifierFlags, NSMenu,
+    NSBezierPath, NSCursor, NSDragOperation, NSDraggingInfo, NSEvent, NSEventModifierFlags, NSMenu,
     NSParagraphStyle, NSPasteboard, NSPasteboardTypeFileURL, NSPasteboardTypeHTML, NSPasteboardTypePNG,
-    NSPasteboardTypeRTF, NSPasteboardTypeString, NSPasteboardTypeTIFF, NSSound, NSTextInputClient, NSView,
+    NSPasteboardTypeRTF, NSPasteboardTypeString, NSPasteboardTypeTIFF, NSTextInputClient,
 };
-use objc2_core_foundation::{CGFloat, CGPoint, CGRect};
+use objc2_core_foundation::{CGFloat, CGPoint};
 use objc2_foundation::{
     NSArray, NSAttributedString, NSDictionary, NSMutableAttributedString, NSPoint, NSRect, NSString,
     NSStringEnumerationOptions, NSURL,
 };
 use upleft_core::{NSRange, PathToken, ZoomLevel};
 
-use crate::appkit_compat::{RectExt, WorkItem, attribute_at, attribute_value, enumerate_attribute, from_ns, keys, main_after, ns, rect};
+use crate::appkit_compat::{RectExt, WorkItem, attribute_at, attribute_value, enumerate_attribute, from_ns, keys, ns, rect};
 use crate::engine::display_map::{ParagraphIndex, RangeSet};
 use crate::engine::render_metrics;
 use crate::render_contracts::{FragmentKind, FragmentPayload, RenderMode, SourceFocus, attribute_keys};
@@ -1082,7 +1083,7 @@ impl MarkdownTextView {
         let pasteboard = NSPasteboard::generalPasteboard();
         let Some(payload) = MarkdownSmartPaste::payload(&pasteboard, paste_mode) else { return };
         if payload == MarkdownPastePayload::Image {
-            NSSound::beep();
+            objc2_app_kit::NSBeep();
             return;
         }
         let range = self.source_selected_range();
@@ -1516,6 +1517,13 @@ impl MarkdownTextView {
         self.ivars().claims_active_drag.set(false);
     }
 
+    pub(crate) fn prepare_for_drag_operation(&self, sender: &ProtocolObject<dyn NSDraggingInfo>) -> bool {
+        if self.ivars().claims_active_drag.get() {
+            return true;
+        }
+        unsafe { msg_send![super(self), prepareForDragOperation: sender] }
+    }
+
     pub(crate) fn perform_drag_operation(&self, sender: &ProtocolObject<dyn NSDraggingInfo>) -> bool {
         if !self.ivars().claims_active_drag.get() {
             return unsafe { msg_send![super(self), performDragOperation: sender] };
@@ -1633,7 +1641,7 @@ fn previewable(target: ContextTarget) -> Option<ContextTarget> {
 
 /// `PathToken` values ride on the storage as the engine's attribute object.
 fn path_token_of(value: &AnyObject) -> Option<PathToken> {
-    crate::engine::decoration_engine::path_token_from_attribute(value)
+    value.downcast_ref::<crate::swift_value::PathTokenValue>().map(|value| value.token().clone())
 }
 
 fn contains_paragraph_separator(string: &str) -> bool {
@@ -1646,13 +1654,14 @@ fn is_layout_filler(unit: u16) -> bool {
 
 /// The first substring range `enumerateSubstrings(in:options:)` reports.
 fn first_substring_range(string: &NSString, range: NSRange, options: NSStringEnumerationOptions) -> Option<NSRange> {
-    let found: Cell<Option<NSRange>> = Cell::new(None);
-    let block = block2::StackBlock::new(
-        |_substring: *mut NSString,
+    let found: std::rc::Rc<Cell<Option<NSRange>>> = std::rc::Rc::new(Cell::new(None));
+    let sink = found.clone();
+    let block = block2::RcBlock::new(
+        move |_substring: *mut NSString,
          substring_range: objc2_foundation::NSRange,
          _enclosing: objc2_foundation::NSRange,
          stop: std::ptr::NonNull<objc2::runtime::Bool>| {
-            found.set(Some(from_ns(substring_range)));
+            sink.set(Some(from_ns(substring_range)));
             unsafe { stop.as_ptr().write(objc2::runtime::Bool::YES) };
         },
     );

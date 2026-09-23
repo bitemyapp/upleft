@@ -3,6 +3,7 @@
 
 use objc2::rc::{Retained, Weak as ObjcWeak};
 use objc2::runtime::{AnyObject, NSObjectProtocol};
+use objc2_app_kit::NSAccessibility;
 use objc2::{DefinedClass, MainThreadMarker, MainThreadOnly, define_class, msg_send};
 use objc2_app_kit::{
     NSAttributedStringNSExtendedStringDrawing, NSAttributedStringNSStringDrawing, NSFont, NSFontWeightSemibold,

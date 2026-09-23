@@ -31,28 +31,28 @@ use std::rc::{Rc, Weak};
 use std::sync::Arc;
 
 use block2::RcBlock;
-use objc2::rc::{Allocated, Retained, Weak as ObjcWeak};
-use objc2::runtime::{AnyObject, Bool, NSObjectProtocol, ProtocolObject, Sel};
-use objc2::{DefinedClass, MainThreadMarker, MainThreadOnly, Message, define_class, msg_send, sel};
+use objc2::rc::{Retained, Weak as ObjcWeak};
+use objc2::runtime::{AnyObject, Bool, NSObjectProtocol, ProtocolObject};
+use objc2::{AllocAnyThread, DefinedClass, MainThreadMarker, MainThreadOnly, Message, define_class, msg_send};
 use objc2_app_kit::{
-    NSAccessibility, NSAccessibilityCustomAction, NSAccessibilityElement, NSAccessibilityElementProtocol,
-    NSAccessibilityNotificationName, NSAccessibilityRole, NSAttributedStringNSStringDrawing, NSBezierPath,
-    NSClipView, NSColor, NSDragOperation, NSDraggingDestination, NSDraggingInfo, NSEvent, NSEventPhase, NSFont,
+    NSAccessibility, NSAccessibilityCustomAction, NSAccessibilityElement, NSAttributedStringNSStringDrawing, NSBezierPath,
+    NSClipView, NSColor, NSDragOperation, NSDraggingInfo, NSEvent, NSEventPhase, NSFont,
     NSFontWeightMedium, NSGraphicsContext, NSMenu, NSMutableParagraphStyle, NSParagraphStyle, NSPasteboard,
-    NSResponder, NSScrollView, NSSelectionAffinity, NSStandardKeyBindingResponding, NSText, NSTextAlignment,
-    NSTextContainer, NSTextContentManager, NSTextLayoutFragment, NSTextLayoutManager, NSTextLocation, NSTextRange,
-    NSTextSegmentOptions, NSTextSegmentType, NSTextStorage, NSTextStorageObserving, NSTextTab, NSTextView,
-    NSTrackingArea, NSTrackingAreaOptions, NSUnderlineStyle, NSView, NSWindow, NSWindowDidResignKeyNotification,
+    NSResponder, NSScrollView, NSSelectionAffinity, NSText, NSTextAlignment,
+    NSTextContainer, NSTextLayoutManager, NSTextRange,
+    NSTextStorage, NSTextStorageObserving, NSTextTab, NSTextView,
+    NSTrackingArea, NSTrackingAreaOptions, NSUnderlineStyle, NSView, NSWindowDidResignKeyNotification,
     NSViewBoundsDidChangeNotification, NSLineBreakMode,
 };
 use objc2_core_foundation::{CGFloat, CGPoint, CGRect, CGSize};
-use objc2_core_graphics::{CGContext, CGMutablePath};
+use objc2_core_graphics::CGContext;
 use objc2_foundation::{
     NSArray, NSAttributedString, NSCharacterSet, NSDictionary, NSMutableAttributedString, NSNotification,
     NSNotificationCenter, NSNumber, NSOperationQueue, NSPoint, NSRect, NSSize, NSString, NSValue,
 };
 use upleft_core::{BlockContent, DirtySet, NSRange, ParsedDocument, PathToken, TextEdit, ZoomLevel};
 
+use objc2_app_kit::{NSTextElementProvider, NSTextSelectionDataSource};
 use crate::appkit_compat::{
     RECT_ZERO, RectExt, WorkItem, attribute_value, attributed_string, enumerate_attribute, from_ns, keys, main_async,
     ns, rect,
@@ -74,7 +74,6 @@ use crate::render_contracts::{
 };
 use crate::swift_compat::{smax, smin};
 use crate::theme::style_sheet::StyleSheet;
-use crate::theme::theme_store::ThemeStore;
 use crate::view::fragment_provider::FragmentProvider;
 use crate::view::gutter_rail_view::GutterRailView;
 use crate::view::markdown_content_storage::MarkdownContentStorage;
@@ -310,10 +309,10 @@ impl Drop for MarkdownTextViewIvars {
     fn drop(&mut self) {
         let center = NSNotificationCenter::defaultCenter();
         if let Some(observer) = self.scroll_observer.get_mut().take() {
-            unsafe { center.removeObserver(&observer) };
+            unsafe { center.removeObserver(observer.as_ref()) };
         }
         if let Some(observer) = self.resign_key_observer.get_mut().take() {
-            unsafe { center.removeObserver(&observer) };
+            unsafe { center.removeObserver(observer.as_ref()) };
         }
         for item in [
             self.resize_work_item.get_mut().take(),
@@ -611,10 +610,7 @@ define_class!(
 
         #[unsafe(method(prepareForDragOperation:))]
         fn __prepare_for_drag_operation(&self, sender: &ProtocolObject<dyn NSDraggingInfo>) -> bool {
-            if self.ivars().claims_active_drag.get() {
-                return true;
-            }
-            unsafe { msg_send![super(self), prepareForDragOperation: sender] }
+            self.prepare_for_drag_operation(sender)
         }
 
         #[unsafe(method(performDragOperation:))]
@@ -743,11 +739,11 @@ impl MarkdownTextView {
             claims_active_drag: Cell::new(false),
             composing_paragraph: Cell::new(None),
             update_generation: Cell::new(0),
-            gutter_rail: RefCell::new(ObjcWeak::new(None)),
+            gutter_rail: RefCell::new(ObjcWeak::default()),
             word_joiner_runs: RefCell::new(HashMap::new()),
             scroll_spring: Cell::new(SpringScalar::with_duration(motion::SPRING_DELIBERATE)),
             scroll_spring_is_active: Cell::new(false),
-            scroll_spring_clip: RefCell::new(ObjcWeak::new(None)),
+            scroll_spring_clip: RefCell::new(ObjcWeak::default()),
             pending_scroll_y: Cell::new(None),
             pending_motion_invalidation: Cell::new(None),
         });
@@ -782,9 +778,9 @@ impl MarkdownTextView {
         this.setAccessibilityRole(Some(unsafe { objc2_app_kit::NSAccessibilityTextAreaRole }));
         this.install_accessibility_actions();
 
-        this.ivars().engine.borrow_mut().policy = this.effective_policy();
-        this.ivars().engine.borrow_mut().code_collapse_line_count =
-            this.ivars().configuration.borrow().code_collapse_threshold() as isize;
+        this.ivars().engine.borrow_mut().set_policy(this.effective_policy());
+        let threshold = this.ivars().configuration.borrow().code_collapse_threshold() as isize;
+        this.ivars().engine.borrow_mut().set_code_collapse_line_count(threshold);
         this.apply_typographic_substitution();
         this.ivars().fragment_context.mode.set(this.mode());
         this.apply_measure();
@@ -998,9 +994,10 @@ impl MarkdownTextView {
         } else if self.source_focus() == SourceFocus::Document {
             self.ivars().source_focus.set(SourceFocus::None);
         }
-        self.ivars().engine.borrow_mut().policy = self.effective_policy();
-        self.ivars().engine.borrow_mut().code_collapse_line_count =
-            self.ivars().configuration.borrow().code_collapse_threshold() as isize;
+        let policy = self.effective_policy();
+        self.ivars().engine.borrow_mut().set_policy(policy);
+        let threshold = self.ivars().configuration.borrow().code_collapse_threshold() as isize;
+        self.ivars().engine.borrow_mut().set_code_collapse_line_count(threshold);
         self.ivars().fragment_context.mode.set(mode);
         self.ivars().fragment_context.source_focus_range.set(self.source_focus().range());
         self.apply_mode_chrome();
@@ -1044,8 +1041,9 @@ impl MarkdownTextView {
         *self.ivars().configuration.borrow_mut() = configuration.clone();
         let anchor = self.capture_viewport_anchor();
         let selection = self.source_selected_ranges();
-        self.ivars().engine.borrow_mut().policy = self.effective_policy();
-        self.ivars().engine.borrow_mut().code_collapse_line_count = configuration.code_collapse_threshold() as isize;
+        let policy = self.effective_policy();
+        self.ivars().engine.borrow_mut().set_policy(policy);
+        self.ivars().engine.borrow_mut().set_code_collapse_line_count(configuration.code_collapse_threshold() as isize);
         self.apply_typographic_substitution();
         let invisibles_only = configuration.show_invisibles != old_value.show_invisibles
             && configuration.reveal_policy == old_value.reveal_policy
@@ -1399,7 +1397,7 @@ impl MarkdownTextView {
     fn refresh_fragment_accessibility(&self) {
         if self.mode() == RenderMode::Source {
             self.ivars().fragment_accessibility_elements.borrow_mut().clear();
-            self.setAccessibilityChildren(None);
+            unsafe { self.setAccessibilityChildren(None) };
             return;
         }
         let mut elements: Vec<Retained<FragmentAccessibilityElement>> = Vec::new();
@@ -1937,7 +1935,8 @@ impl MarkdownTextView {
         let plan = if self.ivars().configuration.borrow().reflow_hard_wrapped_paragraphs
             && Self::contains_hard_wrapped_paragraph(document, &source)
         {
-            HardWrapReflow::plan(document, &source, &hidden, true)
+            let units: Vec<u16> = (0..source.length()).map(|index| source.characterAtIndex(index)).collect();
+            HardWrapReflow::plan(document, &units, &hidden, &[], true)
         } else {
             hard_wrap_reflow::Plan { ranges: Vec::new(), substitutions: Vec::new() }
         };
@@ -1981,7 +1980,7 @@ impl MarkdownTextView {
     /// Presents safe README structural tags with source-preserving display
     /// replacements.
     fn safe_html_line_break_substitutions(document: &ParsedDocument, excluded_range: Option<NSRange>) -> Vec<DisplaySubstitution> {
-        use upleft_core::safe_html::SafeHTMLAnnotationKind as Kind;
+        use upleft_core::safe_html::SafeHTMLKind as Kind;
         let mut substitutions: Vec<DisplaySubstitution> = Vec::new();
         document.root.walk(&mut |block| {
             let Some(html) = block.safe_html.as_ref() else { return };
@@ -1996,7 +1995,7 @@ impl MarkdownTextView {
                         }
                         (annotation.range, "\n")
                     }
-                    Kind::Details(open) => {
+                    Kind::Details { open } => {
                         let Some(opening) = annotation.tag_ranges.first().copied() else { continue };
                         if !(opening.length > 0) {
                             continue;
@@ -2369,11 +2368,11 @@ impl MarkdownTextView {
         projected_logical.extend(projected_hard_wrap_substitutions);
         let paragraph_index = self.paragraph_index();
         let base_display_map =
-            previous_logical_map.projecting_stable_topology(paragraph_index.clone(), projected_logical, &projected_hidden);
+            previous_logical_map.projecting_stable_topology(paragraph_index.clone(), projected_logical, projected_hidden.clone());
         let base_layout_map = previous_layout_map.projecting_stable_topology(
             paragraph_index.clone(),
             projected_layout_substitutions,
-            &projected_hidden,
+            projected_hidden.clone(),
         );
         *ivars.base_display_map.borrow_mut() = base_display_map.clone();
         *ivars.base_layout_map.borrow_mut() = base_layout_map.clone();
@@ -2474,7 +2473,7 @@ impl MarkdownTextView {
         } else if policy.reveals_at_caret {
             let document = self.parsed_document();
             let selections = self.source_selected_ranges();
-            let revealed = MarkerPolicy::revealed_marker_ranges(&document, &policy, caret, &selections);
+            let revealed = MarkerPolicy::revealed_marker_ranges(&document, policy, caret, &selections);
             let revealed_math = caret.map(|caret| InlineMathDisplay::ranges_touching(&document, caret)).unwrap_or_default();
             let mut revealed_display_objects = revealed.clone();
             revealed_display_objects.extend(revealed_math);
@@ -3093,7 +3092,7 @@ impl MarkdownTextView {
         self.selectedRanges()
             .iter()
             .map(|value| {
-                let text_kit_range = from_ns(value.rangeValue());
+                let text_kit_range = from_ns(unsafe { value.rangeValue() });
                 if text_kit_range.location <= full_text_kit.location
                     && text_kit_range.upper_bound() >= full_text_kit.upper_bound()
                 {
@@ -3114,7 +3113,7 @@ impl MarkdownTextView {
         if !self.effective_policy().shows_insertion_point {
             return None;
         }
-        let first = self.selectedRanges().firstObject()?.rangeValue();
+        let first = unsafe { self.selectedRanges().firstObject()?.rangeValue() };
         if first.length != 0 {
             return None;
         }
@@ -3125,7 +3124,7 @@ impl MarkdownTextView {
         let display_map = self.current_display_map();
         let converted: Vec<Retained<NSValue>> = ranges
             .iter()
-            .map(|range| NSValue::valueWithRange(ns(display_map.text_kit_range_for_source(*range))))
+            .map(|range| unsafe_value_with_range(ns(display_map.text_kit_range_for_source(*range))))
             .collect();
         if converted.is_empty() {
             return;
@@ -3170,7 +3169,7 @@ impl MarkdownTextView {
     /// editor's hover, link, and source-offset paths.
     fn character_index_for_insertion(&self, point: NSPoint) -> usize {
         let super_index = || -> usize { unsafe { msg_send![super(self), characterIndexForInsertionAtPoint: point] } };
-        let Some(text_container) = self.textContainer() else { return super_index() };
+        let Some(text_container) = (unsafe { self.textContainer() }) else { return super_index() };
         let origin = self.textContainerOrigin();
         let width = smax(1.0, text_container.size().width);
         let local_point = CGPoint::new(smin(smax(point.x - origin.x, 0.0), width), smax(0.0, point.y - origin.y));
@@ -3233,7 +3232,7 @@ impl MarkdownTextView {
         let display_map = self.current_display_map();
         let restored: Vec<Retained<NSValue>> = source_selection
             .iter()
-            .map(|range| NSValue::valueWithRange(ns(display_map.text_kit_range_for_source(*range))))
+            .map(|range| unsafe_value_with_range(ns(display_map.text_kit_range_for_source(*range))))
             .collect();
         let current = self.selectedRanges();
         let same = restored.len() == current.count()
@@ -3273,7 +3272,7 @@ impl MarkdownTextView {
         }
         let paragraph = self.paragraph_range_containing(caret);
         let revealed: Vec<NSRange> =
-            MarkerPolicy::revealed_marker_ranges(&self.parsed_document(), &self.effective_policy(), Some(caret), &[])
+            MarkerPolicy::revealed_marker_ranges(&self.parsed_document(), self.effective_policy(), Some(caret), &[])
                 .into_iter()
                 .filter(|range| range.upper_bound() <= caret && range.location >= paragraph.location)
                 .collect();
@@ -3337,8 +3336,8 @@ impl MarkdownTextView {
         unsafe {
             layout_manager.enumerateTextSegmentsInRange_type_options_usingBlock(
                 &range,
-                NSTextSegmentType::Standard,
-                NSTextSegmentOptions(0),
+                objc2_app_kit::NSTextLayoutManagerSegmentType::Standard,
+                objc2_app_kit::NSTextLayoutManagerSegmentOptions(0),
                 &block,
             )
         };
@@ -3438,7 +3437,7 @@ impl MarkdownTextView {
             return;
         }
         ivars.scroll_spring_is_active.set(false);
-        *ivars.scroll_spring_clip.borrow_mut() = ObjcWeak::new(None);
+        *ivars.scroll_spring_clip.borrow_mut() = ObjcWeak::default();
         ivars.pending_scroll_y.set(None);
         if let Some(scroll) = self.scroll_view() {
             let mut spring = ivars.scroll_spring.get();
@@ -3478,7 +3477,7 @@ impl MarkdownTextView {
             driver.park();
         }
         self.ivars().scroll_spring_is_active.set(false);
-        *self.ivars().scroll_spring_clip.borrow_mut() = ObjcWeak::new(None);
+        *self.ivars().scroll_spring_clip.borrow_mut() = ObjcWeak::default();
         self.ivars().pending_scroll_y.set(None);
     }
 
@@ -3652,8 +3651,8 @@ impl MarkdownTextView {
         unsafe {
             layout_manager.enumerateTextSegmentsInRange_type_options_usingBlock(
                 &text_range,
-                NSTextSegmentType::Standard,
-                NSTextSegmentOptions(0),
+                objc2_app_kit::NSTextLayoutManagerSegmentType::Standard,
+                objc2_app_kit::NSTextLayoutManagerSegmentOptions(0),
                 &block,
             )
         };
@@ -3758,7 +3757,7 @@ impl MarkdownTextView {
     fn apply_measure(&self) {
         let column_width = self.column_width();
         let style_sheet = self.style_sheet();
-        if let Some(container) = self.textContainer() {
+        if let Some(container) = unsafe { self.textContainer() } {
             container.setSize(CGSize::new(column_width, CGFloat::MAX));
         }
         self.ivars().fragment_context.content_width.set(column_width);
@@ -3778,9 +3777,9 @@ impl MarkdownTextView {
         if !(width > 100.0) {
             return;
         }
-        let previous_width = self.textContainer().map_or(0.0, |container| container.size().width);
+        let previous_width = unsafe { self.textContainer() }.map_or(0.0, |container| container.size().width);
         let anchor = self.capture_viewport_anchor();
-        if let Some(container) = self.textContainer() {
+        if let Some(container) = unsafe { self.textContainer() } {
             container.setSize(CGSize::new(width, CGFloat::MAX));
         }
         self.ivars().fragment_context.content_width.set(width);
@@ -3880,10 +3879,10 @@ impl MarkdownTextView {
         }
         let center = NSNotificationCenter::defaultCenter();
         if let Some(observer) = ivars.scroll_observer.borrow_mut().take() {
-            unsafe { center.removeObserver(&observer) };
+            unsafe { center.removeObserver(observer.as_ref()) };
         }
         if let Some(observer) = ivars.resign_key_observer.borrow_mut().take() {
-            unsafe { center.removeObserver(&observer) };
+            unsafe { center.removeObserver(observer.as_ref()) };
         }
         if let Some(window) = self.window() {
             let weak: ObjcWeak<MarkdownTextView> = ObjcWeak::from(self);
@@ -4004,4 +4003,10 @@ fn post_announcement(element: &MarkdownTextView, announcement: &str) {
             Some(&user_info),
         )
     };
+}
+
+/// `NSValue(range:)`.
+fn unsafe_value_with_range(range: objc2_foundation::NSRange) -> Retained<NSValue> {
+    // SAFETY: a plain value box.
+    unsafe { NSValue::valueWithRange(range) }
 }
