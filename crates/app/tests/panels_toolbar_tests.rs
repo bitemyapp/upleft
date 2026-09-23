@@ -8,10 +8,14 @@
 //!   `breadcrumbShowsOnlyTheCurrentSection`,
 //!   `breadcrumbPathComparisonAvoidsScrollTimeRebuilds`.
 //!
+//! - `WindowChromeTests.statusBarIsOffByDefaultAndCostsNoHeightWhenHidden`,
+//!   adapted: the preference default and the bar's own `isVisible` contract
+//!   on a bar built directly (the Swift test reads the bar through
+//!   `DocumentWindowController`).
+//!
 //! Skipped (they need `DocumentWindowController`, which is App/ and not
 //! ported): `WindowChromeTests.toolbarUsesNativeCenteredModeAndTrailingMenu`
 //! (the ring in the trailing cluster),
-//! `WindowChromeTests.statusBarIsOffByDefaultAndCostsNoHeightWhenHidden`,
 //! `CommandPaletteNavigationRegressionTests` (both tests), and the
 //! `DocumentChromeLayoutTests` cases that drive `controller.progressRing`.
 
@@ -24,6 +28,9 @@ use objc2_app_kit::{NSButton, NSControlStateValueOff, NSControlStateValueOn, NST
 use objc2_foundation::{NSSize, NSString};
 use upleft_app::panels::appkit_support::{RectExt, accessibility_label, downcast};
 use upleft_app::panels::breadcrumb_view::{BreadcrumbView, Crumb};
+use upleft_app::panels::document_status_bar_view::DocumentStatusBarView;
+use upleft_app::support::preferences::Values as PreferenceValues;
+use upleft_render::theme::style_sheet::StyleSheet;
 use upleft_render::view::markdown_container_view::MarkdownContainerView;
 
 fn mtm() -> MainThreadMarker {
@@ -109,11 +116,32 @@ fn breadcrumb_path_comparison_avoids_scroll_time_rebuilds() {
     assert!(!BreadcrumbView::same_trail(&path, &[Crumb::new(0, "Root", 1), Crumb::new(5, "Next", 2)]));
 }
 
+// MARK: - WindowChromeTests (status bar)
+
+/// DESIGN.md's "Avoid" list names a permanent status bar outright, so the
+/// bar ships hidden and costs no height until View ▸ Status Bar asks for it.
+fn status_bar_is_off_by_default_and_costs_no_height_when_hidden() {
+    assert!(!PreferenceValues::default().show_status_bar);
+    let bar = DocumentStatusBarView::new(std::rc::Rc::new(StyleSheet::current(mtm())), mtm());
+
+    bar.set_is_visible(false);
+    assert!(bar.isHidden());
+    assert_eq!(bar.intrinsicContentSize().height, 0.0);
+
+    bar.set_is_visible(true);
+    assert!(!bar.isHidden());
+    assert!(bar.intrinsicContentSize().height > 0.0);
+}
+
 fn main() {
     main_thread::run(&[
         ("breadcrumb_reserves_a_stable_text_safe_lane", breadcrumb_reserves_a_stable_text_safe_lane),
         ("breadcrumb_appears_only_when_presented", breadcrumb_appears_only_when_presented),
         ("breadcrumb_shows_only_the_current_section", breadcrumb_shows_only_the_current_section),
         ("breadcrumb_path_comparison_avoids_scroll_time_rebuilds", breadcrumb_path_comparison_avoids_scroll_time_rebuilds),
+        (
+            "status_bar_is_off_by_default_and_costs_no_height_when_hidden",
+            status_bar_is_off_by_default_and_costs_no_height_when_hidden,
+        ),
     ]);
 }
