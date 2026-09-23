@@ -22,7 +22,7 @@ impl ASTDiff {
         let Some(old) = old else {
             return DirtySet::wholesale();
         };
-        if swift_text::str_eq(&old.text, &new.text) {
+        if crate::text_diff::string_eq(&old.text, &new.text) {
             return DirtySet::none();
         }
 

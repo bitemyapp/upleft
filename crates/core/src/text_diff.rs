@@ -302,8 +302,9 @@ fn utf16_units(s: &str) -> Vec<u16> {
 /// composition with what precedes it), so the NFC comparison can start at the
 /// last ASCII byte before the first difference. Same answer as
 /// `swift_text::str_eq`; that one normalises from the start, which on a
-/// non-ASCII document costs a full NFC pass over the shared prefix.
-fn string_eq(a: &str, b: &str) -> bool {
+/// non-ASCII document costs a full NFC pass over the shared prefix. (Also
+/// used by `ASTDiff`; belongs in `swift_text`.)
+pub(crate) fn string_eq(a: &str, b: &str) -> bool {
     if a == b {
         return true;
     }
@@ -361,6 +362,30 @@ mod tests {
         for (a, b) in cases {
             assert_eq!(string_eq(a, b), swift_text::str_eq(a, b), "{a:?} vs {b:?}");
             assert_eq!(string_eq(b, a), swift_text::str_eq(b, a), "{b:?} vs {a:?}");
+        }
+    }
+
+    #[test]
+    fn string_eq_agrees_with_str_eq_on_random_combining_text() {
+        const ALPHABET: [&str; 14] =
+            ["a", "e", "é", "e\u{301}", "\u{301}", "\u{323}", "\u{302}", "ệ", "\u{212B}", "Å", "A\u{30A}", " ", "\r\n", "\u{FEFF}"];
+        let mut state = 0x2545_F491_4F6C_DD1Du64;
+        let mut next = |bound: usize| {
+            state ^= state << 13;
+            state ^= state >> 7;
+            state ^= state << 17;
+            (state % bound as u64) as usize
+        };
+        for _ in 0..20_000 {
+            let a: String = (0..next(7)).map(|_| ALPHABET[next(ALPHABET.len())]).collect();
+            let b: String = if next(2) == 0 {
+                (0..next(7)).map(|_| ALPHABET[next(ALPHABET.len())]).collect()
+            } else {
+                // A shared prefix, then independent tails.
+                let tail: String = (0..next(3)).map(|_| ALPHABET[next(ALPHABET.len())]).collect();
+                a[..a.char_indices().map(|(i, _)| i).nth(next(4)).unwrap_or(a.len())].to_owned() + &tail
+            };
+            assert_eq!(string_eq(&a, &b), swift_text::str_eq(&a, &b), "{a:?} vs {b:?}");
         }
     }
 }
