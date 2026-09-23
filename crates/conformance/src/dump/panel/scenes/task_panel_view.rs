@@ -192,6 +192,10 @@ impl PanelScene for TaskPanelViewScene {
                     }
                 }
                 "reload" => panel.reload(),
+                "truncateTasks" => {
+                    let tasks = panel.tasks();
+                    panel.set_tasks(tasks[..(number.max(0) as usize).min(tasks.len())].to_vec());
+                }
                 _ => {}
             }
         }

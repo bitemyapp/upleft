@@ -7,8 +7,12 @@
 //! `PanelChrome` building blocks as the panel configures them: the 17-point
 //! task checkbox's hit target and the task table's ⌘N key equivalent).
 //!
-//! Added here (no Swift original): `task_section_bar_summarises_segments`
-//! and `task_panel_builds_agent_5000_within_budget`.
+//! Added here (no Swift original): `task_section_bar_summarises_segments`,
+//! `task_panel_builds_agent_5000_within_budget`, and two tests of the
+//! animated paths the conformance scenes cannot reach (they force Reduce
+//! Motion on): `animated_row_rebuilds_keep_the_table_consistent` and
+//! `completion_holds_the_row_until_the_deferred_rebuild`. Their window is
+//! borderless at (-30000, -30000) and never ordered in or activated.
 //!
 //! Skipped, with reasons:
 //! - `PanelAccessibilityTests.searchResultsExposeSearchingAndEmptyStates`,
@@ -32,8 +36,11 @@ use std::time::Instant;
 use objc2::{MainThreadMarker, MainThreadOnly};
 use objc2::rc::Retained;
 use objc2::runtime::AnyObject;
-use objc2_app_kit::{NSAccessibility, NSButton, NSEvent, NSEventModifierFlags, NSEventType, NSView};
-use objc2_foundation::{NSPoint, NSRect, NSSize, NSString};
+use objc2_app_kit::{
+    NSAccessibility, NSAppearance, NSAppearanceNameAqua, NSBackingStoreType, NSButton, NSEvent, NSEventModifierFlags,
+    NSEventType, NSScrollView, NSView, NSWindow, NSWindowStyleMask,
+};
+use objc2_foundation::{NSIndexSet, NSPoint, NSRect, NSSize, NSString};
 use upleft_app::panels::panel_chrome::{PanelCheckbox, PanelTableView};
 use upleft_app::panels::task_panel_view::{TaskPanelDelegate, TaskPanelView};
 use upleft_app::panels::task_section_bar_view::TaskSectionBarView;
@@ -42,6 +49,7 @@ use upleft_core::model::TaskItem;
 use upleft_core::parser::MarkdownParser;
 use upleft_core::task_worklist::TaskWorklist;
 use upleft_render::theme::style_sheet::StyleSheet;
+use upleft_render::theme::theme_store::ThemeStore;
 
 fn mtm() -> MainThreadMarker {
     MainThreadMarker::new().expect("main thread")
@@ -167,7 +175,25 @@ fn task_panel_lists_open_work_first_without_losing_progress() {
     assert_eq!(view.progress(), (1, 2));
 }
 
+/// Runs a test body in an autorelease pool and checks the panel it returns
+/// is gone afterwards, as Swift's ARC frees the test's `view` at scope end.
+/// Quick add schedules a main-queue block (`focusAddField`) that reads the
+/// table through `[weak self]`; a panel kept alive past the test would run
+/// it against a table the test has since emptied, which NSTableView traps
+/// (as Downright would).
+fn pooled(body: impl FnOnce() -> Retained<TaskPanelView>) {
+    let weak = objc2::rc::autoreleasepool(|_| {
+        let panel = body();
+        objc2::rc::Weak::from_retained(&panel)
+    });
+    assert!(weak.load().is_none(), "the test's panel outlives the test");
+}
+
 fn task_panel_empty_state_points_at_quick_add() {
+    pooled(task_panel_empty_state_points_at_quick_add_body);
+}
+
+fn task_panel_empty_state_points_at_quick_add_body() -> Retained<TaskPanelView> {
     let view = TaskPanelView::new_current(mtm());
     let delegate = Rc::new(TaskDelegateSpy::default());
     view.set_delegate(Some(Rc::downgrade(&delegate) as Weak<dyn TaskPanelDelegate>));
@@ -189,10 +215,16 @@ fn task_panel_empty_state_points_at_quick_add() {
     assert_eq!(additions.len(), 1);
     assert_eq!(additions.first().map(|(text, _)| text.as_str()), Some("Ship the polished panel"));
     assert_eq!(additions.first().map(|(_, heading)| *heading), Some(None));
+    drop(additions);
+    view
 }
 
 /// "The populated Add task row responds to accessibility press"
 fn task_panel_add_row_supports_every_press_path() {
+    pooled(task_panel_add_row_supports_every_press_path_body);
+}
+
+fn task_panel_add_row_supports_every_press_path_body() -> Retained<TaskPanelView> {
     let view = TaskPanelView::new_current(mtm());
     view.set_tasks(vec![make_task("Open", false, 0)]);
     set_frame_size(&view, 300.0, 320.0);
@@ -200,6 +232,7 @@ fn task_panel_add_row_supports_every_press_path() {
 
     assert!(view.perform_add_row_accessibility_press_for_testing());
     assert!(view.quick_add_editing_for_testing());
+    view
 }
 
 /// "The task table claims command-N before the app menu"
@@ -310,6 +343,162 @@ fn task_panel_builds_agent_5000_within_budget() {
     assert!(elapsed.as_secs_f64() < 5.0);
 }
 
+// MARK: - Added: the animated paths (Reduce Motion off)
+
+#[derive(Default)]
+struct ToggleSpy {
+    toggles: RefCell<Vec<isize>>,
+}
+
+impl TaskPanelDelegate for ToggleSpy {
+    fn task_panel_did_toggle_task_at(&self, _panel: &TaskPanelView, mark_offset: isize) {
+        self.toggles.borrow_mut().push(mark_offset);
+    }
+    fn task_panel_did_select_task_at(&self, _panel: &TaskPanelView, _content_offset: isize) {}
+    fn task_panel_did_request_new_task(&self, _panel: &TaskPanelView, _text: &str, _heading_index: Option<isize>) {}
+    fn task_panel_did_move_task(&self, _panel: &TaskPanelView, _task_index: isize, _before: Option<isize>) {}
+}
+
+/// Paper Light against Aqua with Reduce Motion forced off.
+fn motion_style_sheet() -> Rc<StyleSheet> {
+    let appearance = NSAppearance::appearanceNamed(unsafe { NSAppearanceNameAqua }).expect("aqua");
+    let theme = ThemeStore::shared().themes().into_iter().find(|theme| theme.name == "Paper Light").expect("theme");
+    Rc::new(StyleSheet::new(theme, &appearance, Some(false)))
+}
+
+/// A borderless window off every screen, never ordered in: the panel only
+/// needs `window != nil` to take its animated paths.
+fn off_screen_window(content: &NSView, mtm: MainThreadMarker) -> Retained<NSWindow> {
+    let window = unsafe {
+        NSWindow::initWithContentRect_styleMask_backing_defer(
+            NSWindow::alloc(mtm),
+            rect(-30000.0, -30000.0, 336.0, 480.0),
+            NSWindowStyleMask::Borderless,
+            NSBackingStoreType::Buffered,
+            true,
+        )
+    };
+    unsafe { window.setReleasedWhenClosed(false) };
+    window.setContentView(Some(content));
+    window
+}
+
+fn task_table(panel: &NSView) -> Retained<PanelTableView> {
+    for view in panel.subviews().iter() {
+        if let Ok(scroll) = view.downcast::<NSScrollView>()
+            && let Some(document) = scroll.documentView()
+            && let Ok(table) = document.downcast::<PanelTableView>()
+        {
+            return table;
+        }
+    }
+    panic!("no task table")
+}
+
+fn key(table: &PanelTableView, code: u16) {
+    let event = NSEvent::keyEventWithType_location_modifierFlags_timestamp_windowNumber_context_characters_charactersIgnoringModifiers_isARepeat_keyCode(
+        NSEventType::KeyDown,
+        NSPoint::new(0.0, 0.0),
+        NSEventModifierFlags::empty(),
+        0.0,
+        0,
+        None,
+        &NSString::from_str(""),
+        &NSString::from_str(""),
+        false,
+        code,
+    )
+    .expect("key event");
+    let _: () = unsafe { objc2::msg_send![table, keyDown: &*event] };
+}
+
+const NESTED: &str = "# A\n\n- [ ] one\n- [x] two\n- [x] three\n\n# B\n\n- [ ] four\n  - [ ] five\n- [x] six\n\n# C\n\n- [x] seven\n";
+
+/// Folds and unfolds through the diffed `beginUpdates` path: after each
+/// change the table's row count is the panel's, which NSTableView enforces
+/// (an inconsistent diff raises inside `endUpdates`).
+fn animated_row_rebuilds_keep_the_table_consistent() {
+    let mtm = mtm();
+    let parsed = MarkdownParser::parse(NESTED);
+    let panel = TaskPanelView::new_current(mtm);
+    panel.set_style_sheet(motion_style_sheet());
+    panel.setFrame(rect(0.0, 0.0, 336.0, 480.0));
+    let window = off_screen_window(&panel, mtm);
+    panel.set_tasks(parsed.tasks.clone());
+    panel.set_headings(parsed.headings.clone());
+    window.layoutIfNeeded();
+    let table = task_table(&panel);
+    let check = |step: &str| {
+        assert_eq!(table.numberOfRows(), panel.row_count_for_testing(), "{step}");
+        main_thread::sleep_pumping(std::time::Duration::from_millis(30));
+    };
+    check("initial");
+    // Rows: A, one, pile, B, four, five, pile, C, seven, add.
+    assert_eq!(panel.row_count_for_testing(), 10);
+    panel.set_completed_pile_expanded_for_testing(true, 0);
+    check("expand A's pile");
+    assert_eq!(panel.row_count_for_testing(), 12);
+    table.selectRowIndexes_byExtendingSelection(&NSIndexSet::indexSetWithIndex(0), false);
+    key(&table, 123);
+    check("fold A");
+    // Rows: A, B, four, five, pile, C, seven, add.
+    assert_eq!(panel.row_count_for_testing(), 8);
+    key(&table, 124);
+    check("unfold A");
+    table.selectRowIndexes_byExtendingSelection(&NSIndexSet::indexSetWithIndex(4), false);
+    key(&table, 123);
+    check("fold B");
+    panel.set_completed_pile_expanded_for_testing(false, 0);
+    check("collapse A's pile");
+    panel.set_tasks(Vec::new());
+    check("empty plan");
+    assert_eq!(panel.row_count_for_testing(), 0);
+    panel.set_tasks(parsed.tasks.clone());
+    check("plan returns");
+    // Let the row animations finish before the window and panel go.
+    main_thread::sleep_pumping(std::time::Duration::from_millis(600));
+    window.close();
+}
+
+/// A tick holds its row while the check draws: the rebuild that moves it
+/// into the pile waits for the 0.10 s work item after the reparse lands.
+fn completion_holds_the_row_until_the_deferred_rebuild() {
+    let mtm = mtm();
+    let text = "# A\n\n- [ ] one\n- [ ] two\n\n# B\n\n- [ ] three\n";
+    let parsed = MarkdownParser::parse(text);
+    let spy = Rc::new(ToggleSpy::default());
+    let panel = TaskPanelView::new_current(mtm);
+    panel.set_delegate(Some(Rc::downgrade(&spy) as Weak<dyn TaskPanelDelegate>));
+    panel.set_style_sheet(motion_style_sheet());
+    panel.setFrame(rect(0.0, 0.0, 336.0, 480.0));
+    let window = off_screen_window(&panel, mtm);
+    panel.set_tasks(parsed.tasks.clone());
+    panel.set_headings(parsed.headings.clone());
+    window.layoutIfNeeded();
+    let table = task_table(&panel);
+    // Rows: A, one, two, B, three, add. Space ticks Up Next ("one").
+    assert_eq!(panel.row_count_for_testing(), 6);
+    key(&table, 49);
+    let mark = parsed.tasks[0].mark_range.location;
+    assert_eq!(*spy.toggles.borrow(), vec![mark]);
+    assert!(panel.undo_bottom_inset_for_testing() > 18.0, "the undo pill reserves its rows");
+    // The host's reparse: "one" is now checked.
+    let mut ticked = parsed.tasks.clone();
+    ticked[0].is_checked = true;
+    panel.set_tasks(ticked);
+    // The row holds its place during the moment: no pile yet.
+    assert_eq!(panel.pile_row_count_for_testing(), 0);
+    assert_eq!(panel.visible_task_count_for_testing(), 3);
+    // Then it slides into A's pile. Rows: A, two, pile, B, three, add.
+    assert!(main_thread::pump_until(|| panel.pile_row_count_for_testing() == 1, std::time::Duration::from_secs(2)));
+    assert_eq!(panel.visible_task_count_for_testing(), 2);
+    assert_eq!(table.numberOfRows(), 6);
+    panel.dismiss_undo_for_testing();
+    // Let the row animations finish before the window and panel go.
+    main_thread::sleep_pumping(std::time::Duration::from_millis(600));
+    window.close();
+}
+
 fn main() {
     main_thread::run(&[
         ("task_checkbox_hit_target_uses_local_coordinates", task_checkbox_hit_target_uses_local_coordinates),
@@ -327,5 +516,7 @@ fn main() {
         ("undo_pill_names_its_action", undo_pill_names_its_action),
         ("task_section_bar_summarises_segments", task_section_bar_summarises_segments),
         ("task_panel_builds_agent_5000_within_budget", task_panel_builds_agent_5000_within_budget),
+        ("animated_row_rebuilds_keep_the_table_consistent", animated_row_rebuilds_keep_the_table_consistent),
+        ("completion_holds_the_row_until_the_deferred_rebuild", completion_holds_the_row_until_the_deferred_rebuild),
     ]);
 }

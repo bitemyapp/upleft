@@ -20,6 +20,7 @@ import MarkdownRender
 ///   cancel                          cancelOperation(nil)
 ///   scrollRow row                   the task table's scrollRowToVisible(_:)
 ///   reload                          reload()
+///   truncateTasks n                 tasks = the first n tasks (a document edit)
 ///
 /// Hosting the panel in a window can reset its sheet to `StyleSheet.current`
 /// (`viewDidChangeEffectiveAppearance`), so `afterShow` assigns the scenario's
@@ -111,6 +112,7 @@ final class TaskPanelViewScene: PanelScene {
             case "cancel": panel.cancelOperation(nil)
             case "scrollRow": table?.scrollRowToVisible(number)
             case "reload": panel.reload()
+            case "truncateTasks": panel.tasks = Array(panel.tasks.prefix(number))
             default: break
             }
         }
