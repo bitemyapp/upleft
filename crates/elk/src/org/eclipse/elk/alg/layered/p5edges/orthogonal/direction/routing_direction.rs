@@ -1,3 +1,8 @@
-//! Port of `vendor/elk-swift/Sources/ElkSwift/ELK/org/eclipse/elk/alg/layered/p5edges/orthogonal/direction/org_eclipse_elk_alg_layered_p5edges_orthogonal_direction_RoutingDirection.swift`.
-//!
-//! Not ported yet.
+//! Port of `alg/layered/p5edges/orthogonal/direction/RoutingDirection.swift`.
+
+#[derive(Clone, Copy, PartialEq, Eq, Hash, Debug)]
+pub enum RoutingDirection {
+    WEST_TO_EAST,
+    NORTH_TO_SOUTH,
+    SOUTH_TO_NORTH,
+}
