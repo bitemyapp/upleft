@@ -1,0 +1,276 @@
+{
+ "steps": [
+  {
+   "op": "prefs.decode",
+   "json": "{\"textSizeAdjustment\":0e1}"
+  },
+  {
+   "op": "state.decode",
+   "json": "{\"anchor\":{\"headingSlug\":\"\",\"headingIndex\":0,\"fractionThroughSection\":0e1}}"
+  },
+  {
+   "op": "prefs.decode",
+   "json": "{\"textSizeAdjustment\":0e+1}"
+  },
+  {
+   "op": "state.decode",
+   "json": "{\"anchor\":{\"headingSlug\":\"\",\"headingIndex\":0,\"fractionThroughSection\":0e+1}}"
+  },
+  {
+   "op": "prefs.decode",
+   "json": "{\"textSizeAdjustment\":0.00e-5}"
+  },
+  {
+   "op": "state.decode",
+   "json": "{\"anchor\":{\"headingSlug\":\"\",\"headingIndex\":0,\"fractionThroughSection\":0.00e-5}}"
+  },
+  {
+   "op": "prefs.decode",
+   "json": "{\"textSizeAdjustment\":0.0e1}"
+  },
+  {
+   "op": "state.decode",
+   "json": "{\"anchor\":{\"headingSlug\":\"\",\"headingIndex\":0,\"fractionThroughSection\":0.0e1}}"
+  },
+  {
+   "op": "prefs.decode",
+   "json": "{\"textSizeAdjustment\":-0.0e1}"
+  },
+  {
+   "op": "state.decode",
+   "json": "{\"anchor\":{\"headingSlug\":\"\",\"headingIndex\":0,\"fractionThroughSection\":-0.0e1}}"
+  },
+  {
+   "op": "prefs.decode",
+   "json": "{\"textSizeAdjustment\":-0e1}"
+  },
+  {
+   "op": "state.decode",
+   "json": "{\"anchor\":{\"headingSlug\":\"\",\"headingIndex\":0,\"fractionThroughSection\":-0e1}}"
+  },
+  {
+   "op": "prefs.decode",
+   "json": "{\"textSizeAdjustment\":1e-400}"
+  },
+  {
+   "op": "state.decode",
+   "json": "{\"anchor\":{\"headingSlug\":\"\",\"headingIndex\":0,\"fractionThroughSection\":1e-400}}"
+  },
+  {
+   "op": "prefs.decode",
+   "json": "{\"textSizeAdjustment\":0.000e5}"
+  },
+  {
+   "op": "state.decode",
+   "json": "{\"anchor\":{\"headingSlug\":\"\",\"headingIndex\":0,\"fractionThroughSection\":0.000e5}}"
+  },
+  {
+   "op": "prefs.decode",
+   "json": "{\"textSizeAdjustment\":1e400}"
+  },
+  {
+   "op": "state.decode",
+   "json": "{\"anchor\":{\"headingSlug\":\"\",\"headingIndex\":0,\"fractionThroughSection\":1e400}}"
+  },
+  {
+   "op": "prefs.decode",
+   "json": "{\"textSizeAdjustment\":5e-324}"
+  },
+  {
+   "op": "state.decode",
+   "json": "{\"anchor\":{\"headingSlug\":\"\",\"headingIndex\":0,\"fractionThroughSection\":5e-324}}"
+  },
+  {
+   "op": "prefs.decode",
+   "json": "{\"textSizeAdjustment\":0.1e-310}"
+  },
+  {
+   "op": "state.decode",
+   "json": "{\"anchor\":{\"headingSlug\":\"\",\"headingIndex\":0,\"fractionThroughSection\":0.1e-310}}"
+  },
+  {
+   "op": "state.decode",
+   "json": "{\"selectionLocation\":9007199254740993.0}"
+  },
+  {
+   "op": "prefs.decode",
+   "json": "{\"launchCount\":9007199254740993.0}"
+  },
+  {
+   "op": "state.decode",
+   "json": "{\"selectionLocation\":9007199254740992.5}"
+  },
+  {
+   "op": "prefs.decode",
+   "json": "{\"launchCount\":9007199254740992.5}"
+  },
+  {
+   "op": "state.decode",
+   "json": "{\"selectionLocation\":12345678901234567.8}"
+  },
+  {
+   "op": "prefs.decode",
+   "json": "{\"launchCount\":12345678901234567.8}"
+  },
+  {
+   "op": "state.decode",
+   "json": "{\"selectionLocation\":1.5e17}"
+  },
+  {
+   "op": "prefs.decode",
+   "json": "{\"launchCount\":1.5e17}"
+  },
+  {
+   "op": "state.decode",
+   "json": "{\"selectionLocation\":-4611686018427387905.0}"
+  },
+  {
+   "op": "prefs.decode",
+   "json": "{\"launchCount\":-4611686018427387905.0}"
+  },
+  {
+   "op": "state.decode",
+   "json": "{\"selectionLocation\":9223372036854775806.0}"
+  },
+  {
+   "op": "prefs.decode",
+   "json": "{\"launchCount\":9223372036854775806.0}"
+  },
+  {
+   "op": "state.decode",
+   "json": "{\"selectionLocation\":9223372036854775807}"
+  },
+  {
+   "op": "prefs.decode",
+   "json": "{\"launchCount\":9223372036854775807}"
+  },
+  {
+   "op": "state.decode",
+   "json": "{\"selectionLocation\":9223372036854775808}"
+  },
+  {
+   "op": "prefs.decode",
+   "json": "{\"launchCount\":9223372036854775808}"
+  },
+  {
+   "op": "state.decode",
+   "json": "{\"selectionLocation\":-9223372036854775808}"
+  },
+  {
+   "op": "prefs.decode",
+   "json": "{\"launchCount\":-9223372036854775808}"
+  },
+  {
+   "op": "state.decode",
+   "json": "{\"selectionLocation\":1e18}"
+  },
+  {
+   "op": "prefs.decode",
+   "json": "{\"launchCount\":1e18}"
+  },
+  {
+   "op": "state.decode",
+   "json": "{\"selectionLocation\":1e19}"
+  },
+  {
+   "op": "prefs.decode",
+   "json": "{\"launchCount\":1e19}"
+  },
+  {
+   "op": "state.decode",
+   "json": "{\"selectionLocation\":3.0}"
+  },
+  {
+   "op": "prefs.decode",
+   "json": "{\"launchCount\":3.0}"
+  },
+  {
+   "op": "state.decode",
+   "json": "{\"selectionLocation\":3.5}"
+  },
+  {
+   "op": "prefs.decode",
+   "json": "{\"launchCount\":3.5}"
+  },
+  {
+   "op": "state.decode",
+   "json": "{\"selectionLocation\":3e0}"
+  },
+  {
+   "op": "prefs.decode",
+   "json": "{\"launchCount\":3e0}"
+  },
+  {
+   "op": "state.decode",
+   "json": "{\"selectionLocation\":300e-2}"
+  },
+  {
+   "op": "prefs.decode",
+   "json": "{\"launchCount\":300e-2}"
+  },
+  {
+   "op": "state.decode",
+   "json": "{\"selectionLocation\":-0.0}"
+  },
+  {
+   "op": "prefs.decode",
+   "json": "{\"launchCount\":-0.0}"
+  },
+  {
+   "op": "state.decode",
+   "json": "{\"selectionLocation\":1e-400}"
+  },
+  {
+   "op": "prefs.decode",
+   "json": "{\"launchCount\":1e-400}"
+  },
+  {
+   "op": "state.decode",
+   "json": "{\"selectionLocation\":01}"
+  },
+  {
+   "op": "prefs.decode",
+   "json": "{\"launchCount\":01}"
+  },
+  {
+   "op": "state.decode",
+   "json": "{\"selectionLocation\":1.}"
+  },
+  {
+   "op": "prefs.decode",
+   "json": "{\"launchCount\":1.}"
+  },
+  {
+   "op": "state.decode",
+   "json": "{\"selectionLocation\":-}"
+  },
+  {
+   "op": "prefs.decode",
+   "json": "{\"launchCount\":-}"
+  },
+  {
+   "op": "state.decode",
+   "json": "{\"selectionLocation\":--1}"
+  },
+  {
+   "op": "prefs.decode",
+   "json": "{\"launchCount\":--1}"
+  },
+  {
+   "op": "state.decode",
+   "json": "{\"selectionLocation\":1e}"
+  },
+  {
+   "op": "prefs.decode",
+   "json": "{\"launchCount\":1e}"
+  },
+  {
+   "op": "state.decode",
+   "json": "{\"selectionLocation\":0x10}"
+  },
+  {
+   "op": "prefs.decode",
+   "json": "{\"launchCount\":0x10}"
+  }
+ ]
+}

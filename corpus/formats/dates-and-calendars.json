@@ -1,0 +1,266 @@
+{
+ "steps": [
+  {
+   "op": "snapshot.open",
+   "history": "support/history"
+  },
+  {
+   "op": "snapshot.record",
+   "doc": "doc.md",
+   "text": "body\n",
+   "kind": "baseline"
+  },
+  {
+   "op": "snapshot.wait"
+  },
+  {
+   "op": "snapshot.writeIndex",
+   "doc": "doc.md",
+   "text": "{\"path\": \"<root>/doc.md\", \"versions\": [{\"hash\": \"84325551c170b6987edbe70faaec1cafb6a76ee10c13a77eb60705679dd7271a\", \"date\": \"2024-01-01T00:00:00.9+01:00\", \"byteCount\": 3, \"kind\": \"external\"}, {\"hash\": \"2d27fbdf4e8ca207afbfa388ca9172fbcc6c70e534af2476b3b704f87debadcf\", \"date\": \"2024-02-30T25:61:61z\", \"byteCount\": 3, \"kind\": \"external\"}, {\"hash\": \"81db67b6a5702b9b68f0016f061c409bf3fb16d062fc854d1b424bb4e9c28c56\", \"date\": \"0000-01-01T00:00:00Z\", \"byteCount\": 3, \"kind\": \"external\"}, {\"hash\": \"1875add404b2a01dbb52d1e58dee41d1f480be457a34bd7e1bd2a69d53f35db3\", \"date\": \"0001-01-01T00:00:00Z\", \"byteCount\": 3, \"kind\": \"external\"}, {\"hash\": \"e37ea1753db1b5df392e1cd344303873a97bc863d7371ad5f388e01ec5071e6a\", \"date\": \"1500-02-29T12:00:00Z\", \"byteCount\": 3, \"kind\": \"external\"}, {\"hash\": \"2dd694ef30f6ef76bdac0a56eb384e37d0e349d75133bfae26b909601a066c7b\", \"date\": \"1582-10-04T23:59:59Z\", \"byteCount\": 3, \"kind\": \"external\"}, {\"hash\": \"d5718db680631f5bdc6212d63efee1235cf9cc1d59516f275895acb4a813dcae\", \"date\": \"1582-10-10T00:00:00GMT\", \"byteCount\": 3, \"kind\": \"external\"}, {\"hash\": \"b73ce4dd68dd4edc4730c5ea90a55751387089205178e86e07fbbf6eaa3a5e03\", \"date\": \"1582-10-15T00:00:00UTC-01:30\", \"byteCount\": 3, \"kind\": \"external\"}, {\"hash\": \"8260e407ae8e0e29db823a3603eeab154fbae1ae8bfb138f869c1bb031eb6aac\", \"date\": \"12024-01-01T00:00:00Z\", \"byteCount\": 3, \"kind\": \"external\"}, {\"hash\": \"ffc49ca90bd6b19ba3895c22fb2693806d90300f7705d3b3c7f6e83a4cd06405\", \"date\": \"2024-1-2T3:4:5Z\", \"byteCount\": 3, \"kind\": \"external\"}, {\"hash\": \"33b34699a3d94a50fed1eded31bf82f60287e90d1b1426c21e9c5030c55abfb5\", \"date\": \"1969-12-31T23:59:59.999Z\", \"byteCount\": 3, \"kind\": \"external\"}, {\"hash\": \"8fa7ff1218882e6ea381dd397280533a30f9f6af3f1d8d13f21768acc2415c21\", \"date\": \"2024-06-01T00:00:00+18:00\", \"byteCount\": 3, \"kind\": \"external\"}, {\"hash\": \"4794619580f70d53ede7ac97b4760268a1803c7fab11413fd5bd1992b6ad285a\", \"date\": \"2038-01-19T03:14:08Z\", \"byteCount\": 3, \"kind\": \"external\"}, {\"hash\": \"fcfcafc7eb826d5247b04356179af24f9efe7965b8c70958484e2fc9d2fa57be\", \"date\": \"9999-12-31T23:59:59Z\", \"byteCount\": 3, \"kind\": \"external\"}]}"
+  },
+  {
+   "op": "snapshot.versions",
+   "doc": "doc.md"
+  },
+  {
+   "op": "snapshot.writeIndex",
+   "doc": "bad.md",
+   "text": "{\"path\": \"x\", \"versions\": [{\"hash\": \"84325551c170b6987edbe70faaec1cafb6a76ee10c13a77eb60705679dd7271a\", \"date\": \"2024-01-01 00:00:00Z\", \"byteCount\": 3, \"kind\": \"external\"}]}"
+  },
+  {
+   "op": "snapshot.versions",
+   "doc": "bad.md"
+  },
+  {
+   "op": "state.open",
+   "support": "support"
+  },
+  {
+   "op": "state.save",
+   "doc": "state-0.md",
+   "base": "new",
+   "set": {
+    "lastOpened": "2024-01-01T00:00:00.9+01:00"
+   }
+  },
+  {
+   "op": "state.save",
+   "doc": "state-1.md",
+   "base": "new",
+   "set": {
+    "lastOpened": "2024-02-30T25:61:61z"
+   }
+  },
+  {
+   "op": "state.save",
+   "doc": "state-2.md",
+   "base": "new",
+   "set": {
+    "lastOpened": "0000-01-01T00:00:00Z"
+   }
+  },
+  {
+   "op": "state.save",
+   "doc": "state-3.md",
+   "base": "new",
+   "set": {
+    "lastOpened": "0001-01-01T00:00:00Z"
+   }
+  },
+  {
+   "op": "state.save",
+   "doc": "state-4.md",
+   "base": "new",
+   "set": {
+    "lastOpened": "1500-02-29T12:00:00Z"
+   }
+  },
+  {
+   "op": "state.save",
+   "doc": "state-5.md",
+   "base": "new",
+   "set": {
+    "lastOpened": "1582-10-04T23:59:59Z"
+   }
+  },
+  {
+   "op": "state.save",
+   "doc": "state-6.md",
+   "base": "new",
+   "set": {
+    "lastOpened": "1582-10-10T00:00:00GMT"
+   }
+  },
+  {
+   "op": "state.save",
+   "doc": "state-7.md",
+   "base": "new",
+   "set": {
+    "lastOpened": "1582-10-15T00:00:00UTC-01:30"
+   }
+  },
+  {
+   "op": "state.save",
+   "doc": "state-8.md",
+   "base": "new",
+   "set": {
+    "lastOpened": "12024-01-01T00:00:00Z"
+   }
+  },
+  {
+   "op": "state.save",
+   "doc": "state-9.md",
+   "base": "new",
+   "set": {
+    "lastOpened": "2024-1-2T3:4:5Z"
+   }
+  },
+  {
+   "op": "state.save",
+   "doc": "state-10.md",
+   "base": "new",
+   "set": {
+    "lastOpened": "1969-12-31T23:59:59.999Z"
+   }
+  },
+  {
+   "op": "state.save",
+   "doc": "state-11.md",
+   "base": "new",
+   "set": {
+    "lastOpened": "2024-06-01T00:00:00+18:00"
+   }
+  },
+  {
+   "op": "state.save",
+   "doc": "state-12.md",
+   "base": "new",
+   "set": {
+    "lastOpened": "2038-01-19T03:14:08Z"
+   }
+  },
+  {
+   "op": "state.save",
+   "doc": "state-13.md",
+   "base": "new",
+   "set": {
+    "lastOpened": "9999-12-31T23:59:59Z"
+   }
+  },
+  {
+   "op": "state.open",
+   "store": "reopened",
+   "support": "support"
+  },
+  {
+   "op": "state.get",
+   "store": "reopened",
+   "doc": "state-0.md"
+  },
+  {
+   "op": "state.get",
+   "store": "reopened",
+   "doc": "state-1.md"
+  },
+  {
+   "op": "state.get",
+   "store": "reopened",
+   "doc": "state-2.md"
+  },
+  {
+   "op": "state.get",
+   "store": "reopened",
+   "doc": "state-3.md"
+  },
+  {
+   "op": "state.get",
+   "store": "reopened",
+   "doc": "state-4.md"
+  },
+  {
+   "op": "state.get",
+   "store": "reopened",
+   "doc": "state-5.md"
+  },
+  {
+   "op": "state.get",
+   "store": "reopened",
+   "doc": "state-6.md"
+  },
+  {
+   "op": "state.get",
+   "store": "reopened",
+   "doc": "state-7.md"
+  },
+  {
+   "op": "state.get",
+   "store": "reopened",
+   "doc": "state-8.md"
+  },
+  {
+   "op": "state.get",
+   "store": "reopened",
+   "doc": "state-9.md"
+  },
+  {
+   "op": "state.get",
+   "store": "reopened",
+   "doc": "state-10.md"
+  },
+  {
+   "op": "state.get",
+   "store": "reopened",
+   "doc": "state-11.md"
+  },
+  {
+   "op": "state.get",
+   "store": "reopened",
+   "doc": "state-12.md"
+  },
+  {
+   "op": "state.get",
+   "store": "reopened",
+   "doc": "state-13.md"
+  },
+  {
+   "op": "tracker.new"
+  },
+  {
+   "op": "tracker.restore",
+   "textLength": 100,
+   "now": "1582-10-04T00:05:00Z",
+   "marks": [
+    {
+     "id": "11111111-1111-4111-8111-111111111111",
+     "kind": "modified",
+     "range": [
+      0,
+      1
+     ],
+     "created": "1582-10-04T00:00:00Z"
+    },
+    {
+     "id": "22222222-2222-4222-8222-222222222222",
+     "kind": "modified",
+     "range": [
+      2,
+      1
+     ],
+     "created": "1582-10-14T23:59:00Z"
+    },
+    {
+     "id": "33333333-3333-4333-8333-333333333333",
+     "kind": "modified",
+     "range": [
+      4,
+      1
+     ],
+     "created": "1582-10-03T23:56:00Z"
+    }
+   ]
+  },
+  {
+   "op": "tracker.persisted"
+  }
+ ]
+}

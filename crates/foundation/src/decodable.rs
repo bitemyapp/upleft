@@ -9,9 +9,10 @@
 //!   `1.0`, `1e2`, `100e-2` and even `1e-400` decode (as 1, 100, 1 and 0);
 //!   `1.5`, `1e19` and `-9223372036854775808.0` do not. The scanner is lax
 //!   ([`json_decoder`]), so the literal's grammar is checked here.
-//! * `Double` rejects a literal that overflows to infinity or underflows to
-//!   zero from a non-zero significand. Swift also rejects some zero literals
-//!   (`0e1`, `0.00e-5`) that this accepts; see docs/KNOWN-DIFFERENCES.md.
+//! * `Double` rejects a literal that overflows to infinity, and one that
+//!   parses as zero unless swift-foundation's `isTrueZero` scan accepts it
+//!   (which, through its loop unrolling, rejects `0e1` and `0.00e-5` but
+//!   accepts `0e+1` and `0.0e1`; see [`is_true_zero`]).
 //! * `null` is never a value of a non-optional type; `decodeIfPresent` reads
 //!   it as absent.
 //! * `.iso8601` dates follow swift-foundation's lenient ISO 8601 parser
@@ -213,13 +214,77 @@ fn number_to_int(text: &str) -> Result<i64, DecodingError> {
     if is_plain_integer(text) {
         return text.parse::<i64>().or_else(|_| corrupt(format!("Parsed JSON number <{text}> does not fit in Int.")));
     }
+    // swift-foundation's slow path: the `Double` when its magnitude is below
+    // 2^53 (it must then be integral), otherwise the literal read as a
+    // `Decimal`, whose conversion keeps the integer part (probed:
+    // `9007199254740992.5` decodes as 9007199254740992) and fails when the
+    // value as a `Double` reaches ±2^63.
     let value: f64 = text.parse().or_else(|_| corrupt(format!("Invalid number {text}")))?;
-    // `Double(Int.min)` is exact; `Double(Int.max)` rounds up to 2^63.
-    let bound = 9_223_372_036_854_775_808.0;
-    if !value.is_finite() || value.trunc() != value || value <= -bound || value >= bound {
-        return corrupt(format!("Parsed JSON number <{text}> does not fit in Int."));
+    let not_representable = || corrupt(format!("Parsed JSON number <{text}> does not fit in Int."));
+    if !value.is_finite() {
+        return not_representable();
     }
-    Ok(value as i64)
+    if value.abs() < 9_007_199_254_740_992.0 {
+        return if value.trunc() == value { Ok(value as i64) } else { not_representable() };
+    }
+    let bound = 9_223_372_036_854_775_808.0;
+    if value <= -bound || value >= bound {
+        return not_representable();
+    }
+    integer_part(text).map_or_else(not_representable, Ok)
+}
+
+/// The integer part of a valid JSON number literal, computed exactly.
+fn integer_part(text: &str) -> Option<i64> {
+    let (negative, unsigned) = match text.strip_prefix('-') {
+        Some(rest) => (true, rest),
+        None => (false, text),
+    };
+    let (mantissa, exponent) = match unsigned.find(['e', 'E']) {
+        Some(index) => (&unsigned[..index], unsigned[index + 1..].parse::<i64>().ok()?),
+        None => (unsigned, 0),
+    };
+    let (whole, fraction) = mantissa.split_once('.').unwrap_or((mantissa, ""));
+    let digits = format!("{whole}{fraction}");
+    let shift = exponent - fraction.len() as i64;
+    let integer_digits: String = if shift >= 0 {
+        format!("{digits}{}", "0".repeat(shift.min(40) as usize))
+    } else {
+        let keep = digits.len() as i64 + shift;
+        if keep <= 0 { "0".to_owned() } else { digits[..keep as usize].to_owned() }
+    };
+    let magnitude: i128 = integer_digits.trim_start_matches('0').parse::<i128>().or_else(|_| {
+        if integer_digits.trim_start_matches('0').is_empty() { Ok(0) } else { Err(()) }
+    }).ok()?;
+    i64::try_from(if negative { -magnitude } else { magnitude }).ok()
+}
+
+/// swift-foundation's `isTrueZero`: does a literal that parsed as zero really
+/// spell zero? It scans four bytes at a time, stopping at the first non-zero
+/// digit (not zero) or `e` (zero), but checks the last partial block of one to
+/// three bytes from its end: `0e1` reads its `1` before its `e` and is
+/// rejected, `0e+1` is accepted.
+fn is_true_zero(text: &str) -> bool {
+    let bytes = text.as_bytes();
+    let check = |byte: u8| -> Option<bool> {
+        match byte {
+            b'1'..=b'9' => Some(false),
+            b'e' | b'E' => Some(true),
+            _ => None,
+        }
+    };
+    let full = bytes.len() / 4 * 4;
+    for &byte in &bytes[..full] {
+        if let Some(result) = check(byte) {
+            return result;
+        }
+    }
+    for &byte in bytes[full..].iter().rev() {
+        if let Some(result) = check(byte) {
+            return result;
+        }
+    }
+    true
 }
 
 fn number_to_double(text: &str) -> Result<f64, DecodingError> {
@@ -230,11 +295,8 @@ fn number_to_double(text: &str) -> Result<f64, DecodingError> {
     if !value.is_finite() {
         return corrupt(format!("Number {text} is not representable in Swift."));
     }
-    if value == 0.0 {
-        let significand = text.split(['e', 'E']).next().unwrap_or("");
-        if significand.bytes().any(|byte| (b'1'..=b'9').contains(&byte)) {
-            return corrupt(format!("Number {text} is not representable in Swift."));
-        }
+    if value == 0.0 && !is_true_zero(text) {
+        return corrupt(format!("Number {text} is not representable in Swift."));
     }
     Ok(value)
 }
@@ -561,10 +623,48 @@ mod tests {
         assert_eq!(int("1.00000000000000000001"), Some(1));
         assert_eq!(int("01"), None);
         assert_eq!(int("1."), None);
+        // Beyond 2^53 the literal is read exactly and its integer part kept.
+        assert_eq!(int("9007199254740993.0"), Some(9_007_199_254_740_993));
+        assert_eq!(int("9007199254740992.5"), Some(9_007_199_254_740_992));
+        assert_eq!(int("12345678901234567.8"), Some(12_345_678_901_234_567));
+        assert_eq!(int("1.5e17"), Some(150_000_000_000_000_000));
+        assert_eq!(int("-4611686018427387905.0"), Some(-4_611_686_018_427_387_905));
+        assert_eq!(int("9223372036854775806.0"), None);
+        assert_eq!(int("9223372036854775807e0"), None);
         let double = |text: &str| parse(format!("[{text}]").as_bytes()).unwrap().array_value().unwrap()[0].double_value().ok();
         assert_eq!(double("1e400"), None);
         assert_eq!(double("1e-400"), None);
         assert_eq!(double("-0").map(f64::to_bits), Some((-0.0f64).to_bits()));
+        // Swift 6.4, macOS 26: which zero literals `JSONDecoder` rejects as a
+        // `Double`, over significands × exponents.
+        let rejected = "0e1 0e2 0e9 0E1 0e5 0.00e1 0.00e2 0.00e9 0.00e+1 0.00e-1 0.00e01 0.00e10 0.00E1 0.00e-5 0.00e5 0.00e-2 0.00e-9 0.00e+9 0.000e1 0.000e2 0.000e9 0.000E1 0.000e5 -0.0e1 -0.0e2 -0.0e9 -0.0e+1 -0.0e-1 -0.0e01 -0.0e10 -0.0E1 -0.0e-5 -0.0e5 -0.0e-2 -0.0e-9 -0.0e+9 -0.00e1 -0.00e2 -0.00e9 -0.00E1 -0.00e5";
+        let accepted = "0 0e0 0e+1 0e-1 0e00 0e01 0e10 0e-5 0e+0 0e-0 0e-2 0e-9 0e+9 0e100 0e-100 0.0 0.0e0 0.0e1 0.0e2 0.0e9 0.0e+1 0.0e-1 0.0e00 0.0e01 0.0e10 0.0E1 0.0e-5 0.0e+0 0.0e-0 0.0e5 0.0e-2 0.0e-9 0.0e+9 0.0e100 0.0e-100 0.00 0.00e0 0.00e00 0.00e+0 0.00e-0 0.00e100 0.00e-100 0.000 0.000e0 0.000e+1 0.000e-1 0.000e00 0.000e01 0.000e10 0.000e-5 0.000e+0 0.000e-0 0.000e-2 0.000e-9 0.000e+9 0.000e100 0.000e-100 -0 -0e0 -0e1 -0e2 -0e9 -0e+1 -0e-1 -0e00 -0e01 -0e10 -0E1 -0e-5 -0e+0 -0e-0 -0e5 -0e-2 -0e-9 -0e+9 -0e100 -0e-100 -0.0 -0.0e0 -0.0e00 -0.0e+0 -0.0e-0 -0.0e100 -0.0e-100 -0.00 -0.00e0 -0.00e+1 -0.00e-1 -0.00e00 -0.00e01 -0.00e10 -0.00e-5 -0.00e+0 -0.00e-0 -0.00e-2 -0.00e-9 -0.00e+9 -0.00e100 -0.00e-100";
+        for literal in rejected.split(' ') {
+            assert_eq!(double(literal), None, "{literal}");
+        }
+        for literal in accepted.split(' ') {
+            assert!(double(literal).is_some(), "{literal}");
+        }
+    }
+
+    // Swift 6.4, macOS 26: `(error as NSError).code` of `JSONDecoder` over
+    // `{"v": …}` into `Int`, `Double`, `UUID` and `.iso8601` `Date` fields:
+    // null 4865; a string for a number, `1.5` or `01` for an `Int`, `1e999`,
+    // a bad or numeric UUID or date 4864.
+    #[test]
+    fn error_codes_follow_json_decoder() {
+        let value = |text: &str| parse(format!("[{text}]").as_bytes()).unwrap().array_value().unwrap()[0].clone();
+        assert_eq!(value("null").int_value().unwrap_err().code(), 4865);
+        assert_eq!(value("\"1\"").int_value().unwrap_err().code(), 4864);
+        assert_eq!(value("1.5").int_value().unwrap_err().code(), 4864);
+        assert_eq!(value("01").int_value().unwrap_err().code(), 4864);
+        assert_eq!(value("null").double_value().unwrap_err().code(), 4865);
+        assert_eq!(value("1e999").double_value().unwrap_err().code(), 4864);
+        assert_eq!(value("null").uuid_value().unwrap_err().code(), 4865);
+        assert_eq!(value("\"x\"").uuid_value().unwrap_err().code(), 4864);
+        assert_eq!(value("1").uuid_value().unwrap_err().code(), 4864);
+        assert_eq!(value("null").date_iso8601().unwrap_err().code(), 4865);
+        assert_eq!(value("\"x\"").date_iso8601().unwrap_err().code(), 4864);
     }
 
     #[test]
