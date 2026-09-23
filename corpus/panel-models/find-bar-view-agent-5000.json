@@ -1,0 +1,16 @@
+{
+ "panel": "FindBarView",
+ "theme": "Nord",
+ "dark": true,
+ "width": 480,
+ "height": 42,
+ "document": "corpus/generated/agent/agent-5000.md",
+ "state": {},
+ "states": [
+  {"name": "many hits", "query": "section"},
+  {"name": "many hits advanced", "query": "a", "caret": 60000, "advance": 5},
+  {"name": "regex many hits", "options": ["Regular Expression"], "query": "module\\d+"},
+  {"name": "whole word", "options": ["Whole Word"], "query": "task"},
+  {"name": "case sensitive", "options": ["Match Case"], "query": "Section", "showsReplace": true}
+ ]
+}

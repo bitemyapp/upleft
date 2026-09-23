@@ -1,0 +1,27 @@
+{
+ "panel": "FindBarView",
+ "theme": "Paper Light",
+ "width": 480,
+ "height": 42,
+ "document": "corpus/generated/agent/agent-400.md",
+ "state": {},
+ "states": [
+  {"name": "empty"},
+  {"name": "current", "current": true},
+  {"name": "inspector", "presentation": "inspector"},
+  {"name": "query", "query": "section"},
+  {"name": "query advanced", "query": "section", "caret": 4000, "advance": 3},
+  {"name": "case and word", "options": ["Match Case", "Whole Word"], "query": "Section"},
+  {"name": "regex", "options": ["Regular Expression"], "query": "module\\d+"},
+  {"name": "regex toggled twice", "options": ["Regular Expression", "Regular Expression"], "query": "a.b"},
+  {"name": "invalid regex", "options": ["Regular Expression"], "query": "[unclosed"},
+  {"name": "no matches", "query": "zebra"},
+  {"name": "in selection without scope", "options": ["In Selection"], "query": "task"},
+  {"name": "in selection", "selectionScope": [100, 2000], "options": ["In Selection"], "query": "task"},
+  {"name": "status override", "query": "task", "status": "Replaced 4"},
+  {"name": "valid override", "status": "12 matches", "valid": false},
+  {"name": "replace", "query": "task", "showsReplace": true, "replacement": "chore"},
+  {"name": "replace no matches", "query": "zebra", "showsReplace": true},
+  {"name": "inspector replace", "presentation": "inspector", "query": "module", "showsReplace": true}
+ ]
+}
