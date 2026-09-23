@@ -149,11 +149,54 @@ unported code: `SpeechAccessibilityTests`' `DensityGutterView` assertions,
 
 ## Conformance and performance (2026-09-23)
 
+### Object fragments (port/fragments)
+
+The machine's screen was locked for the whole fragment session, so
+ScreenCaptureKit refused every window capture (`SCStreamErrorDomain -3811`)
+and the `render` suite itself could not run after the first three documents
+(agent-40 and agent-400 passed all four variants before the lock). The
+oracles' `--capture view` path (`cacheDisplay`, the same scene, settle loop
+and layout dump) still works on a locked screen, so the port was checked with
+it, both oracles, document by document:
+
+| run | cases | identical (layout dump and PNG) |
+|---|---:|---:|
+| whole corpus, `--mode live` | 909 | 909 |
+| whole corpus, `--mode live --dark` | 909 | see the fragment report |
+| whole corpus, `--mode live --width 1400 --height 1000` | 909 | see the fragment report |
+| 50 fragment-heavy documents + `render-images`, live / dark / wide / Nord / Warm Dark / source | 285 | 285 |
+
+**Unverified until the screen is unlocked:** `just conform --suite render`
+(screen capture, 3636 cases), `--suite render-dark-themes`, `--suite
+render-images` and `--suite probe`.
+
+New suites: `render-dark-themes` (50 documents that between them use every
+object fragment, in Nord and in Warm Dark) and `render-images`
+(`corpus/render-images/*.markdown`, read by no other suite, with real local
+images; `scripts/build-render-images-corpus.py` regenerates it). Both render
+scenes now set `documentURL` to the input, as the app does, so relative
+images go through `LocalAssetPolicy` and the background loader.
+
+`bench-view` with objects drawing (10 runs, best p50 of three interleaved
+rounds, screen locked), `update(document:)` to settled:
+
+| document | Swift | Rust | Rust / Swift |
+|---|---:|---:|---:|
+| agent-5000, Live (like for like: objects draw on both sides) | 258.1 ms | 200.8 ms | 0.78 |
+| agent-5000, Source | 357.9 ms | 307.3 ms | 0.86 |
+| README (tables, code) | 16.8 ms | 14.2 ms | 0.84 |
+| Docs__FEATURE-MATRIX (tables) | 10.5 ms | 7.9 ms | 0.75 |
+| Docs__PERFORMANCE (tables, code) | 8.3 ms | 6.8 ms | 0.82 |
+| Docs__sample (math, Mermaid, callouts, tasks) | 6.2 ms | 5.5 ms | 0.89 |
+
+`just bench`: all 21 drbench stages as fast or faster.
+
+### View layer (port/view)
+
 `render`: every document whose blocks need only prose, elided or cue
 fragments (558 of 909) is identical in all four variants (2232/2232 cases,
 pixels and layout dump), and every document is identical in Source mode
-(351/351 more, since Source mode renders no objects). The remaining 1053
-cases need the object fragments.
+(351/351 more, since Source mode renders no objects).
 
 `bench-view` (both oracles, 10 runs, best p50 of three interleaved rounds,
 on a loaded machine), time from `update(document:)` to settled:
@@ -162,7 +205,7 @@ on a loaded machine), time from `update(document:)` to settled:
 |---|---|---|
 | agent-5000, Source mode (like for like) | 384.5 ms | 324.0 ms |
 | synthetic prose, 5833 lines, Live (like for like) | 279.5 ms | 225.2 ms |
-| agent-5000, Live (Rust draws objects as prose) | 275.7 ms | 223.6 ms |
+| agent-5000, Live (Rust drew objects as prose then) | 275.7 ms | 223.6 ms |
 
 `update(document:)` alone is 37–41% faster; the settle pass (TextKit
 laying out the document) is 2–4% faster.
