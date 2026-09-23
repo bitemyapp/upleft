@@ -1,0 +1,21 @@
+﻿---
+title: Café notes
+tags: [a, b]
+---
+
+# Überschrift — 日本
+
+Prose with $x^2$ and [[Wiki|label]] and src/a/b.ts:12.
+
+> [!warning] Careful
+> body
+
+```swift
+func f() -> Int { 1 }
+```
+
+- [ ] task 😀
+- [x] done
+
+[ref]: https://example.com "Title"
+[^1]: A footnote.

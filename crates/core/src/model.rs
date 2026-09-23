@@ -649,6 +649,36 @@ impl ParsedDocument {
         line_starts: Vec<isize>,
     ) -> ParsedDocument {
         let utf16 = swift_text::ns::utf16(&text);
+        Self::with_utf16(
+            text,
+            utf16,
+            length,
+            root,
+            front_matter,
+            headings,
+            tasks,
+            path_tokens,
+            footnotes,
+            link_references,
+            line_starts,
+        )
+    }
+
+    /// `init(…)` when the caller already holds the UTF-16 units of `text`.
+    #[allow(clippy::too_many_arguments)]
+    pub fn with_utf16(
+        text: String,
+        utf16: Vec<u16>,
+        length: isize,
+        root: BlockRef,
+        front_matter: Option<FrontMatter>,
+        headings: Vec<HeadingNode>,
+        tasks: Vec<TaskItem>,
+        path_tokens: Vec<ResolvableToken>,
+        footnotes: HashMap<String, BlockRef>,
+        link_references: HashMap<String, LinkReference>,
+        line_starts: Vec<isize>,
+    ) -> ParsedDocument {
         ParsedDocument {
             text,
             utf16,

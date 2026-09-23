@@ -245,6 +245,11 @@ pub mod foundation {
         })
     }
 
+    /// `range(of:) != nil` (non-literal) on an `NSString`.
+    pub fn contains(s: &str, needle: &str) -> bool {
+        objc2::rc::autoreleasepool(|_| ns(s).rangeOfString(&ns(needle)).location != objc2_foundation::NSNotFound as usize)
+    }
+
     pub fn case_insensitive_compare(a: &str, b: &str) -> std::cmp::Ordering {
         objc2::rc::autoreleasepool(|_| match ns(a).caseInsensitiveCompare(&ns(b)) {
             NSComparisonResult::Ascending => std::cmp::Ordering::Less,

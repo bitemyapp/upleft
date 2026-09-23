@@ -455,6 +455,8 @@ version = "0.1.0"
 dependencies = [
  "png",
  "serde_json",
+ "upleft-core",
+ "upleft-markup",
 ]
 
 [[package]]
@@ -467,8 +469,17 @@ dependencies = [
  "objc2-natural-language",
  "sha2",
  "unicode-normalization",
- "unicode-segmentation",
+ "upleft-markup",
  "uuid",
+]
+
+[[package]]
+name = "upleft-markup"
+version = "0.1.0"
+dependencies = [
+ "unicode-normalization",
+ "unicode-segmentation",
+ "upleft-cmark-gfm-sys",
 ]
 
 [[package]]
