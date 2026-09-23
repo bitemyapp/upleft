@@ -15,23 +15,18 @@ pub mod tree;
 use std::cell::RefCell;
 use std::path::{Path, PathBuf};
 use std::rc::Rc;
-use std::sync::{Arc, Mutex};
 use std::time::{Duration, Instant};
 
-use block2::RcBlock;
 use dispatch2::{DispatchQueue, DispatchTime};
 use objc2::rc::Retained;
 use objc2::runtime::ProtocolObject;
-use objc2::{AnyThread, MainThreadMarker, MainThreadOnly, define_class, msg_send};
+use objc2::{MainThreadMarker, MainThreadOnly, define_class, msg_send};
 use objc2_app_kit::{
     NSAppearance, NSAppearanceCustomization, NSAppearanceNameAqua, NSAppearanceNameDarkAqua, NSApplication,
     NSApplicationActivationPolicy, NSApplicationDelegate, NSBackingStoreType, NSBitmapImageFileType, NSBitmapImageRep,
     NSColorSpace, NSView, NSWindow, NSWindowStyleMask,
 };
-use objc2_foundation::{NSDictionary, NSError, NSNotification, NSObject, NSObjectProtocol, NSPoint, NSRect, NSSize};
-use objc2_screen_capture_kit::{
-    SCCaptureResolutionType, SCContentFilter, SCScreenshotManager, SCShareableContent, SCStreamConfiguration,
-};
+use objc2_foundation::{NSDictionary, NSNotification, NSObject, NSObjectProtocol, NSPoint, NSRect, NSSize};
 use serde_json::{Map, Value};
 use upleft_render::theme::style_sheet::StyleSheet;
 use upleft_render::theme::theme_store::ThemeStore;
@@ -191,7 +186,6 @@ struct Session {
     previous_capture: Option<Vec<u8>>,
     stable_captures: u32,
     deadline: Option<Instant>,
-    uses_screen_capture_kit: bool,
 }
 
 thread_local! {
@@ -238,6 +232,7 @@ pub fn run_capture(request: &Request) -> Result<(), Failure> {
     }
     let scene = scenes::make(&scenario.panel)?;
     acquire_window_capture_lock();
+    crate::dump::app_window::off_screen::install();
     let mtm = MainThreadMarker::new().expect("panel capture runs on the main thread");
     let app = NSApplication::sharedApplication(mtm);
     app.setActivationPolicy(NSApplicationActivationPolicy::Accessory);
@@ -252,7 +247,6 @@ pub fn run_capture(request: &Request) -> Result<(), Failure> {
             previous_capture: None,
             stable_captures: 0,
             deadline: None,
-            uses_screen_capture_kit: false,
         })
     });
     let delegate: Retained<PanelCaptureDelegate> = unsafe { msg_send![PanelCaptureDelegate::alloc(mtm), init] };
@@ -285,10 +279,7 @@ fn start(mtm: MainThreadMarker) -> Result<(), String> {
         NSApplication::sharedApplication(mtm).setAppearance(Some(&appearance));
         let panel = session.scene.build(&scenario, style_sheet, mtm).map_err(failure_text)?;
         let window = match session.scene.own_window(&panel) {
-            Some(own) => {
-                session.uses_screen_capture_kit = own.styleMask().contains(NSWindowStyleMask::Titled);
-                own
-            }
+            Some(own) => own,
             None => {
                 let frame = NSRect::new(NSPoint::new(0.0, 0.0), NSSize::new(scenario.width, scenario.height));
                 let window = unsafe {
@@ -309,6 +300,7 @@ fn start(mtm: MainThreadMarker) -> Result<(), String> {
         };
         window.setFrameOrigin(NSPoint::new(-30000.0, -30000.0));
         window.orderFrontRegardless();
+        crate::dump::app_window::off_screen::verify(std::slice::from_ref(&window), mtm);
         window.layoutIfNeeded();
         session.scene.after_show(&window, &scenario);
         session.settle_view = window.contentView();
@@ -341,7 +333,6 @@ fn check_settled() {
     enum Next {
         Wait,
         Written,
-        Capture { window_number: u32, output: PathBuf },
     }
     let next = SESSION.with(|cell| -> Result<Next, String> {
         let mut guard = cell.borrow_mut();
@@ -376,69 +367,18 @@ fn check_settled() {
             std::fs::write(layout, serde_json::to_string(&Value::Object(object)).expect("serialisable"))
                 .map_err(|error| format!("write failed: {error}"))?;
         }
-        if !session.uses_screen_capture_kit {
-            std::fs::write(&session.output_png, &png).map_err(|error| format!("write failed: {error}"))?;
-            return Ok(Next::Written);
-        }
-        Ok(Next::Capture { window_number: window.windowNumber() as u32, output: session.output_png.clone() })
+        crate::dump::app_window::off_screen::verify(std::slice::from_ref(&window), window.mtm());
+        // The window server's composite of the off-screen window (glass,
+        // materials and layers included); see `WindowServerCapture`.
+        let data = crate::dump::app_window::window_server::png(std::slice::from_ref(&window))?;
+        std::fs::write(&session.output_png, &data).map_err(|error| format!("write failed: {error}"))?;
+        Ok(Next::Written)
     });
     match next {
         Err(message) => fail(&message),
         Ok(Next::Wait) => schedule_check(),
         Ok(Next::Written) => std::process::exit(0),
-        Ok(Next::Capture { window_number, output }) => capture_window(window_number, output),
     }
-}
-
-/// ScreenCaptureKit on the off-screen titled window, as the Swift harness.
-fn capture_window(window_number: u32, output: PathBuf) {
-    let output = Arc::new(Mutex::new(output));
-    let on_content = RcBlock::new(move |content: *mut SCShareableContent, error: *mut NSError| {
-        let Some(content) = (unsafe { content.as_ref() }) else {
-            let message = unsafe { error.as_ref() }.map(|error| error.localizedDescription().to_string());
-            fail(&format!("window capture failed: {}", message.unwrap_or_default()));
-        };
-        let windows = unsafe { content.windows() };
-        let Some(sc_window) = windows.iter().find(|window| unsafe { window.windowID() } == window_number) else {
-            fail("window capture failed: ScreenCaptureKit does not list the panel window");
-        };
-        let filter = unsafe { SCContentFilter::initWithDesktopIndependentWindow(SCContentFilter::alloc(), &sc_window) };
-        let configuration = unsafe { SCStreamConfiguration::new() };
-        unsafe {
-            let rect = filter.contentRect();
-            let scale = f64::from(filter.pointPixelScale());
-            configuration.setWidth((rect.size.width * scale) as usize);
-            configuration.setHeight((rect.size.height * scale) as usize);
-            configuration.setShowsCursor(false);
-            configuration.setIgnoreShadowsSingleWindow(true);
-            configuration.setCaptureResolution(SCCaptureResolutionType::Best);
-        }
-        let output = output.clone();
-        let on_image = RcBlock::new(move |image: *mut objc2_core_graphics::CGImage, error: *mut NSError| {
-            let Some(image) = (unsafe { image.as_ref() }) else {
-                let message = unsafe { error.as_ref() }.map(|error| error.localizedDescription().to_string());
-                fail(&format!("window capture failed: {}", message.unwrap_or_default()));
-            };
-            let rep = NSBitmapImageRep::initWithCGImage(NSBitmapImageRep::alloc(), image);
-            let Some(png) = png_data(&rep) else { fail("PNG encoding of the window capture failed") };
-            if let Err(error) = std::fs::write(&*output.lock().unwrap(), png) {
-                fail(&format!("window capture failed: {error}"));
-            }
-            std::process::exit(0);
-        });
-        unsafe {
-            SCScreenshotManager::captureImageWithFilter_configuration_completionHandler(
-                &filter,
-                &configuration,
-                Some(&on_image),
-            )
-        };
-    });
-    unsafe {
-        SCShareableContent::getShareableContentExcludingDesktopWindows_onScreenWindowsOnly_completionHandler(
-            false, false, &on_content,
-        )
-    };
 }
 
 // MARK: - panel-model (windowless)

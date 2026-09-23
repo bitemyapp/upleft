@@ -1,5 +1,4 @@
 import AppKit
-import ScreenCaptureKit
 @testable import DownrightApp
 import MarkdownCore
 import MarkdownRender
@@ -145,7 +144,6 @@ final class PanelCaptureSession: NSObject, NSApplicationDelegate {
     private var previousCapture: Data?
     private var stableCaptures = 0
     private var deadline = Date.distantFuture
-    private var usesScreenCaptureKit = false
 
     init(scenario: PanelScenario, outputPNG: URL, outputLayout: URL?) {
         self.scenario = scenario
@@ -166,6 +164,7 @@ final class PanelCaptureSession: NSObject, NSApplicationDelegate {
             }
         }
         acquirePanelCaptureLock()
+        OffScreenWindows.install()
         let app = NSApplication.shared
         app.setActivationPolicy(.accessory)
         let session = MainActor.assumeIsolated {
@@ -191,7 +190,6 @@ final class PanelCaptureSession: NSObject, NSApplicationDelegate {
         let panel = try scene.build(scenario, styleSheet: styleSheet)
         if let own = scene.ownWindow(panel) {
             window = own
-            usesScreenCaptureKit = own.styleMask.contains(.titled)
         } else {
             let frame = NSRect(x: 0, y: 0, width: scenario.width, height: scenario.height)
             window = NSWindow(contentRect: frame, styleMask: [.borderless], backing: .buffered, defer: false)
@@ -202,6 +200,7 @@ final class PanelCaptureSession: NSObject, NSApplicationDelegate {
         }
         window.setFrameOrigin(NSPoint(x: -30000, y: -30000))
         window.orderFrontRegardless()
+        OffScreenWindows.verify([window])
         window.layoutIfNeeded()
         scene.afterShow(window: window, scenario: scenario)
         settleView = window.contentView
@@ -246,40 +245,13 @@ final class PanelCaptureSession: NSObject, NSApplicationDelegate {
                 ])
                 try layout.text.write(to: outputLayout, atomically: true, encoding: .utf8)
             }
-            if !usesScreenCaptureKit {
-                try png.write(to: outputPNG)
-                exit(0)
-            }
+            OffScreenWindows.verify([window])
+            // The window server's composite of the off-screen window (glass,
+            // materials and layers included); see `WindowServerCapture`.
+            try WindowServerCapture.png(of: [window]).write(to: outputPNG)
+            exit(0)
         } catch {
             fail("\(error)")
-        }
-        let windowNumber = CGWindowID(window.windowNumber)
-        let output = outputPNG
-        Task {
-            do {
-                let content = try await SCShareableContent.excludingDesktopWindows(false, onScreenWindowsOnly: false)
-                guard let scWindow = content.windows.first(where: { $0.windowID == windowNumber }) else {
-                    throw PanelHarnessError.usage("ScreenCaptureKit does not list the panel window")
-                }
-                let filter = SCContentFilter(desktopIndependentWindow: scWindow)
-                let configuration = SCStreamConfiguration()
-                let scale = CGFloat(filter.pointPixelScale)
-                configuration.width = Int(filter.contentRect.width * scale)
-                configuration.height = Int(filter.contentRect.height * scale)
-                configuration.showsCursor = false
-                configuration.ignoreShadowsSingleWindow = true
-                configuration.captureResolution = .best
-                let image = try await SCScreenshotManager.captureImage(contentFilter: filter, configuration: configuration)
-                let rep = NSBitmapImageRep(cgImage: image)
-                guard let data = rep.representation(using: .png, properties: [:]) else {
-                    throw PanelHarnessError.usage("PNG encoding of the window capture failed")
-                }
-                try data.write(to: output)
-                exit(0)
-            } catch {
-                FileHandle.standardError.write("panel failed: window capture failed: \(error)\n".data(using: .utf8)!)
-                exit(2)
-            }
         }
     }
 
