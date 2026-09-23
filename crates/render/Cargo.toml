@@ -1,0 +1,50 @@
+[package]
+name = "upleft-render"
+description = "Port of Downright's MarkdownRender: themes, style sheet, metrics, syntax highlighting, render contracts"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+publish.workspace = true
+
+[dependencies]
+block2.workspace = true
+dispatch2 = "0.3"
+libc = "0.2"
+objc2.workspace = true
+serde_json.workspace = true
+unicode-normalization = "0.1.24"
+unicode-segmentation = "1.13"
+objc2-foundation = { workspace = true, features = [
+    "NSArray",
+    "NSData",
+    "NSDictionary",
+    "NSEnumerator",
+    "NSError",
+    "NSFileManager",
+    "NSGeometry",
+    "NSLock",
+    "NSObject",
+    "NSPathUtilities",
+    "NSRange",
+    "NSString",
+    "NSURL",
+    "NSUserDefaults",
+    "NSValue",
+] }
+objc2-app-kit = { workspace = true, features = [
+    "NSAccessibility",
+    "NSAppearance",
+    "NSApplication",
+    "NSAttributedString",
+    "NSColor",
+    "NSColorSpace",
+    "NSFont",
+    "NSFontDescriptor",
+    "NSResponder",
+    "NSWorkspace",
+    "block2",
+    "objc2-core-foundation",
+] }
+objc2-core-foundation = { workspace = true, features = ["CFBase", "CFCGTypes", "CFPreferences", "CFPropertyList", "CFString"] }
+objc2-core-graphics = { workspace = true }
+objc2-core-text = { workspace = true, features = ["CTFont", "CTFontDescriptor", "SFNTLayoutTypes", "objc2-core-graphics"] }
