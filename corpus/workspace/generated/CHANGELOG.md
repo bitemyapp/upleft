@@ -1,0 +1,654 @@
+# Changelog
+
+All notable changes to Downright are documented here.
+
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
+and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+
+Version truth lives in a single place — `Config/version.env` — and every
+consumer (Xcode project, bundle scripts, the `down` CLI) is verified against it
+by `Scripts/sync-versions.sh`. `CFBundleVersion` increases monotonically with
+every release; Sparkle orders updates by it.
+
+## [Unreleased]
+
+### Added
+
+- **Update Now.** A build published from a push to `main` now reaches a running
+  copy in about a minute instead of on the next daily check, and the pill that
+  offers it acts instead of opening a window. One press installs and relaunches,
+  carrying its own progress in the titlebar; the update panel stays where it was
+  for menu checks, errors, and no-update results. Resting on the button unfurls
+  a glass panel of the release notes — the appcast already embeds them, so it
+  costs no extra request — which you can move into, and which trims to whole
+  lines rather than clipping a sentence in half. An update that lands while you
+  are in the app gets one accent pass on arrival; one that was already waiting
+  when the window opened does not pretend it just arrived.
+- The appcast is watched while the app is open: a conditional request roughly
+  every 90 seconds in front and every 15 minutes behind, stopped entirely with
+  no network and in Low Power Mode while backgrounded, and governed by the same
+  "check automatically" setting as Sparkle's own schedule. It is a trigger, not
+  a trust path — it learns only that the feed moved and asks Sparkle to look, so
+  every signature check and download stays exactly where it was.
+- **Two-finger swipe between Document and Source.** Sideways across the
+  document switches presentation, and the titlebar's mode rail travels with
+  your fingers, reaching the far segment exactly where releasing would commit.
+  Release short of that — or flick back the way you came — and it returns
+  having changed nothing.
+
+  On most documents the page you are leaving really does travel off while the
+  one you are entering follows it in, both tracking your fingers one to one.
+  That needs the incoming presentation rendered before a finger moves, which is
+  affordable up to roughly twelve hundred lines: measured engagement is 6 ms at
+  240 lines and 26 ms at 950, against a budget of three frames. Past that the
+  page leans against your fingers instead and the switch happens on release —
+  because a gesture that stalls at the moment it catches is worse than one that
+  promised less. The choice is made per gesture from a per-line cost the app
+  measures on your machine rather than a constant baked in on someone else's.
+
+  Vertical scrolling is untouched: a gesture is only claimed once it is
+  decidedly sideways, never from a mouse wheel, and never from a momentum tail.
+  Abandoning a swipe costs nothing on either path.
+- **Detents on the density rail.** Reading the section stack now taps once per
+  mark the pointer takes up, hovering and scrubbing alike, so the rail can be
+  counted through by hand instead of only by eye. The taps share one budget
+  with the landing punch and are floored at 50 ms apart: a slow read ticks mark
+  by mark, a fast sweep thins to a rhythm rather than buzzing, and a jump that
+  lands on the mark you just crossed answers once rather than twice. Leaving
+  the stack is silent — the rail sits against the window edge, so an exit is
+  the one transition that happens without anyone meaning it. Reduce Motion,
+  from the system or from a reader profile, silences the rail entirely: its
+  springs were already parked under that setting, which left the landing tap
+  answering a movement that no longer happens.
+- **Share.** File ▸ Share (⌃⌘S) hands the document to the system share sheet —
+  Mail, Messages, AirDrop, Notes — and File ▸ Share as PDF sends the same
+  rendered page Print and Export PDF produce. Both send a *file*, so an AirDrop
+  arrives as a `.md` or a `.pdf` the receiver can open rather than a nameless
+  blob of pasted text. A saved, unmodified document shares its own file
+  untouched; one with unsaved edits shares a throwaway copy of what is actually
+  on screen, byte-faithful to the document's own encoding and line endings,
+  because sharing the stale file on disk would be a silent lie and saving on the
+  reader's behalf is not Share's decision to make. An Untitled window shares too,
+  under a real filename.
+- **Insert from iPhone or iPad.** Edit ▸ Insert picks up macOS's Take Photo and
+  Scan Documents when a nearby device can serve them. The capture is written as
+  a real image file next to the document — `notes-photo.png`, never overwriting
+  an earlier one — and a single Markdown reference is inserted at the caret as
+  one undoable edit. Nothing else in the document moves: a selection is inserted
+  *around*, not replaced, because the shutter is on a phone and whatever was
+  highlighted here is long out of sight by the time the photo lands. The name is
+  chosen so the written path and the parsed destination are the same string, so
+  the image renders with no trust prompt and arrives with no Asset Doctor
+  warnings. A document that has never been saved has no folder to write beside,
+  so macOS does not offer the capture there at all rather than accepting a photo
+  it would then have to put somewhere unportable.
+- **Drop files onto the document.** Dragging an image, a Markdown file, or
+  anything else onto the page inserts a reference to it at the position under
+  the pointer — not at the caret — with a drop caret showing exactly where it
+  will land while you are still holding the drag. An image already inside the
+  document's folder is referenced where it stands and never duplicated; one from
+  outside is copied in beside the document so the reference stays relative,
+  portable, and free of a trust prompt. A file that is not an image becomes a
+  link, inline, and is never copied: a link is a reference, not an embed. Image
+  data with no file behind it — dragged out of a browser or a preview window —
+  is written next to the document first. Destinations are chosen so they need no
+  percent-encoding, because Downright's renderer resolves a destination as a
+  literal path and would go looking for the `%`; a name with a space uses
+  CommonMark's `<…>` form instead. Every drop is one undoable edit, and a write
+  that fails inserts nothing and takes its own half-written files back out.
+- **Force click and Quick Look.** Force-clicking a path token or a link to a
+  local file opens a Quick Look preview of it; force-clicking an ordinary word
+  still gets macOS's Look Up popover, untouched. File ▸ Quick Look (⌘Y) does the
+  same for whatever the caret is on, and an embedded image opens in Downright's
+  own lightbox rather than a second image viewer. Space is deliberately *not*
+  bound to it in the shortcut table: the document surface always has a caret in
+  both of the modes you can reach, and a space that sometimes is not a space is
+  worse than a chord you have to learn.
+
+### Changed
+
+- Reparsing a large document is about 13% faster. Every block was searching its
+  own text for an angle bracket through Foundation's Unicode-aware comparison
+  machinery, which cost 6% of a full parse on documents containing no HTML at
+  all; the line scan the parser already performs now answers that question once
+  for the whole document. On a 120 KB file the full convergence pipeline drops
+  from roughly 31 ms to 27 ms.
+- External-effect trust grants are now pinned to the exact URL you approved.
+  An "always allow" given to one link or automation inside a folder no longer
+  silently authorizes every future URL of that kind in the same folder — a
+  different scheme or address asks again. Grants recorded before this change
+  fail closed for external effects and are re-recorded with their URL the next
+  time you approve them; purely local permissions (reading assets, opening
+  paths) keep working untouched.
+- The occlusion save now belongs to the autosave setting it always behaved
+  like. With autosave off (the default), covering or miniaturizing a dirty
+  window no longer writes the file — previously it did, which is exactly the
+  unsolicited write the setting exists to prevent when an agent may be editing
+  the same file.
+- **Document↔Source switching is two to three times faster.** Switching to
+  Source used to compute block metrics, heading fonts and list indents for every
+  block in the document and then overwrite all of them microseconds later with
+  "monospace, everything" — only the colours ever survived. Source mode now
+  applies what survives and skips what does not, and the whole-document
+  attribute passes were merged so the storage's runs are rewritten once rather
+  than three times. On a 2,000-line file the switch went from 273 ms to around
+  110 ms, and every route into Source is faster for it: the toolbar rail, ⌘⇧E,
+  and the swipe alike.
+- `SUScheduledCheckInterval` drops from 24 hours to 1 hour. It is now the
+  fallback for an app that was asleep, offline, or in Low Power Mode while a
+  build shipped, rather than the mechanism by which updates are noticed.
+
+### Fixed
+
+- **The `down` CLI and Spotlight indexing work on Intel Macs again.** The app
+  itself was built universal, but the embedded command-line tool and the
+  Spotlight metadata importer were compiled for the build machine's
+  architecture alone, so on an Intel Mac both were unusable while the app
+  around them ran fine. Both now match the host bundle, and a bundle whose
+  nested binaries do not cover every architecture of the app that contains
+  them no longer verifies.
+- **A file with Windows line endings no longer reports a conflict that isn't
+  there.** Reconciling a CRLF file against its version on disk compared one
+  character too few, so a document that differed only by its final newline
+  read as edited elsewhere and blocked the save behind a conflict bar.
+- **Restructuring a heading inside a quote or list no longer eats the next
+  line.** Demoting `> ## Deep` used to take the setext-normalization path,
+  which consumed the *following* line as an underline — the quoted body
+  vanished. Level changes now require a genuinely two-line setext shape, keep
+  the container marker in front of the hashes, and Heading to Body Text stops
+  stripping `> `/`- ` off nested headings. List continuation on Return keeps
+  a nested item's own `*`/`+` bullet instead of falling back to `-`.
+- **An external atomic save is not reported as a deletion.** A write observed
+  inside the brief unlink→rename window could surface "the file is gone";
+  a tentative removal now waits out one short re-probe and reports what the
+  path became.
+- **A corrupt version-timeline index is left alone.** Recording a new version
+  used to overwrite an unreadable history index and let the next prune sweep
+  every object it referenced; the store now refuses to touch an index it
+  cannot decode.
+- **Installers cannot destroy the app they replace.** An interruption during
+  the swap used to delete the only copy of the installed app along with its
+  staging directory; the previous installation is now restored or preserved
+  on every exit path, and the local installer closes Downright refusal-first
+  instead of killing it silently.
+- `down check` prints conventional `file:line:` diagnostics with real line
+  numbers instead of UTF-16 offsets.
+
+- **Indenting and outdenting now renumber ordered lists**, as §6.4 always
+  promised: outdenting a nested item into its parent list repairs duplicate
+  and stale numbers in the same keystroke, inside the same undo group.
+
+- **A discarded buffer can no longer reach disk.** Choosing Discard in the
+  close or quit prompt used to leave the document dirty while queued autosave
+  work and window-occlusion saves stayed armed: the write could land while the
+  confirmation was still on screen or as the window tore down, committing the
+  very edits you had just declined to keep. Every implicit save path now stops
+  at the choice, and a closed document refuses writes outright.
+- **Closed an export hole that could produce live `javascript:` links.**
+  Browsers strip tabs and newlines out of URLs before parsing them, so a
+  destination written as `java<TAB>script:` passed the CLI exporter's scheme
+  block and came back to life inside the browser — the same trick also let a
+  tabbed `http:` image through as a live remote request. Destinations are now
+  normalized before analysis and emitted in that same normalized form.
+- Fragment metadata (code-block copy ranges, image-load invalidation, table
+  geometry) now follows edits made outside the text view's own typing funnel:
+  document commands, undo/redo, and absorbed external rewrites shift the
+  payload ranges along with the attribute runs they ride on. Copying a code
+  block after typing above it no longer grabs the wrong span.
+- The repository gate now fails when version consistency or theme contrast
+  checks fail, instead of printing their reports and exiting green.
+- Update probes on hosts that serve no `ETag` now send `If-Modified-Since`
+  from the stored document date, so an unchanged feed answers `304` instead of
+  being re-downloaded and hashed every cycle.
+- Saves flush the replacement generation to stable storage before the atomic
+  swap publishes it, so a crash or power loss right after a save cannot leave
+  the document file truncated or empty.
+- Agent hook commands single-quote the executable path, so no character in an
+  unusual install location can open a shell expansion context inside the
+  agent's settings. Hooks installed by earlier builds are recognized and
+  migrated to the quoted form in place instead of being duplicated.
+- The npm installer verifies the fetched install script against a pinned
+  SHA-256 before running it, so a compromised installer endpoint cannot execute
+  arbitrary code at user privileges.
+- **Opening a path from a document can no longer execute it.** Links and path
+  tokens that resolve to an application bundle, a Terminal-run script (`.app`,
+  `.command`, `.tool`, …), or an extension-less executable are revealed in
+  Finder instead of handed to LaunchServices — "open in your editor" never
+  meant "run this". Ordinary documents (PDFs, images, `.sh` files) open as
+  before.
+- Own-write detection in the file watcher is now state-based rather than
+  clock-based: suppression opens when the save starts and closes at the
+  acknowledgement, however long the write takes. On a slow or network volume,
+  saving no longer risks your own file bouncing back as a phantom "changed on
+  disk" conflict; a watchdog fails open if an acknowledgement were ever lost.
+  Directory watches (the sibling list) honor the same filter, so writing
+  sidecars into the workspace folder no longer wakes pointless rescans.
+- The safe-HTML cross-block pairing for README-style `<details>` elements now
+  requires the partner tag to be written as a real HTML block. A mention of
+  `<details>` inside a code span or a sentence can no longer license hiding a
+  stray literal tag in another block; genuine split-element documents pair up
+  exactly as before.
+
+- Stopped idle history maintenance from rewriting every unchanged index, made
+  long-session pruning half-hourly, and retained the newest history and reading
+  state when a document path disappears.
+- Bounded external-change undo history and moved path-existence rechecks to a
+  background cache warm so long-lived, frequently rewritten documents cannot
+  grow memory indefinitely or stall the main thread on filesystem checks.
+
+- **Made saves fail closed around external file activity.** Downright now
+  distinguishes unchanged, changed, missing, and unreadable disk state; an
+  implicit save can no longer recreate a deleted file, swallow an atomic
+  replacement, or overwrite a generation that arrived at the save boundary.
+  Recovery offers explicit Save a Copy, Recreate File, Discard, and Cancel
+  choices, and preserves byte-level encoding and line-ending fidelity.
+- **Made Quick Look reads bounded under replacement races.** Preview and
+  fallback paths now enforce their byte ceiling on the read itself even when
+  a file grows or is atomically replaced after its metadata was inspected.
+- **Kept large external rewrites off the typing path.** Revision-checked
+  background parsing and incremental TextKit commits preserve selection and
+  scroll anchors while bounded real-window frame gates cover 10k–50k-line
+  documents, IME composition, split view, and concurrent scrolling.
+- **Repaired browser-rich paste boundaries.** Explicit Paste as Markdown
+  converts HTML, WebArchive, RTF, and RTFD into useful paragraph, list, table,
+  code, and link structure without changing ordinary Paste's visible text.
+- **Fixed a crash on ordinary prose.** Any document containing a one-character
+  word before `:digits` — "John 3:16", "meet at 9:30", `` `a:1` `` — fatally
+  trapped the path-token scanner during the per-keystroke reparse.
+- **Fixed code-fence recovery.** A closing fence may now carry trailing spaces
+  or tabs (legal CommonMark) instead of being swallowed into the code content,
+  and a same-character run shorter than the opening fence inside an unclosed
+  longer fence is content, not a phantom closer.
+- **Fixed footnote recovery inside fenced example code.** The source scanner
+  no longer ends a fence on an info string (` ```ruby ` inside ` ```` `), which
+  used to leak footnote-looking lines out of code blocks.
+- **Fixed section moves in mixed-ending files.** `moveSection` now recognizes
+  terminators by width and preserves the separator's exact bytes; a CRLF blank
+  separator used to be invisible to the walk, gluing the moved sections
+  together. Table realigns and list looseness are width-aware for the same
+  reason, and re-levelling a setext heading keeps its emphasis and code
+  markers instead of the plain-text title.
+- **Closed a stored-XSS hole in HTML export.** Wikilink targets now pass the
+  same scheme allowlist as ordinary links: `[[javascript:alert(1)//]]` used to
+  export as a live `javascript:` URL (the `.html` suffix sits behind a `//`
+  comment, so it did not neutralize the payload).
+- **Fixed `down export`.** Multi-line paragraphs and code blocks exported as
+  one line of visible `\n` garbage; the writer now emits real newlines.
+- **Fixed a main-thread freeze in the image lightbox.** Remote (and large
+  local) images now decode off the main thread; a slow server no longer hangs
+  the app inside the click handler.
+- **Fixed watcher events after close.** A file-watcher event already in flight
+  when its document closed scheduled one more external-write pass on the
+  closed document; and an in-place link hop whose target vanished mid-flight
+  now reopens the previous document instead of leaving a window that no longer
+  tracks external writes.
+- Hardened the release chain: the Apple API key and Developer ID certificate
+  materialize under `mktemp`/`RUNNER_TEMP` instead of fixed `/tmp` paths, the
+  Sparkle key ceremony no longer runs a binary discovered by globbing `/tmp`,
+  the ephemeral signing keychain is deleted on every path, and CI/release
+  install a checksum-pinned `xcodegen` (2.46.0) instead of a floating Homebrew
+  head, shipping its SettingPresets alongside the binary so the generated
+  project keeps `ONLY_ACTIVE_ARCH=YES` (a binary-only install dropped it and
+  made the acceptance build fail on universal app extensions).
+- **Fixed a workspace-sidebar crash on colliding filenames.** The link graph
+  keyed files by a normalized path that folds `a\b.md` into `a/b.md` (and a
+  hidden `.x.md` into `x.md`); `uniqueKeysWithValues` trapped on the first
+  duplicate. Lookup is now collision-tolerant and prefers the already-normalized
+  path deterministically.
+- **Fixed "Allow for Folder" over-granting on a directory.** Consenting from a
+  directory token stored the directory's *parent*, authorizing every sibling;
+  a directory target now grants itself, and revoke targets the same folder.
+- **Fixed trust grants silently revoking earlier ones.** A second grant for the
+  same path replaced the first instead of extending it, so folder-read and
+  editor-launch kept ping-ponging; grants now union their effects.
+- **Fixed a hard-wrap reflow overrun on stale documents.** The
+  continuation-indent walk indexed the buffer by an unclamped paragraph range
+  and could read one character past the end after an external rewrite; it now
+  clamps to the buffer length.
+- **Fixed agent hook install/uninstall matching the command only.** A foreign
+  `PostToolUse` entry that runs `down notify` under another matcher used to
+  block a needed install and be deleted by an uninstall; both now match on
+  matcher and command together.
+
+### Added
+
+- **Calm, explicit document trust states.** The toolbar stays silent during
+  ordinary editing and saving, and communicates only exceptional states:
+  Changed externally, File missing, Conflict, and Save failed.
+- **Contents / Outline remains an advanced command.** It is available through
+  View, the command palette, accessibility, and configurable keybindings
+  without occupying the permanent toolbar, overflow menu, or Welcome guide.
+- **Universal clipboard flavors.** Copy now publishes lossless private
+  Markdown, plain text, RTF, and sanitized semantic HTML so native and browser
+  targets retain headings, lists, emphasis, links, tables, and code structure.
+- **Safe native rendering for common README HTML.** Presentational paragraphs,
+  headings, emphasis, links, local images, line breaks, disclosures, and basic
+  tables render in Document mode without executing HTML or changing source;
+  unknown and risky markup stays visible and inert.
+- **First-run setup panel.** Downright now installs itself. On first launch it
+  offers to become the default Markdown app and to install the `down` command
+  line tool, and — with no decision to make — registers its Quick Look
+  extensions with Launch Services and `pluginkit` and resets Quick Look's
+  caches so existing `.md` files pick up real Finder icons. Everything here
+  previously lived only in `Scripts/install.sh`, which runs for people building
+  from source and for nobody else: the shipping path of download the DMG, drag
+  to Applications, double-click performed none of it.
+- The panel detects an app still running from a DMG or Downloads — Gatekeeper
+  runs those from a randomised read-only mount where no registration can stick
+  — and offers to move it into Applications and relaunch.
+- **Settings → General → System integration** repeats every setup step, names
+  the app currently holding the Markdown association, and opens the Quick Look
+  pane of System Settings for the one switch macOS will not let an app throw.
+- **Help → Take the Tour**, so the tour outlives the start window's button.
+- **Recent files say what they are about.** Each row carries a second line with
+  the document's first heading, so `notes.md` reads as "Agent output" and a
+  folder of identically-named agent output stops being a column of
+  interchangeable rows. The folder is shown behind it, or alone when there is
+  no heading; neither is repeated when the two would say the same thing.
+- **⌘1–⌘6 open the corresponding recent file**, with the shortcut spelled out
+  once in the list header and each row carrying its own ordinal.
+
+### Changed
+
+- The Welcome tour now derives every displayed shortcut from the configurable
+  command table, shows an honest Unassigned state, and remains accurate after
+  keybinding customization.
+- Development app bundles now use an isolated bundle identifier by default,
+  including their Quick Look extensions, so acceptance builds cannot displace
+  the installed daily-driver registration.
+- **Appearance now follows macOS reliably.** Theme selection no longer
+  silently disables system following, the View menu exposes separate light
+  and dark palettes, and Light/Dark transitions rebuild cached TextKit
+  paragraphs so old foreground colours cannot survive over the new page.
+- **Find bar and Tasks panel motion pass.** The find pill now opens above the
+  document without moving the page, flows outward from the toolbar lens as one
+  liquid-glass body before its readable controls resolve, and grows around the
+  replace row as it expands. The match count crossfades
+  and its tray glides open and closed, and the invalid-regex glyph pops in on
+  a small spring instead of hard-appearing. In the Tasks panel, the empty
+  state dissolves as a plan's first rows slide in, and the quick-add row
+  crossfades its hint into the editing field instead of swapping them.
+- The find bar's **previous/next and Replace buttons park themselves** while
+  there is nothing to act on — an empty query or a settled "No matches" — and
+  re-arm the moment the text changes, so a control that cannot do anything no
+  longer offers a click that lands nowhere.
+- Right-clicking a Tasks panel **"N completed" pile** offers Show/Collapse
+  Completed and Copy Status Report — the same fold the row's click performs,
+  plus the report every other section surface already had.
+- The floating Tasks panel's empty state was **clipped at the bottom** — the
+  card was sized to a fixed minimum taller than its content, and the centered
+  "Add task" button rode past the rounded lower edge. The panel now measures
+  the empty chrome's full height (state, gap, button, and the bottom margin)
+  so the card fits the whole thing.
+- The morph flight now lands on the surface's **actual resting frame** instead
+  of a freshly re-derived one, which could be a few points off and left the
+  travelling glass resting slightly beside the card it was becoming — the
+  "oversized grey slab" that read as a second panel behind the glass.
+- The start window's headline adapts: returning users get "Pick up where you
+  left off" rather than "Open a Markdown file", which restated the button
+  directly beneath it and kept instructing people who had long since learned.
+- The six identical document glyphs in the recents list are gone. They said
+  only "these are files", which the names already said; the slot now carries
+  the ⌘-number that is the fastest way out of the window.
+- The recents header shows the shortcut range instead of a file count that
+  restated six visible rows.
+- The start window is 600pt tall rather than 576 to fit the two-line rows, and
+  the no-recents placeholder is now derived from the height a full list
+  occupies instead of a fixed 150pt that was already 100pt short of it.
+- The welcome window's two entry actions now share one readable control well;
+  drag-and-drop feedback appears only while a supported file is over the
+  window, and an update failure collapses to a quiet, discoverable warning
+  instead of competing with the primary actions.
+- Update failures now lead with a clear "your files are safe" message, fit the
+  panel to the shorter failure state, and keep technical details behind an
+  explicit disclosure.
+- The rolling DMG now carries a Finder-aligned install window with a hand-drawn
+  background and drag-to-Applications arrangement, while retaining a valid
+  headless packaging path for CI.
+
+- The start window's **Take the Tour** button now retires: immediately once the
+  tour has been opened, and after three launches regardless. It was permanent,
+  which is a standing admission that the app needs explaining and a wasted slot
+  on the one screen where the user is trying to reach their work.
+- Only `.md`, `.markdown`, `.mdown`, and `.mkd` are claimed as defaults.
+  `.mdx`, `.qmd`, and `.rmd` belong to toolchains people have already chosen,
+  and are left to them; the bundle still declares them so Downright appears
+  under Open With.
+- Finder thumbnails are drawn as **pages rather than squares**, from a fixed
+  sRGB palette, with task progress shown as a bar. Below 72pt they draw ruled
+  lines instead of text that would only be a smudge at that size.
+
+### Fixed
+
+- The circular Find control no longer leaks a rounded-square hover plate. The
+  Tasks panel again uses a transparent native child compositor, so it refracts
+  the document instead of reading as an opaque grey card, and its close target
+  now consumes the click before the editor can receive it. Density-map previews
+  inherit the exact resolved Light/Dark appearance of their document window.
+- Opening Find and local document edits preserve the same pixel viewport after
+  AppKit performs its delayed caret and focus scroll repairs.
+- Removed the obsolete surrogate morph vessel and inspector-unfurl pipeline;
+  the real floating glass surface now owns its animation and resize retargeting.
+
+- Quick Look and the Markdown file association silently broke whenever the app
+  was **moved or renamed** — Launch Services and `pluginkit` both record an
+  absolute path. Downright records where it last registered and re-registers
+  when that changes.
+- Finder thumbnails only ever showed **one line of title and one line of body**
+  regardless of how much page was left. A paragraph style set to
+  `.byTruncatingTail` does not wrap; it lays the whole string on one line and
+  clips it.
+- Multi-line thumbnail text rendered in **reverse line order**, because
+  `NSLayoutManager` lays out top-down and the glyphs were drawn into an
+  unflipped context.
+
+## [1.0.0] - 2026-08-07
+
+The initial release of Downright: a local-first Markdown editor for macOS that
+treats the file on disk as the single source of truth.
+
+Nothing shipped before this, so the Changed, Removed, and Fixed entries below
+record work against the pre-release development builds rather than against a
+published version.
+
+### Added
+
+#### Application
+
+- Live editing with **byte-for-byte file fidelity** (§3.1): read → parse →
+  write round-trips a document exactly, including CRLF/CR line endings, BOM,
+  UTF-16/32, and mixed endings; nothing is normalised that cannot be faithfully
+  restored.
+- Structural zoom, document outline, reader profiles, and a density rail.
+- Inline rendering for math (LaTeX), mermaid diagrams, callouts, tables, task
+  lists, wikilinks, and file/path tokens with resolution.
+- Themes: built-in light/dark palettes plus VS Code / Shiki theme import, and a
+  custom theme store.
+- **No-mutation decoration engine**: keystroke → updated render at a budgeted
+  p95 of 8 ms on a 5k-line document (§12), measured by `drbench`.
+- Local AI assistance (optional, on-device) with sibling-document scanning,
+  change tracking, and an external-edit conflict bar.
+- Session restore with per-document state (mode, zoom, fold, scroll, sidebar),
+  native tabs, jump history, command palette, keybindings, and vim keys.
+- Quick Look preview and Finder thumbnails for Markdown documents.
+- `down` CLI for rendering and editing from the terminal, plus the reusable
+  `MarkdownCore` and `MarkdownRender` packages.
+- Front matter editor, table editor, document health checks, tidy pass, smart
+  paste, review sidecars, asset doctor, and diagnostics.
+- Plain-text fallback: files are opened and rendered; nothing is ever
+  evaluated (`.mdx`/`.qmd` executable chunks are rendered as text).
+- Regression probes locking the mermaid text orientation against the library's
+  known-good render path (`MermaidOrientationProbeTests`, `GeometryProbeTests`).
+
+#### Distribution and release engineering
+
+- **Sparkle 2.9.5 auto-update** with a fully custom UI: update pills in document
+  titlebars and the start window, a nonmodal release-notes panel rendered through
+  the app's own `MarkdownTextView`, and a fully unit-tested update state machine.
+  Dev/ad-hoc bundles omit the Sparkle Info.plist block and ship with the updater
+  disabled; only signed production bundles check for updates.
+- **Signed + notarized release pipeline** (`.github/workflows/release.yml`):
+  Developer ID signing of every nested executable individually (never
+  `--deep`), notarization, stapling, Sparkle-signed appcast with delta updates,
+  GitHub Release, and GitHub Pages deployment.
+- **Manual release path, scripted**: `Scripts/sign-and-notarize.sh` signs,
+  notarizes, and staples by hand; `Scripts/make-dmg.sh` packages a drag-install
+  DMG. `Scripts/verify-bundle.sh` holds both pipelines to one layout contract.
+- **One canonical version source**: `Config/version.env`, verified by
+  `Scripts/sync-versions.sh` in `check.sh` and gated in the release workflow.
+- **Privacy manifests** (`PrivacyInfo.xcprivacy`) for the app, Quick Look, and
+  thumbnail bundles declaring the required-reason APIs in use (UserDefaults,
+  file timestamps). No data is collected and nothing tracks.
+- **Quick Look and Finder thumbnails now cover `.mdx` / `.mdc` / `.qmd` /
+  `.rmd`** — the exported `com.ezzy.downright.markdown` UTI is declared
+  in both extension bundles.
+- **CI gates the §12 performance budget**: `ci.yml` runs `drbench` in release
+  with budgets enforced (`RUN_DRBENCH=1`).
+
+### Changed
+
+- **The Tasks panel comes out of the ring that opens it.** The panel unfurls
+  downward from the top edge — scaled from its own top, so it grows *away* from
+  the toolbar control rather than out of its middle — and folds back up as the
+  pane gives its width to the document, instead of blinking out of existence.
+  The ring's press belongs to the circle now: the glyph has its own layer, so it
+  compresses and springs back while the plate underneath holds still, and the
+  release wave carries further on the same clock the panel unfurls on.
+- **The titlebar proxy is a real document proxy.** It wears the file's own icon
+  instead of a generic `doc.text` symbol, and dragging it hands the file to
+  Finder, Mail, or anything else under the pointer.
+- **The inspector header only carries a section switcher when there is
+  something to switch to.** A lone panel gets a slim title-plus-close row
+  instead of a one-segment tab strip; the Search/Tasks/History/Inspector
+  segments appear once a second surface actually opens. Hovering the task
+  panel's section bar no longer swaps the tally for the same sentence about a
+  section — the meter holds still; a click still scrolls. The Tasks toolbar
+  ring presses with its own shape now: the glyph dips, springs back with an
+  overshoot, and emits one quiet accent ping as the panel's content rises in.
+  (Superseded above: the press now lives on the glyph's own layer.)
+  The density rail's marks sit closer together (7–11pt pitch, from 8–13) with
+  the stack ceiling raised to match, so a tall window keeps the same cluster
+  share.
+
+- **The Tasks panel is rebuilt around the plan, not the checkboxes.** The old
+  header (percent figure, count caption, progress bar, All/Open filter) is
+  replaced by a section-map progress bar — one segment per heading, sized by
+  task count, filled by completion, clickable to jump to a section — with the
+  tally riding at the bar's trailing end. The list answers "what's next" by
+  ordering, not by a duplicate hero card: it is **open-first**, so the next
+  task is simply the first row, and finished work collapses into a per-section
+  "N completed" pile instead of a wall of struck-through rows. Completion
+  itself is a moment — haptic, drawn check, strike sweep, then the row slides
+  into the pile — followed by an **Undo pill**, because a tick that writes the
+  file immediately deserves an equally immediate way back. The panel is
+  two-way: **quick-add** rows (or ⌘N) insert `- [ ] …` into the right section
+  of the source, and **drag reorder** moves a task among its siblings with its
+  nested children riding along, both as plain undoable source edits
+  (`Restructure.insertTask` / `moveTask`). Section headers carry their
+  remaining count and fold; rows get a context menu (Jump to Source, Mark
+  Complete, Copy Task, **Copy Status Report** as ready-to-paste Markdown); and
+  Space / Return / ←→ work the whole list from the keyboard.
+
+### Removed
+
+- **The Contents / Outline navigator, and the leading sidebar it pinned into.**
+  The density rail already expands into the document's outline on hover, and the
+  command palette already opens headings and files through its Quick Open
+  providers — a third list of the same two things, reachable from a toolbar
+  button, two View items and a Navigate item that all ran the same code, was the
+  document's structure told three times. `⌘⇧K` is the one way in. The window is
+  now document-plus-inspector, and `NavigationPanelView`, `OutlinePanelView`,
+  `SiblingSidebarView`, the `.outlinePanel` / `.toggleSidebar` /
+  `.outlineQuickOpen` commands and the "Keep the sibling sidebar open"
+  preference are gone with it.
+
+### Fixed
+
+- **Closing the find bar crashed the app.** The exit animation removed the pill
+  from its superview and *then* called `removeArrangedSubview(_:)`. The first
+  call already un-arranges the view, so the second raised out of
+  `-[NSStackView _removeView:animated:removeFromViewHierarchy:]` and aborted the
+  process — every single time ⌘F's bar was dismissed with motion enabled.
+  Retirement is now ordered and idempotent, so a repeated Escape during the
+  0.16 s fade is harmless too (regression-pinned).
+- **The page teleported out from under the caret while typing.** Any parse
+  commit that was not a local edit — a debounced second parse, an external
+  change, a theme or measure change — restored the reading position by
+  scrolling a source offset to `.top`, which parks that line at the container
+  inset no matter where the reader actually had it. Every commit therefore shoved
+  the page by the leftover fraction of a line plus the inset, and a queued
+  scroll-repair could apply an anchor from several edits earlier. Viewport
+  restores now keep the pixel gap between the viewport's top edge and the anchor
+  line, a scroll repair can never resurrect a stale anchor, and a frame shrink
+  pins the anchor across the clamp (regression-pinned).
+- **The caret could land in the empty air above a fenced block.** The fence
+  lines are kept in the storage on purpose, but in Document mode their glyphs
+  are suppressed — so a click in the block's top padding resolved to a character
+  part-way along an invisible ```` ```swift ````, leaving the caret blinking over
+  nothing and the next keystroke editing a fence the reader could not see. A
+  plain click on either chrome row now aims at the code.
+- **The window never remembered its size.** `setFrameAutosaveName` restores the
+  saved frame the moment it is assigned, and the default content size ran
+  unconditionally straight afterwards and threw it away — including for a window
+  left in full screen.
+- **A window could come back blank from the Dock or from full screen.** TextKit 2
+  lays out against a viewport it is told about, and those transitions change the
+  bounds without a scroll gesture. The document surface is now re-primed on
+  de-miniaturise, on both full-screen transitions, and on a backing-property
+  change.
+- **Opening the Tasks panel shrank the whole window.** The fit-to-content
+  "card" the panel floated in was sized by a required Auto Layout height
+  chain, and AppKit's constraint-driven window sizing
+  (`_changeWindowFrameFromConstraintsIfNecessary`) resized the window frame to
+  the card's height — the window collapsed to ~490pt and never grew back. The
+  inspector is now a docked full-height column like every other panel, and the
+  fit-to-content machinery is gone with the card.
+- The status bar rendered its format strings literally (`\(prefix)Ln
+  \(line), Col \(column)`) — two escaped interpolations left over from a
+  refactor now show real values again.
+- The History inspector's timestamp caption ran under the Restore button at
+  the inspector's minimum width; it now truncates inside the timeline's track.
+- **Math rendered only on the machine that built the app.** SwiftMath reached
+  its fonts through SwiftPM's generated `Bundle.module`, whose two candidates
+  are the bundle *root* (where codesign forbids resources) and an absolute path
+  inside the build directory — so a shipped bundle found neither and the
+  accessor called `fatalError`, taking the whole Quick Look preview down with
+  the first formula. SwiftMath 1.7.3 is now vendored at `Vendor/SwiftMath` with
+  a three-line patch that resolves the fonts from the layouts we actually ship
+  (`Vendor/SwiftMath/PATCHES.md`). `MathFontBundle` still guards every call as
+  defence in depth, and `Scripts/verify-bundle.sh` now asserts the fonts in the
+  host app as well as in each `.appex`.
+- An implicit save could silently clobber a newer on-disk version after an
+  external edit (occlusion autosave, quit, checkbox toggle): saves are now
+  refused until the user resolves the conflict, and only an explicit
+  "keep mine" decision writes over the file.
+- FSEvents retransmissions of the same external write were reported repeatedly
+  while an external write racing a save could be swallowed; both cases are now
+  handled by the suppression window logic in `FileWatcher`.
+- **Clicking the Tasks toolbar button crashed the app.** `TaskWorklist` trusted
+  each task's `headingIndex` as a live subscript into `headings`, but the panel
+  rebuilds on every keystroke and can pair a task array captured one parse
+  earlier than the headings it arrives with — the out-of-range subscript was an
+  `Index out of range` trap. An out-of-range heading now degrades to the
+  "Document" section instead of taking the app down (regression-pinned).
+- **An hourglass sliver haunted the task panel's section-map bar.** A segment
+  with nothing done gives its fill layer a zero-width frame, and Core
+  Animation still rasterises a capsule corner radius on an empty layer — the
+  two semicircles met as a tiny bowtie of accent colour in the gap between
+  segments. Empty fills are now hidden outright in both bar implementations.
+- **Clicking a link, footnote, task, or heading teleported the camera.** Every
+  in-document jump scrolled with `position: .center`, which recentres the page
+  even when the target is already on screen — yanking whatever you were reading
+  out from under the pointer. Navigation now uses `.visible`: a target already
+  in view doesn't move the page at all, and an off-screen target gets the
+  minimal scroll that brings it in. Back/Forward keep `.center` because they
+  restore a *recorded* reading position.
+- **Stray shading blocks beside and below code blocks.** TextKit 2 composites
+  each layout fragment as an independent, lazily-rendered surface, and the code
+  block's closing fence claimed a tinted surface taller than its own band (to
+  make room for its copy control) — a fill that reached past the block's edge
+  and wasn't always painted over when the neighbouring fragment didn't redraw in
+  the same pass. The band now paints exactly its own frame: header and footer
+  round only their *outer* corners, the edges they share with code lines are
+  square and butt flush, and the footer's copy control collapses to fit its thin
+  band instead of forcing the fill to overhang (geometry regression-pinned).

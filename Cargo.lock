@@ -573,6 +573,8 @@ dependencies = [
  "upleft-cli",
  "upleft-core",
  "upleft-foundation",
+ "upleft-math",
+ "upleft-mermaid",
  "upleft-render",
  "upleft-spotlight-metadata",
  "upleft-swift-text",

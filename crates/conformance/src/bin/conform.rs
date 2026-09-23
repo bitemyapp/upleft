@@ -6,8 +6,9 @@
 //!           [--fail-fast] [--no-cache]
 //!
 //! Swift results are cached under `target/conform-cache`, keyed by the oracle
-//! binary, the input bytes, and the arguments, since the Swift side only
-//! changes when the submodule moves. Failures leave both outputs, a list of
+//! binary, the input bytes, and the arguments (plus a suite's `"stamps"`,
+//! `"depends"` and, with `"keyPath"`, the input's path), since the Swift side
+//! only changes when the submodule moves. Failures leave both outputs, a list of
 //! differences, and (for images) a diff picture under `conformance-out/`.
 //! `upleft-oracle` exits with status 3 for a command whose layer is not
 //! ported yet; those cases are reported as "not ported", never as passes.
@@ -46,10 +47,16 @@ struct Suite {
     /// Further binaries the Swift result depends on (`"stamps"`, paths from
     /// the repository root), folded into the cache key.
     stamps: Vec<String>,
-    /// The Swift result depends on the input's path as well as its bytes
-    /// (`"keyByPath": true`; Spotlight titles fall back to the file name), so
-    /// the path relative to the repository is folded into the cache key.
-    key_by_path: bool,
+    /// Files and directories whose *contents* the Swift result depends on
+    /// besides the input (`"depends"`, paths from the repository root: a
+    /// sample workspace, the documents a query file names, images next to
+    /// an exported document). Their names and bytes, recursively, fold into
+    /// the cache key.
+    depends: Vec<String>,
+    /// The result depends on where the input sits (`"keyPath": true`: an
+    /// exported document's title is its file name), so the input's path
+    /// from the repository root folds into the cache key too.
+    key_path: bool,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -170,7 +177,8 @@ fn load_suites(root: &Path) -> (Vec<PathBuf>, Vec<String>, Vec<Suite>) {
                 Some(other) => panic!("{}: unknown oracle {other}", path.display()),
             },
             stamps: strings(&suite["stamps"]),
-            key_by_path: suite["keyByPath"].as_bool().unwrap_or(false),
+            depends: strings(&suite["depends"]),
+            key_path: suite["keyPath"].as_bool().unwrap_or(false),
         })
         .collect();
     (corpus, exclude, suites)
@@ -209,6 +217,31 @@ fn binary_stamp(path: &Path) -> u64 {
     hasher.finish()
 }
 
+/// A hash of the names and bytes under `path` (recursively for a
+/// directory; a symbolic link contributes its target, not what it points
+/// at), for `"depends"`.
+fn content_stamp(path: &Path, hasher: &mut DefaultHasher) {
+    let Ok(metadata) = fs::symlink_metadata(path) else {
+        0u8.hash(hasher);
+        return;
+    };
+    if metadata.file_type().is_symlink() {
+        1u8.hash(hasher);
+        fs::read_link(path).ok().hash(hasher);
+    } else if metadata.is_dir() {
+        2u8.hash(hasher);
+        let mut entries: Vec<PathBuf> = fs::read_dir(path).into_iter().flatten().flatten().map(|entry| entry.path()).collect();
+        entries.sort();
+        for entry in entries {
+            entry.file_name().hash(hasher);
+            content_stamp(&entry, hasher);
+        }
+    } else {
+        3u8.hash(hasher);
+        fs::read(path).ok().hash(hasher);
+    }
+}
+
 /// Runs one oracle. Returns its exit code (or None if killed) and stderr.
 fn run_oracle(binary: &Path, home: &Path, command: &str, input: &Path, output: &Path, flags: &[String]) -> (Option<i32>, String) {
     // `NSHomeDirectory()` ignores `HOME` and honours `CFFIXED_USER_HOME`, so
@@ -235,6 +268,8 @@ fn case_directory(out: &Path, case: &Case, root: &Path) -> PathBuf {
 
 struct Context {
     root: PathBuf,
+    /// `content_stamp` of each suite's `"depends"`, by suite name.
+    depends: std::collections::HashMap<String, u64>,
     rust_oracle: PathBuf,
     home: PathBuf,
     cache: Option<PathBuf>,
@@ -269,7 +304,10 @@ fn run_case(context: &Context, case: &Case) -> (Outcome, String) {
     for stamp in &suite.stamps {
         optional_stamp(&context.root.join(stamp)).hash(&mut hasher);
     }
-    if suite.key_by_path {
+    if let Some(stamp) = context.depends.get(&suite.name) {
+        stamp.hash(&mut hasher);
+    }
+    if suite.key_path {
         case.input.strip_prefix(&context.root).unwrap_or(&case.input).hash(&mut hasher);
     }
     let key = format!("{:016x}", hasher.finish());
@@ -435,8 +473,21 @@ fn main() -> ExitCode {
     if let Some(cache) = &cache {
         fs::create_dir_all(cache).unwrap();
     }
+    let depends = selected
+        .iter()
+        .filter(|suite| !suite.depends.is_empty())
+        .map(|suite| {
+            let mut hasher = DefaultHasher::new();
+            for path in &suite.depends {
+                path.hash(&mut hasher);
+                content_stamp(&root.join(path), &mut hasher);
+            }
+            (suite.name.clone(), hasher.finish())
+        })
+        .collect();
     let context = Context {
         root: root.clone(),
+        depends,
         rust_oracle,
         home,
         cache,

@@ -1,0 +1,29 @@
+{
+ "root": "../workspace",
+ "policy": {
+  "markdownExtensions": [
+   "MD",
+   "txt",
+   "Json"
+  ],
+  "ignoredDirectoryNames": [
+   "docs",
+   "generated",
+   "Thing.bundle"
+  ],
+  "ignoresHiddenDirectories": false,
+  "readConcurrency": 99
+ },
+ "searches": [
+  {
+   "text": "not markdown"
+  },
+  {
+   "text": "secret",
+   "wholeWord": true
+  },
+  {
+   "text": "guide"
+  }
+ ]
+}

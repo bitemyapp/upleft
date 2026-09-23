@@ -9,6 +9,8 @@ publish.workspace = true
 [dependencies]
 upleft-core.workspace = true
 upleft-render.workspace = true
+upleft-math.workspace = true
+upleft-mermaid.workspace = true
 upleft-swift-text.workspace = true
 upleft-foundation.workspace = true
 upleft-cli.workspace = true
@@ -27,7 +29,7 @@ objc2-foundation = { workspace = true, features = [
     "NSValue", "NSXMLDocument", "NSXMLElement", "NSXMLNode", "NSXMLParser", "block2",
 ] }
 objc2-app-kit = { workspace = true, features = [
-    "NSAlert", "NSAppearance", "NSApplication", "NSAttributedString", "NSColor", "NSEvent", "NSFont", "NSGraphics", "NSImage", "NSParagraphStyle", "NSPasteboard", "NSResponder", "NSRunningApplication", "NSSpeechSynthesizer", "NSText", "NSTextStorage", "NSWorkspace", "block2", "objc2-core-foundation", "objc2-uniform-type-identifiers",
+    "NSAlert", "NSAppearance", "NSApplication", "NSAttributedString", "NSBitmapImageRep", "NSColor", "NSColorSpace", "NSEvent", "NSFont", "NSGraphics", "NSImage", "NSImageRep", "NSParagraphStyle", "NSPasteboard", "NSResponder", "NSRunningApplication", "NSSpeechSynthesizer", "NSText", "NSTextStorage", "NSWorkspace", "block2", "objc2-core-foundation", "objc2-uniform-type-identifiers",
 ] }
 objc2-avf-audio = { version = "0.3.2", default-features = false, features = ["std", "AVSpeechSynthesis"] }
 objc2-uniform-type-identifiers = { version = "0.3.2", default-features = false, features = ["std", "UTType", "UTCoreTypes"] }
@@ -93,4 +95,8 @@ harness = false
 
 [[test]]
 name = "markdown_document_tests"
+harness = false
+
+[[test]]
+name = "workspace_tests"
 harness = false

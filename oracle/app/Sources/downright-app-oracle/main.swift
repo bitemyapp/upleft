@@ -14,6 +14,9 @@ import AppKit
 //   formats      <script.json>    persisted formats (FormatsDump.swift)
 //   updater      <case.json>      UpdateStateMachine and appcast parsing (UpdaterDump.swift)
 //   local-ai     <case.json>      LocalAI prompt and result shaping (LocalAIDump.swift)
+//   bench-export    <file.md>     HTMLExporter timings (AppBench.swift)
+//   bench-workspace <folder>      WorkspaceIndex, graph and search timings (AppBench.swift)
+//   bench-find      <file.md>     FindEngine and FindSession timings (AppBench.swift)
 //
 // Each command parses its own flags. `upleft-oracle` (crates/conformance)
 // takes identical arguments and writes identical formats. The runner selects
@@ -66,6 +69,9 @@ do {
     case "formats": try write(FormatsDump.run(input: input, flags: flags), to: output)
     case "updater": try write(UpdaterDump.run(input: input, flags: flags), to: output)
     case "local-ai": try write(LocalAIDump.run(input: input, flags: flags), to: output)
+    case "bench-export": try write(AppBench.export(input: input), to: output)
+    case "bench-workspace": try write(MainActor.assumeIsolated { try AppBench.workspace(folder: input) }, to: output)
+    case "bench-find": try write(AppBench.find(input: input), to: output)
     default: usage()
     }
 } catch {

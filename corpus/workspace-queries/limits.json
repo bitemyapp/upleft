@@ -1,0 +1,19 @@
+{
+ "root": "../workspace",
+ "policy": {
+  "maximumFiles": 9,
+  "maximumBytesPerFile": 1500,
+  "maximumTotalBytes": 4000,
+  "readConcurrency": 1
+ },
+ "searches": [
+  {
+   "text": "readme"
+  },
+  {
+   "text": "(?i)x",
+   "isRegex": true,
+   "limitPerFile": 2
+  }
+ ]
+}
