@@ -16,6 +16,10 @@
 //! previous row's width for a reused one; and it replaces the expand button's
 //! configured symbol image with an unconfigured one.
 
+// `!(a > b)` spells Swift's `guard a > b`, which is false for NaN; the
+// negated comparisons are deliberate.
+#![allow(clippy::neg_cmp_op_on_partial_ord)]
+
 use std::cell::{Cell, OnceCell, RefCell};
 use std::collections::{HashMap, HashSet};
 use std::rc::{Rc, Weak};
@@ -738,8 +742,10 @@ fn replacing_trailing_blanks(line: &str) -> String {
 
 // MARK: - Group row
 
+type ToggleHandler = Rc<dyn Fn(bool)>;
+
 pub struct TidyGroupRowViewIvars {
-    on_toggle: RefCell<Option<Rc<dyn Fn(bool)>>>,
+    on_toggle: RefCell<Option<ToggleHandler>>,
     /// The same drawn checkbox the task panel uses, in its mixed state when
     /// a rule is partly accepted — one checkbox style in the app, not two.
     checkbox: Retained<PanelCheckbox>,

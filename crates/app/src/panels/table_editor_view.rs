@@ -1061,8 +1061,10 @@ impl TableEditorView {
 
 // MARK: - TableEditorCell
 
+type AdvanceHandler = Rc<dyn Fn(bool)>;
+
 pub struct TableEditorCellIvars {
-    on_advance: RefCell<Option<Rc<dyn Fn(bool)>>>,
+    on_advance: RefCell<Option<AdvanceHandler>>,
     on_advance_down: RefCell<Option<Rc<dyn Fn()>>>,
 }
 

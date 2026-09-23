@@ -212,6 +212,50 @@
   {
    "name": "current style sheet",
    "current": true
+  },
+  {
+   "name": "typed value is dirty",
+   "changes": [
+    {
+     "key": "title",
+     "value": "Draft"
+    }
+   ]
+  },
+  {
+   "name": "typed back is clean",
+   "changes": [
+    {
+     "key": "title",
+     "value": "Draft"
+    },
+    {
+     "key": "title",
+     "value": "Demo"
+    }
+   ]
+  },
+  {
+   "name": "typed and left (host)",
+   "host": true,
+   "changes": [
+    {
+     "key": "title",
+     "value": "Final",
+     "end": true
+    }
+   ]
+  },
+  {
+   "name": "typed invalid number and left",
+   "text": "---\ntitle: Release Plan\ncount: 3\ndraft: false\ntags: [alpha, beta]\n---\n\nBody\n",
+   "changes": [
+    {
+     "key": "count",
+     "value": "three",
+     "end": true
+    }
+   ]
   }
  ]
 }

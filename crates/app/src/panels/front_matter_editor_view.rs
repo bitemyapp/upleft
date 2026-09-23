@@ -656,12 +656,13 @@ impl FrontMatterFieldHost {
 // MARK: - FrontMatterFieldRow
 
 type CommitHandler = Rc<dyn Fn(&str, FrontMatterValue)>;
+type RemoveHandler = Rc<dyn Fn(&str)>;
 
 pub struct FrontMatterFieldRowIvars {
     style_sheet: RefCell<Rc<StyleSheet>>,
     is_enabled: Cell<bool>,
     on_commit: RefCell<Option<CommitHandler>>,
-    on_remove: RefCell<Option<Rc<dyn Fn(&str)>>>,
+    on_remove: RefCell<Option<RemoveHandler>>,
     field: FrontMatterField,
     key_field: Retained<NSTextField>,
     value_field: Retained<NSTextField>,

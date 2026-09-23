@@ -9,7 +9,11 @@ use std::rc::Rc;
 use objc2::MainThreadMarker;
 use objc2::msg_send;
 use objc2::rc::Retained;
-use objc2_app_kit::{NSApplication, NSButton, NSControl, NSPopUpButton, NSTextField, NSView, NSWindow};
+use objc2_app_kit::{
+    NSApplication, NSButton, NSControl, NSControlTextDidChangeNotification, NSControlTextDidEndEditingNotification,
+    NSPopUpButton, NSTextField, NSView, NSWindow,
+};
+use objc2_foundation::NSNotificationCenter;
 use serde_json::{Map, Value};
 use upleft_app::panels::appkit_support::{accessibility_label, ns_string};
 use upleft_app::panels::front_matter_editor_view::{FrontMatterEditorDelegate, FrontMatterEditorView};
@@ -164,6 +168,26 @@ impl PanelScene for FrontMatterEditorViewScene {
                 }
             } else if let Some(field) = &field {
                 send(field, mtm);
+            }
+        }
+        let center = NSNotificationCenter::defaultCenter();
+        for change in scenario.array("changes") {
+            let Some(change) = change.as_object() else { continue };
+            let Some(key) = change.get("key").and_then(Value::as_str) else { continue };
+            let Some(row) = row(key, &editor) else { continue };
+            let wanted = format!("Value for {key}");
+            let Some(field) = descendants::<NSTextField>(&row)
+                .into_iter()
+                .find(|field| accessibility_label(&**field).as_deref() == Some(wanted.as_str()))
+            else {
+                continue;
+            };
+            if let Some(value) = change.get("value").and_then(Value::as_str) {
+                field.setStringValue(&ns_string(value));
+            }
+            unsafe { center.postNotificationName_object(NSControlTextDidChangeNotification, Some(&field)) };
+            if change.get("end").and_then(Value::as_bool).unwrap_or(false) {
+                unsafe { center.postNotificationName_object(NSControlTextDidEndEditingNotification, Some(&field)) };
             }
         }
         for key in scenario.strings("remove") {
