@@ -1,0 +1,1009 @@
+{
+ "kind": "coordinator",
+ "metadata": {
+  "sample": {
+   "versionString": "47",
+   "displayVersionString": "1.1.0",
+   "title": "Downright 1.1.0",
+   "itemDescription": "## What's new\n- Faster parsing",
+   "infoURL": "https://github.com/ezzy1630/Downright/releases/tag/v1.1.0",
+   "contentLength": "4000000"
+  },
+  "informational": {
+   "versionString": "50",
+   "displayVersionString": "1.2.0",
+   "infoURL": "https://github.com/ezzy1630/Downright/releases/tag/v1.2.0",
+   "contentLength": "0",
+   "isInformationOnly": true
+  },
+  "informationalNoURL": {
+   "versionString": "51",
+   "displayVersionString": "1.2.1",
+   "isInformationOnly": true
+  },
+  "informationalHTTP": {
+   "versionString": "52",
+   "displayVersionString": "1.2.2",
+   "isInformationOnly": true,
+   "infoURL": "http://github.com/ezzy1630/Downright/releases"
+  },
+  "critical": {
+   "versionString": "49",
+   "displayVersionString": "1.1.2",
+   "title": "Downright 1.1.2 (security)",
+   "contentLength": "4060000",
+   "isCritical": true
+  },
+  "major": {
+   "versionString": "60",
+   "displayVersionString": "2.0.0",
+   "title": "Downright 2.0",
+   "releaseNotesURL": "https://updates.example.invalid/notes/2.0.0.html",
+   "contentLength": "5000000",
+   "isMajorUpgrade": true,
+   "minimumSystemVersion": "27.0"
+  },
+  "nonAscii": {
+   "versionString": "47",
+   "displayVersionString": "1.1.0‑été",
+   "title": "Downright 1.1.0 « Été » 夏 🌞",
+   "itemDescription": "## Nouveautés\n- Analyse plus rapide\n- 👨‍👩‍👧 🇫🇷",
+   "contentLength": "4000000"
+  },
+  "nonAsciiNFD": {
+   "versionString": "47",
+   "displayVersionString": "1.1.0‑été",
+   "title": "Downright 1.1.0 « Été » 夏 🌞",
+   "itemDescription": "## Nouveautés\n- Analyse plus rapide\n- 👨‍👩‍👧 🇫🇷",
+   "contentLength": "4000000"
+  },
+  "huge": {
+   "versionString": "",
+   "displayVersionString": "",
+   "contentLength": "18446744073709551615"
+  },
+  "oddURLs": {
+   "versionString": "99",
+   "displayVersionString": "9.9.9",
+   "releaseNotesURL": "not a URL",
+   "infoURL": "",
+   "contentLength": "1"
+  }
+ },
+ "scripts": [
+  {
+   "name": "installReplyIsExactlyOnce",
+   "engine": "started",
+   "steps": [
+    {
+     "do": "driverDidFindUpdate",
+     "metadata": "sample",
+     "stage": "notDownloaded",
+     "userInitiated": true
+    },
+    {
+     "do": "userDidChooseInstall"
+    },
+    {
+     "do": "userDidChooseInstall"
+    }
+   ]
+  },
+  {
+   "name": "skipReplyIsExactlyOnce",
+   "engine": "started",
+   "steps": [
+    {
+     "do": "driverDidFindUpdate",
+     "metadata": "sample",
+     "stage": "notDownloaded",
+     "userInitiated": true
+    },
+    {
+     "do": "userDidChooseSkip"
+    },
+    {
+     "do": "userDidChooseSkip"
+    }
+   ]
+  },
+  {
+   "name": "laterReplyIsExactlyOnce",
+   "engine": "started",
+   "steps": [
+    {
+     "do": "driverDidFindUpdate",
+     "metadata": "sample",
+     "stage": "notDownloaded",
+     "userInitiated": true
+    },
+    {
+     "do": "userDidChooseLater"
+    },
+    {
+     "do": "userDidChooseLater"
+    }
+   ]
+  },
+  {
+   "name": "readyToRelaunchUsesItsOwnReply",
+   "engine": "started",
+   "steps": [
+    {
+     "do": "driverDidFindUpdate",
+     "metadata": "sample",
+     "stage": "notDownloaded",
+     "userInitiated": true
+    },
+    {
+     "do": "driverDidBecomeReadyToRelaunch"
+    },
+    {
+     "do": "userDidChooseInstall"
+    }
+   ]
+  },
+  {
+   "name": "errorAcknowledgementIsExactlyOnce",
+   "engine": "started",
+   "steps": [
+    {
+     "do": "driverDidEncounterError",
+     "error": {
+      "domain": "sparkle",
+      "code": 2001
+     }
+    },
+    {
+     "do": "userDidDismissPanel"
+    },
+    {
+     "do": "userDidDismissPanel"
+    }
+   ]
+  },
+  {
+   "name": "notFoundAcknowledgementIsExactlyOnce",
+   "engine": "started",
+   "steps": [
+    {
+     "do": "driverDidFindNoUpdate",
+     "userInitiated": true
+    },
+    {
+     "do": "userDidChooseLater"
+    },
+    {
+     "do": "userDidDismissPanel"
+    }
+   ]
+  },
+  {
+   "name": "dismissalDuringCheckCancelsExactlyOnce",
+   "engine": "started",
+   "steps": [
+    {
+     "do": "driverDidBeginUserCheck"
+    },
+    {
+     "do": "userDidDismissPanel"
+    },
+    {
+     "do": "userDidDismissPanel"
+    }
+   ]
+  },
+  {
+   "name": "dismissalDuringDownloadCancelsExactlyOnce",
+   "engine": "started",
+   "steps": [
+    {
+     "do": "driverDidBeginDownload"
+    },
+    {
+     "do": "userDidDismissPanel"
+    },
+    {
+     "do": "userDidDismissPanel"
+    }
+   ]
+  },
+  {
+   "name": "backgroundUpdateDoesNotOpenThePanel",
+   "engine": "started",
+   "steps": [
+    {
+     "do": "driverDidFindUpdate",
+     "metadata": "sample",
+     "stage": "downloaded",
+     "userInitiated": false
+    },
+    {
+     "do": "driverDidFindUpdate",
+     "metadata": "sample",
+     "stage": "notDownloaded",
+     "userInitiated": true
+    }
+   ]
+  },
+  {
+   "name": "backgroundErrorIsSilentAndFinishesTheCycle",
+   "engine": "started",
+   "steps": [
+    {
+     "do": "driverDidEncounterError",
+     "error": {
+      "domain": "Sparkle",
+      "code": 1002
+     }
+    }
+   ]
+  },
+  {
+   "name": "releaseNotesNeverLeakIntoTheNextUpdateCycle",
+   "engine": "started",
+   "steps": [
+    {
+     "do": "driverDidFindUpdate",
+     "metadata": "sample",
+     "stage": "notDownloaded",
+     "userInitiated": true
+    },
+    {
+     "do": "driverDidReceiveReleaseNotes",
+     "text": "v1 notes"
+    },
+    {
+     "do": "driverDidDismiss"
+    },
+    {
+     "do": "driverDidFindUpdate",
+     "metadata": {
+      "versionString": "48",
+      "displayVersionString": "1.1.1"
+     },
+     "stage": "notDownloaded",
+     "userInitiated": true
+    }
+   ]
+  },
+  {
+   "name": "backgroundDownloadDrivesUpdateNowPill",
+   "engine": "started",
+   "steps": [
+    {
+     "do": "completeBackgroundDownload",
+     "version": "1.1.0"
+    },
+    {
+     "do": "driverDidDismiss"
+    }
+   ]
+  },
+  {
+   "name": "retryAcknowledgesAndReturnsToIdle",
+   "engine": "started",
+   "steps": [
+    {
+     "do": "driverDidEncounterError",
+     "error": {
+      "domain": "sparkle",
+      "code": 3001
+     }
+    },
+    {
+     "do": "userDidRetry"
+    },
+    {
+     "do": "drain"
+    }
+   ]
+  },
+  {
+   "name": "retry after a user-initiated failure",
+   "engine": "started",
+   "steps": [
+    {
+     "do": "driverDidBeginUserCheck"
+    },
+    {
+     "do": "driverDidEncounterError",
+     "error": {
+      "domain": "Sparkle",
+      "code": 1002,
+      "userInfo": {
+       "NSLocalizedDescription": "The feed couldn't be loaded."
+      }
+     }
+    },
+    {
+     "do": "userDidRetry"
+    },
+    {
+     "do": "drain"
+    },
+    {
+     "do": "userDidRetry"
+    }
+   ]
+  },
+  {
+   "name": "pressOnABackgroundDownloadReentersSparkleSilently",
+   "engine": "started",
+   "steps": [
+    {
+     "do": "completeBackgroundDownload",
+     "version": "1.1.0"
+    },
+    {
+     "do": "userDidPressUpdateNow"
+    },
+    {
+     "do": "driverDidBeginUserCheck"
+    },
+    {
+     "do": "driverDidFindUpdate",
+     "metadata": "sample",
+     "stage": "downloaded",
+     "userInitiated": true
+    }
+   ]
+  },
+  {
+   "name": "anExpeditedReadyToRelaunchInstallsImmediately",
+   "engine": "started",
+   "steps": [
+    {
+     "do": "completeBackgroundDownload",
+     "version": "1.1.0"
+    },
+    {
+     "do": "userDidPressUpdateNow"
+    },
+    {
+     "do": "driverDidBeginUserCheck"
+    },
+    {
+     "do": "driverDidFindUpdate",
+     "metadata": "sample",
+     "stage": "notDownloaded",
+     "userInitiated": true
+    },
+    {
+     "do": "driverDidBeginDownload"
+    },
+    {
+     "do": "driverDidBecomeReadyToRelaunch"
+    }
+   ]
+  },
+  {
+   "name": "anExpeditedFailureFallsBackToThePanel",
+   "engine": "started",
+   "steps": [
+    {
+     "do": "completeBackgroundDownload",
+     "version": "1.1.0"
+    },
+    {
+     "do": "userDidPressUpdateNow"
+    },
+    {
+     "do": "driverDidBeginUserCheck"
+    },
+    {
+     "do": "driverDidEncounterError",
+     "error": {
+      "domain": "Sparkle",
+      "code": 2001,
+      "userInfo": {
+       "NSLocalizedDescription": "no"
+      }
+     }
+    }
+   ]
+  },
+  {
+   "name": "pressWhileWaitingForTerminationRetriesTheQuit",
+   "engine": "started",
+   "steps": [
+    {
+     "do": "driverDidBeginInstallation",
+     "applicationTerminated": false
+    },
+    {
+     "do": "userDidPressUpdateNow"
+    }
+   ]
+  },
+  {
+   "name": "theVersionSurvivesToReadyToRelaunch",
+   "engine": "started",
+   "steps": [
+    {
+     "do": "driverDidFindUpdate",
+     "metadata": "sample",
+     "stage": "notDownloaded",
+     "userInitiated": false
+    },
+    {
+     "do": "driverDidBeginDownload"
+    },
+    {
+     "do": "driverDidBecomeReadyToRelaunch"
+    },
+    {
+     "do": "driverDidDismiss"
+    }
+   ]
+  },
+  {
+   "name": "full user-initiated cycle",
+   "engine": "started",
+   "steps": [
+    {
+     "do": "driverDidBeginUserCheck"
+    },
+    {
+     "do": "driverDidFindUpdate",
+     "metadata": "major",
+     "stage": "notDownloaded",
+     "userInitiated": true
+    },
+    {
+     "do": "driverDidReceiveReleaseNotes",
+     "text": "<h1>2.0</h1>"
+    },
+    {
+     "do": "userDidChooseInstall"
+    },
+    {
+     "do": "driverDidBeginDownload"
+    },
+    {
+     "do": "driverDidReceiveExpectedLength",
+     "length": "5000000"
+    },
+    {
+     "do": "driverDidReceiveData",
+     "length": "1000000"
+    },
+    {
+     "do": "driverDidReceiveData",
+     "length": "3000000"
+    },
+    {
+     "do": "driverDidReceiveExpectedLength",
+     "length": "4500000"
+    },
+    {
+     "do": "driverDidReceiveData",
+     "length": "2000000"
+    },
+    {
+     "do": "driverDidBeginExtraction"
+    },
+    {
+     "do": "driverDidReceiveExtractionProgress",
+     "progress": 0.25
+    },
+    {
+     "do": "driverDidReceiveExtractionProgress",
+     "progress": 1.5
+    },
+    {
+     "do": "driverDidBecomeReadyToRelaunch"
+    },
+    {
+     "do": "userDidChooseLater"
+    },
+    {
+     "do": "userDidPressUpdateNow"
+    },
+    {
+     "do": "driverDidBeginInstallation",
+     "applicationTerminated": false
+    },
+    {
+     "do": "userDidDismissPanel"
+    },
+    {
+     "do": "userDidPressUpdateNow"
+    },
+    {
+     "do": "driverDidBeginInstallation",
+     "applicationTerminated": true
+    },
+    {
+     "do": "driverDidFinishInstallation",
+     "relaunched": true
+    }
+   ]
+  },
+  {
+   "name": "full background cycle",
+   "engine": "started",
+   "steps": [
+    {
+     "do": "releaseFeedDidChange"
+    },
+    {
+     "do": "driverDidFindUpdate",
+     "metadata": "sample",
+     "stage": "downloaded",
+     "userInitiated": false
+    },
+    {
+     "do": "releaseFeedDidChange"
+    },
+    {
+     "do": "userDidPressUpdateNow"
+    },
+    {
+     "do": "driverDidBeginDownload"
+    },
+    {
+     "do": "driverDidBecomeReadyToRelaunch"
+    },
+    {
+     "do": "driverDidBeginInstallation",
+     "applicationTerminated": true
+    }
+   ]
+  },
+  {
+   "name": "background download replaced by a new version",
+   "engine": "started",
+   "steps": [
+    {
+     "do": "completeBackgroundDownload",
+     "version": "1.1.0"
+    },
+    {
+     "do": "completeBackgroundDownload",
+     "version": "1.1.0"
+    },
+    {
+     "do": "completeBackgroundDownload",
+     "version": "1.2.0"
+    },
+    {
+     "do": "releaseFeedDidChange"
+    },
+    {
+     "do": "userDidDismissPanel"
+    },
+    {
+     "do": "releaseFeedDidChange"
+    }
+   ]
+  },
+  {
+   "name": "canonically equivalent background versions",
+   "engine": "started",
+   "steps": [
+    {
+     "do": "completeBackgroundDownload",
+     "version": "1.1.0‑été"
+    },
+    {
+     "do": "completeBackgroundDownload",
+     "version": "1.1.0‑été"
+    }
+   ]
+  },
+  {
+   "name": "informational presses are skipped",
+   "engine": "started",
+   "steps": [
+    {
+     "do": "driverDidFindUpdate",
+     "metadata": "informational",
+     "stage": "notDownloaded",
+     "userInitiated": true
+    },
+    {
+     "do": "userDidPressUpdateNow"
+    },
+    {
+     "do": "userDidChooseLater"
+    }
+   ]
+  },
+  {
+   "name": "up to date then later",
+   "engine": "started",
+   "steps": [
+    {
+     "do": "driverDidBeginUserCheck"
+    },
+    {
+     "do": "driverDidFindNoUpdate",
+     "userInitiated": true
+    },
+    {
+     "do": "userDidChooseLater"
+    },
+    {
+     "do": "userDidChooseLater"
+    }
+   ]
+  },
+  {
+   "name": "quiet not-found acknowledges at once",
+   "engine": "started",
+   "steps": [
+    {
+     "do": "driverDidFindNoUpdate",
+     "userInitiated": false
+    }
+   ]
+  },
+  {
+   "name": "status line with a check date",
+   "engine": "started",
+   "steps": [
+    {
+     "do": "engineSet",
+     "values": {
+      "lastUpdateCheckDate": 700000000.5
+     }
+    },
+    {
+     "do": "engineSet",
+     "values": {
+      "lastUpdateCheckDate": -978307200
+     }
+    },
+    {
+     "do": "engineSet",
+     "values": {
+      "lastUpdateCheckDate": null
+     }
+    }
+   ]
+  },
+  {
+   "name": "settings writes",
+   "engine": "started",
+   "steps": [
+    {
+     "do": "setAutomaticallyChecksForUpdates",
+     "value": false
+    },
+    {
+     "do": "setAutomaticallyDownloadsUpdates",
+     "value": false
+    },
+    {
+     "do": "setAutomaticallyChecksForUpdates",
+     "value": true
+    },
+    {
+     "do": "engineSet",
+     "values": {
+      "allowsAutomaticUpdates": false,
+      "canCheckForUpdates": false
+     }
+    }
+   ]
+  },
+  {
+   "name": "engine that refuses to start",
+   "engine": "started",
+   "steps": [
+    {
+     "do": "engineSet",
+     "values": {
+      "startThrows": true
+     }
+    },
+    {
+     "do": "engineStart"
+    },
+    {
+     "do": "checkForUpdates"
+    },
+    {
+     "do": "start"
+    }
+   ]
+  },
+  {
+   "name": "teardown silences the engine",
+   "engine": "started",
+   "steps": [
+    {
+     "do": "driverDidFindUpdate",
+     "metadata": "sample",
+     "stage": "notDownloaded",
+     "userInitiated": true
+    },
+    {
+     "do": "tearDownForTesting"
+    },
+    {
+     "do": "completeBackgroundDownload",
+     "version": "1.1.0"
+    },
+    {
+     "do": "userDidChooseInstall"
+    },
+    {
+     "do": "releaseFeedDidChange"
+    }
+   ]
+  },
+  {
+   "name": "dismiss keeps the ready pill",
+   "engine": "started",
+   "steps": [
+    {
+     "do": "completeBackgroundDownload",
+     "version": "1.1.0"
+    },
+    {
+     "do": "driverDidBecomeReadyToRelaunch"
+    },
+    {
+     "do": "userDidChooseLater"
+    },
+    {
+     "do": "userDidDismissPanel"
+    }
+   ]
+  },
+  {
+   "name": "error keeps downloaded update",
+   "engine": "started",
+   "steps": [
+    {
+     "do": "completeBackgroundDownload",
+     "version": "1.1.0"
+    },
+    {
+     "do": "driverDidBeginUserCheck"
+    },
+    {
+     "do": "driverDidEncounterError",
+     "error": {
+      "domain": "Sparkle",
+      "code": 1002,
+      "userInfo": {
+       "NSLocalizedDescription": "The feed couldn't be loaded."
+      }
+     }
+    },
+    {
+     "do": "userDidPressUpdateNow"
+    },
+    {
+     "do": "userDidRetry"
+    },
+    {
+     "do": "drain"
+    }
+   ]
+  },
+  {
+   "name": "no engine at all",
+   "engine": "none",
+   "steps": [
+    {
+     "do": "driverDidBeginUserCheck"
+    },
+    {
+     "do": "driverDidFindUpdate",
+     "metadata": "sample",
+     "stage": "notDownloaded",
+     "userInitiated": true
+    },
+    {
+     "do": "driverDidFindUpdate",
+     "metadata": "sample",
+     "stage": "downloaded",
+     "userInitiated": false
+    },
+    {
+     "do": "driverDidFindUpdate",
+     "metadata": "informational",
+     "stage": "notDownloaded",
+     "userInitiated": true
+    },
+    {
+     "do": "driverDidFindUpdate",
+     "metadata": "nonAsciiNFD",
+     "stage": "installing",
+     "userInitiated": false
+    },
+    {
+     "do": "driverDidReceiveReleaseNotes",
+     "text": "notes"
+    },
+    {
+     "do": "driverDidFailToDownloadReleaseNotes",
+     "error": {
+      "domain": "NSURLErrorDomain",
+      "code": -1001
+     }
+    },
+    {
+     "do": "driverDidFindNoUpdate",
+     "userInitiated": true
+    },
+    {
+     "do": "driverDidFindNoUpdate",
+     "userInitiated": false
+    },
+    {
+     "do": "driverDidEncounterError",
+     "error": {
+      "domain": "Sparkle",
+      "code": 1002,
+      "userInfo": {
+       "NSLocalizedDescription": "The feed couldn't be loaded."
+      }
+     }
+    },
+    {
+     "do": "driverDidEncounterError",
+     "error": {
+      "domain": "SUSparkleErrorDomain",
+      "code": 4005,
+      "userInfo": {
+       "NSLocalizedDescription": "",
+       "NSLocalizedFailureReason": "The signature is invalid."
+      }
+     }
+    },
+    {
+     "do": "driverDidBeginDownload"
+    },
+    {
+     "do": "driverDidReceiveExpectedLength",
+     "length": "2000"
+    },
+    {
+     "do": "driverDidReceiveData",
+     "length": "700"
+    },
+    {
+     "do": "driverDidReceiveData",
+     "length": "18446744073709551615"
+    },
+    {
+     "do": "driverDidBeginExtraction"
+    },
+    {
+     "do": "driverDidReceiveExtractionProgress",
+     "progress": 0.75
+    },
+    {
+     "do": "driverDidReceiveExtractionProgress",
+     "progress": "nan"
+    },
+    {
+     "do": "driverDidBecomeReadyToRelaunch"
+    },
+    {
+     "do": "driverDidBeginInstallation",
+     "applicationTerminated": false
+    },
+    {
+     "do": "driverDidBeginInstallation",
+     "applicationTerminated": true
+    },
+    {
+     "do": "driverDidFinishInstallation",
+     "relaunched": true
+    },
+    {
+     "do": "driverDidDismiss"
+    },
+    {
+     "do": "driverDidRequestFocus"
+    },
+    {
+     "do": "userDidPressUpdateNow"
+    },
+    {
+     "do": "userDidChooseInstall"
+    },
+    {
+     "do": "userDidRetry"
+    },
+    {
+     "do": "userDidChooseLater"
+    },
+    {
+     "do": "userDidChooseSkip"
+    },
+    {
+     "do": "userDidCancelCheck"
+    },
+    {
+     "do": "userDidCancelDownload"
+    },
+    {
+     "do": "userDidRetryTermination"
+    },
+    {
+     "do": "userDidAcknowledge"
+    },
+    {
+     "do": "userDidDismissPanel"
+    },
+    {
+     "do": "checkForUpdates"
+    },
+    {
+     "do": "showPanel"
+    },
+    {
+     "do": "closePanel"
+    },
+    {
+     "do": "start"
+    },
+    {
+     "do": "tearDownForTesting"
+    },
+    {
+     "do": "releaseFeedDidChange"
+    },
+    {
+     "do": "setAutomaticallyChecksForUpdates",
+     "value": false
+    },
+    {
+     "do": "setAutomaticallyChecksForUpdates",
+     "value": true
+    },
+    {
+     "do": "setAutomaticallyDownloadsUpdates",
+     "value": false
+    },
+    {
+     "do": "completeBackgroundDownload",
+     "version": "1.1.0"
+    },
+    {
+     "do": "completeBackgroundDownload",
+     "version": "1.2.0"
+    },
+    {
+     "do": "completeBackgroundDownload",
+     "version": "1.1.0‑été"
+    },
+    {
+     "do": "engineStart"
+    },
+    {
+     "do": "drain"
+    }
+   ]
+  },
+  {
+   "name": "engine never started",
+   "engine": "stopped",
+   "steps": [
+    {
+     "do": "releaseFeedDidChange"
+    },
+    {
+     "do": "completeBackgroundDownload",
+     "version": "1.1.0"
+    },
+    {
+     "do": "userDidPressUpdateNow"
+    },
+    {
+     "do": "engineStart"
+    },
+    {
+     "do": "userDidPressUpdateNow"
+    }
+   ]
+  }
+ ]
+}

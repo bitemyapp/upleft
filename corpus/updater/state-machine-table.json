@@ -1,0 +1,523 @@
+{
+ "kind": "state-machine-table",
+ "metadata": {
+  "sample": {
+   "versionString": "47",
+   "displayVersionString": "1.1.0",
+   "title": "Downright 1.1.0",
+   "itemDescription": "## What's new\n- Faster parsing",
+   "infoURL": "https://github.com/ezzy1630/Downright/releases/tag/v1.1.0",
+   "contentLength": "4000000"
+  },
+  "informational": {
+   "versionString": "50",
+   "displayVersionString": "1.2.0",
+   "infoURL": "https://github.com/ezzy1630/Downright/releases/tag/v1.2.0",
+   "contentLength": "0",
+   "isInformationOnly": true
+  },
+  "informationalNoURL": {
+   "versionString": "51",
+   "displayVersionString": "1.2.1",
+   "isInformationOnly": true
+  },
+  "informationalHTTP": {
+   "versionString": "52",
+   "displayVersionString": "1.2.2",
+   "isInformationOnly": true,
+   "infoURL": "http://github.com/ezzy1630/Downright/releases"
+  },
+  "critical": {
+   "versionString": "49",
+   "displayVersionString": "1.1.2",
+   "title": "Downright 1.1.2 (security)",
+   "contentLength": "4060000",
+   "isCritical": true
+  },
+  "major": {
+   "versionString": "60",
+   "displayVersionString": "2.0.0",
+   "title": "Downright 2.0",
+   "releaseNotesURL": "https://updates.example.invalid/notes/2.0.0.html",
+   "contentLength": "5000000",
+   "isMajorUpgrade": true,
+   "minimumSystemVersion": "27.0"
+  },
+  "nonAscii": {
+   "versionString": "47",
+   "displayVersionString": "1.1.0‑été",
+   "title": "Downright 1.1.0 « Été » 夏 🌞",
+   "itemDescription": "## Nouveautés\n- Analyse plus rapide\n- 👨‍👩‍👧 🇫🇷",
+   "contentLength": "4000000"
+  },
+  "nonAsciiNFD": {
+   "versionString": "47",
+   "displayVersionString": "1.1.0‑été",
+   "title": "Downright 1.1.0 « Été » 夏 🌞",
+   "itemDescription": "## Nouveautés\n- Analyse plus rapide\n- 👨‍👩‍👧 🇫🇷",
+   "contentLength": "4000000"
+  },
+  "huge": {
+   "versionString": "",
+   "displayVersionString": "",
+   "contentLength": "18446744073709551615"
+  },
+  "oddURLs": {
+   "versionString": "99",
+   "displayVersionString": "9.9.9",
+   "releaseNotesURL": "not a URL",
+   "infoURL": "",
+   "contentLength": "1"
+  }
+ },
+ "states": [
+  {
+   "name": "idle",
+   "events": []
+  },
+  {
+   "name": "checking user",
+   "events": [
+    {
+     "event": "userInitiatedCheckBegan"
+    }
+   ]
+  },
+  {
+   "name": "checking automatic",
+   "events": [
+    {
+     "event": "automaticCheckBegan"
+    }
+   ]
+  },
+  {
+   "name": "available notDownloaded",
+   "events": [
+    {
+     "event": "updateFound",
+     "metadata": "sample",
+     "stage": "notDownloaded"
+    }
+   ]
+  },
+  {
+   "name": "available downloaded",
+   "events": [
+    {
+     "event": "updateFound",
+     "metadata": "sample",
+     "stage": "downloaded"
+    }
+   ]
+  },
+  {
+   "name": "available installing",
+   "events": [
+    {
+     "event": "updateFound",
+     "metadata": "sample",
+     "stage": "installing"
+    }
+   ]
+  },
+  {
+   "name": "available non-ASCII",
+   "events": [
+    {
+     "event": "updateFound",
+     "metadata": "nonAscii",
+     "stage": "notDownloaded"
+    }
+   ]
+  },
+  {
+   "name": "available huge",
+   "events": [
+    {
+     "event": "updateFound",
+     "metadata": "huge",
+     "stage": "notDownloaded"
+    }
+   ]
+  },
+  {
+   "name": "informational",
+   "events": [
+    {
+     "event": "updateFound",
+     "metadata": "informational"
+    }
+   ]
+  },
+  {
+   "name": "downloading empty",
+   "events": [
+    {
+     "event": "downloadInitiated"
+    }
+   ]
+  },
+  {
+   "name": "downloading unknown length",
+   "events": [
+    {
+     "event": "downloadInitiated"
+    },
+    {
+     "event": "dataReceived",
+     "length": "500"
+    }
+   ]
+  },
+  {
+   "name": "downloading known length",
+   "events": [
+    {
+     "event": "downloadInitiated"
+    },
+    {
+     "event": "expectedLength",
+     "length": "1000"
+    },
+    {
+     "event": "dataReceived",
+     "length": "250"
+    }
+   ]
+  },
+  {
+   "name": "downloading clamped",
+   "events": [
+    {
+     "event": "downloadInitiated"
+    },
+    {
+     "event": "expectedLength",
+     "length": "1000"
+    },
+    {
+     "event": "dataReceived",
+     "length": "5000"
+    }
+   ]
+  },
+  {
+   "name": "downloading near the top",
+   "events": [
+    {
+     "event": "downloadInitiated"
+    },
+    {
+     "event": "dataReceived",
+     "length": "18446744073709551000"
+    }
+   ]
+  },
+  {
+   "name": "downloading zero expected",
+   "events": [
+    {
+     "event": "downloadInitiated"
+    },
+    {
+     "event": "expectedLength",
+     "length": "0"
+    }
+   ]
+  },
+  {
+   "name": "extracting",
+   "events": [
+    {
+     "event": "extractionBegan"
+    }
+   ]
+  },
+  {
+   "name": "extracting half",
+   "events": [
+    {
+     "event": "extractionBegan"
+    },
+    {
+     "event": "extractionProgress",
+     "progress": 0.5
+    }
+   ]
+  },
+  {
+   "name": "extracting NaN",
+   "events": [
+    {
+     "event": "extractionBegan"
+    },
+    {
+     "event": "extractionProgress",
+     "progress": "nan"
+    }
+   ]
+  },
+  {
+   "name": "ready to relaunch",
+   "events": [
+    {
+     "event": "readyToInstallAndRelaunch"
+    }
+   ]
+  },
+  {
+   "name": "waiting for termination",
+   "events": [
+    {
+     "event": "installingUpdate",
+     "applicationTerminated": false
+    }
+   ]
+  },
+  {
+   "name": "installing",
+   "events": [
+    {
+     "event": "installingUpdate",
+     "applicationTerminated": true
+    }
+   ]
+  },
+  {
+   "name": "up to date",
+   "events": [
+    {
+     "event": "updateNotFound",
+     "userInitiated": true
+    }
+   ]
+  },
+  {
+   "name": "failed retryable",
+   "events": [
+    {
+     "event": "updaterError",
+     "failure": {
+      "message": "The feed couldn't be loaded.",
+      "technicalDetail": "detail",
+      "code": 2001,
+      "retryable": true
+     }
+    }
+   ]
+  },
+  {
+   "name": "failed not retryable",
+   "events": [
+    {
+     "event": "updaterError",
+     "failure": {
+      "message": "Signature invalid",
+      "code": 3002,
+      "retryable": false
+     }
+    }
+   ]
+  },
+  {
+   "name": "failed generic",
+   "events": [
+    {
+     "event": "updaterError",
+     "failure": "generic"
+    }
+   ]
+  }
+ ],
+ "events": [
+  {
+   "event": "userInitiatedCheckBegan"
+  },
+  {
+   "event": "automaticCheckBegan"
+  },
+  {
+   "event": "updateFound",
+   "metadata": "sample",
+   "stage": "notDownloaded"
+  },
+  {
+   "event": "updateFound",
+   "metadata": "sample",
+   "stage": "downloaded"
+  },
+  {
+   "event": "updateFound",
+   "metadata": "sample",
+   "stage": "installing"
+  },
+  {
+   "event": "updateFound",
+   "metadata": "informational"
+  },
+  {
+   "event": "updateFound",
+   "metadata": "critical"
+  },
+  {
+   "event": "updateFound",
+   "metadata": "major",
+   "stage": "downloaded"
+  },
+  {
+   "event": "updateFound",
+   "metadata": "nonAsciiNFD",
+   "stage": "notDownloaded"
+  },
+  {
+   "event": "updateFound",
+   "metadata": "huge"
+  },
+  {
+   "event": "updateFound",
+   "metadata": "oddURLs"
+  },
+  {
+   "event": "releaseNotesAvailable"
+  },
+  {
+   "event": "releaseNotesFailed"
+  },
+  {
+   "event": "updateNotFound",
+   "userInitiated": true
+  },
+  {
+   "event": "updateNotFound",
+   "userInitiated": false
+  },
+  {
+   "event": "updaterError",
+   "failure": {
+    "message": "The feed couldn't be loaded.",
+    "technicalDetail": "detail",
+    "code": 2001,
+    "retryable": true
+   }
+  },
+  {
+   "event": "updaterError",
+   "failure": {
+    "message": "Signature invalid",
+    "code": 3002,
+    "retryable": false
+   }
+  },
+  {
+   "event": "updaterError",
+   "failure": "generic"
+  },
+  {
+   "event": "downloadInitiated"
+  },
+  {
+   "event": "expectedLength",
+   "length": "0"
+  },
+  {
+   "event": "expectedLength",
+   "length": "1000"
+  },
+  {
+   "event": "expectedLength",
+   "length": "18446744073709551615"
+  },
+  {
+   "event": "dataReceived",
+   "length": "0"
+  },
+  {
+   "event": "dataReceived",
+   "length": "100"
+  },
+  {
+   "event": "dataReceived",
+   "length": "1000"
+  },
+  {
+   "event": "dataReceived",
+   "length": "18446744073709551615"
+  },
+  {
+   "event": "extractionBegan"
+  },
+  {
+   "event": "extractionProgress",
+   "progress": 0
+  },
+  {
+   "event": "extractionProgress",
+   "progress": 0.5
+  },
+  {
+   "event": "extractionProgress",
+   "progress": 1
+  },
+  {
+   "event": "extractionProgress",
+   "progress": 1.4
+  },
+  {
+   "event": "extractionProgress",
+   "progress": -0.2
+  },
+  {
+   "event": "extractionProgress",
+   "progress": "nan"
+  },
+  {
+   "event": "extractionProgress",
+   "progress": "inf"
+  },
+  {
+   "event": "extractionProgress",
+   "progress": "-inf"
+  },
+  {
+   "event": "extractionProgress",
+   "progress": "-0.0"
+  },
+  {
+   "event": "extractionProgress",
+   "progress": "0.3333333333333333"
+  },
+  {
+   "event": "extractionProgress",
+   "progress": "1e-300"
+  },
+  {
+   "event": "readyToInstallAndRelaunch"
+  },
+  {
+   "event": "installingUpdate",
+   "applicationTerminated": true
+  },
+  {
+   "event": "installingUpdate",
+   "applicationTerminated": false
+  },
+  {
+   "event": "updateInstalled",
+   "relaunched": true
+  },
+  {
+   "event": "updateInstalled",
+   "relaunched": false
+  },
+  {
+   "event": "dismissed"
+  },
+  {
+   "event": "checkCancelled"
+  },
+  {
+   "event": "downloadCancelled"
+  }
+ ]
+}

@@ -1,0 +1,190 @@
+{
+ "kind": "feed-probe",
+ "feeds": [
+  "feeds/basic.xml",
+  "feeds/multiple-items.xml",
+  "feeds/channels.xml",
+  "feeds/minimum-system-version.xml",
+  "feeds/critical.xml",
+  "feeds/deltas.xml",
+  "feeds/missing-fields.xml",
+  "feeds/odd-versions.xml",
+  "feeds/html-release-notes.xml",
+  "feeds/markdown-release-notes.xml",
+  "feeds/non-ascii.xml",
+  "feeds/informational.xml",
+  "feeds/malformed-unclosed.xml",
+  "feeds/malformed-not-xml.xml",
+  "feeds/empty.xml",
+  "feeds/bom-crlf.xml",
+  "feeds/latin1.xml",
+  "feeds/binary-junk.xml"
+ ],
+ "scenarios": [
+  {
+   "name": "first probe hashes the body",
+   "probes": [
+    {
+     "response": {
+      "status": 200,
+      "body": "feed"
+     },
+     "offer": null
+    }
+   ]
+  },
+  {
+   "name": "an unchanged body is unchanged",
+   "probes": [
+    {
+     "response": {
+      "status": 200,
+      "body": "feed"
+     }
+    },
+    {
+     "response": {
+      "status": 200,
+      "body": "feed"
+     },
+     "offer": {
+      "held": true
+     }
+    }
+   ]
+  },
+  {
+   "name": "a moved body is changed",
+   "probes": [
+    {
+     "response": {
+      "status": 200,
+      "body": "feed"
+     }
+    },
+    {
+     "response": {
+      "status": 200,
+      "body": {
+       "text": "<rss/>"
+      }
+     },
+     "offer": {
+      "held": true
+     }
+    },
+    {
+     "response": {
+      "status": 200,
+      "body": "feed"
+     },
+     "offer": {
+      "held": true
+     }
+    }
+   ]
+  },
+  {
+   "name": "etag is preferred and round-trips",
+   "probes": [
+    {
+     "response": {
+      "status": 200,
+      "body": "feed",
+      "headers": {
+       "ETag": "\"v2\"",
+       "Last-Modified": "Wed, 21 Oct 2026 07:28:00 GMT"
+      }
+     }
+    },
+    {
+     "response": {
+      "status": 304,
+      "body": "empty"
+     },
+     "offer": {
+      "held": true
+     }
+    }
+   ]
+  },
+  {
+   "name": "last-modified round-trips",
+   "probes": [
+    {
+     "response": {
+      "status": 200,
+      "body": "feed",
+      "headers": {
+       "Last-Modified": "Wed, 21 Oct 2026 07:28:00 GMT"
+      }
+     }
+    },
+    {
+     "response": {
+      "status": 304,
+      "body": "empty"
+     },
+     "offer": {
+      "held": true
+     }
+    },
+    {
+     "response": {
+      "status": 200,
+      "body": "feed",
+      "headers": {
+       "Last-Modified": "Thu, 22 Oct 2026 07:28:00 GMT"
+      }
+     },
+     "offer": {
+      "held": true
+     }
+    }
+   ]
+  },
+  {
+   "name": "304 without a validator",
+   "probes": [
+    {
+     "response": {
+      "status": 304,
+      "body": "feed"
+     }
+    }
+   ]
+  },
+  {
+   "name": "server error",
+   "probes": [
+    {
+     "response": {
+      "status": 503,
+      "body": "feed"
+     }
+    }
+   ]
+  },
+  {
+   "name": "non-HTTP response",
+   "probes": [
+    {
+     "response": {
+      "kind": "nonHTTP",
+      "body": "feed"
+     }
+    }
+   ]
+  },
+  {
+   "name": "transport error",
+   "probes": [
+    {
+     "response": {
+      "kind": "error"
+     }
+    }
+   ]
+  }
+ ]
+}
