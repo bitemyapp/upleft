@@ -796,7 +796,7 @@ fn rank(severity: DocumentHealthSeverity) -> i32 {
 /// dropped.
 fn non_overlapping(mut edits: Vec<TextEdit>) -> Vec<TextEdit> {
     let mut last_start = isize::MAX;
-    edits.sort_by(|a, b| b.range.location.cmp(&a.range.location));
+    edits.sort_by_key(|edit| std::cmp::Reverse(edit.range.location));
     edits
         .into_iter()
         .filter(|edit| {

@@ -328,7 +328,7 @@ impl LightboxContentView {
         mtm: MainThreadMarker,
     ) -> Retained<LightboxContentView> {
         let caption = match caption {
-            Some(caption) if caption.is_empty() => None,
+            Some("") => None,
             other => other.map(str::to_owned),
         };
         let this = Self::alloc(mtm).set_ivars(LightboxContentViewIvars {
