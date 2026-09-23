@@ -12,6 +12,8 @@
 //!   closures hold a `std::rc::Weak`; stored properties are `Cell`/`RefCell`s
 //!   borrowed only for the statement that uses them.
 
+#![allow(clippy::neg_cmp_op_on_partial_ord)]
+
 use std::cell::{Cell, RefCell};
 use std::rc::{Rc, Weak};
 use std::sync::atomic::{AtomicU64, Ordering};

@@ -196,3 +196,30 @@ harness = false
 [[test]]
 name = "workspace_tests"
 harness = false
+
+# The document scroll gestures (`App/DocumentScrollGestures.swift` and the
+# swipes and zoom built on it): `@MainActor` suites over AppKit views and
+# `NSEvent`s, on the main thread (tests/main_thread/mod.rs).
+[[test]]
+name = "history_swipe_tests"
+harness = false
+
+[[test]]
+name = "presentation_drag_tests"
+harness = false
+
+[[test]]
+name = "presentation_swipe_tests"
+harness = false
+
+[[test]]
+name = "presentation_swipe_budget_tests"
+harness = false
+
+[[test]]
+name = "scroll_gesture_chain_tests"
+harness = false
+
+[[test]]
+name = "scroll_zoom_tests"
+harness = false

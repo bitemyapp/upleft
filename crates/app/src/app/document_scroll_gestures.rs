@@ -23,6 +23,8 @@
 //!   driver's `[weak self]` closures hold a `std::rc::Weak` to it; its stored
 //!   properties are `Cell`/`RefCell`s, never borrowed across a call out.
 
+#![allow(clippy::neg_cmp_op_on_partial_ord)]
+
 use std::cell::{Cell, RefCell};
 use std::rc::{Rc, Weak};
 

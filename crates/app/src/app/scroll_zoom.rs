@@ -12,6 +12,8 @@
 //! - The coordinator is created as `Rc` (`ScrollZoomCoordinator::new`), like
 //!   its siblings, so the window and the gesture chain can share it.
 
+#![allow(clippy::neg_cmp_op_on_partial_ord)]
+
 use std::cell::Cell;
 use std::rc::Rc;
 

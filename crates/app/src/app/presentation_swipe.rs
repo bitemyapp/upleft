@@ -12,6 +12,8 @@
 //!   state lives in `Cell`s, so a host closure may call back into it (for
 //!   example `cancel_in_flight` from a resize) at any point.
 
+#![allow(clippy::neg_cmp_op_on_partial_ord)]
+
 use std::cell::Cell;
 use std::rc::{Rc, Weak};
 
@@ -91,8 +93,8 @@ impl PresentationSwipePolicy {
 
     /// That progress placed on the rail, which runs `0` Document to `1` Source.
     pub fn rail_position(progress: CGFloat, origin: isize, target: isize) -> CGFloat {
-        let start = origin.max(0).min(1) as CGFloat;
-        let end = target.max(0).min(1) as CGFloat;
+        let start = origin.clamp(0, 1) as CGFloat;
+        let end = target.clamp(0, 1) as CGFloat;
         start + (end - start) * smin(smax(progress, 0.0), 1.0)
     }
 

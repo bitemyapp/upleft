@@ -14,6 +14,8 @@
 //!   the settle completion's `[weak self]` holds a `std::rc::Weak`. Its state
 //!   lives in `Cell`s, so a host closure may call back into it.
 
+#![allow(clippy::neg_cmp_op_on_partial_ord)]
+
 use std::cell::Cell;
 use std::rc::{Rc, Weak};
 
