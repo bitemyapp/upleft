@@ -88,6 +88,15 @@ enum UpdateScenes {
         UserDefaults.standard.removeObject(forKey: "downright.theme.selected")
     }
 
+    /// The bundle's icon as the application icon, as the app-window harness
+    /// sets it: an oracle binary has no bundle, and AppKit would otherwise
+    /// show the icon of the folder it runs from (a symbolic link for the
+    /// Swift oracle, a plain folder for `upleft-oracle`).
+    static func useBundleIcon() {
+        let path = repositoryRoot.appendingPathComponent("vendor/downright/Resources/AppIcon.icns").path
+        NSApp.applicationIconImage = NSImage(contentsOfFile: path)
+    }
+
     /// The text between the first `<![CDATA[` and the next `]]>` of a feed
     /// under `corpus/updater/feeds/` (each feed's item description).
     static func feedDescription(_ path: String) -> String? {

@@ -13,8 +13,8 @@ use std::rc::Rc;
 
 use objc2::rc::Retained;
 use objc2::runtime::AnyObject;
-use objc2::{MainThreadMarker, MainThreadOnly};
-use objc2_app_kit::{NSProgressIndicator, NSView};
+use objc2::{AnyThread, MainThreadMarker, MainThreadOnly};
+use objc2_app_kit::{NSApplication, NSImage, NSProgressIndicator, NSView};
 use objc2_foundation::{
     NSData, NSDictionary, NSError, NSJSONReadingOptions, NSJSONSerialization, NSPoint, NSRect, NSSize, NSString,
     NSUserDefaults,
@@ -116,6 +116,16 @@ impl PanelScene for UpdateStatusPillScene {
 pub fn select_theme(name: &str) {
     ThemeStore::shared().select(name);
     NSUserDefaults::standardUserDefaults().removeObjectForKey(&NSString::from_str("downright.theme.selected"));
+}
+
+/// `UpdateScenes.useBundleIcon()`: the bundle's icon as the application
+/// icon, as the app-window harness sets it: an oracle binary has no bundle,
+/// and AppKit would otherwise show the icon of the folder it runs from (a
+/// symbolic link for the Swift oracle, a plain folder for `upleft-oracle`).
+pub fn use_bundle_icon(mtm: MainThreadMarker) {
+    let path = NSString::from_str(&repository_root().join("vendor/downright/Resources/AppIcon.icns").to_string_lossy());
+    let icon = NSImage::initWithContentsOfFile(NSImage::alloc(), &path);
+    unsafe { NSApplication::sharedApplication(mtm).setApplicationIconImage(icon.as_deref()) };
 }
 
 /// `UpdateScenes.feedDescription(_:)`: the text between the first
