@@ -10,6 +10,7 @@ let package = Package(
     platforms: [.macOS(.v14)],
     dependencies: [
         .package(name: "downright", path: "../vendor/downright"),
+        .package(path: "../vendor/downright/Vendor/SwiftMath"),
     ],
     targets: [
         .executableTarget(
@@ -17,6 +18,7 @@ let package = Package(
             dependencies: [
                 .product(name: "MarkdownCore", package: "downright"),
                 .product(name: "MarkdownRender", package: "downright"),
+                .product(name: "SwiftMath", package: "SwiftMath"),
             ],
             swiftSettings: [.swiftLanguageMode(.v5)]
         ),

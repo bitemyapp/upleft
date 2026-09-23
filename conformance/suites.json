@@ -37,6 +37,20 @@
         ["--mode", "source"],
         ["--mode", "live", "--width", "1400", "--height", "1000"]
       ]
+    },
+    {
+      "name": "math-image",
+      "command": "math",
+      "output": "png",
+      "input": "tex",
+      "variants": [[]]
+    },
+    {
+      "name": "math-tree",
+      "command": "math-tree",
+      "output": "json",
+      "input": "tex",
+      "variants": [[]]
     }
   ]
 }

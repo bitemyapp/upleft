@@ -8,6 +8,8 @@ import MarkdownRender
 //   downright-oracle decorate <file.md> <out.json> [--mode M] [--theme NAME] [--dark]
 //   downright-oracle render   <file.md> <out.png> [--layout out.json] [--mode M]
 //                             [--theme NAME] [--dark] [--width W] [--height H]
+//   downright-oracle math      <file.tex> <out.png>
+//   downright-oracle math-tree <file.tex> <out.json>
 //
 // `upleft-oracle` (crates/conformance) takes identical arguments and writes
 // identical formats.
@@ -88,6 +90,12 @@ do {
         let storage = NSTextStorage(string: text)
         engine.decorate(storage, document: MarkdownParser.parse(text), dirty: .wholesale)
         try write(AttributeDump.storage(storage), to: output)
+
+    case "math":
+        try MathDump.image(input, to: output)
+
+    case "math-tree":
+        try MathDump.tree(input, to: output)
 
     case "render":
         let request = RenderRequest(

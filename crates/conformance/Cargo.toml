@@ -9,6 +9,14 @@ publish.workspace = true
 [dependencies]
 serde_json.workspace = true
 png = "0.18"
+# math dump (dump/math.rs)
+upleft-math = { path = "../math" }
+objc2.workspace = true
+objc2-foundation = { workspace = true, features = ["NSAttributedString", "NSDictionary", "NSRange", "NSString", "NSValue"] }
+objc2-app-kit = { workspace = true, features = ["objc2-core-graphics", "NSBitmapImageRep", "NSColor", "NSColorList", "NSColorSpace", "NSFont", "NSFontDescriptor", "NSGraphicsContext", "NSImage", "NSImageRep"] }
+objc2-core-foundation = { workspace = true, features = ["CFArray", "CFCGTypes", "CFDictionary", "CFString"] }
+objc2-core-graphics = { workspace = true, features = ["CGBitmapContext", "CGColor", "CGColorSpace", "CGContext", "CGImage"] }
+objc2-core-text = { workspace = true, features = ["objc2-core-graphics", "CTFont", "CTFontDescriptor", "CTLine", "CTRun", "CTStringAttributes"] }
 
 [[bin]]
 name = "conform"
