@@ -69,7 +69,6 @@ fn concat(parts: &[&[u8]]) -> Vec<u8> {
 }
 
 #[test]
-#[ignore = "needs parser (upleft-markup)"]
 fn round_trips_every_corpus_document() {
     for (name, text) in corpus::ALL {
         assert_round_trip(text.as_bytes(), name);
@@ -77,7 +76,6 @@ fn round_trips_every_corpus_document() {
 }
 
 #[test]
-#[ignore = "needs parser (upleft-markup)"]
 fn round_trips_crlf_and_cr_files() {
     assert_round_trip(b"# A\r\n\r\nB\r\n", "crlf");
     assert_round_trip(b"# A\rB\r", "cr");
@@ -86,14 +84,12 @@ fn round_trips_crlf_and_cr_files() {
 }
 
 #[test]
-#[ignore = "needs parser (upleft-markup)"]
 fn round_trips_without_trailing_newline() {
     assert_round_trip(corpus::NO_TRAILING_NEWLINE.as_bytes(), "noTrailingNewline");
     assert_round_trip(b"x", "single character");
 }
 
 #[test]
-#[ignore = "needs parser (upleft-markup)"]
 fn round_trips_bom_and_utf16() {
     let bom: &[u8] = &[0xEF, 0xBB, 0xBF];
     assert_round_trip(&concat(&[bom, b"# Title\n\nBody.\n"]), "utf8 BOM");
@@ -103,7 +99,6 @@ fn round_trips_bom_and_utf16() {
 }
 
 #[test]
-#[ignore = "needs parser (upleft-markup)"]
 fn round_trips_tabs_and_trailing_spaces() {
     assert_round_trip(b"\t\tdeep\n  \n trailing   \n\n\n", "whitespace");
 }
@@ -131,7 +126,6 @@ fn mixed_endings_are_not_normalised() {
 }
 
 #[test]
-#[ignore = "needs parser (upleft-markup)"]
 fn latin1_falls_back_when_utf8_fails() {
     let directory = TemporaryDirectory::new();
     let url = directory.path().join("doc.md");
@@ -214,7 +208,6 @@ fn read_head_returns_nil_for_missing_file() {
 }
 
 #[test]
-#[ignore = "needs parser (upleft-markup)"]
 fn round_trips_utf32_bom() {
     let directory = TemporaryDirectory::new();
     let url = directory.path().join("doc.md");
@@ -254,7 +247,6 @@ fn reads_truncated_utf16_and_32() {
 }
 
 #[test]
-#[ignore = "needs parser (upleft-markup)"]
 fn reads_bomless_utf16() {
     let directory = TemporaryDirectory::new();
     let url = directory.path().join("doc.md");

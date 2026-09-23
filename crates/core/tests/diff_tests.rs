@@ -11,14 +11,12 @@ mod ast_diff_tests {
     use upleft_core::swift_text;
 
     #[test]
-    #[ignore = "needs parser (upleft-markup)"]
     fn first_parse_is_wholesale() {
         let doc = MarkdownParser::parse("# A\n");
         assert!(ASTDiff::dirty_set(None, &doc).is_wholesale);
     }
 
     #[test]
-    #[ignore = "needs parser (upleft-markup)"]
     fn identical_text_is_clean() {
         let text = corpus::KITCHEN_SINK;
         let a = MarkdownParser::parse(text);
@@ -29,7 +27,6 @@ mod ast_diff_tests {
     /// §3.5's whole premise: editing one paragraph of a 200-block document
     /// must dirty exactly that paragraph.
     #[test]
-    #[ignore = "needs parser (upleft-markup)"]
     fn editing_one_paragraph_dirties_one_block() {
         let original = corpus::many_blocks(200);
         let edited = swift_text::replacing_occurrences(
@@ -50,7 +47,6 @@ mod ast_diff_tests {
 
     /// An insertion near the top must not dirty everything after it.
     #[test]
-    #[ignore = "needs parser (upleft-markup)"]
     fn insertion_near_the_top_stays_local() {
         let original = corpus::many_blocks(200);
         let edited = swift_text::replacing_occurrences(
@@ -68,7 +64,6 @@ mod ast_diff_tests {
     }
 
     #[test]
-    #[ignore = "needs parser (upleft-markup)"]
     fn edit_inside_a_list_item_dirties_the_item_not_the_list() {
         let old = MarkdownParser::parse("# H\n\n- one\n- two\n- three\n");
         let new = MarkdownParser::parse("# H\n\n- one\n- TWO\n- three\n");
@@ -79,7 +74,6 @@ mod ast_diff_tests {
     }
 
     #[test]
-    #[ignore = "needs parser (upleft-markup)"]
     fn toggling_task_marker_dirties_the_list_item() {
         let old = MarkdownParser::parse("- [ ] Ship the fix\n");
         let new = MarkdownParser::parse("- [x] Ship the fix\n");
@@ -94,7 +88,6 @@ mod ast_diff_tests {
     /// bytes, so adding or removing it must dirty the quote even though every
     /// child paragraph is byte-identical.
     #[test]
-    #[ignore = "needs parser (upleft-markup)"]
     fn blank_quote_marker_edit_dirties_the_quote() {
         let old = MarkdownParser::parse("> a\n> b\n>\n");
         let new = MarkdownParser::parse("> a\n> b\n");
@@ -108,7 +101,6 @@ mod ast_diff_tests {
     }
 
     #[test]
-    #[ignore = "needs parser (upleft-markup)"]
     fn major_structural_change_goes_wholesale() {
         let old = MarkdownParser::parse(&corpus::many_blocks(40));
         let new = MarkdownParser::parse("# Completely different\n");
@@ -116,7 +108,6 @@ mod ast_diff_tests {
     }
 
     #[test]
-    #[ignore = "needs parser (upleft-markup)"]
     fn dirty_ranges_are_ascending_and_disjoint() {
         let original = corpus::many_blocks(60);
         let edited = swift_text::replacing_occurrences(
@@ -130,7 +121,6 @@ mod ast_diff_tests {
     }
 
     #[test]
-    #[ignore = "needs parser (upleft-markup)"]
     fn subtree_hash_ignores_position_but_not_content() {
         let a = MarkdownParser::parse("# A\n\nalpha\n\nbeta\n");
         let b = MarkdownParser::parse("# A\n\nbeta\n\nalpha\n");
@@ -146,7 +136,6 @@ mod ast_diff_tests {
     }
 
     #[test]
-    #[ignore = "needs parser (upleft-markup)"]
     fn container_reconciliation_with_shifted_offsets_does_not_dirty_unchanged_container() {
         let old = MarkdownParser::parse("# Title\n\n> Quote paragraph 1\n> Quote paragraph 2\n\nFooter");
         let new = MarkdownParser::parse(

@@ -9,10 +9,10 @@
 use std::sync::Arc;
 
 use crate::contracts::DirtySet;
-use crate::hashing::FNV;
 use crate::model::{BlockContent, MDBlock, ParsedDocument};
 use crate::myers::{Myers, Step};
 use crate::ns_range::NSRange;
+use crate::parser::{BlockIdentifier, SubtreeHasher};
 use crate::swift_text;
 
 pub struct ASTDiff;
@@ -88,12 +88,13 @@ impl ASTDiff {
                 continue;
             }
             let before = old[index];
-            let same_kind = discriminator(&before.content) == discriminator(&after.content);
+            let same_kind =
+                BlockIdentifier::discriminator(&before.content) == BlockIdentifier::discriminator(&after.content);
             let same_container_semantics = Self::container_semantics_match(&before.content, &after.content);
             if same_kind && same_container_semantics && !before.children.is_empty() && !after.children.is_empty() {
                 let mut nested = Vec::new();
                 if Self::reconcile(&before.children, &after.children, &mut nested, old_text, new_text) {
-                    if framework_hash(before, old_text) != framework_hash(after, new_text) {
+                    if SubtreeHasher::framework_hash(before, old_text) != SubtreeHasher::framework_hash(after, new_text) {
                         ranges.push(after.range);
                     }
                     ranges.extend(nested);
@@ -164,59 +165,6 @@ fn optional_string_eq(a: Option<&str>, b: Option<&str>) -> bool {
         (None, None) => true,
         _ => false,
     }
-}
-
-// Parser.swift's `BlockIdentifier.discriminator` and
-// `SubtreeHasher.frameworkHash`, which live with the parser in Downright. They
-// are private here until the parser port provides them.
-
-/// `BlockIdentifier.discriminator(_:)`.
-fn discriminator(content: &BlockContent) -> isize {
-    match content {
-        BlockContent::Document => 0,
-        BlockContent::Heading { level } => 100 + level,
-        BlockContent::Paragraph => 2,
-        BlockContent::BlockQuote => 3,
-        BlockContent::Callout { .. } => 4,
-        BlockContent::List { .. } => 5,
-        BlockContent::ListItem { .. } => 6,
-        BlockContent::CodeBlock { .. } => 7,
-        BlockContent::Mermaid { .. } => 8,
-        BlockContent::MathBlock { .. } => 9,
-        BlockContent::Table(_) => 10,
-        BlockContent::ThematicBreak => 11,
-        BlockContent::HtmlBlock => 12,
-        BlockContent::FrontMatter(_) => 13,
-        BlockContent::FootnoteDefinition { .. } => 14,
-    }
-}
-
-/// `SubtreeHasher.frameworkHash(_:in:)`: a container's own bytes (kind + the
-/// gaps between children), ignoring the children's hashes.
-fn framework_hash(block: &MDBlock, text: &[u16]) -> u64 {
-    let length = text.len() as isize;
-    let mut h = FNV::combine_u64(FNV::OFFSET_BASIS, discriminator(&block.content) as u64);
-    let full = clamp(block.range, length);
-    let mut scan = full.location;
-    for child in &block.children {
-        let child_range = clamp(child.range, length);
-        if child_range.location > scan {
-            h = FNV::combine_range(h, text, NSRange::new(scan, child_range.location - scan));
-        }
-        if child_range.upper_bound() > scan {
-            scan = child_range.upper_bound();
-        }
-    }
-    if full.upper_bound() > scan {
-        h = FNV::combine_range(h, text, NSRange::new(scan, full.upper_bound() - scan));
-    }
-    h
-}
-
-/// `SubtreeHasher.clamp(_:to:)`.
-fn clamp(range: NSRange, length: isize) -> NSRange {
-    let location = 0.max(range.location.min(length));
-    NSRange::new(location, 0.max(range.length.min(length - location)))
 }
 
 #[cfg(test)]
