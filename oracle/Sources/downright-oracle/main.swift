@@ -76,6 +76,12 @@ do {
         let text = try String(contentsOf: input, encoding: .utf8)
         try write(ParseDump.document(MarkdownParser.parse(text)), to: output)
 
+    case "core-text":
+        try write(CoreTextDump.document(data: try Data(contentsOf: input), url: input), to: output)
+
+    case "bench-core-text":
+        try write(CoreTextBench.run(text: try String(contentsOf: input, encoding: .utf8)), to: output)
+
     case "decorate":
         let text = try String(contentsOf: input, encoding: .utf8)
         let appearance = NSAppearance(named: flags.dark ? .darkAqua : .aqua)!
