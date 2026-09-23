@@ -10,7 +10,6 @@ use upleft_core::swift_text;
 use upleft_core::{BlockContent, FrontMatter, FrontMatterField, MDBlock, NSRange, ParsedDocument};
 
 #[test]
-#[ignore = "needs parser (upleft-markup)"]
 fn set_preserves_quote_and_boundary_whitespace() {
     let source = "---\ntitle:  \"Old\"  \ncount: 2\n---\nBody\n";
     let result = FrontMatterEditing::set(&MarkdownParser::parse(source), "title", FrontMatterValue::Text("New".into()));
@@ -19,7 +18,6 @@ fn set_preserves_quote_and_boundary_whitespace() {
 }
 
 #[test]
-#[ignore = "needs parser (upleft-markup)"]
 fn typed_values_round_trip_without_changing_other_fields() {
     let source = "---\ntitle: Demo\n---\n";
     let document = MarkdownParser::parse(source);
@@ -33,7 +31,6 @@ fn typed_values_round_trip_without_changing_other_fields() {
 }
 
 #[test]
-#[ignore = "needs parser (upleft-markup)"]
 fn add_and_remove_keep_crlf() {
     let source = "---\r\ntitle: Demo\r\n---\r\n";
     let added = FrontMatterEditing::add(&MarkdownParser::parse(source), "draft", FrontMatterValue::Boolean(false)).proposal.expect("a proposal");
@@ -44,7 +41,6 @@ fn add_and_remove_keep_crlf() {
 }
 
 #[test]
-#[ignore = "needs parser (upleft-markup)"]
 fn complex_yaml_falls_back_to_source() {
     let nested = FrontMatterEditing::set(&MarkdownParser::parse("---\ntags:\n  - one\n---\n"), "tags", FrontMatterValue::List(vec!["two".into()]));
     assert!(nested.proposal.is_none());
@@ -55,7 +51,6 @@ fn complex_yaml_falls_back_to_source() {
 }
 
 #[test]
-#[ignore = "needs parser (upleft-markup)"]
 fn stale_proposal_does_not_apply() {
     let source = "---\ntitle: Demo\n---\n";
     let proposal = FrontMatterEditing::set(&MarkdownParser::parse(source), "title", FrontMatterValue::Text("New".into())).proposal.expect("a proposal");
@@ -63,7 +58,6 @@ fn stale_proposal_does_not_apply() {
 }
 
 #[test]
-#[ignore = "needs parser (upleft-markup)"]
 fn empty_field_can_be_set_without_adding_a_duplicate() {
     let source = "---\ntitle: \n---\n";
     let proposal = FrontMatterEditing::set(&MarkdownParser::parse(source), "title", FrontMatterValue::Text("Demo".into())).proposal.expect("a proposal");
@@ -71,7 +65,6 @@ fn empty_field_can_be_set_without_adding_a_duplicate() {
 }
 
 #[test]
-#[ignore = "needs parser (upleft-markup)"]
 fn special_text_uses_safe_yaml_quotes() {
     let source = "---\ntitle: Demo\n---\n";
     let proposal = FrontMatterEditing::set(&MarkdownParser::parse(source), "title", FrontMatterValue::Text("true: \"quoted\" # note".into()))
@@ -81,7 +74,6 @@ fn special_text_uses_safe_yaml_quotes() {
 }
 
 #[test]
-#[ignore = "needs parser (upleft-markup)"]
 fn list_items_use_type_safe_quotes() {
     let source = "---\ntags: [one, two]\n---\n";
     let proposal = FrontMatterEditing::set(
@@ -95,7 +87,6 @@ fn list_items_use_type_safe_quotes() {
 }
 
 #[test]
-#[ignore = "needs parser (upleft-markup)"]
 fn duplicate_and_invalid_keys_fall_back() {
     let duplicate = FrontMatterEditing::set(&MarkdownParser::parse("---\ntitle: A\ntitle: B\n---\n"), "title", FrontMatterValue::Text("C".into()));
     assert_eq!(duplicate.fallback, Some(FrontMatterSourceFallback::AmbiguousField));
@@ -104,7 +95,6 @@ fn duplicate_and_invalid_keys_fall_back() {
 }
 
 #[test]
-#[ignore = "needs parser (upleft-markup)"]
 fn malformed_anchored_and_block_scalar_yaml_falls_back() {
     let malformed = FrontMatterEditing::set(&MarkdownParser::parse("---\ntitle: A\n"), "title", FrontMatterValue::Text("B".into()));
     assert_eq!(malformed.fallback, Some(FrontMatterSourceFallback::MalformedFence));
@@ -115,7 +105,6 @@ fn malformed_anchored_and_block_scalar_yaml_falls_back() {
 }
 
 #[test]
-#[ignore = "needs parser (upleft-markup)"]
 fn renders_number_without_point_zero() {
     let source = "---\ncount: 1\n---\n";
     let proposal = FrontMatterEditing::set(&MarkdownParser::parse(source), "count", FrontMatterValue::Number(42.0)).proposal.expect("a proposal");

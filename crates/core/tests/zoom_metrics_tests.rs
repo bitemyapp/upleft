@@ -63,7 +63,6 @@ fn assert_well_formed(plan: &ZoomPlan, length: isize) {
 }
 
 #[test]
-#[ignore = "needs parser (upleft-markup)"]
 fn level_five_is_the_identity() {
     let doc = MarkdownParser::parse(DOCUMENT);
     let plan = StructuralZoom::plan(&doc, ZoomLevel::Everything);
@@ -71,7 +70,6 @@ fn level_five_is_the_identity() {
 }
 
 #[test]
-#[ignore = "needs parser (upleft-markup)"]
 fn level_one_keeps_only_h1() {
     let doc = MarkdownParser::parse(DOCUMENT);
     let plan = StructuralZoom::plan(&doc, ZoomLevel::H1);
@@ -83,7 +81,6 @@ fn level_one_keeps_only_h1() {
 }
 
 #[test]
-#[ignore = "needs parser (upleft-markup)"]
 fn level_two_adds_h2() {
     let doc = MarkdownParser::parse(DOCUMENT);
     let plan = StructuralZoom::plan(&doc, ZoomLevel::H2);
@@ -95,7 +92,6 @@ fn level_two_adds_h2() {
 }
 
 #[test]
-#[ignore = "needs parser (upleft-markup)"]
 fn level_three_keeps_all_headings() {
     let doc = MarkdownParser::parse(DOCUMENT);
     let plan = StructuralZoom::plan(&doc, ZoomLevel::Headings);
@@ -110,7 +106,6 @@ fn level_three_keeps_all_headings() {
 /// §5.2: "every claim's headline plus all the concrete artifacts, and none of
 /// the connective padding."
 #[test]
-#[ignore = "needs parser (upleft-markup)"]
 fn skeleton_keeps_headings_first_sentences_and_artifacts() {
     let doc = MarkdownParser::parse(DOCUMENT);
     let plan = StructuralZoom::plan(&doc, ZoomLevel::Skeleton);
@@ -131,7 +126,6 @@ fn skeleton_keeps_headings_first_sentences_and_artifacts() {
 }
 
 #[test]
-#[ignore = "needs parser (upleft-markup)"]
 fn skeleton_keeps_the_lede_of_a_document_without_headings() {
     let text = "First sentence here. Second sentence. Third one too.\n\nAnother paragraph entirely.\n";
     let doc = MarkdownParser::parse(text);
@@ -141,7 +135,6 @@ fn skeleton_keeps_the_lede_of_a_document_without_headings() {
 }
 
 #[test]
-#[ignore = "needs parser (upleft-markup)"]
 fn section_preview_provides_two_clean_sentences() {
     let doc = MarkdownParser::parse(DOCUMENT);
     let alpha = doc.headings.iter().position(|h| swift_text::str_eq(&h.title, "Alpha"));
@@ -159,7 +152,6 @@ fn section_preview_provides_two_clean_sentences() {
 }
 
 #[test]
-#[ignore = "needs parser (upleft-markup)"]
 fn front_matter_survives_every_level() {
     let text = "---\ntitle: X\n---\n\n# H\n\nbody\n";
     let doc = MarkdownParser::parse(text);
@@ -171,7 +163,6 @@ fn front_matter_survives_every_level() {
 }
 
 #[test]
-#[ignore = "needs parser (upleft-markup)"]
 fn every_corpus_document_plans_cleanly_at_every_level() {
     for (_, text) in common::corpus::ALL {
         let doc = MarkdownParser::parse(text);
@@ -188,7 +179,6 @@ fn every_corpus_document_plans_cleanly_at_every_level() {
 // MARK: - MetricsTests
 
 #[test]
-#[ignore = "needs parser (upleft-markup)"]
 fn counts_words_excluding_markers_code_and_front_matter() {
     let text = "---\ntitle: Ignore these words entirely\n---\n\n# One Two\n\nThree **four** five `six` seven.\n\n```swift\nthis code should not be counted at all here\n```";
     let metrics = Metrics::metrics_for(text);
@@ -198,7 +188,6 @@ fn counts_words_excluding_markers_code_and_front_matter() {
 }
 
 #[test]
-#[ignore = "needs parser (upleft-markup)"]
 fn read_time_uses238_words_per_minute() {
     let prose = (0..238).map(|i| format!("word{i}")).collect::<Vec<_>>().join(" ") + "\n";
     let metrics = Metrics::metrics_for(&prose);
@@ -209,7 +198,6 @@ fn read_time_uses238_words_per_minute() {
 /// §9.6 regression: soft and hard line breaks inside a paragraph must count
 /// as word separators.
 #[test]
-#[ignore = "needs parser (upleft-markup)"]
 fn hard_wrapped_paragraphs_count_every_word() {
     let disposed = Metrics::metrics_for("alpha beta\ngamma delta\n");
     assert_eq!(disposed.words, 4);
@@ -222,7 +210,6 @@ fn hard_wrapped_paragraphs_count_every_word() {
 }
 
 #[test]
-#[ignore = "needs parser (upleft-markup)"]
 fn hard_wrap_breaks_become_break_spans() {
     let source = "alpha beta\ngamma delta\n";
     let doc = MarkdownParser::parse(source);
@@ -232,7 +219,6 @@ fn hard_wrap_breaks_become_break_spans() {
 }
 
 #[test]
-#[ignore = "needs parser (upleft-markup)"]
 fn explicit_line_breaks_are_classified_line_break_spans() {
     let doc = MarkdownParser::parse("one  \ntwo\n");
     let paragraph = doc.root.children.first().expect("a paragraph");
@@ -242,7 +228,6 @@ fn explicit_line_breaks_are_classified_line_break_spans() {
 /// §9.6 regression: the continuation Text of a backslash hard break must be
 /// re-anchored to the physical next line.
 #[test]
-#[ignore = "needs parser (upleft-markup)"]
 fn backslash_hard_breaks_count_every_word() {
     let disposed = Metrics::metrics_for("one two\\\nthree four\n");
     assert_eq!(disposed.words, 4, "word count was {}", disposed.words);
@@ -262,7 +247,6 @@ fn empty_text_is_zero() {
 
 /// §9.6: a section must not count its subsections.
 #[test]
-#[ignore = "needs parser (upleft-markup)"]
 fn section_metrics_are_parallel_and_exclude_subsections() {
     let text = "# Top\n\nOne two three.\n\n## Sub\n\nFour five six seven eight.\n\n# Second\n\nNine.";
     let doc = MarkdownParser::parse(text);
@@ -274,7 +258,6 @@ fn section_metrics_are_parallel_and_exclude_subsections() {
 }
 
 #[test]
-#[ignore = "needs parser (upleft-markup)"]
 fn heading_word_counts_match_section_metrics() {
     let doc = MarkdownParser::parse(common::corpus::KITCHEN_SINK);
     let sections = Metrics::section_metrics(&doc);
@@ -282,7 +265,6 @@ fn heading_word_counts_match_section_metrics() {
 }
 
 #[test]
-#[ignore = "needs parser (upleft-markup)"]
 fn first_sentence_uses_nl_tokenizer_not_naive_periods() {
     let text = "# H\n\nDr. Smith went to Washington. Then he left.\n";
     let doc = MarkdownParser::parse(text);
@@ -293,7 +275,6 @@ fn first_sentence_uses_nl_tokenizer_not_naive_periods() {
 }
 
 #[test]
-#[ignore = "needs parser (upleft-markup)"]
 fn first_sentence_skips_non_prose_blocks() {
     let text = "# H\n\n```swift\nlet x = 1\n```\n\nActual prose here. More.\n";
     let doc = MarkdownParser::parse(text);
@@ -303,7 +284,6 @@ fn first_sentence_skips_non_prose_blocks() {
 }
 
 #[test]
-#[ignore = "needs parser (upleft-markup)"]
 fn metrics_run_on_every_corpus_document() {
     for (_, text) in common::corpus::ALL {
         let metrics = Metrics::metrics_for(text);

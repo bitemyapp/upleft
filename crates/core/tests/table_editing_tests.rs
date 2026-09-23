@@ -6,6 +6,7 @@ use upleft_core::editing::table_editing::{TableEditOperation, TableEditProposal,
 use upleft_core::parser::MarkdownParser;
 use upleft_core::source_positions::SourceMap;
 use upleft_core::swift_text;
+use upleft_core::table_formatter::TableFormatter;
 use upleft_core::{BlockContent, MDBlock, NSRange, ParsedDocument, TableAlignment, TableCell, TableData, TableRow};
 
 fn proposal(source: &str, operation: TableEditOperation) -> TableEditProposal {
@@ -14,7 +15,6 @@ fn proposal(source: &str, operation: TableEditOperation) -> TableEditProposal {
 }
 
 #[test]
-#[ignore = "needs parser (upleft-markup)"]
 fn cell_edit_is_local_and_escapes_pipes() {
     let source = "| A | B |\n|---|---|\n| one | two |\n";
     let edit = proposal(source, TableEditOperation::SetCell { row: 1, column: 0, text: "x|y".into() });
@@ -24,7 +24,6 @@ fn cell_edit_is_local_and_escapes_pipes() {
 }
 
 #[test]
-#[ignore = "needs parser (upleft-markup)"]
 fn alignment_only_rewrites_delimiter() {
     let source = "  | A | B |\r\n  |---|---|\r\n  | one | two |\r\n";
     let edit = proposal(source, TableEditOperation::SetAlignment { column: 1, alignment: TableAlignment::Right });
@@ -32,7 +31,6 @@ fn alignment_only_rewrites_delimiter() {
 }
 
 #[test]
-#[ignore = "needs parser (upleft-markup)"]
 fn insert_row_after_delimiter_preserves_indentation() {
     let source = "  | A | B |\n  |---|---|\n  | one | two |\n";
     let edit = proposal(source, TableEditOperation::InsertRow { index: 1, cells: vec!["new".into(), "row".into()] });
@@ -40,7 +38,6 @@ fn insert_row_after_delimiter_preserves_indentation() {
 }
 
 #[test]
-#[ignore = "needs parser (upleft-markup)"]
 fn insert_row_pads_missing_cells() {
     let source = "| A | B | C |\n|---|---|---|\n| one | two | three |\n";
     let edit = proposal(source, TableEditOperation::InsertRow { index: 1, cells: vec!["new".into()] });
@@ -48,7 +45,6 @@ fn insert_row_pads_missing_cells() {
 }
 
 #[test]
-#[ignore = "needs parser (upleft-markup)"]
 fn insert_column_accepts_one_value_per_body_row() {
     let source = "| A |\n|---|\n| one |\n| two |\n| three |\n";
     let edit = proposal(
@@ -59,7 +55,6 @@ fn insert_column_accepts_one_value_per_body_row() {
 }
 
 #[test]
-#[ignore = "needs parser (upleft-markup)"]
 fn column_operations_keep_escaped_pipes() {
     let source = "| A | B | C |\n|---|---|---|\n| a\\|x | b | c |\n";
     let moved = proposal(source, TableEditOperation::MoveColumn { from: 0, to: 2 });
@@ -70,7 +65,6 @@ fn column_operations_keep_escaped_pipes() {
 }
 
 #[test]
-#[ignore = "needs parser (upleft-markup)"]
 fn cannot_delete_header_and_rejects_stale_source() {
     let source = "| A | B |\n|---|---|\n| one | two |\n";
     let result = TableEditing::propose(&MarkdownParser::parse(source), 0, &TableEditOperation::DeleteRow { index: 0 });
@@ -81,7 +75,6 @@ fn cannot_delete_header_and_rejects_stale_source() {
 }
 
 #[test]
-#[ignore = "needs parser (upleft-markup)"]
 fn spaced_delimiter_does_not_duplicate_cell_padding() {
     let source = "| A | B |\n| --- | --- |\n| one | two |\n";
     let edit = proposal(source, TableEditOperation::SetAlignment { column: 1, alignment: TableAlignment::Right });
@@ -89,7 +82,6 @@ fn spaced_delimiter_does_not_duplicate_cell_padding() {
 }
 
 #[test]
-#[ignore = "needs parser (upleft-markup)"]
 fn pipe_less_rows_remain_pipe_less_for_column_moves() {
     let source = "A | B | C\n---|---|---\na | b | c\n";
     let edit = proposal(source, TableEditOperation::MoveColumn { from: 2, to: 0 });
@@ -97,7 +89,6 @@ fn pipe_less_rows_remain_pipe_less_for_column_moves() {
 }
 
 #[test]
-#[ignore = "needs parser (upleft-markup)"]
 fn reverse_row_move_preserves_crlf_and_final_newline() {
     let source = "| A | B |\r\n|---|---|\r\n| one | two |\r\n| three | four |\r\n";
     let edit = proposal(source, TableEditOperation::MoveRow { from: 2, to: 1 });
@@ -107,7 +98,6 @@ fn reverse_row_move_preserves_crlf_and_final_newline() {
 /// Regression: inserting a row after a terminator-less last row used to glue
 /// the new line onto its content.
 #[test]
-#[ignore = "needs parser (upleft-markup)"]
 fn insert_row_after_terminator_less_last_row_does_not_glue() {
     let source = "| A | B |\n|---|---|\n| one | two |";
     let edit = proposal(source, TableEditOperation::InsertRow { index: 2, cells: vec!["x".into(), "y".into()] });
@@ -117,7 +107,6 @@ fn insert_row_after_terminator_less_last_row_does_not_glue() {
 /// Regression: moving the terminator-less last row into the middle used to
 /// glue it onto its new neighbour.
 #[test]
-#[ignore = "needs parser (upleft-markup)"]
 fn move_row_with_terminator_less_last_row_does_not_glue() {
     let source = "| A | B |\n|---|---|\n| one | two |\n| three | four |";
     let edit = proposal(source, TableEditOperation::MoveRow { from: 2, to: 1 });
@@ -125,7 +114,6 @@ fn move_row_with_terminator_less_last_row_does_not_glue() {
 }
 
 #[test]
-#[ignore = "needs parser (upleft-markup)"]
 fn blockquote_table_keeps_quote_prefix() {
     let source = "> | A | B |\n> |---|---|\n> | one | two |\n";
     let edit = proposal(source, TableEditOperation::SetCell { row: 1, column: 1, text: "changed".into() });
@@ -133,7 +121,6 @@ fn blockquote_table_keeps_quote_prefix() {
 }
 
 #[test]
-#[ignore = "needs parser (upleft-markup)"]
 fn invalid_structure_operations_return_typed_fallbacks() {
     let source = "| A |\n|---|\n| one |\n";
     let last_column = TableEditing::propose(&MarkdownParser::parse(source), 0, &TableEditOperation::DeleteColumn { index: 0 });
@@ -152,30 +139,21 @@ fn invalid_structure_operations_return_typed_fallbacks() {
     assert_eq!(invalid.fallback, Some(TableSourceFallback::InvalidRow));
 }
 
-/// Calls `TableFormatter.sourceRange(of:fallback:)` and
-/// `TableFormatter.model(of:in:)`; table_formatter.rs is ported on another
-/// branch, so the body is compiled out until it lands here.
 #[test]
-#[ignore = "needs parser (upleft-markup) and TableFormatter (another port branch)"]
 fn table_formatter_with_leading_preamble_does_not_start_at_zero() {
-    #[cfg(any())]
-    {
-        use upleft_core::table_formatter::TableFormatter;
-        let source = "# Heading\n\nSome introductory paragraph.\n\n| A | B |\n|---|---|\n| 1 | 2 |\n";
-        let doc = MarkdownParser::parse(source);
-        let mut found_table: Option<TableData> = None;
-        doc.root.walk(&mut |block| {
-            if let BlockContent::Table(data) = &block.content {
-                found_table = Some(data.clone());
-            }
-        });
-        let table = found_table.expect("a table");
-        let range = TableFormatter::source_range(&table, NSRange::new(0, 0));
-        let model = TableFormatter::model(&table, &swift_text::ns::utf16(source));
-        assert!(range.location > 20);
-        assert_eq!(model.line_terminators, ["\n", "\n", "\n"]);
-    }
-    unimplemented!("TableFormatter is not on this branch yet");
+    let source = "# Heading\n\nSome introductory paragraph.\n\n| A | B |\n|---|---|\n| 1 | 2 |\n";
+    let doc = MarkdownParser::parse(source);
+    let mut found_table: Option<TableData> = None;
+    doc.root.walk(&mut |block| {
+        if let BlockContent::Table(data) = &block.content {
+            found_table = Some(data.clone());
+        }
+    });
+    let table = found_table.expect("a table");
+    let range = TableFormatter::source_range(&table, NSRange::new(0, 0));
+    let model = TableFormatter::model(&table, &swift_text::ns::utf16(source));
+    assert!(range.location > 20);
+    assert_eq!(model.line_terminators, ["\n", "\n", "\n"]);
 }
 
 // MARK: - Differential cases (not in Swift)
