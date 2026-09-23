@@ -1,0 +1,1351 @@
+{
+ "steps": [
+  {
+   "op": "jump.back"
+  },
+  {
+   "op": "jump.forward"
+  },
+  {
+   "op": "jump.record",
+   "from": null,
+   "to": {
+    "offset": 10,
+    "label": "first"
+   }
+  },
+  {
+   "op": "jump.record",
+   "from": {
+    "offset": 0,
+    "label": "start"
+   },
+   "to": {
+    "offset": 100,
+    "label": "a"
+   }
+  },
+  {
+   "op": "jump.record",
+   "from": {
+    "offset": 100,
+    "label": "a"
+   },
+   "to": {
+    "offset": 200,
+    "label": "b"
+   }
+  },
+  {
+   "op": "jump.record",
+   "from": {
+    "offset": 260,
+    "label": "scrolled"
+   },
+   "to": {
+    "offset": 300,
+    "label": "c",
+    "url": "docs/other.md"
+   }
+  },
+  {
+   "op": "jump.back"
+  },
+  {
+   "op": "jump.back"
+  },
+  {
+   "op": "jump.back"
+  },
+  {
+   "op": "jump.back"
+  },
+  {
+   "op": "jump.forward"
+  },
+  {
+   "op": "jump.record",
+   "from": {
+    "offset": 130,
+    "label": "a-ish"
+   },
+   "to": {
+    "offset": 500,
+    "label": "d"
+   }
+  },
+  {
+   "op": "jump.forward"
+  },
+  {
+   "op": "jump.clear"
+  },
+  {
+   "op": "jump.record",
+   "from": {
+    "offset": 5,
+    "label": "after clear"
+   },
+   "to": {
+    "offset": 6,
+    "label": "x"
+   }
+  },
+  {
+   "op": "jump.record",
+   "history": "long",
+   "from": {
+    "offset": 0,
+    "label": "from 0"
+   },
+   "to": {
+    "offset": 50,
+    "label": "to 0"
+   }
+  },
+  {
+   "op": "jump.record",
+   "history": "long",
+   "from": {
+    "offset": 100,
+    "label": "from 1"
+   },
+   "to": {
+    "offset": 150,
+    "label": "to 1"
+   }
+  },
+  {
+   "op": "jump.record",
+   "history": "long",
+   "from": {
+    "offset": 200,
+    "label": "from 2"
+   },
+   "to": {
+    "offset": 250,
+    "label": "to 2"
+   }
+  },
+  {
+   "op": "jump.record",
+   "history": "long",
+   "from": {
+    "offset": 300,
+    "label": "from 3"
+   },
+   "to": {
+    "offset": 350,
+    "label": "to 3"
+   }
+  },
+  {
+   "op": "jump.record",
+   "history": "long",
+   "from": {
+    "offset": 400,
+    "label": "from 4"
+   },
+   "to": {
+    "offset": 450,
+    "label": "to 4"
+   }
+  },
+  {
+   "op": "jump.record",
+   "history": "long",
+   "from": {
+    "offset": 500,
+    "label": "from 5"
+   },
+   "to": {
+    "offset": 550,
+    "label": "to 5"
+   }
+  },
+  {
+   "op": "jump.record",
+   "history": "long",
+   "from": {
+    "offset": 600,
+    "label": "from 6"
+   },
+   "to": {
+    "offset": 650,
+    "label": "to 6"
+   }
+  },
+  {
+   "op": "jump.record",
+   "history": "long",
+   "from": {
+    "offset": 700,
+    "label": "from 7"
+   },
+   "to": {
+    "offset": 750,
+    "label": "to 7"
+   }
+  },
+  {
+   "op": "jump.record",
+   "history": "long",
+   "from": {
+    "offset": 800,
+    "label": "from 8"
+   },
+   "to": {
+    "offset": 850,
+    "label": "to 8"
+   }
+  },
+  {
+   "op": "jump.record",
+   "history": "long",
+   "from": {
+    "offset": 900,
+    "label": "from 9"
+   },
+   "to": {
+    "offset": 950,
+    "label": "to 9"
+   }
+  },
+  {
+   "op": "jump.record",
+   "history": "long",
+   "from": {
+    "offset": 1000,
+    "label": "from 10"
+   },
+   "to": {
+    "offset": 1050,
+    "label": "to 10"
+   }
+  },
+  {
+   "op": "jump.record",
+   "history": "long",
+   "from": {
+    "offset": 1100,
+    "label": "from 11"
+   },
+   "to": {
+    "offset": 1150,
+    "label": "to 11"
+   }
+  },
+  {
+   "op": "jump.record",
+   "history": "long",
+   "from": {
+    "offset": 1200,
+    "label": "from 12"
+   },
+   "to": {
+    "offset": 1250,
+    "label": "to 12"
+   }
+  },
+  {
+   "op": "jump.record",
+   "history": "long",
+   "from": {
+    "offset": 1300,
+    "label": "from 13"
+   },
+   "to": {
+    "offset": 1350,
+    "label": "to 13"
+   }
+  },
+  {
+   "op": "jump.record",
+   "history": "long",
+   "from": {
+    "offset": 1400,
+    "label": "from 14"
+   },
+   "to": {
+    "offset": 1450,
+    "label": "to 14"
+   }
+  },
+  {
+   "op": "jump.record",
+   "history": "long",
+   "from": {
+    "offset": 1500,
+    "label": "from 15"
+   },
+   "to": {
+    "offset": 1550,
+    "label": "to 15"
+   }
+  },
+  {
+   "op": "jump.record",
+   "history": "long",
+   "from": {
+    "offset": 1600,
+    "label": "from 16"
+   },
+   "to": {
+    "offset": 1650,
+    "label": "to 16"
+   }
+  },
+  {
+   "op": "jump.record",
+   "history": "long",
+   "from": {
+    "offset": 1700,
+    "label": "from 17"
+   },
+   "to": {
+    "offset": 1750,
+    "label": "to 17"
+   }
+  },
+  {
+   "op": "jump.record",
+   "history": "long",
+   "from": {
+    "offset": 1800,
+    "label": "from 18"
+   },
+   "to": {
+    "offset": 1850,
+    "label": "to 18"
+   }
+  },
+  {
+   "op": "jump.record",
+   "history": "long",
+   "from": {
+    "offset": 1900,
+    "label": "from 19"
+   },
+   "to": {
+    "offset": 1950,
+    "label": "to 19"
+   }
+  },
+  {
+   "op": "jump.record",
+   "history": "long",
+   "from": {
+    "offset": 2000,
+    "label": "from 20"
+   },
+   "to": {
+    "offset": 2050,
+    "label": "to 20"
+   }
+  },
+  {
+   "op": "jump.record",
+   "history": "long",
+   "from": {
+    "offset": 2100,
+    "label": "from 21"
+   },
+   "to": {
+    "offset": 2150,
+    "label": "to 21"
+   }
+  },
+  {
+   "op": "jump.record",
+   "history": "long",
+   "from": {
+    "offset": 2200,
+    "label": "from 22"
+   },
+   "to": {
+    "offset": 2250,
+    "label": "to 22"
+   }
+  },
+  {
+   "op": "jump.record",
+   "history": "long",
+   "from": {
+    "offset": 2300,
+    "label": "from 23"
+   },
+   "to": {
+    "offset": 2350,
+    "label": "to 23"
+   }
+  },
+  {
+   "op": "jump.record",
+   "history": "long",
+   "from": {
+    "offset": 2400,
+    "label": "from 24"
+   },
+   "to": {
+    "offset": 2450,
+    "label": "to 24"
+   }
+  },
+  {
+   "op": "jump.record",
+   "history": "long",
+   "from": {
+    "offset": 2500,
+    "label": "from 25"
+   },
+   "to": {
+    "offset": 2550,
+    "label": "to 25"
+   }
+  },
+  {
+   "op": "jump.record",
+   "history": "long",
+   "from": {
+    "offset": 2600,
+    "label": "from 26"
+   },
+   "to": {
+    "offset": 2650,
+    "label": "to 26"
+   }
+  },
+  {
+   "op": "jump.record",
+   "history": "long",
+   "from": {
+    "offset": 2700,
+    "label": "from 27"
+   },
+   "to": {
+    "offset": 2750,
+    "label": "to 27"
+   }
+  },
+  {
+   "op": "jump.record",
+   "history": "long",
+   "from": {
+    "offset": 2800,
+    "label": "from 28"
+   },
+   "to": {
+    "offset": 2850,
+    "label": "to 28"
+   }
+  },
+  {
+   "op": "jump.record",
+   "history": "long",
+   "from": {
+    "offset": 2900,
+    "label": "from 29"
+   },
+   "to": {
+    "offset": 2950,
+    "label": "to 29"
+   }
+  },
+  {
+   "op": "jump.record",
+   "history": "long",
+   "from": {
+    "offset": 3000,
+    "label": "from 30"
+   },
+   "to": {
+    "offset": 3050,
+    "label": "to 30"
+   }
+  },
+  {
+   "op": "jump.record",
+   "history": "long",
+   "from": {
+    "offset": 3100,
+    "label": "from 31"
+   },
+   "to": {
+    "offset": 3150,
+    "label": "to 31"
+   }
+  },
+  {
+   "op": "jump.record",
+   "history": "long",
+   "from": {
+    "offset": 3200,
+    "label": "from 32"
+   },
+   "to": {
+    "offset": 3250,
+    "label": "to 32"
+   }
+  },
+  {
+   "op": "jump.record",
+   "history": "long",
+   "from": {
+    "offset": 3300,
+    "label": "from 33"
+   },
+   "to": {
+    "offset": 3350,
+    "label": "to 33"
+   }
+  },
+  {
+   "op": "jump.record",
+   "history": "long",
+   "from": {
+    "offset": 3400,
+    "label": "from 34"
+   },
+   "to": {
+    "offset": 3450,
+    "label": "to 34"
+   }
+  },
+  {
+   "op": "jump.record",
+   "history": "long",
+   "from": {
+    "offset": 3500,
+    "label": "from 35"
+   },
+   "to": {
+    "offset": 3550,
+    "label": "to 35"
+   }
+  },
+  {
+   "op": "jump.record",
+   "history": "long",
+   "from": {
+    "offset": 3600,
+    "label": "from 36"
+   },
+   "to": {
+    "offset": 3650,
+    "label": "to 36"
+   }
+  },
+  {
+   "op": "jump.record",
+   "history": "long",
+   "from": {
+    "offset": 3700,
+    "label": "from 37"
+   },
+   "to": {
+    "offset": 3750,
+    "label": "to 37"
+   }
+  },
+  {
+   "op": "jump.record",
+   "history": "long",
+   "from": {
+    "offset": 3800,
+    "label": "from 38"
+   },
+   "to": {
+    "offset": 3850,
+    "label": "to 38"
+   }
+  },
+  {
+   "op": "jump.record",
+   "history": "long",
+   "from": {
+    "offset": 3900,
+    "label": "from 39"
+   },
+   "to": {
+    "offset": 3950,
+    "label": "to 39"
+   }
+  },
+  {
+   "op": "jump.record",
+   "history": "long",
+   "from": {
+    "offset": 4000,
+    "label": "from 40"
+   },
+   "to": {
+    "offset": 4050,
+    "label": "to 40"
+   }
+  },
+  {
+   "op": "jump.record",
+   "history": "long",
+   "from": {
+    "offset": 4100,
+    "label": "from 41"
+   },
+   "to": {
+    "offset": 4150,
+    "label": "to 41"
+   }
+  },
+  {
+   "op": "jump.record",
+   "history": "long",
+   "from": {
+    "offset": 4200,
+    "label": "from 42"
+   },
+   "to": {
+    "offset": 4250,
+    "label": "to 42"
+   }
+  },
+  {
+   "op": "jump.record",
+   "history": "long",
+   "from": {
+    "offset": 4300,
+    "label": "from 43"
+   },
+   "to": {
+    "offset": 4350,
+    "label": "to 43"
+   }
+  },
+  {
+   "op": "jump.record",
+   "history": "long",
+   "from": {
+    "offset": 4400,
+    "label": "from 44"
+   },
+   "to": {
+    "offset": 4450,
+    "label": "to 44"
+   }
+  },
+  {
+   "op": "jump.record",
+   "history": "long",
+   "from": {
+    "offset": 4500,
+    "label": "from 45"
+   },
+   "to": {
+    "offset": 4550,
+    "label": "to 45"
+   }
+  },
+  {
+   "op": "jump.record",
+   "history": "long",
+   "from": {
+    "offset": 4600,
+    "label": "from 46"
+   },
+   "to": {
+    "offset": 4650,
+    "label": "to 46"
+   }
+  },
+  {
+   "op": "jump.record",
+   "history": "long",
+   "from": {
+    "offset": 4700,
+    "label": "from 47"
+   },
+   "to": {
+    "offset": 4750,
+    "label": "to 47"
+   }
+  },
+  {
+   "op": "jump.record",
+   "history": "long",
+   "from": {
+    "offset": 4800,
+    "label": "from 48"
+   },
+   "to": {
+    "offset": 4850,
+    "label": "to 48"
+   }
+  },
+  {
+   "op": "jump.record",
+   "history": "long",
+   "from": {
+    "offset": 4900,
+    "label": "from 49"
+   },
+   "to": {
+    "offset": 4950,
+    "label": "to 49"
+   }
+  },
+  {
+   "op": "jump.record",
+   "history": "long",
+   "from": {
+    "offset": 5000,
+    "label": "from 50"
+   },
+   "to": {
+    "offset": 5050,
+    "label": "to 50"
+   }
+  },
+  {
+   "op": "jump.record",
+   "history": "long",
+   "from": {
+    "offset": 5100,
+    "label": "from 51"
+   },
+   "to": {
+    "offset": 5150,
+    "label": "to 51"
+   }
+  },
+  {
+   "op": "jump.record",
+   "history": "long",
+   "from": {
+    "offset": 5200,
+    "label": "from 52"
+   },
+   "to": {
+    "offset": 5250,
+    "label": "to 52"
+   }
+  },
+  {
+   "op": "jump.record",
+   "history": "long",
+   "from": {
+    "offset": 5300,
+    "label": "from 53"
+   },
+   "to": {
+    "offset": 5350,
+    "label": "to 53"
+   }
+  },
+  {
+   "op": "jump.record",
+   "history": "long",
+   "from": {
+    "offset": 5400,
+    "label": "from 54"
+   },
+   "to": {
+    "offset": 5450,
+    "label": "to 54"
+   }
+  },
+  {
+   "op": "jump.record",
+   "history": "long",
+   "from": {
+    "offset": 5500,
+    "label": "from 55"
+   },
+   "to": {
+    "offset": 5550,
+    "label": "to 55"
+   }
+  },
+  {
+   "op": "jump.record",
+   "history": "long",
+   "from": {
+    "offset": 5600,
+    "label": "from 56"
+   },
+   "to": {
+    "offset": 5650,
+    "label": "to 56"
+   }
+  },
+  {
+   "op": "jump.record",
+   "history": "long",
+   "from": {
+    "offset": 5700,
+    "label": "from 57"
+   },
+   "to": {
+    "offset": 5750,
+    "label": "to 57"
+   }
+  },
+  {
+   "op": "jump.record",
+   "history": "long",
+   "from": {
+    "offset": 5800,
+    "label": "from 58"
+   },
+   "to": {
+    "offset": 5850,
+    "label": "to 58"
+   }
+  },
+  {
+   "op": "jump.record",
+   "history": "long",
+   "from": {
+    "offset": 5900,
+    "label": "from 59"
+   },
+   "to": {
+    "offset": 5950,
+    "label": "to 59"
+   }
+  },
+  {
+   "op": "jump.record",
+   "history": "long",
+   "from": {
+    "offset": 6000,
+    "label": "from 60"
+   },
+   "to": {
+    "offset": 6050,
+    "label": "to 60"
+   }
+  },
+  {
+   "op": "jump.record",
+   "history": "long",
+   "from": {
+    "offset": 6100,
+    "label": "from 61"
+   },
+   "to": {
+    "offset": 6150,
+    "label": "to 61"
+   }
+  },
+  {
+   "op": "jump.record",
+   "history": "long",
+   "from": {
+    "offset": 6200,
+    "label": "from 62"
+   },
+   "to": {
+    "offset": 6250,
+    "label": "to 62"
+   }
+  },
+  {
+   "op": "jump.record",
+   "history": "long",
+   "from": {
+    "offset": 6300,
+    "label": "from 63"
+   },
+   "to": {
+    "offset": 6350,
+    "label": "to 63"
+   }
+  },
+  {
+   "op": "jump.record",
+   "history": "long",
+   "from": {
+    "offset": 6400,
+    "label": "from 64"
+   },
+   "to": {
+    "offset": 6450,
+    "label": "to 64"
+   }
+  },
+  {
+   "op": "jump.record",
+   "history": "long",
+   "from": {
+    "offset": 6500,
+    "label": "from 65"
+   },
+   "to": {
+    "offset": 6550,
+    "label": "to 65"
+   }
+  },
+  {
+   "op": "jump.record",
+   "history": "long",
+   "from": {
+    "offset": 6600,
+    "label": "from 66"
+   },
+   "to": {
+    "offset": 6650,
+    "label": "to 66"
+   }
+  },
+  {
+   "op": "jump.record",
+   "history": "long",
+   "from": {
+    "offset": 6700,
+    "label": "from 67"
+   },
+   "to": {
+    "offset": 6750,
+    "label": "to 67"
+   }
+  },
+  {
+   "op": "jump.record",
+   "history": "long",
+   "from": {
+    "offset": 6800,
+    "label": "from 68"
+   },
+   "to": {
+    "offset": 6850,
+    "label": "to 68"
+   }
+  },
+  {
+   "op": "jump.record",
+   "history": "long",
+   "from": {
+    "offset": 6900,
+    "label": "from 69"
+   },
+   "to": {
+    "offset": 6950,
+    "label": "to 69"
+   }
+  },
+  {
+   "op": "jump.record",
+   "history": "long",
+   "from": {
+    "offset": 7000,
+    "label": "from 70"
+   },
+   "to": {
+    "offset": 7050,
+    "label": "to 70"
+   }
+  },
+  {
+   "op": "jump.record",
+   "history": "long",
+   "from": {
+    "offset": 7100,
+    "label": "from 71"
+   },
+   "to": {
+    "offset": 7150,
+    "label": "to 71"
+   }
+  },
+  {
+   "op": "jump.record",
+   "history": "long",
+   "from": {
+    "offset": 7200,
+    "label": "from 72"
+   },
+   "to": {
+    "offset": 7250,
+    "label": "to 72"
+   }
+  },
+  {
+   "op": "jump.record",
+   "history": "long",
+   "from": {
+    "offset": 7300,
+    "label": "from 73"
+   },
+   "to": {
+    "offset": 7350,
+    "label": "to 73"
+   }
+  },
+  {
+   "op": "jump.record",
+   "history": "long",
+   "from": {
+    "offset": 7400,
+    "label": "from 74"
+   },
+   "to": {
+    "offset": 7450,
+    "label": "to 74"
+   }
+  },
+  {
+   "op": "jump.record",
+   "history": "long",
+   "from": {
+    "offset": 7500,
+    "label": "from 75"
+   },
+   "to": {
+    "offset": 7550,
+    "label": "to 75"
+   }
+  },
+  {
+   "op": "jump.record",
+   "history": "long",
+   "from": {
+    "offset": 7600,
+    "label": "from 76"
+   },
+   "to": {
+    "offset": 7650,
+    "label": "to 76"
+   }
+  },
+  {
+   "op": "jump.record",
+   "history": "long",
+   "from": {
+    "offset": 7700,
+    "label": "from 77"
+   },
+   "to": {
+    "offset": 7750,
+    "label": "to 77"
+   }
+  },
+  {
+   "op": "jump.record",
+   "history": "long",
+   "from": {
+    "offset": 7800,
+    "label": "from 78"
+   },
+   "to": {
+    "offset": 7850,
+    "label": "to 78"
+   }
+  },
+  {
+   "op": "jump.record",
+   "history": "long",
+   "from": {
+    "offset": 7900,
+    "label": "from 79"
+   },
+   "to": {
+    "offset": 7950,
+    "label": "to 79"
+   }
+  },
+  {
+   "op": "jump.record",
+   "history": "long",
+   "from": {
+    "offset": 8000,
+    "label": "from 80"
+   },
+   "to": {
+    "offset": 8050,
+    "label": "to 80"
+   }
+  },
+  {
+   "op": "jump.record",
+   "history": "long",
+   "from": {
+    "offset": 8100,
+    "label": "from 81"
+   },
+   "to": {
+    "offset": 8150,
+    "label": "to 81"
+   }
+  },
+  {
+   "op": "jump.record",
+   "history": "long",
+   "from": {
+    "offset": 8200,
+    "label": "from 82"
+   },
+   "to": {
+    "offset": 8250,
+    "label": "to 82"
+   }
+  },
+  {
+   "op": "jump.record",
+   "history": "long",
+   "from": {
+    "offset": 8300,
+    "label": "from 83"
+   },
+   "to": {
+    "offset": 8350,
+    "label": "to 83"
+   }
+  },
+  {
+   "op": "jump.record",
+   "history": "long",
+   "from": {
+    "offset": 8400,
+    "label": "from 84"
+   },
+   "to": {
+    "offset": 8450,
+    "label": "to 84"
+   }
+  },
+  {
+   "op": "jump.record",
+   "history": "long",
+   "from": {
+    "offset": 8500,
+    "label": "from 85"
+   },
+   "to": {
+    "offset": 8550,
+    "label": "to 85"
+   }
+  },
+  {
+   "op": "jump.record",
+   "history": "long",
+   "from": {
+    "offset": 8600,
+    "label": "from 86"
+   },
+   "to": {
+    "offset": 8650,
+    "label": "to 86"
+   }
+  },
+  {
+   "op": "jump.record",
+   "history": "long",
+   "from": {
+    "offset": 8700,
+    "label": "from 87"
+   },
+   "to": {
+    "offset": 8750,
+    "label": "to 87"
+   }
+  },
+  {
+   "op": "jump.record",
+   "history": "long",
+   "from": {
+    "offset": 8800,
+    "label": "from 88"
+   },
+   "to": {
+    "offset": 8850,
+    "label": "to 88"
+   }
+  },
+  {
+   "op": "jump.record",
+   "history": "long",
+   "from": {
+    "offset": 8900,
+    "label": "from 89"
+   },
+   "to": {
+    "offset": 8950,
+    "label": "to 89"
+   }
+  },
+  {
+   "op": "jump.record",
+   "history": "long",
+   "from": {
+    "offset": 9000,
+    "label": "from 90"
+   },
+   "to": {
+    "offset": 9050,
+    "label": "to 90"
+   }
+  },
+  {
+   "op": "jump.record",
+   "history": "long",
+   "from": {
+    "offset": 9100,
+    "label": "from 91"
+   },
+   "to": {
+    "offset": 9150,
+    "label": "to 91"
+   }
+  },
+  {
+   "op": "jump.record",
+   "history": "long",
+   "from": {
+    "offset": 9200,
+    "label": "from 92"
+   },
+   "to": {
+    "offset": 9250,
+    "label": "to 92"
+   }
+  },
+  {
+   "op": "jump.record",
+   "history": "long",
+   "from": {
+    "offset": 9300,
+    "label": "from 93"
+   },
+   "to": {
+    "offset": 9350,
+    "label": "to 93"
+   }
+  },
+  {
+   "op": "jump.record",
+   "history": "long",
+   "from": {
+    "offset": 9400,
+    "label": "from 94"
+   },
+   "to": {
+    "offset": 9450,
+    "label": "to 94"
+   }
+  },
+  {
+   "op": "jump.record",
+   "history": "long",
+   "from": {
+    "offset": 9500,
+    "label": "from 95"
+   },
+   "to": {
+    "offset": 9550,
+    "label": "to 95"
+   }
+  },
+  {
+   "op": "jump.record",
+   "history": "long",
+   "from": {
+    "offset": 9600,
+    "label": "from 96"
+   },
+   "to": {
+    "offset": 9650,
+    "label": "to 96"
+   }
+  },
+  {
+   "op": "jump.record",
+   "history": "long",
+   "from": {
+    "offset": 9700,
+    "label": "from 97"
+   },
+   "to": {
+    "offset": 9750,
+    "label": "to 97"
+   }
+  },
+  {
+   "op": "jump.record",
+   "history": "long",
+   "from": {
+    "offset": 9800,
+    "label": "from 98"
+   },
+   "to": {
+    "offset": 9850,
+    "label": "to 98"
+   }
+  },
+  {
+   "op": "jump.record",
+   "history": "long",
+   "from": {
+    "offset": 9900,
+    "label": "from 99"
+   },
+   "to": {
+    "offset": 9950,
+    "label": "to 99"
+   }
+  },
+  {
+   "op": "jump.record",
+   "history": "long",
+   "from": {
+    "offset": 10000,
+    "label": "from 100"
+   },
+   "to": {
+    "offset": 10050,
+    "label": "to 100"
+   }
+  },
+  {
+   "op": "jump.record",
+   "history": "long",
+   "from": {
+    "offset": 10100,
+    "label": "from 101"
+   },
+   "to": {
+    "offset": 10150,
+    "label": "to 101"
+   }
+  },
+  {
+   "op": "jump.record",
+   "history": "long",
+   "from": {
+    "offset": 10200,
+    "label": "from 102"
+   },
+   "to": {
+    "offset": 10250,
+    "label": "to 102"
+   }
+  },
+  {
+   "op": "jump.record",
+   "history": "long",
+   "from": {
+    "offset": 10300,
+    "label": "from 103"
+   },
+   "to": {
+    "offset": 10350,
+    "label": "to 103"
+   }
+  },
+  {
+   "op": "jump.back",
+   "history": "long"
+  },
+  {
+   "op": "jump.forward",
+   "history": "long"
+  }
+ ]
+}

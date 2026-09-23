@@ -1,0 +1,231 @@
+{
+ "steps": [
+  {
+   "op": "review.anchor",
+   "text": "prefix\nprefix\nprefix\nprefix\nprefix\nprefix\nprefix\nprefix\nprefix\nprefix\nprefix\nprefix\nprefix\nprefix\nprefix\nprefix\nprefix\nprefix\nprefix\nprefix\nKeep this sentence.\ntrailer",
+   "range": [
+    140,
+    19
+   ]
+  },
+  {
+   "op": "review.resolve",
+   "anchor": {
+    "text": "prefix\nprefix\nprefix\nprefix\nprefix\nprefix\nprefix\nprefix\nprefix\nprefix\nprefix\nprefix\nprefix\nprefix\nprefix\nprefix\nprefix\nprefix\nprefix\nprefix\nKeep this sentence.\ntrailer",
+    "range": [
+     140,
+     19
+    ]
+   },
+   "text": "prefix\nprefix\nprefix\nprefix\nprefix\nprefix\nprefix\nprefix\nprefix\nprefix\nprefix\nprefix\nprefix\nprefix\nprefix\nprefix\nprefix\nprefix\nprefix\nprefix\nKeep this sentence.\ntrailer"
+  },
+  {
+   "op": "review.resolve",
+   "anchor": {
+    "text": "prefix\nprefix\nprefix\nprefix\nprefix\nprefix\nprefix\nprefix\nprefix\nprefix\nprefix\nprefix\nprefix\nprefix\nprefix\nprefix\nprefix\nprefix\nprefix\nprefix\nKeep this sentence.\ntrailer",
+    "range": [
+     140,
+     19
+    ]
+   },
+   "text": "new line\nnew line\nnew line\nnew line\nnew line\nnew line\nnew line\nnew line\nnew line\nnew line\nnew line\nnew line\nnew line\nnew line\nnew line\nnew line\nnew line\nnew line\nnew line\nnew line\nprefix\nprefix\nprefix\nprefix\nprefix\nprefix\nprefix\nprefix\nprefix\nprefix\nprefix\nprefix\nprefix\nprefix\nprefix\nprefix\nprefix\nprefix\nprefix\nprefix\nKeep this sentence.\ntrailer"
+  },
+  {
+   "op": "review.resolve",
+   "anchor": {
+    "text": "before\nKeep this\nafter",
+    "range": [
+     7,
+     9
+    ]
+   },
+   "text": "changed\nKeep this\nafter"
+  },
+  {
+   "op": "review.resolve",
+   "anchor": {
+    "text": "before\nKeep this\nafter",
+    "range": [
+     7,
+     9
+    ]
+   },
+   "text": "before\nGone\nafter"
+  },
+  {
+   "op": "review.resolve",
+   "anchor": {
+    "text": "x Keep y Keep z",
+    "range": [
+     9,
+     4
+    ]
+   },
+   "text": "x Keep y Keep z"
+  },
+  {
+   "op": "review.resolve",
+   "anchor": {
+    "text": "ab Keep cd",
+    "range": [
+     3,
+     4
+    ]
+   },
+   "text": "Keep ab Keep cd Keep"
+  },
+  {
+   "op": "review.resolve",
+   "anchor": {
+    "range": [
+     9223372036854775807,
+     9223372036854775807
+    ],
+    "selectedText": "Text",
+    "beforeFingerprint": "",
+    "afterFingerprint": ""
+   },
+   "text": "Text"
+  },
+  {
+   "op": "review.resolve",
+   "anchor": {
+    "range": [
+     0,
+     0
+    ],
+    "selectedText": "",
+    "beforeFingerprint": "",
+    "afterFingerprint": ""
+   },
+   "text": "Text"
+  },
+  {
+   "op": "review.resolve",
+   "anchor": {
+    "range": [
+     -5,
+     4
+    ],
+    "selectedText": "Text",
+    "beforeFingerprint": "cbf29ce484222325",
+    "afterFingerprint": "cbf29ce484222325"
+   },
+   "text": "Text"
+  },
+  {
+   "op": "review.anchor",
+   "text": "abc",
+   "range": [
+    0,
+    0
+   ]
+  },
+  {
+   "op": "review.anchor",
+   "text": "abc",
+   "range": [
+    1,
+    5
+   ]
+  },
+  {
+   "op": "review.anchor",
+   "text": "abc",
+   "range": [
+    -1,
+    2
+   ]
+  },
+  {
+   "op": "review.anchor",
+   "text": "abcdef",
+   "range": [
+    2,
+    2
+   ],
+   "contextLength": 1
+  },
+  {
+   "op": "review.anchor",
+   "text": "abcdef",
+   "range": [
+    2,
+    2
+   ],
+   "contextLength": 0
+  },
+  {
+   "op": "review.anchor",
+   "text": "😀 emoji é here",
+   "range": [
+    0,
+    2
+   ]
+  },
+  {
+   "op": "review.anchor",
+   "text": "😀 emoji é here",
+   "range": [
+    1,
+    2
+   ]
+  },
+  {
+   "op": "review.anchor",
+   "text": "café and café",
+   "range": [
+    0,
+    4
+   ]
+  },
+  {
+   "op": "review.resolve",
+   "anchor": {
+    "text": "café and café",
+    "range": [
+     0,
+     4
+    ]
+   },
+   "text": "xx café and café"
+  },
+  {
+   "op": "review.resolve",
+   "anchor": {
+    "range": [
+     0,
+     4
+    ],
+    "selectedText": "café",
+    "beforeFingerprint": "cbf29ce484222325",
+    "afterFingerprint": "af63bd4c8601b7df"
+   },
+   "text": "café"
+  },
+  {
+   "op": "review.fingerprint",
+   "text": ""
+  },
+  {
+   "op": "review.fingerprint",
+   "text": "a"
+  },
+  {
+   "op": "review.fingerprint",
+   "text": "😀é\u0000"
+  },
+  {
+   "op": "review.critic",
+   "text": "++add++ and {--remove--} and ==mark== and ++a++b++ {-- --} ==x=="
+  },
+  {
+   "op": "review.critic",
+   "text": "plain markdown"
+  },
+  {
+   "op": "review.critic",
+   "text": "😀++é++ =={--nested--}=="
+  }
+ ]
+}

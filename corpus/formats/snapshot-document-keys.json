@@ -1,0 +1,100 @@
+{
+ "steps": [
+  {
+   "op": "snapshot.open",
+   "history": "support/history"
+  },
+  {
+   "op": "write",
+   "path": "real/note.md",
+   "text": "# Note\n"
+  },
+  {
+   "op": "symlink",
+   "path": "alias",
+   "target": "real"
+  },
+  {
+   "op": "symlink",
+   "path": "link.md",
+   "target": "real/note.md"
+  },
+  {
+   "op": "snapshot.record",
+   "doc": "real/note.md",
+   "text": "one\n",
+   "kind": "baseline"
+  },
+  {
+   "op": "snapshot.record",
+   "doc": "alias/note.md",
+   "text": "one\n",
+   "kind": "external"
+  },
+  {
+   "op": "snapshot.record",
+   "doc": "link.md",
+   "text": "two\n",
+   "kind": "external"
+  },
+  {
+   "op": "snapshot.record",
+   "doc": "é.md",
+   "text": "composed name\n",
+   "kind": "baseline"
+  },
+  {
+   "op": "snapshot.record",
+   "doc": "é.md",
+   "text": "composed name\n",
+   "kind": "external"
+  },
+  {
+   "op": "snapshot.record",
+   "doc": "日本語/メモ.md",
+   "text": "wide\n",
+   "kind": "baseline"
+  },
+  {
+   "op": "snapshot.record",
+   "doc": "with space & #hash?.md",
+   "text": "awkward\n",
+   "kind": "baseline"
+  },
+  {
+   "op": "snapshot.wait"
+  },
+  {
+   "op": "snapshot.versions",
+   "doc": "real/note.md"
+  },
+  {
+   "op": "snapshot.versions",
+   "doc": "alias/note.md"
+  },
+  {
+   "op": "snapshot.versions",
+   "doc": "link.md"
+  },
+  {
+   "op": "snapshot.versions",
+   "doc": "é.md"
+  },
+  {
+   "op": "snapshot.versions",
+   "doc": "日本語/メモ.md"
+  },
+  {
+   "op": "snapshot.documentKey",
+   "doc": "alias/note.md"
+  },
+  {
+   "op": "snapshot.documentKey",
+   "doc": "link.md"
+  },
+  {
+   "op": "snapshot.documentKey",
+   "doc": "é.md"
+  }
+ ]
+}

@@ -1,0 +1,27 @@
+{
+ "steps": [
+  {
+   "op": "prefs.defaults",
+   "write": "support/preferences.json"
+  },
+  {
+   "op": "prefs.defaults",
+   "selectTheme": {
+    "name": "Nord",
+    "slot": "dark"
+   }
+  },
+  {
+   "op": "prefs.defaults",
+   "selectTheme": {
+    "name": "Solarized Light",
+    "slot": "light"
+   }
+  },
+  {
+   "op": "prefs.decode",
+   "json": "{\"themeName\": \"Light\", \"darkThemeName\": \"Dark\", \"followsSystemAppearance\": false, \"appearancePreferenceVersion\": 1, \"previewAppearance\": \"dark\", \"typography\": {\"preset\": \"working\", \"bodySize\": 18, \"scaleRatio\": 1.333, \"lineHeightMultiple\": 1.7, \"measureCharacters\": 72, \"monoFamily\": \"Menlo\", \"monoSizeAdjust\": 1, \"monoLigatures\": true, \"opticalMargins\": false, \"mathScale\": 1.2}, \"textSizeAdjustment\": 2, \"typographicSubstitution\": true, \"showInvisibles\": true, \"reflowHardWrappedParagraphs\": false, \"typewriterScrolling\": true, \"focusMode\": true, \"codeBlockCollapseThreshold\": 40, \"defaultMode\": \"source\", \"restoreSession\": false, \"externalEditor\": \"vscode\", \"resolvePathTokens\": false, \"siblingScanDirectories\": [\"custom\", \"docs/nested\"], \"historyMaximumDays\": 90, \"historyMaximumMegabytes\": 900, \"watchFiles\": false, \"vimKeys\": true, \"autosaveEnabled\": true, \"revealMarkersAtAllCursors\": true, \"showStatusBar\": true, \"largeFileThresholdMegabytes\": 20, \"launchCount\": 7, \"hasTakenTour\": true, \"hasAnsweredSetup\": true, \"lastRegisteredBundlePath\": \"/Applications/Downright.app\"}",
+   "write": "support/full.json"
+  }
+ ]
+}

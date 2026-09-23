@@ -1,0 +1,117 @@
+{
+ "steps": [
+  {
+   "op": "state.open",
+   "support": "support"
+  },
+  {
+   "op": "state.get",
+   "doc": "missing.md"
+  },
+  {
+   "op": "write",
+   "path": "docs/note.md",
+   "text": "# Note\n"
+  },
+  {
+   "op": "state.save",
+   "doc": "docs/note.md",
+   "base": "new",
+   "set": {
+    "lastSeenHash": "abc",
+    "reviewBaselineHash": "def",
+    "anchor": {
+     "headingSlug": "second-section",
+     "headingIndex": 2,
+     "fractionThroughSection": 0.375
+    },
+    "mode": "source",
+    "zoomLevel": 3,
+    "foldedHeadings": [
+     "b",
+     "a",
+     "zeta",
+     "é",
+     "é"
+    ],
+    "expandedCodeBlocks": [
+     300,
+     12,
+     45
+    ],
+    "collapsedCodeBlocks": [
+     7
+    ],
+    "lastOpened": "2024-03-05T06:07:08Z",
+    "sidebarVisible": true,
+    "selectionLocation": 42,
+    "selectionLength": 7,
+    "splitViewEnabled": true
+   }
+  },
+  {
+   "op": "state.get",
+   "doc": "docs/note.md"
+  },
+  {
+   "op": "state.open",
+   "store": "reopened",
+   "support": "support"
+  },
+  {
+   "op": "state.get",
+   "store": "reopened",
+   "doc": "docs/note.md"
+  },
+  {
+   "op": "state.save",
+   "doc": "missing.md",
+   "set": {
+    "selectionLocation": 1,
+    "lastOpened": "2001-01-01T00:00:00Z"
+   }
+  },
+  {
+   "op": "state.save",
+   "doc": "docs/note.md",
+   "set": {
+    "anchor": {
+     "headingSlug": "",
+     "headingIndex": 0,
+     "fractionThroughSection": 1
+    },
+    "foldedHeadings": []
+   }
+  },
+  {
+   "op": "state.get",
+   "store": "reopened",
+   "doc": "docs/note.md"
+  },
+  {
+   "op": "state.open",
+   "store": "third",
+   "support": "support/"
+  },
+  {
+   "op": "state.get",
+   "store": "third",
+   "doc": "docs/note.md"
+  },
+  {
+   "op": "state.get",
+   "store": "third",
+   "doc": "missing.md"
+  },
+  {
+   "op": "symlink",
+   "path": "linked.md",
+   "target": "docs/note.md"
+  },
+  {
+   "op": "state.get",
+   "store": "third",
+   "doc": "linked.md"
+  }
+ ]
+}

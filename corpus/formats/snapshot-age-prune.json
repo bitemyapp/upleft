@@ -1,0 +1,85 @@
+{
+ "steps": [
+  {
+   "op": "snapshot.open",
+   "history": "support/history"
+  },
+  {
+   "op": "write",
+   "path": "live.md",
+   "text": "# Live\n"
+  },
+  {
+   "op": "snapshot.record",
+   "doc": "live.md",
+   "text": "old one\n",
+   "kind": "external"
+  },
+  {
+   "op": "snapshot.record",
+   "doc": "live.md",
+   "text": "old two\n",
+   "kind": "external"
+  },
+  {
+   "op": "snapshot.record",
+   "doc": "live.md",
+   "text": "old three\n",
+   "kind": "external"
+  },
+  {
+   "op": "snapshot.record",
+   "doc": "live.md",
+   "text": "recent\n",
+   "kind": "external"
+  },
+  {
+   "op": "snapshot.record",
+   "doc": "gone.md",
+   "text": "gone but cached\n",
+   "kind": "baseline"
+  },
+  {
+   "op": "snapshot.wait"
+  },
+  {
+   "op": "snapshot.writeIndex",
+   "doc": "live.md",
+   "text": "{\"path\": \"<root>/live.md\", \"versions\": [{\"hash\": \"4fc4761d23e5e018f404995fdcdbe4a9f6490e39e956fd7739da557d48e4d511\", \"date\": \"2001-01-01T00:00:00Z\", \"byteCount\": 8, \"kind\": \"baseline\"}, {\"hash\": \"c280cb6cd9ccce2b3f7a7f0a494c5fe6ebbda2a59440f17ed3a39e4e98f67b71\", \"date\": \"2001-02-01T00:00:00Z\", \"byteCount\": 8, \"kind\": \"external\"}, {\"hash\": \"31fcc973d62cb06e6c900dcfdcd1ad614c351ad2775d8e213ea16e41e56f598b\", \"date\": \"2030-01-01T00:00:00Z\", \"byteCount\": 10, \"kind\": \"external\"}, {\"hash\": \"8f6bcead4888103a52b3f90e9960dbd4351635dfe94a16fb86a9a3fbb77d63b7\", \"date\": \"2001-03-01T00:00:00Z\", \"byteCount\": 7, \"kind\": \"local\"}]}"
+  },
+  {
+   "op": "snapshot.writeIndex",
+   "doc": "gone.md",
+   "text": "{\"path\": \"<root>/gone.md\", \"versions\": [{\"hash\": \"bc42d52ed42daf2812fd84a4290b07fd97a102e4145d3e04c63b4d0105cda211\", \"date\": \"1999-12-31T23:59:59Z\", \"byteCount\": 16, \"kind\": \"baseline\"}]}"
+  },
+  {
+   "op": "snapshot.prune"
+  },
+  {
+   "op": "snapshot.versions",
+   "doc": "live.md"
+  },
+  {
+   "op": "snapshot.versions",
+   "doc": "gone.md"
+  },
+  {
+   "op": "snapshot.inventory"
+  },
+  {
+   "op": "snapshot.prune"
+  },
+  {
+   "op": "snapshot.versions",
+   "doc": "live.md"
+  },
+  {
+   "op": "snapshot.content",
+   "text": "old one\n"
+  },
+  {
+   "op": "snapshot.content",
+   "text": "recent\n"
+  }
+ ]
+}

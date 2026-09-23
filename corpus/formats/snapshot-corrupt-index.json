@@ -1,0 +1,123 @@
+{
+ "steps": [
+  {
+   "op": "snapshot.open",
+   "history": "support/history"
+  },
+  {
+   "op": "snapshot.record",
+   "doc": "document.md",
+   "text": "first version\n",
+   "kind": "baseline"
+  },
+  {
+   "op": "snapshot.record",
+   "doc": "kept.md",
+   "text": "kept behind a corrupt index\n",
+   "kind": "baseline"
+  },
+  {
+   "op": "snapshot.record",
+   "doc": "forgotten.md",
+   "text": "forgotten\n",
+   "kind": "baseline"
+  },
+  {
+   "op": "snapshot.wait"
+  },
+  {
+   "op": "snapshot.writeIndex",
+   "doc": "document.md",
+   "text": "not json"
+  },
+  {
+   "op": "snapshot.record",
+   "doc": "document.md",
+   "text": "second version\n",
+   "kind": "external"
+  },
+  {
+   "op": "snapshot.wait"
+  },
+  {
+   "op": "snapshot.versions",
+   "doc": "document.md"
+  },
+  {
+   "op": "snapshot.content",
+   "text": "first version\n"
+  },
+  {
+   "op": "snapshot.content",
+   "text": "second version\n"
+  },
+  {
+   "op": "snapshot.prune"
+  },
+  {
+   "op": "snapshot.inventory"
+  },
+  {
+   "op": "snapshot.writeIndex",
+   "doc": "kept.md",
+   "text": "{\"path\":\"x\",\"versions\":[{\"hash\":\"a\"}]}"
+  },
+  {
+   "op": "snapshot.forget",
+   "doc": "forgotten.md"
+  },
+  {
+   "op": "snapshot.wait"
+  },
+  {
+   "op": "snapshot.inventory"
+  },
+  {
+   "op": "snapshot.versions",
+   "doc": "kept.md"
+  },
+  {
+   "op": "snapshot.writeIndex",
+   "doc": "kept.md",
+   "text": "{\"path\":\"<root>/kept.md\",\"versions\":[{\"hash\":\"2836ad284d078b81377985c2a4b856c6a248cd9aef2c3f32cc3b863691746da9\",\"date\":\"2030-01-01T00:00:00Z\",\"byteCount\":28,\"kind\":\"baseline\"}]}"
+  },
+  {
+   "op": "snapshot.writeIndex",
+   "doc": "document.md",
+   "text": "{\"path\":\"<root>/document.md\",\"versions\":[{\"hash\":\"0533c80dc85756cf8cd5181e68d6520f5ffc4585def452d26f59756a5c2548b1\",\"date\":\"2030-01-01T00:00:00Z\",\"byteCount\":14,\"kind\":\"baseline\"}],}"
+  },
+  {
+   "op": "mkdir",
+   "path": "support/history/index/directory.json"
+  },
+  {
+   "op": "snapshot.prune"
+  },
+  {
+   "op": "snapshot.inventory"
+  },
+  {
+   "op": "remove",
+   "path": "support/history/index/directory.json"
+  },
+  {
+   "op": "write",
+   "path": "support/history/index/notes.txt",
+   "text": "ignored: not .json"
+  },
+  {
+   "op": "snapshot.prune"
+  },
+  {
+   "op": "snapshot.inventory"
+  },
+  {
+   "op": "snapshot.versions",
+   "doc": "document.md"
+  },
+  {
+   "op": "snapshot.versions",
+   "doc": "kept.md"
+  }
+ ]
+}

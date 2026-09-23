@@ -1,0 +1,82 @@
+{
+ "steps": [
+  {
+   "op": "snapshot.open",
+   "history": "support/history"
+  },
+  {
+   "op": "snapshot.limits"
+  },
+  {
+   "op": "snapshot.limits",
+   "maximumBytesPerDocument": 100
+  },
+  {
+   "op": "snapshot.record",
+   "doc": "document.md",
+   "text": "first version of the document body\n",
+   "kind": "baseline"
+  },
+  {
+   "op": "snapshot.record",
+   "doc": "document.md",
+   "text": "second version of the document body, revised\n",
+   "kind": "external"
+  },
+  {
+   "op": "snapshot.record",
+   "doc": "document.md",
+   "text": "third version of the document body, revised again\n",
+   "kind": "external"
+  },
+  {
+   "op": "snapshot.record",
+   "doc": "other.md",
+   "text": "first version of the document body\n",
+   "kind": "baseline"
+  },
+  {
+   "op": "snapshot.wait"
+  },
+  {
+   "op": "snapshot.prune"
+  },
+  {
+   "op": "snapshot.versions",
+   "doc": "document.md"
+  },
+  {
+   "op": "snapshot.versions",
+   "doc": "other.md"
+  },
+  {
+   "op": "snapshot.inventory"
+  },
+  {
+   "op": "snapshot.limits",
+   "maximumBytesPerDocument": 8
+  },
+  {
+   "op": "snapshot.prune"
+  },
+  {
+   "op": "snapshot.versions",
+   "doc": "document.md"
+  },
+  {
+   "op": "snapshot.versions",
+   "doc": "other.md"
+  },
+  {
+   "op": "snapshot.inventory"
+  },
+  {
+   "op": "snapshot.content",
+   "text": "first version of the document body\n"
+  },
+  {
+   "op": "snapshot.content",
+   "text": "second version of the document body, revised\n"
+  }
+ ]
+}

@@ -1,0 +1,104 @@
+{
+ "steps": [
+  {
+   "op": "snapshot.open",
+   "history": "support/history"
+  },
+  {
+   "op": "snapshot.record",
+   "doc": "a.md",
+   "text": "# Shared\n\nSame body in two documents.\n",
+   "kind": "baseline"
+  },
+  {
+   "op": "snapshot.record",
+   "doc": "b.md",
+   "text": "# Shared\n\nSame body in two documents.\n",
+   "kind": "baseline"
+  },
+  {
+   "op": "snapshot.record",
+   "doc": "a.md",
+   "text": "# A\n\nOnly in a.\n",
+   "kind": "external"
+  },
+  {
+   "op": "snapshot.record",
+   "doc": "b.md",
+   "text": "# B\n\nOnly in b.\n",
+   "kind": "local"
+  },
+  {
+   "op": "snapshot.record",
+   "doc": "docs/nested/c.md",
+   "text": "# Shared\n\nSame body in two documents.\n",
+   "kind": "external"
+  },
+  {
+   "op": "snapshot.wait"
+  },
+  {
+   "op": "snapshot.versions",
+   "doc": "a.md"
+  },
+  {
+   "op": "snapshot.versions",
+   "doc": "b.md"
+  },
+  {
+   "op": "snapshot.versions",
+   "doc": "docs/nested/c.md"
+  },
+  {
+   "op": "snapshot.inventory"
+  },
+  {
+   "op": "snapshot.forget",
+   "doc": "a.md"
+  },
+  {
+   "op": "snapshot.wait"
+  },
+  {
+   "op": "snapshot.versions",
+   "doc": "a.md"
+  },
+  {
+   "op": "snapshot.inventory"
+  },
+  {
+   "op": "snapshot.content",
+   "text": "# A\n\nOnly in a.\n"
+  },
+  {
+   "op": "snapshot.content",
+   "text": "# Shared\n\nSame body in two documents.\n"
+  },
+  {
+   "op": "snapshot.record",
+   "doc": "a.md",
+   "text": "# Shared\n\nSame body in two documents.\n",
+   "kind": "baseline"
+  },
+  {
+   "op": "snapshot.record",
+   "doc": "a.md",
+   "text": "# Shared\n\nSame body in two documents.\n",
+   "kind": "baseline"
+  },
+  {
+   "op": "snapshot.forget",
+   "doc": "never-recorded.md"
+  },
+  {
+   "op": "snapshot.wait"
+  },
+  {
+   "op": "snapshot.versions",
+   "doc": "a.md"
+  },
+  {
+   "op": "snapshot.totalBytes"
+  }
+ ]
+}

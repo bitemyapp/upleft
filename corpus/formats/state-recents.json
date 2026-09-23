@@ -1,0 +1,124 @@
+{
+ "steps": [
+  {
+   "op": "state.open",
+   "support": "support"
+  },
+  {
+   "op": "state.recents"
+  },
+  {
+   "op": "write",
+   "path": "a.md",
+   "text": "# A\n"
+  },
+  {
+   "op": "write",
+   "path": "b.md",
+   "text": "# B\n"
+  },
+  {
+   "op": "write",
+   "path": "c.md",
+   "text": "# C\n"
+  },
+  {
+   "op": "symlink",
+   "path": "alias.md",
+   "target": "a.md"
+  },
+  {
+   "op": "write",
+   "path": "support/recents.json",
+   "text": "[{\"path\": \"<root>/b.md\", \"displayName\": \"b\", \"firstHeading\": \"B\", \"lastOpened\": \"2020-01-02T00:00:00Z\", \"wordCount\": 2}, {\"path\": \"<root>/a.md\", \"displayName\": \"a\", \"firstHeading\": \"A\", \"lastOpened\": \"2020-01-03T00:00:00Z\", \"wordCount\": 1}, {\"path\": \"<root>/alias.md\", \"displayName\": \"alias\", \"firstHeading\": \"\", \"lastOpened\": \"2020-01-01T00:00:00Z\", \"wordCount\": 0}, {\"path\": \"<root>/gone.md\", \"displayName\": \"gone\", \"firstHeading\": \"\", \"lastOpened\": \"2020-01-04T00:00:00Z\", \"wordCount\": 0}, {\"path\": \"<root>/./c.md\", \"displayName\": \"c\", \"firstHeading\": \"\", \"lastOpened\": \"2020-01-02T00:00:00Z\", \"wordCount\": 5}]"
+  },
+  {
+   "op": "state.recents"
+  },
+  {
+   "op": "state.recents",
+   "limit": 2
+  },
+  {
+   "op": "state.noteOpened",
+   "doc": "b.md",
+   "text": "# Bravo heading\n\nTwo words.\n\n```\ncode is not counted\n```\n"
+  },
+  {
+   "op": "state.recents"
+  },
+  {
+   "op": "state.noteOpened",
+   "doc": "alias.md",
+   "text": "No heading here, just seven words of prose.\n"
+  },
+  {
+   "op": "state.recents"
+  },
+  {
+   "op": "state.noteOpened",
+   "doc": "docs/new file.md",
+   "text": "## Deep *heading* `code`\n"
+  },
+  {
+   "op": "write",
+   "path": "docs/new file.md",
+   "text": "now it exists\n"
+  },
+  {
+   "op": "state.recents"
+  },
+  {
+   "op": "state.removeRecent",
+   "path": "a.md"
+  },
+  {
+   "op": "state.recents"
+  },
+  {
+   "op": "state.canonicalPath",
+   "path": "alias.md"
+  },
+  {
+   "op": "state.canonicalPath",
+   "path": "docs/../c.md"
+  },
+  {
+   "op": "remove",
+   "path": "c.md"
+  },
+  {
+   "op": "state.recents"
+  },
+  {
+   "op": "state.noteOpened",
+   "doc": "b.md",
+   "text": "# B again\n"
+  },
+  {
+   "op": "state.recents"
+  },
+  {
+   "op": "state.clearRecents"
+  },
+  {
+   "op": "state.recents"
+  },
+  {
+   "op": "write",
+   "path": "support/recents.json",
+   "text": "{\"not\": \"a list\"}"
+  },
+  {
+   "op": "state.recents"
+  },
+  {
+   "op": "state.noteOpened",
+   "doc": "b.md",
+   "text": "Plain.\n"
+  },
+  {
+   "op": "state.recents"
+  }
+ ]
+}
