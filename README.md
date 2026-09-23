@@ -13,7 +13,7 @@ The layers below are ported in this order. A layer counts as done only when the 
 | cmark-gfm (C, not rewritten) | `swiftlang/swift-cmark` @ `7898f1b` | `upleft-cmark-gfm-sys` | links the identical C sources | done |
 | swift-markdown converter | `apple/swift-markdown` @ `27b7fc1` | `upleft-markup` | syntax-tree dump identical | **done**: 897/897 corpus documents identical; 5,000-line document parses in 2.1 ms vs 15.3 ms in Swift |
 | MarkdownCore | `Sources/MarkdownCore` | `upleft-core` | `parse` dump identical | in progress |
-| MarkdownRender | `Sources/MarkdownRender` | `upleft-render` | `decorate` dump and `render` pixels identical | not started |
+| MarkdownRender | `Sources/MarkdownRender` | `upleft-render` | `decorate` dump and `render` pixels identical | in progress. Themes, stylesheet, metrics, contracts and syntax highlighting are done: stylesheet 12/12, highlight 909/909, vscode-theme 19/19; the highlighter is about 1.7× faster than Swift. Not yet started: the decoration engine, text view and fragments. |
 | SwiftMath | `Vendor/SwiftMath` | `upleft-math` | math pixels identical | in progress |
 | beautiful-mermaid + ELK | `lukilabs/*` | `upleft-mermaid`, `upleft-elk` | diagram pixels identical | in progress |
 | DownrightApp and the command-line tools | `Sources/DownrightApp`, `down`, … | `upleft` | window captures identical | not started |
