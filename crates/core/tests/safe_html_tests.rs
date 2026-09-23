@@ -17,7 +17,7 @@ fn any_kind(annotations: &[upleft_core::safe_html::SafeHTMLAnnotation], test: im
 }
 
 #[test]
-#[ignore = "needs parser (upleft-markup)"]
+
 fn common_readme_html_is_source_addressed_and_safe() {
     let source = r#"<p align="center"><strong>Downright</strong><br><a href="https://example.com">Home</a></p>"#;
     let parsed = MarkdownParser::parse(source);
@@ -35,7 +35,7 @@ fn common_readme_html_is_source_addressed_and_safe() {
 }
 
 #[test]
-#[ignore = "needs parser (upleft-markup)"]
+
 fn details_tables_and_local_images_stay_in_the_subset() {
     let source = "<details open><summary>More</summary><table><tr><th align=\"right\">A</th><td>B</td></tr></table></details>\n<img src=\"Docs/demo.png\" alt=\"Demo\">";
     let parsed = MarkdownParser::parse(source);
@@ -55,7 +55,7 @@ fn details_tables_and_local_images_stay_in_the_subset() {
 /// at all. The shortcut is document-wide, so a `<` in an unrelated block must
 /// leave every other block's annotations exactly as they were.
 #[test]
-#[ignore = "needs parser (upleft-markup)"]
+
 fn the_document_wide_html_shortcut_does_not_change_annotations() {
     let without_angle_brackets = "# Title\n\nA paragraph with **bold**, `code`, and a [link](https://example.com).\n\n- [ ] a task";
     let plain = MarkdownParser::parse(without_angle_brackets);
@@ -74,7 +74,7 @@ fn the_document_wide_html_shortcut_does_not_change_annotations() {
 }
 
 #[test]
-#[ignore = "needs parser (upleft-markup)"]
+
 fn unsafe_or_unknown_html_remains_literal_and_inert() {
     for source in [
         r#"<script>alert(1)</script>"#,
@@ -91,7 +91,7 @@ fn unsafe_or_unknown_html_remains_literal_and_inert() {
 }
 
 #[test]
-#[ignore = "needs parser (upleft-markup)"]
+
 fn unbalanced_details_without_a_real_document_boundary_stay_literal() {
     for source in ["<details>", "</details>"] {
         let parsed = MarkdownParser::parse(source);
@@ -106,7 +106,7 @@ fn unbalanced_details_without_a_real_document_boundary_stay_literal() {
 /// substrings: a mention inside a code span or prose must not license hiding
 /// a stray literal tag in another block.
 #[test]
-#[ignore = "needs parser (upleft-markup)"]
+
 fn details_mentions_in_code_spans_and_prose_do_not_satisfy_the_cross_block_check() {
     for opener in ["`<details>`", "the <details> element is a container"] {
         let source = format!("{opener}\n\n</details>");
@@ -131,7 +131,7 @@ fn details_mentions_in_code_spans_and_prose_do_not_satisfy_the_cross_block_check
 /// The genuine README shape — an opening block, a blank line, the body,
 /// another blank line, the closing block — keeps its cross-block pairing.
 #[test]
-#[ignore = "needs parser (upleft-markup)"]
+
 fn split_details_across_blank_lines_still_pairs_up() {
     let source = "<details open>\n<summary>More</summary>\n\nBody text across the boundary.\n\n</details>";
     let parsed = MarkdownParser::parse(source);
@@ -141,7 +141,7 @@ fn split_details_across_blank_lines_still_pairs_up() {
 }
 
 #[test]
-#[ignore = "needs parser (upleft-markup)"]
+
 fn remote_images_stay_visible_but_inert_inside_safe_parents() {
     let source = r#"<p align="center"><img src="https://tracker.example/pixel.png" alt="remote"></p>"#;
     let parsed = MarkdownParser::parse(source);
@@ -169,7 +169,7 @@ fn github_profile_continues_to_describe_raw_html_as_target_compatibility() {
 }
 
 #[test]
-#[ignore = "needs parser (upleft-markup)"]
+
 fn downright_readme_corpus_classifies_safe_and_remote_risk_html() {
     // `#filePath` → Tests/MarkdownCoreTests → the Downright repository root.
     let path = concat!(env!("CARGO_MANIFEST_DIR"), "/../../vendor/downright/README.md");
