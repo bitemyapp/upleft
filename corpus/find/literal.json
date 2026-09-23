@@ -1,0 +1,120 @@
+{
+ "documents": [
+  "../generated/agent/agent-5000.md",
+  "../workspace/notes.md",
+  "../workspace/README.md",
+  "../workspace/crlf.md",
+  "../generated/docs/README.md"
+ ],
+ "queries": [
+  {
+   "text": "section"
+  },
+  {
+   "text": "Section",
+   "caseSensitive": true
+  },
+  {
+   "text": "section",
+   "wholeWord": true
+  },
+  {
+   "text": "SECTION",
+   "caseSensitive": true
+  },
+  {
+   "text": "a.c"
+  },
+  {
+   "text": "(link)"
+  },
+  {
+   "text": "[link](https://example.com)"
+  },
+  {
+   "text": "file.ts:1",
+   "wholeWord": true
+  },
+  {
+   "text": "file.ts:1"
+  },
+  {
+   "text": ""
+  },
+  {
+   "text": "zzzz-not-present"
+  },
+  {
+   "text": "task",
+   "caret": 5000
+  },
+  {
+   "text": "task",
+   "caret": 9999999
+  },
+  {
+   "text": "the",
+   "scope": [
+    100,
+    500
+   ]
+  },
+  {
+   "text": "the",
+   "scope": [
+    120000,
+    5000
+   ]
+  },
+  {
+   "text": "the",
+   "scope": [
+    9999999,
+    10
+   ]
+  },
+  {
+   "text": "the",
+   "scope": [
+    50,
+    0
+   ]
+  },
+  {
+   "text": "$1\\",
+   "template": "x"
+  },
+  {
+   "text": "Section",
+   "template": "$0 [\\1] $1"
+  },
+  {
+   "text": "\n\n"
+  },
+  {
+   "text": "\r\n"
+  },
+  {
+   "text": "- [ ]",
+   "template": "- [x]"
+  },
+  {
+   "text": "`code`",
+   "wholeWord": true
+  },
+  {
+   "text": "*",
+   "caret": 300
+  },
+  {
+   "text": "resolves.",
+   "caseSensitive": true,
+   "wholeWord": true
+  },
+  {
+   "text": "release",
+   "template": "RELEASE",
+   "caret": 40
+  }
+ ]
+}

@@ -354,7 +354,25 @@
       "command": "html-export",
       "oracle": "app",
       "output": "json",
-      "variants": [[]]
+      "only": ["corpus/"],
+      "keyPath": true,
+      "depends": ["corpus/workspace/"],
+      "variants": [
+        ["--theme", "High Contrast"],
+        ["--theme", "High Contrast", "--dark"],
+        ["--theme", "Nord"],
+        ["--theme", "Nord", "--dark"],
+        ["--theme", "Paper Light"],
+        ["--theme", "Paper Light", "--dark"],
+        ["--theme", "Solarized Light"],
+        ["--theme", "Solarized Light", "--dark"],
+        ["--theme", "System"],
+        ["--theme", "System", "--dark"],
+        ["--theme", "Warm Dark"],
+        ["--theme", "Warm Dark", "--dark"],
+        ["--theme", "Paper Light", "--print"],
+        ["--theme", "Warm Dark", "--dark", "--print"]
+      ]
     },
     {
       "name": "spotlight",
@@ -380,6 +398,7 @@
       "output": "json",
       "input": "json",
       "only": ["corpus/workspace-queries/"],
+      "depends": ["corpus/workspace/"],
       "variants": [[]]
     },
     {
@@ -389,6 +408,7 @@
       "output": "json",
       "input": "json",
       "only": ["corpus/find/"],
+      "depends": ["corpus/workspace/", "corpus/generated/agent/", "corpus/generated/docs/"],
       "variants": [[]]
     },
     {

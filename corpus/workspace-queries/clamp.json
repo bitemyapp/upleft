@@ -1,0 +1,14 @@
+{
+ "root": "../workspace",
+ "policy": {
+  "maximumFiles": 0,
+  "readConcurrency": 0,
+  "maximumBytesPerFile": 0,
+  "maximumTotalBytes": -5
+ },
+ "searches": [
+  {
+   "text": "#"
+  }
+ ]
+}

@@ -9,6 +9,8 @@ publish.workspace = true
 [dependencies]
 upleft-core.workspace = true
 upleft-render.workspace = true
+upleft-math.workspace = true
+upleft-mermaid.workspace = true
 upleft-swift-text.workspace = true
 upleft-foundation.workspace = true
 upleft-cli.workspace = true
@@ -28,7 +30,7 @@ objc2-foundation = { workspace = true, features = [
     "NSValue", "NSXMLDocument", "NSXMLElement", "NSXMLNode", "NSXMLParser", "block2",
 ] }
 objc2-app-kit = { workspace = true, features = [
-    "NSAppearance", "NSApplication", "NSAttributedString", "NSColor", "NSFont", "NSImage", "NSParagraphStyle",
+    "NSAppearance", "NSApplication", "NSAttributedString", "NSBitmapImageRep", "NSColor", "NSColorSpace", "NSImageRep", "NSFont", "NSImage", "NSParagraphStyle",
     "NSPasteboard", "NSResponder", "NSSpeechSynthesizer", "NSText", "NSTextStorage", "NSWorkspace", "block2",
     "objc2-core-foundation",
 ] }
@@ -37,3 +39,7 @@ objc2-core-foundation = { workspace = true, features = ["CFArray", "CFBase", "CF
 
 [dev-dependencies]
 serde_json.workspace = true
+
+[[test]]
+name = "workspace_tests"
+harness = false

@@ -550,6 +550,8 @@ dependencies = [
  "upleft-cli",
  "upleft-core",
  "upleft-foundation",
+ "upleft-math",
+ "upleft-mermaid",
  "upleft-render",
  "upleft-spotlight-metadata",
  "upleft-swift-text",
@@ -647,6 +649,7 @@ dependencies = [
  "objc2",
  "objc2-core-foundation",
  "objc2-foundation",
+ "serde_json",
  "upleft-swift-text",
 ]
 

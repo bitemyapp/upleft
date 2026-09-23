@@ -1,0 +1,136 @@
+{
+ "documents": [
+  "../generated/agent/agent-5000.md",
+  "../workspace/notes.md",
+  "../workspace/crlf.md",
+  "../workspace/docs/guide.md"
+ ],
+ "queries": [
+  {
+   "text": "(\\w+)@(\\w+)",
+   "isRegex": true,
+   "template": "$2/$1"
+  },
+  {
+   "text": "Section (\\d+)",
+   "isRegex": true,
+   "template": "Part $1"
+  },
+  {
+   "text": "^## .*$",
+   "isRegex": true
+  },
+  {
+   "text": "(?m)^## (.*)$",
+   "isRegex": true,
+   "template": "# $1"
+  },
+  {
+   "text": "(?m)^\\s*$",
+   "isRegex": true
+  },
+  {
+   "text": "a(",
+   "isRegex": true
+  },
+  {
+   "text": "[",
+   "isRegex": true
+  },
+  {
+   "text": "(?<name>x",
+   "isRegex": true
+  },
+  {
+   "text": "\\",
+   "isRegex": true
+  },
+  {
+   "text": "*a",
+   "isRegex": true
+  },
+  {
+   "text": "x*",
+   "isRegex": true
+  },
+  {
+   "text": "\\b",
+   "isRegex": true
+  },
+  {
+   "text": "(foo)|(bar)|(task)|(item)",
+   "isRegex": true,
+   "wholeWord": true,
+   "template": "$1/$2/$3/$4"
+  },
+  {
+   "text": "(?i)SECTION",
+   "isRegex": true,
+   "caseSensitive": true
+  },
+  {
+   "text": "\\d{2,}",
+   "isRegex": true,
+   "caseSensitive": true,
+   "template": "<$0>"
+  },
+  {
+   "text": "(t)(a)(s)(k)",
+   "isRegex": true,
+   "template": "$4$3$2$1 \\$1 $9 ${x} $$ \\\\"
+  },
+  {
+   "text": "(?<=\\[)x(?=\\])",
+   "isRegex": true,
+   "template": " "
+  },
+  {
+   "text": "`([^`]+)`",
+   "isRegex": true,
+   "template": "<code>$1</code>",
+   "caret": 1000
+  },
+  {
+   "text": ".",
+   "isRegex": true,
+   "scope": [
+    0,
+    20
+   ],
+   "template": "[$0]"
+  },
+  {
+   "text": "(?s)Section 1\\b.*?Section 2\\b",
+   "isRegex": true
+  },
+  {
+   "text": "\\R",
+   "isRegex": true,
+   "scope": [
+    0,
+    200
+   ]
+  },
+  {
+   "text": "(\\r?\\n){2}",
+   "isRegex": true,
+   "template": "¶"
+  },
+  {
+   "text": "link",
+   "isRegex": true,
+   "wholeWord": true,
+   "caseSensitive": true,
+   "template": "$0$0"
+  },
+  {
+   "text": "[[:alpha:]]+ing\\b",
+   "isRegex": true
+  },
+  {
+   "text": "\\Qfile.ts:\\E\\d+",
+   "isRegex": true,
+   "template": "\\Q$0\\E"
+  }
+ ]
+}

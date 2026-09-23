@@ -1,0 +1,80 @@
+{
+ "root": "../workspace",
+ "searches": [
+  {
+   "text": "guide"
+  },
+  {
+   "text": "Guide",
+   "caseSensitive": true
+  },
+  {
+   "text": "guide",
+   "wholeWord": true
+  },
+  {
+   "text": "release",
+   "limitPerFile": 1
+  },
+  {
+   "text": "(?m)^#+ (.*)$",
+   "isRegex": true
+  },
+  {
+   "text": "\\[\\[([^\\]]+)\\]\\]",
+   "isRegex": true
+  },
+  {
+   "text": "a(",
+   "isRegex": true
+  },
+  {
+   "text": ""
+  },
+  {
+   "text": "café"
+  },
+  {
+   "text": "café"
+  },
+  {
+   "text": "é",
+   "wholeWord": true
+  },
+  {
+   "text": "日本語"
+  },
+  {
+   "text": "🎉"
+  },
+  {
+   "text": "^",
+   "isRegex": true,
+   "limitPerFile": 3
+  },
+  {
+   "text": "x*",
+   "isRegex": true,
+   "limitPerFile": 2
+  },
+  {
+   "text": "Ship the release."
+  },
+  {
+   "text": "\\r",
+   "isRegex": true
+  },
+  {
+   "text": "BOM"
+  },
+  {
+   "text": "(foo)|(plan)",
+   "isRegex": true,
+   "wholeWord": true
+  },
+  {
+   "text": "leaf",
+   "wholeWord": true
+  }
+ ]
+}
