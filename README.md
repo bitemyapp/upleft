@@ -1,6 +1,6 @@
 # Upleft
 
-Upleft is a Rust rewrite of [Downright](https://github.com/ezzy1630/Downright), the native macOS Markdown reader and editor. It uses AppKit and TextKit 2 through [objc2](https://github.com/madsmtm/objc2), the way [Omperor](https://github.com/bitemyapp/omperor) does.
+Upleft is a Rust rewrite of [Downright](https://github.com/ezzy1630/Downright), the native macOS Markdown reader and editor. It uses AppKit and TextKit 2 through [objc2](https://github.com/madsmtm/objc2).
 
 The goal is strict: **the same output as Downright, pixel for pixel, at the same speed or faster.** Every layer is checked against the Swift original, which is built from source out of `vendor/downright`.
 
