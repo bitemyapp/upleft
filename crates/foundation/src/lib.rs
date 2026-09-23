@@ -6,6 +6,10 @@
 //!   macOS 14 and later): formatting, key order under `.sortedKeys`, string
 //!   escaping, number text and the `.iso8601` date strategy. `JSONEncoder` is
 //!   Swift-only, so it cannot be called through objc2.
+//! * [`json_decoder`] reproduces the input side of Swift's `JSONDecoder`: its
+//!   scanner's acceptance rules (encodings, trailing commas, lazy numbers and
+//!   strings, first duplicate wins) and the `NSError` code each typed
+//!   `decode` throws.
 //! * [`json_serialization`] calls `NSJSONSerialization` itself through objc2,
 //!   so `JSONSerialization` call sites get Foundation's own output.
 //! * [`url`] reproduces Swift's `URL` for `file:` URLs, which differs from
@@ -16,6 +20,7 @@
 //! each function names the Foundation API it reproduces.
 
 pub mod date;
+pub mod json_decoder;
 pub mod json_encoder;
 pub mod json_serialization;
 pub mod url;
