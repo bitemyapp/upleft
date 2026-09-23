@@ -379,8 +379,8 @@ impl DocumentIO {
         let ending = Self::dominant_line_ending(&raw);
         let text = match ending {
             LineEnding::Lf => raw,
-            LineEnding::Crlf => swift_text::replacing_occurrences(&raw, "\r\n", "\n"),
-            LineEnding::Cr => swift_text::replacing_occurrences(&raw, "\r", "\n"),
+            LineEnding::Crlf => replacing_occurrences(&raw, "\r\n", "\n"),
+            LineEnding::Cr => replacing_occurrences(&raw, "\r", "\n"),
         };
         let has_trailing_newline = swift_text::has_suffix(&text, "\n");
         Ok((text, ByteFidelity::new(encoding, has_bom, ending, has_trailing_newline)))
@@ -446,11 +446,11 @@ impl DocumentIO {
         let body = match fidelity.line_ending {
             LineEnding::Lf => text,
             LineEnding::Crlf => {
-                converted = swift_text::replacing_occurrences(text, "\n", "\r\n");
+                converted = replacing_occurrences(text, "\n", "\r\n");
                 converted.as_str()
             }
             LineEnding::Cr => {
-                converted = swift_text::replacing_occurrences(text, "\n", "\r");
+                converted = replacing_occurrences(text, "\n", "\r");
                 converted.as_str()
             }
         };
@@ -570,10 +570,11 @@ pub fn string_from_data(data: &[u8], encoding: TextEncodingKind) -> Option<Strin
         }
         TextEncodingKind::Utf16LE | TextEncodingKind::Utf16BE => {
             let little = encoding == TextEncodingKind::Utf16LE;
-            let units = data.chunks_exact(2).map(|pair| {
-                let bytes = [pair[0], pair[1]];
-                if little { u16::from_le_bytes(bytes) } else { u16::from_be_bytes(bytes) }
-            });
+            let units = data
+                .as_chunks::<2>()
+                .0
+                .iter()
+                .map(|&pair| if little { u16::from_le_bytes(pair) } else { u16::from_be_bytes(pair) });
             let mut out = String::with_capacity(data.len() / 2);
             for decoded in char::decode_utf16(units) {
                 out.push(decoded.ok()?);
@@ -583,9 +584,8 @@ pub fn string_from_data(data: &[u8], encoding: TextEncodingKind) -> Option<Strin
         TextEncodingKind::Utf32LE | TextEncodingKind::Utf32BE => {
             let little = encoding == TextEncodingKind::Utf32LE;
             let mut out = String::with_capacity(data.len() / 4);
-            for word in data.chunks_exact(4) {
-                let bytes = [word[0], word[1], word[2], word[3]];
-                let value = if little { u32::from_le_bytes(bytes) } else { u32::from_be_bytes(bytes) };
+            for &word in data.as_chunks::<4>().0 {
+                let value = if little { u32::from_le_bytes(word) } else { u32::from_be_bytes(word) };
                 out.push(char::from_u32(value)?);
             }
             Some(out)
@@ -625,6 +625,24 @@ pub fn data_using(text: &str, encoding: TextEncodingKind) -> Option<Vec<u8>> {
 /// (fuzzed), except that the CFString path skips a leading U+FEFF where the
 /// native one fails; `NSString::from_str` is CFString-backed, so that case is
 /// answered here.
+/// `swift_text::replacing_occurrences`, except for a text that starts with
+/// U+FEFF: the shared Foundation path builds its `NSString` from UTF-8
+/// (`NSString::from_str`), and that decode drops a leading BOM, where Swift's
+/// `replacingOccurrences` keeps it. Build that `NSString` from the UTF-16
+/// units instead.
+fn replacing_occurrences(s: &str, target: &str, replacement: &str) -> String {
+    use objc2_foundation::NSString;
+    use swift_text::ns::{foundation, utf16};
+    if !s.starts_with('\u{FEFF}') {
+        return swift_text::replacing_occurrences(s, target, replacement);
+    }
+    objc2::rc::autoreleasepool(|_| {
+        let result = foundation::ns_from_utf16(&utf16(s))
+            .stringByReplacingOccurrencesOfString_withString(&NSString::from_str(target), &NSString::from_str(replacement));
+        foundation::to_string(&result)
+    })
+}
+
 fn foundation_latin1(text: &str) -> Option<Vec<u8>> {
     use objc2_foundation::{NSISOLatin1StringEncoding, NSString};
     if text.starts_with('\u{FEFF}') {
@@ -967,6 +985,24 @@ mod tests {
     fn inner_utf16_bom_survives() {
         let (text, _) = DocumentIO::decode(&[0xFF, 0xFE, 0xFF, 0xFE, b'a', 0], Path::new("/x/doc.md")).unwrap();
         assert_eq!(text, "\u{FEFF}a");
+    }
+
+    /// Recorded from Downright's `decode`/`encode`: a leading U+FEFF left in
+    /// the text survives line-ending conversion.
+    #[test]
+    fn leading_feff_survives_line_ending_conversion() {
+        let (text, fidelity) =
+            DocumentIO::decode(&[0, 0, 0xFE, 0xFF, 0, 0, 0xFE, 0xFF, 0, 0, 0, 0x0D, 0, 0, 0, 0x0D], Path::new("/x/doc.md"))
+                .unwrap();
+        assert_eq!(text, "\u{FEFF}\n\n");
+        assert_eq!(fidelity, ByteFidelity::new(Utf32BE, true, LineEnding::Cr, true));
+        let fidelity = ByteFidelity::new(Utf16BE, false, LineEnding::Crlf, true);
+        assert_eq!(
+            DocumentIO::encode("\u{FEFF}é\n", fidelity).unwrap(),
+            vec![0xFE, 0xFF, 0x00, 0xE9, 0x00, 0x0D, 0x00, 0x0A]
+        );
+        let latin1 = ByteFidelity::new(Latin1, false, LineEnding::Crlf, true);
+        assert!(matches!(DocumentIO::encode("\u{FEFF}x e\u{301}\n", latin1), Err(DocumentIOError::Unencodable(Latin1))));
     }
 
     #[test]
