@@ -34,7 +34,10 @@ impl DocumentWindowController {
         // Reopening while the previous pill is travelling owns the same
         // visual lane. Cancel the stale exit before installing the new bar;
         // otherwise its completion could retire the freshly reopened view.
-        if let Some(exiting) = self.ivars().exiting_find_bar.borrow().clone() {
+        // (The cell is read into a local: an `if let` scrutinee's borrow
+        // would live through the block, which writes the same cell.)
+        let exiting_find_bar = self.ivars().exiting_find_bar.borrow().clone();
+        if let Some(exiting) = exiting_find_bar {
             let generation = self.ivars().find_bar_exit_generation.get().wrapping_add(1);
             self.ivars().find_bar_exit_generation.set(generation);
             Self::retire(&exiting);
