@@ -10,8 +10,8 @@ use objc2::runtime::{AnyObject, NSObject, NSObjectProtocol, ProtocolObject};
 use objc2::{DefinedClass, MainThreadMarker, MainThreadOnly, define_class, msg_send, sel};
 use objc2_app_kit::{
     NSAlert, NSAlertFirstButtonReturn, NSAlertStyle, NSApplication, NSButton, NSColor, NSControlStateValueOn,
-    NSControlTextEditingDelegate, NSEvent, NSEventMask, NSEventModifierFlags, NSFont, NSFontWeightRegular,
-    NSImage, NSLayoutAttribute, NSLayoutConstraint, NSMenu, NSMenuItem, NSResponder, NSScrollView, NSStackView,
+    NSControlTextEditingDelegate, NSEvent, NSEventMask, NSFont, NSFontWeightRegular,
+    NSImage, NSLayoutAttribute, NSLayoutConstraint, NSMenu, NSResponder, NSScrollView, NSStackView,
     NSTabViewController, NSTableColumn, NSTableHeaderView, NSTableView, NSTableViewDataSource, NSTableViewDelegate,
     NSTextField, NSUserInterfaceLayoutOrientation, NSView, NSViewController, NSWindowDidResignKeyNotification,
 };
@@ -627,44 +627,7 @@ impl PreferenceSearchable for KeybindingsPane {
     }
 }
 
-// MARK: - MainMenu.refreshKeyEquivalents(in:)
-
-/// `MainMenu.refreshKeyEquivalents(in:)`, from `App/MainMenu.swift`.
-///
-/// The menu module is ported on its own branch (`port/app-shell-menu`), so
-/// this private copy, line for line from the Swift, stands in for it here.
-/// Once `MainMenu::refresh_key_equivalents` exists, call sites here should
-/// call it instead and this copy should go.
+/// `MainMenu.refreshKeyEquivalents(in:)`.
 fn refresh_key_equivalents(menu: &NSMenu) {
-    for item in menu.itemArray().iter() {
-        if let Some(command) = command_for(&item) {
-            apply_key_equivalent(&item, command);
-        }
-        if let Some(submenu) = item.submenu() {
-            refresh_key_equivalents(&submenu);
-        }
-    }
-}
-
-/// `MainMenu.command(for:)`.
-fn command_for(item: &NSMenuItem) -> Option<Command> {
-    let represented = item.representedObject()?;
-    let string = represented.downcast::<NSString>().ok()?;
-    Command::from_raw_value(&string.to_string())
-}
-
-/// `MainMenu.applyKeyEquivalent(to:command:)`: only ⌘/⌃ bindings become
-/// menu key equivalents: a bare `n` in the menu bar would fire while the user
-/// is typing in Live mode.
-fn apply_key_equivalent(item: &NSMenuItem, command: Command) {
-    let binding = KeybindingStore::shared().primary_binding(command);
-    let Some(binding) = binding.filter(|binding| {
-        binding.modifiers.contains(ModifierFlags::COMMAND) || binding.modifiers.contains(ModifierFlags::CONTROL)
-    }) else {
-        item.setKeyEquivalent(&ns(""));
-        item.setKeyEquivalentModifierMask(NSEventModifierFlags(0));
-        return;
-    };
-    item.setKeyEquivalent(&ns(&binding.menu_key_equivalent()));
-    item.setKeyEquivalentModifierMask(NSEventModifierFlags(binding.modifiers.raw_value() as usize));
+    crate::app::main_menu::MainMenu::refresh_key_equivalents(menu);
 }
