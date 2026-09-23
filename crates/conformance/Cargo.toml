@@ -1,0 +1,19 @@
+[package]
+name = "upleft-conformance"
+description = "Differential conformance between Upleft and the Swift Downright it ports"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+publish.workspace = true
+
+[dependencies]
+serde_json.workspace = true
+png = "0.18"
+
+[[bin]]
+name = "conform"
+path = "src/bin/conform.rs"
+
+[[bin]]
+name = "upleft-oracle"
+path = "src/bin/upleft-oracle.rs"

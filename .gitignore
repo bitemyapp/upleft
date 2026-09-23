@@ -5,3 +5,4 @@
 *.xcodeproj/
 .DS_Store
 /conformance-out
+/corpus/generated

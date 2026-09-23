@@ -16,3 +16,12 @@ downright-app:
 # Run the Rust test suite.
 test:
     cargo test --workspace
+
+# Regenerate corpus/generated from the pinned submodules.
+corpus:
+    python3 scripts/build-corpus.py
+
+# Compare Upleft with Downright on the corpus. Pass suite filters through, e.g. `just conform --suite parse`.
+conform *args: corpus
+    cargo build --release -p upleft-conformance
+    target/release/conform {{args}}

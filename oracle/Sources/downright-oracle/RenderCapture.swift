@@ -1,4 +1,5 @@
 import AppKit
+import ScreenCaptureKit
 import MarkdownCore
 import MarkdownRender
 
@@ -15,6 +16,8 @@ struct RenderRequest {
     /// Upper bound on waiting for the view to settle (images decode off the
     /// main thread; motion must finish).
     var settleTimeout: TimeInterval = 8
+    /// Capture the composited window (default) rather than `cacheDisplay`.
+    var captureFromScreen = true
 }
 
 /// Renders a document through Downright's real `MarkdownContainerView` in an
@@ -120,22 +123,58 @@ final class RenderSession: NSObject, NSApplicationDelegate {
             previousCapture = png
         }
         if stableCaptures >= 2 || Date() > deadline {
+            if Date() > deadline, stableCaptures < 2 {
+                FileHandle.standardError.write("warning: render did not settle before the timeout\n".data(using: .utf8)!)
+            }
             do {
-                try png.write(to: request.outputPNG)
                 if let layoutURL = request.outputLayout {
                     try LayoutDump.textView(container.textView, container: container, bitmap: rep)
                         .text.write(to: layoutURL, atomically: true, encoding: .utf8)
+                }
+                if !request.captureFromScreen {
+                    try png.write(to: request.outputPNG)
+                    exit(0)
                 }
             } catch {
                 fail("write failed: \(error)")
                 return
             }
-            if Date() > deadline, stableCaptures < 2 {
-                FileHandle.standardError.write("warning: render did not settle before the timeout\n".data(using: .utf8)!)
+            Task { @MainActor in
+                do {
+                    try await self.captureWindowFromScreen(to: self.request.outputPNG)
+                    exit(0)
+                } catch {
+                    self.fail("window capture failed: \(error)")
+                }
             }
-            exit(0)
+            return
         }
         scheduleCapture()
+    }
+
+    /// The window as the compositor shows it. `cacheDisplay` redraws views
+    /// into a bitmap clipped to each view's bounds, but on screen TextKit 2
+    /// fragments are layers, so only a window capture records what a reader
+    /// actually sees. ScreenCaptureKit captures this process's own window;
+    /// the `screencapture` tool proved unreliable (it hangs intermittently).
+    private func captureWindowFromScreen(to url: URL) async throws {
+        let content = try await SCShareableContent.excludingDesktopWindows(false, onScreenWindowsOnly: true)
+        guard let scWindow = content.windows.first(where: { $0.windowID == CGWindowID(window.windowNumber) }) else {
+            throw OracleError.usage("ScreenCaptureKit does not list the render window")
+        }
+        let filter = SCContentFilter(desktopIndependentWindow: scWindow)
+        let configuration = SCStreamConfiguration()
+        configuration.width = Int(filter.contentRect.width * CGFloat(filter.pointPixelScale))
+        configuration.height = Int(filter.contentRect.height * CGFloat(filter.pointPixelScale))
+        configuration.showsCursor = false
+        configuration.ignoreShadowsSingleWindow = true
+        configuration.captureResolution = .best
+        let image = try await SCScreenshotManager.captureImage(contentFilter: filter, configuration: configuration)
+        let rep = NSBitmapImageRep(cgImage: image)
+        guard let png = rep.representation(using: .png, properties: [:]) else {
+            throw OracleError.usage("PNG encoding of the window capture failed")
+        }
+        try png.write(to: url)
     }
 
     private func fail(_ message: String) {

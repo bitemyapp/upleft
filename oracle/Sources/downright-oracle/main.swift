@@ -17,7 +17,7 @@ func usage() -> Never {
     usage:
       downright-oracle parse    <file.md> <out.json>
       downright-oracle decorate <file.md> <out.json> [--mode read|live|source] [--theme NAME] [--dark]
-      downright-oracle render   <file.md> <out.png> [--layout out.json] [--mode M] [--theme NAME] [--dark] [--width W] [--height H]
+      downright-oracle render   <file.md> <out.png> [--layout out.json] [--mode M] [--theme NAME] [--dark] [--width W] [--height H] [--capture screen|view]
 
     """.data(using: .utf8)!)
     exit(64)
@@ -35,6 +35,7 @@ struct Flags {
     var width: CGFloat = 1000
     var height: CGFloat = 1400
     var layout: URL?
+    var captureFromScreen = true
 
     init(_ arguments: ArraySlice<String>) {
         var iterator = arguments.makeIterator()
@@ -46,6 +47,12 @@ struct Flags {
             case "--width": width = CGFloat(required(iterator.next().flatMap(Double.init)))
             case "--height": height = CGFloat(required(iterator.next().flatMap(Double.init)))
             case "--layout": layout = URL(fileURLWithPath: required(iterator.next()))
+            case "--capture":
+                switch required(iterator.next()) {
+                case "screen": captureFromScreen = true
+                case "view": captureFromScreen = false
+                default: usage()
+                }
             default: usage()
             }
         }
@@ -91,7 +98,8 @@ do {
             themeName: flags.theme,
             dark: flags.dark,
             width: flags.width,
-            height: flags.height
+            height: flags.height,
+            captureFromScreen: flags.captureFromScreen
         )
         let app = NSApplication.shared
         app.setActivationPolicy(.accessory)
