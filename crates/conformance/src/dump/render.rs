@@ -80,6 +80,9 @@ impl CaptureScene for MarkdownScene {
         if let Some(density) = &self.density {
             self.density_host = Some(DensityHost::new(&container, density, style_sheet, &text, mtm));
         }
+        // As the app's `configureLocalAssetAccess`: relative images resolve
+        // against the document's directory.
+        container.text_view().set_document_url(Some(request.input.to_string_lossy().into_owned()));
         container.setFrame(CGRect::new(
             objc2_foundation::NSPoint::new(0.0, 0.0),
             objc2_foundation::NSSize::new(request.width, request.height),

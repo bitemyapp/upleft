@@ -274,6 +274,10 @@ final class MarkdownScene: CaptureScene {
                 DensityHost(container: container, side: density, styleSheet: styleSheet, text: text)
             }
         }
+        // As the app's `configureLocalAssetAccess`: relative images resolve
+        // against the document's directory (no trust store, so only safe
+        // relative destinations load).
+        container.textView.documentURL = request.input
         container.frame = NSRect(x: 0, y: 0, width: request.width, height: request.height)
         window.contentView = container
         // As in the app: the container is laid out in its window (which sets

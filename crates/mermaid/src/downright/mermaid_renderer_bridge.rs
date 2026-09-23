@@ -72,6 +72,16 @@ pub fn image(source: &str, style_sheet: &StyleSheet) -> Option<MermaidImage> {
     objc2::rc::autoreleasepool(|_| render(&prepared, scale))
 }
 
+/// Installs [`image`] as the renderer behind the render layer's cached
+/// `MermaidRendererBridge.image(source:styleSheet:)` and `MermaidFragment`
+/// (`upleft_render::fragments::mermaid_fragment`). The render crate cannot
+/// depend on this one, so every host calls this once at start-up.
+pub fn install_fragment_renderer() {
+    upleft_render::fragments::mermaid_fragment::install_mermaid_renderer(|source, style_sheet| {
+        image(source, style_sheet).map(|image| image.ns_image())
+    });
+}
+
 /// `render(_:scale:)`: draws into a bitmap flipped to y=0-at-top with 32 pt
 /// of slack, then crops to the pixels the diagram inked.
 pub fn render(prepared: &PreparedDiagram, scale: CGFloat) -> Option<MermaidImage> {

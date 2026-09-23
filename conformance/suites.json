@@ -219,6 +219,115 @@
       ]
     },
     {
+      "name": "render-dark-themes",
+      "command": "render",
+      "output": "png",
+      "serial": true,
+      "only": [
+        "corpus/generated/fixtures/MarkdownCoreTests__Corpus-001.md",
+        "corpus/generated/fixtures/MarkdownRenderTests__DecorationTests-001.md",
+        "corpus/generated/docs/Docs__sample.md",
+        "corpus/generated/fixtures/MarkdownRenderTests__DecorationTests-003.md",
+        "corpus/generated/fixtures/MarkdownRenderTests__SpeechAccessibilityTests-001.md",
+        "corpus/generated/fixtures/MarkdownCoreTests__RenderTargetTests-001.md",
+        "corpus/generated/fixtures/MarkdownCoreTests__ZoomMetricsTests-002.md",
+        "corpus/generated/fixtures/MarkdownCoreTests__ExtensionTests-001.md",
+        "corpus/generated/fixtures/MarkdownCoreTests__ExtensionTests-002.md",
+        "corpus/generated/fixtures/MarkdownCoreTests__ExtensionTests-003.md",
+        "corpus/generated/spec/spec-0066.md",
+        "corpus/generated/spec/spec-0068.md",
+        "corpus/generated/agent/agent-400.md",
+        "corpus/generated/agent/agent-5000.md",
+        "corpus/generated/docs/Resources__Welcome.md",
+        "corpus/generated/fixtures/MarkdownRenderTests__DecorationTests-002.md",
+        "corpus/generated/fixtures/MarkdownRenderTests__ReflowAndRhythmTests-005.md",
+        "corpus/generated/fixtures/MarkdownRenderTests__ReflowAndRhythmTests-010.md",
+        "corpus/generated/fixtures/MarkdownRenderTests__CalloutGeometryTests-001.md",
+        "corpus/generated/fixtures/MarkdownRenderTests__ReflowAndRhythmTests-002.md",
+        "corpus/generated/docs/Verification__liquid-glass__forty-busy.md",
+        "corpus/generated/docs/Verification__liquid-glass__visual-background.md",
+        "corpus/highlight/markup-diff-markdown.md",
+        "corpus/generated/docs/Vendor__SwiftMath__EXAMPLES.md",
+        "corpus/generated/docs/Vendor__SwiftMath__README.md",
+        "corpus/generated/fixtures/DownrightAppTests__CommandPaletteTests-001.md",
+        "corpus/generated/fixtures/MarkdownCLITests__MarkdownCLITests-002.md",
+        "corpus/generated/fixtures/MarkdownCLITests__MarkdownCLITests-003.md",
+        "corpus/generated/fixtures/MarkdownRenderTests__DropAndQuickLookTests-001.md",
+        "corpus/generated/spec/extensions-0019.md",
+        "corpus/generated/spec/spec-0525.md",
+        "corpus/generated/spec/spec-0528.md",
+        "corpus/generated/docs/Docs__UX-PLAN-2026-08.md",
+        "corpus/generated/docs/README.md",
+        "corpus/generated/fixtures/DownrightAppTests__AppLayerTests-003.md",
+        "corpus/generated/fixtures/MarkdownCoreTests__ZoomMetricsTests-001.md",
+        "corpus/generated/fixtures/MarkdownRenderTests__DensityRailTests-001.md",
+        "corpus/generated/docs/Docs__PERFORMANCE.md",
+        "corpus/generated/docs/Docs__RELEASE.md",
+        "corpus/generated/docs/Docs__STATUS.md",
+        "corpus/generated/docs/Docs__UI-PLAN.md",
+        "corpus/generated/docs/Vendor__SwiftMath__PATCHES.md",
+        "corpus/generated/fixtures/MarkdownCoreTests__EditingTests-003.md",
+        "corpus/generated/spec/spec-0011.md",
+        "corpus/generated/spec/spec-0021.md",
+        "corpus/generated/fixtures/MarkdownRenderTests__LayoutFillerTests-001.md",
+        "corpus/generated/spec/spec-0241.md",
+        "corpus/generated/spec/spec-0301.md",
+        "corpus/generated/spec/spec-0062.md",
+        "corpus/generated/spec/spec-0071.md"
+      ],
+      "variants": [
+        [
+          "--mode",
+          "live",
+          "--theme",
+          "Nord"
+        ],
+        [
+          "--mode",
+          "live",
+          "--theme",
+          "Warm Dark",
+          "--dark"
+        ]
+      ]
+    },
+    {
+      "name": "render-images",
+      "command": "render",
+      "output": "png",
+      "serial": true,
+      "input": "markdown",
+      "only": [
+        "corpus/render-images/"
+      ],
+      "variants": [
+        [
+          "--mode",
+          "live"
+        ],
+        [
+          "--mode",
+          "live",
+          "--dark"
+        ],
+        [
+          "--mode",
+          "live",
+          "--width",
+          "1400",
+          "--height",
+          "1000"
+        ],
+        [
+          "--mode",
+          "live",
+          "--theme",
+          "Warm Dark",
+          "--dark"
+        ]
+      ]
+    },
+    {
       "name": "stylesheet",
       "command": "stylesheet",
       "output": "json",

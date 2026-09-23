@@ -359,55 +359,103 @@ fn first_non_whitespace_offset(storage: &NSTextStorage, source: NSRange) -> isiz
 
 /// `CodeBlockFragment(textElement:range:payload:context:role:lineCount:)`.
 fn code_block_fragment(
-    _request: &ObjectFragmentRequest<'_>,
-    _role: CodeBlockRole,
-    _line_count: isize,
+    request: &ObjectFragmentRequest<'_>,
+    role: CodeBlockRole,
+    line_count: isize,
 ) -> Option<Retained<NSTextLayoutFragment>> {
-    None
+    Some(crate::fragments::code_block_fragment::make(
+        request.text_element,
+        Some(request.element_range),
+        request.payload,
+        request.context,
+        role,
+        line_count,
+    ))
 }
 
 /// `TableRowFragment.make(textElement:range:payload:context:)`, which may
 /// itself decline (`nil`) and leave the paragraph as prose.
-fn table_row_fragment(_request: &ObjectFragmentRequest<'_>) -> Option<Retained<NSTextLayoutFragment>> {
-    None
+fn table_row_fragment(request: &ObjectFragmentRequest<'_>) -> Option<Retained<NSTextLayoutFragment>> {
+    crate::fragments::table_fragment::make(
+        request.text_element,
+        Some(request.element_range),
+        request.payload,
+        request.context,
+    )
 }
 
 /// `MathFragment(textElement:range:payload:context:)`.
-fn math_fragment(_request: &ObjectFragmentRequest<'_>) -> Option<Retained<NSTextLayoutFragment>> {
-    None
+fn math_fragment(request: &ObjectFragmentRequest<'_>) -> Option<Retained<NSTextLayoutFragment>> {
+    Some(crate::fragments::math_fragment::make(
+        request.text_element,
+        Some(request.element_range),
+        request.payload,
+        request.context,
+    ))
 }
 
 /// `MermaidFragment(textElement:range:payload:context:)`.
-fn mermaid_fragment(_request: &ObjectFragmentRequest<'_>) -> Option<Retained<NSTextLayoutFragment>> {
-    None
+fn mermaid_fragment(request: &ObjectFragmentRequest<'_>) -> Option<Retained<NSTextLayoutFragment>> {
+    Some(crate::fragments::mermaid_fragment::make(
+        request.text_element,
+        Some(request.element_range),
+        request.payload,
+        request.context,
+    ))
 }
 
 /// `ImageFragment(textElement:range:payload:context:)`.
-fn image_fragment(_request: &ObjectFragmentRequest<'_>) -> Option<Retained<NSTextLayoutFragment>> {
-    None
+fn image_fragment(request: &ObjectFragmentRequest<'_>) -> Option<Retained<NSTextLayoutFragment>> {
+    Some(crate::fragments::image_fragment::make(
+        request.text_element,
+        Some(request.element_range),
+        request.payload,
+        request.context,
+    ))
 }
 
 /// `FrontMatterFragment(textElement:range:payload:context:fields:)`.
 fn front_matter_fragment(
-    _request: &ObjectFragmentRequest<'_>,
-    _fields: Vec<(String, String)>,
+    request: &ObjectFragmentRequest<'_>,
+    fields: Vec<(String, String)>,
 ) -> Option<Retained<NSTextLayoutFragment>> {
-    None
+    Some(crate::fragments::front_matter_fragment::make(
+        request.text_element,
+        Some(request.element_range),
+        request.payload,
+        request.context,
+        fields,
+    ))
 }
 
 /// `ThematicBreakFragment(textElement:range:payload:context:)`.
-fn thematic_break_fragment(_request: &ObjectFragmentRequest<'_>) -> Option<Retained<NSTextLayoutFragment>> {
-    None
+fn thematic_break_fragment(request: &ObjectFragmentRequest<'_>) -> Option<Retained<NSTextLayoutFragment>> {
+    Some(crate::fragments::thematic_break_fragment::make(
+        request.text_element,
+        Some(request.element_range),
+        request.payload,
+        request.context,
+    ))
 }
 
 /// `CalloutFragment(textElement:range:payload:context:)`.
-fn callout_fragment(_request: &ObjectFragmentRequest<'_>) -> Option<Retained<NSTextLayoutFragment>> {
-    None
+fn callout_fragment(request: &ObjectFragmentRequest<'_>) -> Option<Retained<NSTextLayoutFragment>> {
+    Some(crate::fragments::callout_fragment::make(
+        request.text_element,
+        Some(request.element_range),
+        request.payload,
+        request.context,
+    ))
 }
 
 /// `ListOrnamentFragment(textElement:range:payload:context:)`.
-fn list_ornament_fragment(_request: &ObjectFragmentRequest<'_>) -> Option<Retained<NSTextLayoutFragment>> {
-    None
+fn list_ornament_fragment(request: &ObjectFragmentRequest<'_>) -> Option<Retained<NSTextLayoutFragment>> {
+    Some(crate::fragments::list_ornament_fragment::make(
+        request.text_element,
+        Some(request.element_range),
+        request.payload,
+        request.context,
+    ))
 }
 
 /// Static geometry the view's hit testing borrows from object fragments.
@@ -419,12 +467,12 @@ pub mod object_geometry {
     use crate::theme::style_sheet::StyleSheet;
 
     /// `ListOrnamentFragment.taskHitRect(textEdge:centreY:bodySize:)`.
-    pub fn task_hit_rect(_text_edge: CGFloat, _centre_y: CGFloat, _body_size: CGFloat) -> Option<CGRect> {
-        None
+    pub fn task_hit_rect(text_edge: CGFloat, centre_y: CGFloat, body_size: CGFloat) -> Option<CGRect> {
+        Some(crate::fragments::list_ornament_fragment::task_hit_rect(text_edge, centre_y, body_size))
     }
 
     /// `CodeBlockFragment.copyButtonRect(in:style:language:)`.
-    pub fn code_copy_button_rect(_band: CGRect, _style: &StyleSheet, _language: &str) -> Option<CGRect> {
-        None
+    pub fn code_copy_button_rect(band: CGRect, style: &StyleSheet, language: &str) -> Option<CGRect> {
+        Some(crate::fragments::code_block_fragment::copy_button_rect(band, style, language))
     }
 }

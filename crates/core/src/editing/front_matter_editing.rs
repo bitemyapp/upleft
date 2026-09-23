@@ -422,7 +422,7 @@ fn swift_key(s: &str) -> String {
 /// no leading whitespace, the whole string (up to a NUL) consumed; decimal
 /// and hexadecimal floats, `inf`/`infinity`, `nan`, `nan(…)` and `snan`, all
 /// case-insensitive, with an optional sign. Recorded from Swift, see tests.
-fn swift_double_parses(text: &str) -> bool {
+pub fn swift_double_parses(text: &str) -> bool {
     let bytes = text.as_bytes();
     let bytes = match bytes.iter().position(|&b| b == 0) {
         Some(nul) => &bytes[..nul],

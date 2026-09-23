@@ -434,7 +434,7 @@ pub struct FragmentPayloadIvars {
     source_range: Cell<NSRange>,
     block_identity: BlockIdentity,
     detail: String,
-    table_data: RefCell<Option<TableData>>,
+    table_data: RefCell<Option<std::rc::Rc<TableData>>>,
     is_collapsed: Cell<bool>,
 }
 
@@ -495,13 +495,17 @@ impl FragmentPayload {
         &self.ivars().detail
     }
 
-    /// Table geometry, populated by the table fragment.
-    pub fn table_data(&self) -> std::cell::Ref<'_, Option<TableData>> {
-        self.ivars().table_data.borrow()
+    /// Table geometry, populated by the table fragment. Shared rather than
+    /// copied: Swift's `TableData` is a value type whose arrays are
+    /// copy-on-write, so a fragment's snapshot of it costs nothing, and
+    /// `set_table_data` replaces the value wholesale exactly like a Swift
+    /// assignment.
+    pub fn table_data(&self) -> Option<std::rc::Rc<TableData>> {
+        self.ivars().table_data.borrow().clone()
     }
 
     pub fn set_table_data(&self, data: Option<TableData>) {
-        *self.ivars().table_data.borrow_mut() = data;
+        *self.ivars().table_data.borrow_mut() = data.map(std::rc::Rc::new);
     }
 
     pub fn is_collapsed(&self) -> bool {
@@ -516,9 +520,10 @@ impl FragmentPayload {
     /// a source edit and the async parse that replaces this payload.
     pub fn project_source_ranges(&self, edit: NSRange, inserted_length: isize) {
         self.set_source_range(project_range(self.source_range(), edit, inserted_length));
-        let Some(mut table_data) = self.table_data().clone() else {
+        let Some(table_data) = self.table_data() else {
             return;
         };
+        let mut table_data = TableData::clone(&table_data);
         table_data.delimiter_range =
             project_range(table_data.delimiter_range, edit, inserted_length);
         table_data.rows = table_data

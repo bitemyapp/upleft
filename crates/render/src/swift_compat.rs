@@ -543,3 +543,25 @@ mod tests {
         assert!(number("2e-324").is_err());
     }
 }
+
+/// `text.split(whereSeparator: \.isWhitespace)`: Character by Character
+/// (`Character.isWhitespace`), empty pieces omitted.
+pub fn split_on_whitespace_characters(text: &str) -> Vec<&str> {
+    let mut pieces = Vec::new();
+    let mut start: Option<usize> = None;
+    let mut offset = 0;
+    for character in swift_text::graphemes(text) {
+        if swift_text::is_whitespace(character) {
+            if let Some(begin) = start.take() {
+                pieces.push(&text[begin..offset]);
+            }
+        } else if start.is_none() {
+            start = Some(offset);
+        }
+        offset += character.len();
+    }
+    if let Some(begin) = start {
+        pieces.push(&text[begin..]);
+    }
+    pieces
+}

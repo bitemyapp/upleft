@@ -25,6 +25,17 @@ The port of `Sources/MarkdownRender/View`, `Fragments/FragmentBase.swift`,
 | `Fragments/FragmentBase.swift` | `fragments/fragment_base.rs` |
 | `Fragments/InlineCodePill.swift` | `fragments/inline_code_pill.rs` |
 | `Motion.swift` | `motion.rs` |
+| `Fragments/ListOrnamentFragment.swift` | `fragments/list_ornament_fragment.rs` |
+| `Fragments/CodeBlockFragment.swift` | `fragments/code_block_fragment.rs` |
+| `Fragments/CalloutFragment.swift` | `fragments/callout_fragment.rs` |
+| `Fragments/TableFragment.swift` (`TableCellPresentation`, `TableLayout`, `TableRowFragment`) | `fragments/table_fragment.rs` |
+| `Fragments/ImageFragment.swift` | `fragments/image_fragment.rs` |
+| `Fragments/LocalAssetPolicy.swift` | `fragments/local_asset_policy.rs` |
+| `Fragments/BoundedImageCache.swift` (`MermaidCacheKey`, `MarkdownFragmentImageCaches.images`/`.mermaid`, `ImageRenderCache`) | `fragments/bounded_image_cache.rs`; the generic `BoundedImageCache<Key>` and the math cache are `upleft_math::downright::bounded_image_cache` |
+| `Fragments/ThematicBreakFragment.swift` | `fragments/thematic_break_fragment.rs` |
+| `Fragments/FrontMatterFragment.swift` | `fragments/front_matter_fragment.rs` |
+| `Fragments/MathFragment.swift` (with `DownrightFragment.draw(image:…)`) | `fragments/math_fragment.rs` |
+| `Fragments/MermaidFragment.swift`, and the cached door of `MermaidRendererBridge.image(source:styleSheet:)` | `fragments/mermaid_fragment.rs` (the uncached bridge is `upleft_mermaid::downright::mermaid_renderer_bridge`) |
 | Swift overlay conveniences (`CGRect.minY`, `NSRect.fill()`, `DispatchWorkItem`, …) | `appkit_compat.rs` |
 
 Objective-C class names equal the Swift ones: `MarkdownTextView`,
@@ -56,11 +67,38 @@ object fragment through one function per Swift class, at the bottom of the
 file: `code_block_fragment`, `table_row_fragment`, `math_fragment`,
 `mermaid_fragment`, `image_fragment`, `front_matter_fragment`,
 `thematic_break_fragment`, `callout_fragment`, `list_ornament_fragment`.
-Each returns `None` today and the provider falls back to `ProseFragment`.
+Each calls its module's `make`; only `table_row_fragment` can decline
+(`TableRowFragment.make` returns `nil` without table data), and the provider
+then falls back to `ProseFragment` as Swift does.
 `object_geometry::{task_hit_rect, code_copy_button_rect}` are the two static
 geometry helpers the view's hit testing borrows (`ListOrnamentFragment.taskHitRect`,
-`CodeBlockFragment.copyButtonRect`); they return `None` until ported, which
-disables those hit targets.
+`CodeBlockFragment.copyButtonRect`).
+
+### Things the object fragments do differently from their neighbours
+
+- **Mermaid is reached through a hook.** `upleft-mermaid` depends on this
+  crate (for `StyleSheet`), so `mermaid_fragment` cannot call it. Every host
+  calls `upleft_mermaid::downright::mermaid_renderer_bridge::install_fragment_renderer()`
+  once at start-up (`upleft-oracle` does it in `main`; the app must too).
+  Without it every diagram draws as "Diagram could not be rendered".
+  `mermaid_fragment::mermaid_image` is Swift's cached
+  `MermaidRendererBridge.image(source:styleSheet:)`: trim, `MermaidCacheKey`,
+  `MarkdownFragmentImageCaches.mermaid`, then the installed renderer.
+- **Threading follows Swift.** Math and Mermaid render synchronously, on the
+  main thread, the first time layout asks the fragment for its height, as
+  Swift's `overrideHeight` does; that is what puts the formula or diagram in
+  the first displayed frame (the `render` suite captures the settled window,
+  and Swift's first frame already contains them). Both Rust renderers are
+  faster than Swift's (upleft-math ~1.6–2×, the uncached Mermaid bridge
+  ~2.7×). Images never block: `ImageRenderCache` decodes on a
+  user-initiated global queue and the fragment draws a placeholder until the
+  decode lands and invalidates it, exactly as Swift.
+- **`FragmentPayload.table_data` is an `Rc<TableData>`**, the cheap snapshot a
+  Swift value copy is; each row fragment shares its table's data instead of
+  cloning every row.
+- **URLs.** `LocalAssetPolicy` runs on `NSURL`. Swift standardizes a relative
+  URL after resolving it against its base; `canonical_file_url` takes
+  `absoluteURL` first to match (probed; see the module docs).
 
 A Swift subclass of `DownrightFragment` is, in Rust, a `FragmentBehavior`
 (the four hooks Swift subclasses override: `vertical_padding`,
@@ -152,20 +190,83 @@ drives `PipSimulation`) and `geometry_probe_tests` are ordinary test binaries
 (GeometryProbeTests' two `MathRenderer` tests live in `upleft-math`). Not ported, because
 it needs unported code: `ClickStabilityTests.checkboxDoubleClickDoesNotToggleTwice`
 (`ListOrnamentFragment.taskHitRect`).
+MarkdownRenderTests in a main-thread harness: ClickStability (including
+`checkboxDoubleClickDoesNotToggleTwice`), ContentResize, LayoutFiller,
+SpeechAccessibility, SmartPasteIntegration, DropAndQuickLook, ListOrnament,
+CalloutGeometry, CodeBlockGeometry, TypingInvalidation, the `ImageRenderCache`
+cases of BoundedImageCacheTests, the `@MainActor` DecorationTests cases that
+need the view or the content storage (`decoration_view_tests.rs`), plus the
+fragment seam. `content_storage_tiling_tests`, `motion_system_tests`,
+`geometry_probe_tests`, `local_asset_policy_tests` and `decoration_tests`
+(which now includes its table-layout, task-hit-rect and copy-button cases)
+are ordinary test binaries. GeometryProbeTests' two `MathRenderer` tests,
+MathFontBundleTests and BoundedImageCacheTests.limitsAreEnforced live in
+`upleft-math`; MermaidOrientationProbeTests in `upleft-mermaid`, which also
+checks the fragment layer's cached door. Not ported, because they need
+unported code: `SpeechAccessibilityTests`' `DensityGutterView` assertions,
+`MotionSystemTests.delayedSpringsReleaseOnTheirOwn` (`DensityGutterView.PipSimulation`).
 
 ## Left
 
 - The object fragments (see the seam above).
 - `render` conformance for documents that use object fragments waits on
   those ports.
+- `DensityGutterView`, `DensityGutterPreviewWindow`, `DensityOutlineWindow`.
+  `MarkdownContainerView` recognises a density gutter accessory by its
+  Objective-C class name (`DensityGutterView`) and calls
+  `containerGeometryDidChange` on it by selector.
 
 ## Conformance and performance (2026-09-23)
+
+### Object fragments (port/fragments)
+
+The machine's screen was locked for the whole fragment session, so
+ScreenCaptureKit refused every window capture (`SCStreamErrorDomain -3811`)
+and the `render` suite itself could not run after the first three documents
+(agent-40 and agent-400 passed all four variants before the lock). Source
+mode renders no objects and was identical before this port. The
+oracles' `--capture view` path (`cacheDisplay`, the same scene, settle loop
+and layout dump) still works on a locked screen, so the port was checked with
+it, both oracles, document by document:
+
+| run | cases | identical (layout dump and PNG) |
+|---|---:|---:|
+| whole corpus, `--mode live` | 909 | 909 |
+| whole corpus, `--mode live --dark` | 909 | 909 |
+| whole corpus, `--mode live --width 1400 --height 1000` | 909 | 909 |
+| 50 fragment-heavy documents + `render-images`, live / dark / wide / Nord / Warm Dark / source | 285 | 285 |
+
+**Unverified until the screen is unlocked:** `just conform --suite render`
+(screen capture, 3636 cases), `--suite render-dark-themes`, `--suite
+render-images` and `--suite probe`.
+
+New suites: `render-dark-themes` (50 documents that between them use every
+object fragment, in Nord and in Warm Dark) and `render-images`
+(`corpus/render-images/*.markdown`, read by no other suite, with real local
+images; `scripts/build-render-images-corpus.py` regenerates it). Both render
+scenes now set `documentURL` to the input, as the app does, so relative
+images go through `LocalAssetPolicy` and the background loader.
+
+`bench-view` with objects drawing (10 runs, best p50 of three interleaved
+rounds, screen locked), `update(document:)` to settled:
+
+| document | Swift | Rust | Rust / Swift |
+|---|---:|---:|---:|
+| agent-5000, Live (like for like: objects draw on both sides) | 258.1 ms | 200.8 ms | 0.78 |
+| agent-5000, Source | 357.9 ms | 307.3 ms | 0.86 |
+| README (tables, code) | 16.8 ms | 14.2 ms | 0.84 |
+| Docs__FEATURE-MATRIX (tables) | 10.5 ms | 7.9 ms | 0.75 |
+| Docs__PERFORMANCE (tables, code) | 8.3 ms | 6.8 ms | 0.82 |
+| Docs__sample (math, Mermaid, callouts, tasks) | 6.2 ms | 5.5 ms | 0.89 |
+
+`just bench`: all 21 drbench stages as fast or faster.
+
+### View layer (port/view)
 
 `render`: every document whose blocks need only prose, elided or cue
 fragments (558 of 909) is identical in all four variants (2232/2232 cases,
 pixels and layout dump), and every document is identical in Source mode
-(351/351 more, since Source mode renders no objects). The remaining 1053
-cases need the object fragments.
+(351/351 more, since Source mode renders no objects).
 
 `bench-view` (both oracles, 10 runs, best p50 of three interleaved rounds,
 on a loaded machine), time from `update(document:)` to settled:
@@ -174,7 +275,7 @@ on a loaded machine), time from `update(document:)` to settled:
 |---|---|---|
 | agent-5000, Source mode (like for like) | 384.5 ms | 324.0 ms |
 | synthetic prose, 5833 lines, Live (like for like) | 279.5 ms | 225.2 ms |
-| agent-5000, Live (Rust draws objects as prose) | 275.7 ms | 223.6 ms |
+| agent-5000, Live (Rust drew objects as prose then) | 275.7 ms | 223.6 ms |
 
 `update(document:)` alone is 37–41% faster; the settle pass (TextKit
 laying out the document) is 2–4% faster.

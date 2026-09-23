@@ -143,3 +143,53 @@ macro_rules! expect {
     };
 }
 
+
+/// `makeContainer(_:)` of the fragment suites (ListOrnamentTests,
+/// CalloutGeometryTests, CodeBlockGeometryTests): a 1000×900 container in
+/// Read mode, laid out and sized to its content.
+pub fn read_container(text: &str, mtm: MainThreadMarker) -> Retained<MarkdownContainerView> {
+    let storage = text_storage(text);
+    let container = MarkdownContainerView::with_storage(&storage, mtm);
+    container.setFrame(rect(0.0, 0.0, 1000.0, 900.0));
+    container.layoutSubtreeIfNeeded();
+    container.text_view().set_mode(upleft_render::render_contracts::RenderMode::Read);
+    container.text_view().update(parse(text), &wholesale(), true);
+    container.text_view().resize_to_fit_content();
+    container
+}
+
+/// Every laid-out fragment of `view`, in document order, after
+/// `ensureLayout(for: documentRange)`.
+pub fn layout_fragments(view: &MarkdownTextView) -> Vec<Retained<objc2_app_kit::NSTextLayoutFragment>> {
+    use objc2_app_kit::{NSTextLayoutFragment, NSTextLayoutFragmentEnumerationOptions, NSTextSelectionDataSource};
+    let Some(layout) = view.textLayoutManager() else { return Vec::new() };
+    layout.ensureLayoutForRange(&layout.documentRange());
+    let fragments = std::cell::RefCell::new(Vec::new());
+    let block = block2::StackBlock::new(|fragment: std::ptr::NonNull<NSTextLayoutFragment>| -> objc2::runtime::Bool {
+        // SAFETY: TextKit hands a live fragment for the call.
+        fragments.borrow_mut().push(objc2::Message::retain(unsafe { fragment.as_ref() }));
+        objc2::runtime::Bool::YES
+    });
+    layout.enumerateTextLayoutFragmentsFromLocation_options_usingBlock(
+        Some(&layout.documentRange().location()),
+        NSTextLayoutFragmentEnumerationOptions::EnsuresLayout,
+        &block,
+    );
+    fragments.into_inner()
+}
+
+/// The fragments of one Swift class (`fragment as? CalloutFragment`), as
+/// the `DownrightFragment`s they are.
+pub fn fragments_of_class(
+    view: &MarkdownTextView,
+    class_name: &str,
+) -> Vec<Retained<upleft_render::fragments::fragment_base::DownrightFragment>> {
+    layout_fragments(view)
+        .into_iter()
+        .filter(|fragment| {
+            let object: &objc2::runtime::AnyObject = fragment;
+            object.class().name().to_str() == Ok(class_name)
+        })
+        .filter_map(|fragment| fragment.downcast::<upleft_render::fragments::fragment_base::DownrightFragment>().ok())
+        .collect()
+}
