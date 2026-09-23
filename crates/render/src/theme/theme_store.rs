@@ -349,18 +349,29 @@ impl ThemeStore {
             return;
         };
         let store: Weak<ThemeStore> = Arc::downgrade(self);
+        // Swift reloads on the main queue, reading the folder there. The port
+        // is stricter about the main thread: the coalesced reload arrives on
+        // main as in Swift, hands the folder read to a serial queue (so
+        // reloads stay ordered), and hops back to main only to swap the
+        // themes in and notify.
+        let loader = DispatchQueue::new("com.downright.theme-load", None);
         *watcher = DirectoryWatcher::new(&path, move || {
-            let Some(store) = store.upgrade() else { return };
-            let Some(directory) = ThemeStore::user_themes_directory() else {
-                return;
-            };
-            let user_themes = ThemeStore::load_themes(&directory);
-            {
-                let mut state = lock(&store.state);
-                state.user_themes = user_themes;
-                ThemeStore::rebuild(&mut state);
-            }
-            store.bump_and_notify();
+            let store = store.clone();
+            loader.exec_async(move || {
+                let Some(directory) = ThemeStore::user_themes_directory() else {
+                    return;
+                };
+                let user_themes = ThemeStore::load_themes(&directory);
+                DispatchQueue::main().exec_async(move || {
+                    let Some(store) = store.upgrade() else { return };
+                    {
+                        let mut state = lock(&store.state);
+                        state.user_themes = user_themes;
+                        ThemeStore::rebuild(&mut state);
+                    }
+                    store.bump_and_notify();
+                });
+            });
         });
     }
 
@@ -581,7 +592,10 @@ struct WatchState {
 }
 
 impl DirectoryWatcher {
-    pub fn new(path: &str, on_change: impl Fn() + Send + Sync + 'static) -> Option<DirectoryWatcher> {
+    pub fn new(
+        path: &str,
+        on_change: impl Fn() + Send + Sync + 'static,
+    ) -> Option<DirectoryWatcher> {
         let inner = Arc::new(WatcherInner {
             path: CString::new(path).ok()?,
             on_change: Box::new(on_change),
