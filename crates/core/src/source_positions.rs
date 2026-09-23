@@ -2,9 +2,7 @@
 //!
 //! swift-markdown reports 1-based lines and 1-based UTF-8 byte columns;
 //! every range MarkdownCore publishes is a UTF-16 `NSRange`. `SourceMap` is
-//! the only place that conversion happens. The conversion from a
-//! swift-markdown `SourceRange` (`range(_:lineOffset:)`) lands with the parser
-//! port; everything else is here.
+//! the only place that conversion happens.
 //!
 //! The file's small `NSString` and `String` helpers live in
 //! [`crate::swift_text`] (`line_start_before`, `line_end_after`,
@@ -14,8 +12,10 @@
 pub use crate::swift_text::ns::NSStringExt;
 pub use crate::swift_text::{indent_columns, is_blank_line, leading_indent};
 
+use upleft_markup::SourceRange;
+
 use crate::ns_range::NSRange;
-use crate::swift_text::ns::{string_from_utf16, utf16};
+use crate::swift_text::ns::utf16;
 
 /// Line index over a document plus the line/column → UTF-16 conversion.
 ///
@@ -34,6 +34,10 @@ pub struct SourceMap {
     line_is_ascii: Vec<bool>,
     /// True when the source contains at least one `<`.
     pub may_contain_html: bool,
+    /// Upleft-only: whether the document is all ASCII, which decides whether
+    /// Swift hands out native or bridged strings for `text.substring(with:)`
+    /// (see `swift_text::contains_bridged`).
+    pub is_ascii: bool,
 }
 
 impl SourceMap {
@@ -90,7 +94,15 @@ impl SourceMap {
         ends.push(offset);
         ascii.push(line_ascii);
 
-        SourceMap { text, length, line_starts: starts, line_ends: ends, line_is_ascii: ascii, may_contain_html: saw_angle_bracket }
+        SourceMap {
+            text,
+            length,
+            line_starts: starts,
+            line_ends: ends,
+            line_is_ascii: ascii,
+            may_contain_html: saw_angle_bracket,
+            is_ascii: string.is_ascii(),
+        }
     }
 
     #[inline]
@@ -132,17 +144,42 @@ impl SourceMap {
             return end.min(start + byte_offset);
         }
 
+        // Walks the line's scalars as Swift walks `substring(...).unicodeScalars`
+        // (a lone surrogate reads as U+FFFD: three UTF-8 bytes, one unit),
+        // without materialising the substring.
+        let units = &self.text[start as usize..end as usize];
         let mut utf16_offset = start;
         let mut bytes: isize = 0;
-        let line_text = string_from_utf16(&self.text[start as usize..end as usize]);
-        for scalar in line_text.chars() {
+        let mut i = 0usize;
+        while i < units.len() {
             if bytes >= byte_offset {
                 break;
             }
-            bytes += SourceMap::utf8_width(scalar);
-            utf16_offset += if scalar as u32 > 0xFFFF { 2 } else { 1 };
+            let unit = units[i];
+            let (width, step) = if (0xD800..0xDC00).contains(&unit) && i + 1 < units.len() && (0xDC00..0xE000).contains(&units[i + 1]) {
+                (4, 2)
+            } else if (0xD800..0xE000).contains(&unit) {
+                (3, 1)
+            } else {
+                (SourceMap::utf8_width(char::from_u32(unit as u32).unwrap_or('\u{FFFD}')), 1)
+            };
+            bytes += width;
+            utf16_offset += step as isize;
+            i += step;
         }
         end.min(utf16_offset)
+    }
+
+    /// Converts a swift-markdown range, shifting line numbers by `line_offset`
+    /// (non-zero when the body was parsed without its front matter, §4.1).
+    pub fn range(&self, source: Option<SourceRange>, line_offset: isize) -> Option<NSRange> {
+        let source = source?;
+        let lower = self.offset(source.lower_bound.line as isize + line_offset, source.lower_bound.column as isize);
+        let upper = self.offset(source.upper_bound.line as isize + line_offset, source.upper_bound.column as isize);
+        if !(upper >= lower) {
+            return Some(NSRange::new(lower, 0));
+        }
+        Some(NSRange::new(lower, upper - lower))
     }
 
     /// Range of line `index` (0-based), terminator excluded.

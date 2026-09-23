@@ -20,6 +20,14 @@ pub struct MathScanner;
 impl MathScanner {
     /// All math in `range` of `text`, ascending and non-overlapping.
     pub fn matches(text: &[u16], range: NSRange) -> Vec<MathMatch> {
+        Self::matches_bridged(text, range, None)
+    }
+
+    /// `matches(in:range:)` given whether `text`'s substrings are bridged
+    /// `NSString`s (see `swift_text::contains_bridged`); `None` works it out
+    /// from `text` when it matters.
+    pub fn matches_bridged(text: &[u16], range: NSRange, bridged: Option<bool>) -> Vec<MathMatch> {
+        let mut bridged = bridged;
         let mut out = Vec::new();
         let mut i = range.location;
         let end = range.upper_bound();
@@ -37,7 +45,7 @@ impl MathScanner {
                 continue;
             }
             if ch == 0x24
-                && let Some(found) = Self::dollar(text, i, end, range.location)
+                && let Some(found) = Self::dollar(text, i, end, range.location, &mut bridged)
             {
                 out.push(found);
                 i = found.range.upper_bound();
@@ -79,7 +87,7 @@ impl MathScanner {
     }
 
     /// `$inline$` and `$$display$$`, with the shell-hostile guard rails.
-    fn dollar(text: &[u16], start: isize, end: isize, range_start: isize) -> Option<MathMatch> {
+    fn dollar(text: &[u16], start: isize, end: isize, range_start: isize, bridged: &mut Option<bool>) -> Option<MathMatch> {
         // An escaped `\$` is not a delimiter.
         if start > range_start && text.character_at(start - 1) == 0x5C {
             return None;
@@ -113,7 +121,7 @@ impl MathScanner {
                 }
                 let content = NSRange::new(start + delimiter_length, i - start - delimiter_length);
                 let close_end = i + delimiter_length;
-                if !Self::is_plausible(text, content, close_end, is_display) {
+                if !Self::is_plausible(text, content, close_end, is_display, bridged) {
                     return None;
                 }
                 return Some(MathMatch { range: NSRange::new(start, close_end - start), content_range: content, is_display });
@@ -124,7 +132,7 @@ impl MathScanner {
     }
 
     /// The rules that keep `echo $PATH`, `$5 and $10` and `$(cmd)` out.
-    fn is_plausible(text: &[u16], content: NSRange, close_end: isize, is_display: bool) -> bool {
+    fn is_plausible(text: &[u16], content: NSRange, close_end: isize, is_display: bool, bridged: &mut Option<bool>) -> bool {
         if !(content.length > 0) {
             return false;
         }
@@ -133,9 +141,23 @@ impl MathScanner {
         if is_display {
             return !swift_text::trim_whitespaces_and_newlines(&body).is_empty();
         }
-        // `String.contains("\n")` is Character-wise: a CR LF is not a match.
-        if swift_text::contains(&body, "\n") {
-            return false;
+        // `body.contains("\n")`: `body` is an `NSString` substring, so which
+        // `contains` Swift runs depends on the document (a CR LF only
+        // matches through Foundation). Without a LF unit both say no; when
+        // both agree the document need not be examined.
+        if text[content.as_usize_range()].contains(&0x0A) {
+            let native = swift_text::contains(&body, "\n");
+            let foundation = swift_text::contains_bridged(&body, "\n");
+            let found = if native == foundation {
+                native
+            } else if *bridged.get_or_insert_with(|| swift_text::bridges_substrings(text)) {
+                foundation
+            } else {
+                native
+            };
+            if found {
+                return false;
+            }
         }
         let (Some(first), Some(last)) = (swift_text::first(&body), swift_text::last(&body)) else { return false };
         if swift_text::is_whitespace(first) || swift_text::is_whitespace(last) {
@@ -161,6 +183,11 @@ impl MathScanner {
     /// A whole-paragraph display block: `$$…$$` or `\[…\]` with nothing else
     /// around it.
     pub fn whole_block(text: &[u16], range: NSRange) -> Option<MathMatch> {
+        Self::whole_block_bridged(text, range, None)
+    }
+
+    /// `wholeBlock(in:range:)` with the bridging flag of `matches_bridged`.
+    pub fn whole_block_bridged(text: &[u16], range: NSRange, bridged: Option<bool>) -> Option<MathMatch> {
         let mut start = range.location;
         let mut end = range.upper_bound();
         while start < end && Self::is_space(text.character_at(start)) {
@@ -173,7 +200,7 @@ impl MathScanner {
             return None;
         }
         let trimmed = NSRange::new(start, end - start);
-        let found = *Self::matches(text, trimmed).first()?;
+        let found = *Self::matches_bridged(text, trimmed, bridged).first()?;
         if !(found.is_display && found.range == trimmed) {
             return None;
         }

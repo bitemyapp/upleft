@@ -7,11 +7,11 @@ license.workspace = true
 publish.workspace = true
 
 [dependencies]
+upleft-markup.workspace = true
 objc2.workspace = true
 objc2-foundation = { workspace = true, features = ["NSString", "NSRegularExpression", "NSTextCheckingResult", "NSArray", "NSEnumerator", "NSRange", "NSObjCRuntime", "NSLocale"] }
 objc2-natural-language = { version = "0.3.2", default-features = false, features = ["std", "NLTokenizer", "NLLanguage", "block2"] }
 block2.workspace = true
-unicode-segmentation = "1.13"
 unicode-normalization = "0.1.25"
 uuid = { version = "1", features = ["v4"] }
 sha2 = "0.10"
