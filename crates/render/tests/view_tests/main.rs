@@ -12,10 +12,12 @@
 
 mod support;
 
+mod bounded_image_cache_tests;
 mod callout_geometry_tests;
 mod click_stability_tests;
 mod code_block_geometry_tests;
 mod content_resize_tests;
+mod decoration_view_tests;
 mod drop_and_quick_look_tests;
 mod fragment_seam_tests;
 mod layout_filler_tests;
@@ -66,6 +68,8 @@ fn main() {
     tests.extend(callout_geometry_tests::TESTS);
     tests.extend(code_block_geometry_tests::TESTS);
     tests.extend(typing_invalidation_tests::TESTS);
+    tests.extend(decoration_view_tests::TESTS);
+    tests.extend(bounded_image_cache_tests::TESTS);
 
     let selected: Vec<&Test> = tests
         .iter()

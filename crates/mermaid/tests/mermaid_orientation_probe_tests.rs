@@ -161,3 +161,28 @@ fn mermaid_bridge_bitmap_is_upright() {
     let rep = bitmap_rep(&image.ns_image()).unwrap();
     assert!(crossbar_fraction(&rep) <= 0.5, "bridge bitmap has upside-down labels");
 }
+
+/// The fragment layer's door, `MermaidRendererBridge.image(source:styleSheet:)`
+/// with `MarkdownFragmentImageCaches.mermaid` in front of it: once the
+/// renderer is installed it hands back the bridge's own bitmap, and a second
+/// call is served from the cache.
+#[test]
+fn mermaid_fragment_door_is_the_cached_bridge() {
+    use upleft_render::fragments::mermaid_fragment::mermaid_image;
+    bridge::install_fragment_renderer();
+    let sheet = sheet();
+    let ours = common::with_elk(FLOW, 1, || mermaid_image(FLOW, &sheet)).expect("cached door renders");
+    let direct = common::with_elk(FLOW, 1, || bridge::image(FLOW, &sheet)).expect("bridge render").ns_image();
+    let a = bitmap_rep(&ours).unwrap();
+    let b = bitmap_rep(&direct).unwrap();
+    assert_eq!((a.width, a.height), (b.width, b.height));
+    assert!(a.data == b.data, "the cached door drew a different bitmap");
+    assert_eq!(ours.size().width, direct.size().width);
+    // A hit returns the retained image itself, without rendering again.
+    let again = mermaid_image(FLOW, &sheet).expect("cache hit");
+    assert!(std::ptr::eq(&*again, &*ours));
+    // Whitespace around the source is the same diagram.
+    let padded = mermaid_image(&format!("\n  {FLOW}\n\n"), &sheet).expect("cache hit");
+    assert!(std::ptr::eq(&*padded, &*ours));
+    assert!(mermaid_image("  \n", &sheet).is_none());
+}

@@ -903,3 +903,117 @@ fn only_a_wholesale_source_pass_discards_typography() {
     let font = attribute(&storage, keys::font(), bold).and_then(|v| v.downcast::<NSFont>().ok()).unwrap();
     assert!(font.fontDescriptor().symbolicTraits().contains(objc2_app_kit::NSFontDescriptorSymbolicTraits::TraitBold));
 }
+
+// MARK: - Object-fragment cases (ported with the fragments)
+
+fn first_table(document: &upleft_core::ParsedDocument) -> upleft_core::model::TableData {
+    match document.root.children.first().map(|block| &block.content) {
+        Some(upleft_core::model::BlockContent::Table(data)) => data.clone(),
+        _ => panic!("the parser did not produce a table"),
+    }
+}
+
+#[test]
+fn task_checkbox_uses_a_mac_sized_hit_target_around_the_drawn_box() {
+    use objc2_core_foundation::CGPoint;
+    use upleft_render::appkit_compat::RectExt;
+    let hit = upleft_render::fragments::list_ornament_fragment::task_hit_rect(100.0, 40.0, 16.0);
+    assert_eq!(hit.width(), 28.0);
+    assert_eq!(hit.height(), 28.0);
+    assert!(hit.contains_point(CGPoint::new(86.0, 40.0)));
+    assert!(!hit.contains_point(CGPoint::new(101.0, 40.0)));
+}
+
+#[test]
+fn wide_tables_stay_inside_the_text_measure_and_wrap_cells() {
+    use upleft_render::fragments::table_fragment::TableLayout;
+    let source = "| Alpha | Beta | Gamma | Delta |\n| --- | --- | --- | --- |\n| A long value that must wrap | another long value | third value | fourth value |";
+    let document = MarkdownParser::parse(source);
+    let data = first_table(&document);
+    let storage = attributed(source);
+    let layout = TableLayout::make(&data, &storage, 220.0, &style_sheet(false));
+    let gaps = render_metrics::TABLE_COLUMN_GAP * (data.column_count() - 1) as f64;
+    assert!(layout.total_width <= 220.0);
+    assert!(layout.column_widths.iter().fold(0.0, |a, b| a + b) + gaps <= 220.001);
+    assert!(layout.is_stacked);
+    assert!(layout.row_heights.last().copied().unwrap_or(0.0) > style_sheet(false).line_height);
+}
+
+#[test]
+fn rendered_table_cells_omit_inline_markdown_markers() {
+    use upleft_render::fragments::table_fragment::TableCellPresentation;
+    let source = "| | |\n|---|---|\n| **Rendered diff** | Updates *in place* with `code` and [links](https://example.com). |";
+    let document = MarkdownParser::parse(source);
+    let data = first_table(&document);
+    let row = data.body_rows().first().copied().cloned().expect("a body row");
+    assert_eq!(row.cells.len(), 2);
+    let storage = attributed(source);
+    assert_eq!(TableCellPresentation::plain_text(&row.cells[0], &storage), "Rendered diff");
+    assert_eq!(TableCellPresentation::plain_text(&row.cells[1], &storage), "Updates in place with code and links.");
+}
+
+#[test]
+fn one_line_table_cells_keep_their_final_glyph() {
+    use objc2::AnyThread;
+    use objc2_foundation::NSMutableAttributedString;
+    use upleft_render::fragments::fragment_base::clipped;
+    use upleft_render::fragments::table_fragment::{TableCellPresentation, TableLayout};
+    let source = "| Mode | Target |\n|---|---:|\n| Read | 250 |";
+    let document = MarkdownParser::parse(source);
+    let data = first_table(&document);
+    let row = data.body_rows().first().copied().cloned().expect("a body row");
+    let style = style_sheet(false);
+    let storage = attributed(source);
+    let layout = TableLayout::make(&data, &storage, 500.0, &style);
+    let height = layout.row_heights.last().copied().unwrap_or(0.0) - render_metrics::TABLE_ROW_PADDING;
+    for (index, cell) in row.cells.iter().enumerate() {
+        let text = NSMutableAttributedString::initWithAttributedString(
+            NSMutableAttributedString::alloc(),
+            &TableCellPresentation::attributed_content(cell, &storage),
+        );
+        // SAFETY: a font is the value the key expects.
+        unsafe {
+            text.addAttribute_value_range(keys::font(), &style.body_font(), objc2_foundation::NSRange::new(0, text.length()))
+        };
+        assert_eq!(
+            clipped(&text, height, layout.column_widths[index]).string().to_string(),
+            text.string().to_string()
+        );
+    }
+}
+
+#[test]
+fn compact_table_labels_keep_their_natural_width_beside_prose() {
+    use objc2_app_kit::NSAttributedStringNSStringDrawing;
+    use upleft_render::fragments::table_fragment::TableLayout;
+    let source = "| | |\n|---|---|\n| **Rendered diff** | The file is watched and updates in place while preserving the current heading anchor. |";
+    let document = MarkdownParser::parse(source);
+    let data = first_table(&document);
+    let style = style_sheet(false);
+    let storage = attributed(source);
+    let layout = TableLayout::make(&data, &storage, 620.0, &style);
+    let label_width = upleft_render::appkit_compat::attributed_string(
+        "Rendered diff",
+        &[(keys::font(), &style.body_font())],
+    )
+    .size()
+    .width;
+    assert_eq!(layout.column_widths.len(), 2);
+    assert!(!layout.is_stacked);
+    assert!(layout.column_widths[0] >= label_width - 0.5);
+    assert!(layout.column_widths[1] > layout.column_widths[0]);
+}
+
+#[test]
+fn unlabeled_code_fences_expose_the_same_copy_geometry_as_labeled_fences() {
+    use upleft_render::appkit_compat::{RectExt, rect};
+    use upleft_render::fragments::code_block_fragment::copy_button_rect;
+    let style = style_sheet(false);
+    let band = rect(12.0, 4.0, 420.0, 30.0);
+    let unlabeled = copy_button_rect(band, &style, "");
+    let labeled = copy_button_rect(band, &style, "swift");
+    assert!(unlabeled.width() > 0.0);
+    assert!(unlabeled.max_x() <= band.max_x());
+    assert_eq!(labeled.width(), unlabeled.width());
+    assert!(labeled.max_x() <= band.max_x());
+}
