@@ -19,9 +19,11 @@ import MarkdownRender
 /// `NSApp`'s appearance, with the *system* Reduce Motion — not the
 /// harness's; the scene selects the scenario's theme in `ThemeStore.shared`
 /// for this process (`UpdateScenes.selectTheme`). With Reduce Motion off
-/// the pill animates its width and shell alpha through `animator()` and the
-/// harness waits for them to settle; with it on, it snaps. The arrival
-/// emphasis never plays: the harness never activates the app.
+/// the pill animates its width and shell alpha through `animator()`; the
+/// scene builds it (and runs the steps) inside a zero-duration
+/// `NSAnimationContext` group, so those changes land at once, as they do
+/// with Reduce Motion on. The arrival emphasis never plays: the harness
+/// never activates the app.
 @MainActor
 final class UpdateStatusPillScene: PanelScene {
     private var pill: UpdateStatusPill?
@@ -33,10 +35,15 @@ final class UpdateStatusPillScene: PanelScene {
         coordinator.tearDownForTesting()
         let presentation: UpdateStatusPill.Presentation =
             scenario.string("presentation") == "compactWarning" ? .compactWarning : .standard
+        // A zero-duration group: the pill's `animator()` width and alpha
+        // changes land at once instead of racing the settle loop.
+        NSAnimationContext.beginGrouping()
+        NSAnimationContext.current.duration = 0
         var early: UpdateStatusPill?
         if scenario.bool("buildFirst") { early = UpdateStatusPill(presentation: presentation) }
         UpdateScenes.run(scenario.array("steps"), on: coordinator, engine: nil)
         let pill = early ?? UpdateStatusPill(presentation: presentation)
+        NSAnimationContext.endGrouping()
         self.pill = pill
 
         let container = NSView(frame: NSRect(x: 0, y: 0, width: scenario.width, height: scenario.height))

@@ -5,16 +5,17 @@
 //! `NSApp`'s appearance, with the *system* Reduce Motion — not the
 //! harness's; the scene selects the scenario's theme in `ThemeStore::shared`
 //! for this process ([`select_theme`]). With Reduce Motion off the pill
-//! animates its width and shell alpha through `animator()` and the harness
-//! waits for them to settle; with it on, it snaps. The arrival emphasis
-//! never plays: the harness never activates the app.
+//! animates its width and shell alpha through `animator()`; the scene builds
+//! it (and runs the steps) inside a zero-duration `NSAnimationContext`
+//! group, so those changes land at once, as they do with Reduce Motion on.
+//! The arrival emphasis never plays: the harness never activates the app.
 
 use std::rc::Rc;
 
 use objc2::rc::Retained;
 use objc2::runtime::AnyObject;
 use objc2::{AnyThread, MainThreadMarker, MainThreadOnly};
-use objc2_app_kit::{NSApplication, NSImage, NSProgressIndicator, NSView};
+use objc2_app_kit::{NSAnimationContext, NSApplication, NSImage, NSProgressIndicator, NSView};
 use objc2_foundation::{
     NSData, NSDictionary, NSError, NSJSONReadingOptions, NSJSONSerialization, NSPoint, NSRect, NSSize, NSString,
     NSUserDefaults,
@@ -56,9 +57,14 @@ impl PanelScene for UpdateStatusPillScene {
         } else {
             Presentation::Standard
         };
+        // A zero-duration group: the pill's `animator()` width and alpha
+        // changes land at once instead of racing the settle loop.
+        NSAnimationContext::beginGrouping();
+        NSAnimationContext::currentContext().setDuration(0.0);
         let early = if scenario.bool("buildFirst") { Some(UpdateStatusPill::new(presentation, mtm)) } else { None };
         run(&scenario.array("steps"), &coordinator, None);
         let pill = early.unwrap_or_else(|| UpdateStatusPill::new(presentation, mtm));
+        NSAnimationContext::endGrouping();
         self.pill = Some(pill.clone());
 
         let container = NSView::initWithFrame(
