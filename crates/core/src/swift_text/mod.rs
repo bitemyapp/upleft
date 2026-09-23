@@ -533,6 +533,44 @@ fn characters_end_with(s: &str, p: &str) -> bool {
     true
 }
 
+/// `String.contains(_: String)` on a string whose provenance is known only as
+/// "bridged from an `NSString` or not" (see [`contains_bridged`]).
+#[inline]
+pub fn contains_with(s: &str, needle: &str, bridged: bool) -> bool {
+    if bridged { contains_bridged(s, needle) } else { contains(s, needle) }
+}
+
+/// `String.contains(_: String)` on an `NSString`-backed string.
+///
+/// Swift's `contains` answers differently depending on how the string was
+/// made. On a native Swift string it is Character-wise ([`contains`]). On a
+/// string bridged from an `NSString` — in Downright, any
+/// `(text as NSString).substring(with:)` (and anything Foundation derives
+/// from it: `trimmingCharacters`, `replacingOccurrences`, `components`) when
+/// the document holds a non-ASCII character — it is Foundation's non-literal
+/// search: `"é\r\nb"`-derived text contains `"\n"`, and `"<\u{200D}"`
+/// contains `"<"`. `lowercased()` always returns a native string.
+pub fn contains_bridged(s: &str, needle: &str) -> bool {
+    if needle.is_empty() {
+        return false;
+    }
+    if s.is_ascii() && needle.is_ascii() {
+        return memfind(s.as_bytes(), needle.as_bytes()).is_some();
+    }
+    if needle.is_ascii() && !s.contains(needle) && !has_ascii_singleton(s) {
+        return false;
+    }
+    ns::foundation::contains(s, needle)
+}
+
+/// Whether a document's `NSString` hands out bridged substrings: true when
+/// the document holds any non-ASCII character (a native ASCII string's
+/// substrings come back native).
+#[inline]
+pub fn bridges_substrings(document: &[u16]) -> bool {
+    !document.iter().all(|&unit| unit < 0x80)
+}
+
 /// `String.contains(_: String)` — a Character-wise substring search.
 pub fn contains(s: &str, needle: &str) -> bool {
     find(s, needle).is_some()

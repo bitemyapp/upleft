@@ -41,6 +41,14 @@ impl FenceLanguage {
 
     /// Guesses a language for §9.1's `codeFenceLanguages` rule.
     pub fn guess(code: &str) -> Option<String> {
+        Self::guess_bridged(code, false)
+    }
+
+    /// `guess(from:)` for a `code` string bridged from an `NSString`
+    /// substring (Tidy passes `context.text.substring(with:)`): its
+    /// `contains` calls then take Foundation's semantics (see
+    /// `swift_text::contains_bridged`). `lowercased()` results are native.
+    pub fn guess_bridged(code: &str, bridged: bool) -> Option<String> {
         let lines: Vec<&str> = swift_text::split(code, '\n', usize::MAX, true);
         if lines.is_empty() {
             return None;
@@ -73,34 +81,31 @@ impl FenceLanguage {
             return Some("bash".into());
         }
 
-        if Self::contains_any(body, &["func ", "let ", "var ", "guard ", "@objc", "import Foundation"])
-            && Self::contains_any(body, &["func ", "guard ", "-> ", "@objc"])
-        {
+        let any = |needles: &[&str]| Self::contains_any(body, needles, bridged);
+        if any(&["func ", "let ", "var ", "guard ", "@objc", "import Foundation"]) && any(&["func ", "guard ", "-> ", "@objc"]) {
             return Some("swift".into());
         }
-        if Self::contains_any(body, &["def ", "import ", "from "]) && Self::contains_any(body, &["def ", "self.", "elif ", "__init__"]) {
+        if any(&["def ", "import ", "from "]) && any(&["def ", "self.", "elif ", "__init__"]) {
             return Some("python".into());
         }
-        if Self::contains_any(body, &["const ", "let ", "function ", "=> "]) && Self::contains_any(body, &["{", ";"]) {
+        if any(&["const ", "let ", "function ", "=> "]) && any(&["{", ";"]) {
             return Some("javascript".into());
         }
-        if swift_text::contains(body, "<")
-            && swift_text::contains(body, ">")
-            && Self::contains_any(body, &["<html", "<div", "<span", "<p>", "<!DOCTYPE", "</"])
+        if swift_text::contains_with(body, "<", bridged)
+            && swift_text::contains_with(body, ">", bridged)
+            && any(&["<html", "<div", "<span", "<p>", "<!DOCTYPE", "</"])
         {
             return Some("html".into());
         }
         // Leading whitespace is legal in JSON documents, so trim first.
         let trimmed_body = swift_text::trim_whitespaces_and_newlines(body);
-        if (swift_text::has_prefix(trimmed_body, "{") || swift_text::has_prefix(trimmed_body, "["))
-            && Self::contains_any(body, &["\": ", "\":"])
-        {
+        if (swift_text::has_prefix(trimmed_body, "{") || swift_text::has_prefix(trimmed_body, "[")) && any(&["\": ", "\":"]) {
             return Some("json".into());
         }
         None
     }
 
-    fn contains_any(haystack: &str, needles: &[&str]) -> bool {
-        needles.iter().any(|needle| swift_text::contains(haystack, needle))
+    fn contains_any(haystack: &str, needles: &[&str], bridged: bool) -> bool {
+        needles.iter().any(|needle| swift_text::contains_with(haystack, needle, bridged))
     }
 }

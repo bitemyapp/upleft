@@ -34,6 +34,10 @@ pub struct SourceMap {
     line_is_ascii: Vec<bool>,
     /// True when the source contains at least one `<`.
     pub may_contain_html: bool,
+    /// Upleft-only: whether the document is all ASCII, which decides whether
+    /// Swift hands out native or bridged strings for `text.substring(with:)`
+    /// (see `swift_text::contains_bridged`).
+    pub is_ascii: bool,
 }
 
 impl SourceMap {
@@ -90,7 +94,15 @@ impl SourceMap {
         ends.push(offset);
         ascii.push(line_ascii);
 
-        SourceMap { text, length, line_starts: starts, line_ends: ends, line_is_ascii: ascii, may_contain_html: saw_angle_bracket }
+        SourceMap {
+            text,
+            length,
+            line_starts: starts,
+            line_ends: ends,
+            line_is_ascii: ascii,
+            may_contain_html: saw_angle_bracket,
+            is_ascii: string.is_ascii(),
+        }
     }
 
     #[inline]

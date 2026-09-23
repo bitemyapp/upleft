@@ -255,7 +255,7 @@ impl<'m> BlockBuilder<'m> {
         // formula, not prose (§4.1).
         if self.run_extensions
             && self.options.detect_math
-            && let Some(block) = MathScanner::whole_block(self.text(), range)
+            && let Some(block) = MathScanner::whole_block_bridged(self.text(), range, Some(!self.map.is_ascii))
         {
             return MDBlock::new(BlockContent::MathBlock { latex_range: block.content_range }, range, block.content_range)
                 .with_marker_range(Some(NSRange::new(block.range.location, block.content_range.location - block.range.location)))

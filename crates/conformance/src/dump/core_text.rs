@@ -235,7 +235,7 @@ pub fn analyses(text: &str) -> Vec<(&'static str, Value)> {
                         .with("line", fence.line as i64)
                         .with("info", info.as_str())
                         .with("kind", fence_kind(FenceLanguage::kind(Some(&info))))
-                        .with("guess", string(FenceLanguage::guess(&body).as_deref()))
+                        .with("guess", string(FenceLanguage::guess_bridged(&body, !map.is_ascii).as_deref()))
                         .build()
                 })
                 .collect(),

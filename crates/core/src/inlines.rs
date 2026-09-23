@@ -359,7 +359,7 @@ impl<'m> InlineBuilder<'m> {
         let text = self.text();
         match pass {
             Pass::Math => {
-                let matches = MathScanner::matches(text, range);
+                let matches = MathScanner::matches_bridged(text, range, Some(!self.map.is_ascii));
                 if matches.is_empty() {
                     return Vec::new();
                 }
