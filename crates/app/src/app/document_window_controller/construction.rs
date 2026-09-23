@@ -18,10 +18,12 @@ use objc2::{DefinedClass, MainThreadMarker, MainThreadOnly, available, msg_send,
 use objc2_app_kit::{
     NSAppearance, NSApplication, NSBackingStoreType, NSGlassEffectContainerView, NSLayoutConstraint, NSScreen,
     NSSplitViewController, NSSplitViewItem, NSStackView, NSStackViewDistribution, NSTitlebarSeparatorStyle,
-    NSToolbar, NSToolbarDisplayMode, NSToolbarSizeMode, NSUserInterfaceLayoutOrientation, NSView, NSViewController,
+    NSToolbar, NSToolbarDisplayMode, NSUserInterfaceLayoutOrientation, NSView, NSViewController,
     NSWindowDidResizeNotification, NSWindowStyleMask, NSWindowTabbingMode, NSWindowTitleVisibility,
     NSWindowToolbarStyle, NSLayoutAttribute,
 };
+#[allow(deprecated)]
+use objc2_app_kit::NSToolbarSizeMode;
 use objc2_core_foundation::CGFloat;
 use objc2_foundation::{NSEdgeInsets, NSNotification, NSNotificationCenter, NSOperationQueue, NSPoint, NSSize, NSString};
 use upleft_core::{DirtySet, ParsedDocument, TextEdit};
@@ -34,8 +36,6 @@ use upleft_render::view::markdown_container_view::MarkdownContainerView;
 use upleft_render::view::markdown_text_view_delegate::{MarkdownTextViewDelegate, ScrollPosition};
 use upleft_render::render_contracts::Theme;
 
-use objc2::DefinedClass as _;
-use objc2::MainThreadOnly as _;
 use objc2_app_kit::NSAppearanceCustomization as _;
 use upleft_render::appkit_compat::RectExt as _;
 use super::{
@@ -497,6 +497,8 @@ impl DocumentWindowController {
         *self.ivars().floating_resize_token.borrow_mut() = Some(token);
     }
 
+    // `sizeMode` and `centeredItemIdentifier` are deprecated; Swift sets them.
+    #[allow(deprecated)]
     fn build_toolbar(&self) {
         let mtm = self.mtm();
         // Keep the document switch in the optical centre with explicit flexible

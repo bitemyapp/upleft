@@ -18,9 +18,7 @@ use upleft_render::render_contracts::RenderMode;
 use upleft_render::view::markdown_text_view_delegate::ScrollPosition;
 
 use objc2::DefinedClass as _;
-use objc2::MainThreadOnly as _;
 use objc2_app_kit::NSAnimatablePropertyContainer as _;
-use upleft_render::appkit_compat::RectExt as _;
 use super::DocumentWindowController;
 use crate::ai::document_state_store::DocumentStateStore;
 use crate::ai::markdown_document::{DocumentError, Unavailable, UnreadChanges};
@@ -93,7 +91,7 @@ impl DocumentWindowController {
             motion::QUICK,
             Curve::Decelerate,
             move |_| {
-                let animator = unsafe { animated.animator() };
+                let animator = animated.animator();
                 animator.setAlphaValue(1.0);
                 if let Some(layer) = animated.layer() {
                     layer.setAffineTransform(IDENTITY);

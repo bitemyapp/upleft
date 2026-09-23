@@ -15,9 +15,6 @@ use upleft_render::motion::{self, Curve};
 use upleft_render::view::markdown_text_view_delegate::ScrollPosition;
 
 use objc2::DefinedClass as _;
-use objc2::MainThreadOnly as _;
-use objc2_app_kit::NSAnimatablePropertyContainer as _;
-use upleft_render::appkit_compat::RectExt as _;
 use crate::panels::appkit_support::Presentation as _;
 use super::DocumentWindowController;
 use super::derived_ui::{numbers, set_keyframe_values, transform_value};

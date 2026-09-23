@@ -7,7 +7,6 @@ use objc2_app_kit::{NSAlert, NSAlertFirstButtonReturn, NSAlertSecondButtonReturn
 use objc2_foundation::{NSNotification, NSNotificationCenter, NSString, NSUndoManager};
 
 use objc2::DefinedClass as _;
-use objc2::MainThreadOnly as _;
 use super::DocumentWindowController;
 use crate::ai::markdown_document::SaveIntent;
 use crate::support::preferences::Preferences;
