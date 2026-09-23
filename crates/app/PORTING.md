@@ -221,3 +221,23 @@ The app shell (`App/`, `Assets/`, `Debugging/`, `Lens/`) and the panels (`Panels
 **Tests.** Window-level Swift tests become Rust tests in `crates/app/tests/<swift_test_file_snake>.rs`, run on the main thread (`harness = false`, `tests/main_thread/mod.rs`). Any window a test creates is moved to `(-30000, -30000)` before it is ordered in; tests never activate the app and never put a window on a screen. Keep each test's name and assertions; list skipped tests with the reason.
 
 **Never block the main thread** beyond what Swift does to paint the same frames (`AGENTS.md`).
+
+## App shell: status and window-level conformance (`port/app-shell`)
+
+**Window captures, as they really work** (probed 2026-09-23, both findings reproducible with `oracle/app`'s `app-window`):
+
+- A *titled* window moved to (-30000, -30000) and then ordered in is **not** off-screen: `-[NSWindow constrainFrameRect:toScreen:]` pulls it back onto a connected display, where it is visible. Only borderless windows stay put. The harness therefore replaces that one method with the identity for its whole process before any window exists, and refuses to continue (orders every window out, exits 2) if a window's frame touches any display. Tests never order a titled window in.
+- ScreenCaptureKit refuses a window that is on no display (`SCStreamErrorDomain -3811`), titled or borderless. It only appeared to work for titled windows because AppKit had moved them on-screen. `cacheDisplay` of the frame view renders the views but not the glass and backdrop layers the window server composites (the macOS 26 toolbar and panels are glass). `CGWindowListCreateImage(CGRectNull, kCGWindowListOptionIncludingWindow, id, BoundsIgnoreFraming | BestResolution)`, looked up with `dlsym` because the macOS 15 SDK marks it obsoleted, returns the window server's exact composite of an off-screen window, glass included. That is what `app-window` compares.
+
+**Suites.**
+
+| Suite | Inputs | What is compared |
+|---|---|---|
+| `app-window` | `corpus/app-window/*.json` | the window server's image of a real window built as the app builds it (document window over a corpus file in either mode, light/dark, sizes, after commands such as find, split, focus; start window; setup panel; each Settings pane), plus every view's class, frame, bounds, visibility, alpha and text, and the window's title, style and toolbar items |
+| `app-menu` | `corpus/app-menu/*.json` | `MainMenu.build()` in a sandbox, every submenu refreshed by its delegate: titles, key equivalents, modifiers, actions, targets, tags, represented objects, states |
+
+A scenario names the window and its sandbox: `preferences` (written as `preferences.json`; absent means a first run), `keybindings`, `appearance`, `size`, `mode`, `pane`, `guide`, `commands` (`Command` raw values performed on the document window after the first frame settles, each followed by another settle). Each run gets fresh `HOME`/`CFFIXED_USER_HOME`/`DOWNRIGHT_SUPPORT_DIRECTORY`, clears the oracle process's own defaults domain, sets `NSApp.appearance` and selects the theme as `AppDelegate.applySelectedTheme` does, and shows the bundle's `AppIcon.icns` as the application icon (an oracle has no bundle). The `probe` scenarios (a stock titled window) prove the two harnesses agree before any port is judged.
+
+Run: `just app-oracle && cargo build --release -p upleft-conformance -p upleft-cli && target/release/conform --suite app-window` (and `--suite app-menu`). `bench-app-window <scenario.json>` times document open to first frame and a mode switch in either oracle.
+
+**Bundle.** `just upleft-app` → `target/upleft-app/Upleft.app` (see `scripts/bundle-upleft-app.sh`): `Contents/MacOS/{Upleft,down}`, `Contents/Resources/{mathFonts.bundle,AppIcon.icns,AppIcon.png,Welcome.md,PrivacyInfo.xcprivacy}`, `Contents/Frameworks/Sparkle.framework` (2.9.6, `scripts/sparkle-framework.sh`), `Contents/Library/Spotlight/DownrightSpotlight.mdimporter` (Rust `upleft-spotlight-importer` static library linked with `clang -bundle`), `Info.plist` from the rebranded `Config/Downright-Info.plist` without the Sparkle keys unless `PRODUCTION=1`, ad-hoc signature, verified layout. Never registered with Launch Services, never launched. The themes are compiled into the binary; there is no MarkdownRender resource bundle.
