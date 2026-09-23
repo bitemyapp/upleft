@@ -259,3 +259,17 @@ Run: `just app-oracle && cargo build --release -p upleft-conformance -p upleft-c
 **Tests.** `window_chrome_tests_document`, `document_chrome_layout_tests`, `autosave_lifecycle_tests_window`, `export_snapshot_tests`: main-thread binaries in a sandbox (`tests/document_window_support`: re-run with their own `HOME`, `CFFIXED_USER_HOME` and support folder, a sandboxed `Preferences.shared`, the Mermaid hook installed). No test orders a window in. Each file lists the Swift cases it skips and why.
 
 **Conformance.** `app-window`'s `document` scenarios build the controller as `AppWindowCapture.swift` does; `bench-app-window` times open-to-first-frame and a mode switch (`crates/conformance/src/dump/app_window_bench.rs`).
+
+## Document window panel extensions (`port/app-shell-dwc-c`)
+
+`+AssetDoctor`, `+AssetInsertion`, `+CommandPalette`, `+Diagnostics`, `+DocumentLens`, `+FrontMatter`, `+LocalAI`, `+ReaderProfiles`, `+Review`, `+Share`, `+TableEditor`, `+VisualDebugger` and `+Workspace` (`app/document_window_controller_<ext>.rs`), and `VersionTimelineWindowController` (`app/version_timeline_window_controller.rs`).
+
+**Objective-C classes.** `CommandPaletteWindowDelegate` (the palette panel's `NSWindowDelegate`, kept alive as an associated object of the panel, as in Swift) and `VersionTimelineWindowController` (an `NSWindowController`). `ReaderProfileControllerState` is a plain struct behind an `Rc` (see KNOWN-DIFFERENCES).
+
+**State.** Each extension's associated objects are fields of its `<Ext>State`, created lazily where Swift's getters create them (`localAIProvider`, `localAICoordinator`, `reviewStore`, `readerProfileState`). A panel's theme observation (`+DocumentLens`, `+VisualDebugger`) is a `ThemeObservation` in the state, dropped (cancelled) outside the borrow; its closure captures `MainThreadBound<(Weak controller, Weak panel)>`.
+
+**Delegates.** Every panel delegate trait is implemented on `DocumentWindowControllerDelegates` and forwards to an inherent method named after the Swift one (`asset_doctor_view_did_select`, `command_palette_did_choose`, …). The two `MarkdownTextViewDelegate` drop methods are inherent `markdown_text_view_can_accept_drop` / `markdown_text_view_did_accept_drop`, which `+Delegates`' trait impl calls. `VersionTimelineWindowController` owns its own proxy for `VersionTimelineDelegate`.
+
+**Main thread.** As in Swift: a drop's file writes and copies (AppKit needs the answer synchronously; through `NSData`/`NSFileManager` so the errors are Foundation's), the review sidecar's reads and writes (≤ 8 MiB), the share copy and the share PDF, the asset probe's resource-value reads during `AssetDoctor.diagnose`, the version timeline's snapshot reads, and the workspace link graph built when a scan lands. The workspace scan and searches and the on-device model call run off the main thread (`WorkspaceIndex`, `WorkspaceSearchSession`, `LocalAILatestWinsController`).
+
+**Tests.** `document_drop_tests_window`, `share_and_capture_tests_window`, `command_palette_navigation_regression_tests` (on `tests/controller_support`). Skipped: `aFailedWriteInsertsNothingAndLeavesNoDebris` (its error is an alert sheet on a titled window). `imageRequestsReachTheWindowControllerThroughTheTextView` runs without Swift's `showWindow(nil)`.
