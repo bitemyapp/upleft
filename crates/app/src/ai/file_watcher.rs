@@ -895,7 +895,9 @@ fn nanoseconds(seconds: f64) -> i64 {
 
 /// `DispatchWorkItem(block:)`: a `dispatch_block_create_with_qos_class`
 /// block (no flags, unspecified QoS), so `cancel()` is `dispatch_block_cancel`.
-struct WorkItem {
+/// Shared with `markdown_document`, whose debounce items are main-queue work
+/// items.
+pub(crate) struct WorkItem {
     block: RcBlock<dyn Fn()>,
 }
 
@@ -904,7 +906,7 @@ struct WorkItem {
 unsafe impl Send for WorkItem {}
 
 impl WorkItem {
-    fn new(body: impl Fn() + Send + 'static) -> WorkItem {
+    pub(crate) fn new(body: impl Fn() + Send + 'static) -> WorkItem {
         let body = RcBlock::new(body);
         // SAFETY: `dispatch_block_create_with_qos_class` copies the block and
         // returns a new one we own. The flags are `[]`: dispatch2 does not
@@ -924,13 +926,13 @@ impl WorkItem {
     }
 
     /// `queue.asyncAfter(deadline: .now() + seconds, execute: item)`.
-    fn schedule_after(&self, queue: &DispatchQueue, seconds: f64) {
+    pub(crate) fn schedule_after(&self, queue: &DispatchQueue, seconds: f64) {
         let deadline = DispatchTime::NOW.time(0).time(nanoseconds(seconds));
         // SAFETY: `dispatch_after` copies (retains) the block.
         unsafe { DispatchQueue::exec_after_with_block(deadline, queue, RcBlock::as_ptr(&self.block)) };
     }
 
-    fn cancel(&self) {
+    pub(crate) fn cancel(&self) {
         // SAFETY: a block made by `dispatch_block_create*`.
         unsafe { dispatch2::dispatch_block_cancel(RcBlock::as_ptr(&self.block)) };
     }

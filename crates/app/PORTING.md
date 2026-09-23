@@ -36,15 +36,62 @@ These follow LocalAI.swift line for line: prompt construction (including the non
 - The `local-ai` suite never calls the real model. The Swift oracle builds DownrightApp with `-enable-private-imports`, and `LocalAIDump.swift` uses `@_private(sourceFile: "LocalAI.swift") import` to call the Apple adapter's private `input(for:)`, `prompt(task:input:)` and `result(for:input:output:)` directly, next to the deterministic provider, the validator and the controller.
 - The shim's FFI path (a real `respond`, and cancellation mid-response) was checked once by hand on a Mac where the model is available. No committed test calls the model.
 
-## Threading notes (document layer)
+## Document layer (`ai::file_watcher`, `ai::markdown_parse_worker`, `ai::markdown_document`, `ai::sibling_scanner`)
+
+**How Swift's concurrency maps**
 
 - `ai::file_watcher` keeps FileWatcher.swift's mechanics:
-  - a serial utility-QoS queue, identified by a queue-specific key;
-  - an FSEvents stream on that queue;
-  - a dispatch timer source for the poll;
-  - `dispatch_block_create`d work items;
+  - a serial utility-QoS queue (`com.ezzy.downright.filewatcher`), identified by a queue-specific key;
+  - an FSEvents stream delivered on that queue;
+  - a dispatch timer source for the 1.5 s poll;
+  - `dispatch_block_create`d work items for the 0.30 s coalescing and the 0.35 s removal re-probe;
   - main-queue delivery.
+- `ai::markdown_parse_worker` turns the `MarkdownParseCoordinator` actor into a serial dispatch queue:
+  - actor methods become blocks on it, sent asynchronously in the caller's order;
+  - that order is also what `MarkdownDocument.enqueueParseControl`'s task chain guarantees;
+  - `nextResult()` becomes a completion, and the parked `wake` continuation becomes a stored closure;
+  - parses run on the global user-initiated queue.
+- `ai::markdown_document`: `MarkdownDocument` is a `define_class!` `NSObject` subclass named `MarkdownDocument`. It is its storage's `NSTextStorageDelegate`, and `MarkdownUndoManager` is an `NSUndoManager` subclass named `MarkdownUndoManager`. How the Swift constructs map:
+  - `Task { @MainActor [weak self] … }` and `await self?.…` become main-queue blocks. They carry a document id that a main-thread registry resolves, so no Objective-C object crosses threads.
+  - `Task.detached(priority: .userInitiated)` becomes the global user-initiated queue.
+  - `DispatchWorkItem` becomes a `dispatch_block_create`d block.
+  - `RunLoop.main.perform(inModes: [.common])` becomes `-[NSRunLoop performInModes:block:]`.
+  - `registerUndo(withTarget:handler:)` becomes `-registerUndoWithTarget:handler:`.
+  - The storage delegate captures the post-edit text and hops to the main queue, as in Swift.
+- `ai::sibling_scanner`: background scans run on a serial utility queue (`com.ezzy.downright.sibling-scan`) and land on the main queue by id.
+- Seams (Swift reads the singletons directly):
+  - `MarkdownDocument::with_dependencies` takes an optional `Preferences` in place of `Preferences.shared`.
+  - `SiblingScanner::with_document_state_store` takes a store in place of `DocumentStateStore.shared`.
 
-  `new`, `retarget` and `acknowledge_own_write` read and hash the file synchronously, as Swift's `init`, `retarget(to:)` and `acknowledgeOwnWrite(contents:)` do. `FileWatcherTests` depend on that init-time baseline. It is the one place where the port blocks its caller on I/O, and only because the Swift does.
-- `ai::markdown_parse_worker` turns the `MarkdownParseCoordinator` actor into a serial dispatch queue. Actor methods become blocks on it, sent asynchronously in the caller's order. `nextResult()` becomes a completion, and the parked `wake` continuation becomes a stored closure. Parses run on the global user-initiated queue.
-- Tests whose Swift originals run on the main actor, or whose code delivers to the main queue, are `harness = false` binaries (`tests/main_thread/mod.rs`). They run on the main thread and pump the main run loop while they wait.
+  Production uses `MarkdownDocument::new` and `SiblingScanner::new`, which read the shared instances as Swift does.
+
+**Main-thread I/O (candidates for the UI port to call off-main).** The model layer does its I/O on the same threads as Swift, per the coordinator's decision, so these sites block their caller (the main thread in the app) on I/O:
+
+- `FileWatcher::new`, `retarget`: `resolvingSymlinksInPath`, plus a read and SHA-256 of the file.
+- `FileWatcher::acknowledge_own_write`, `suppress_own_write`, `cancel_own_write_suppression`, `stop`: synchronous hops onto the watcher queue. `acknowledge_own_write` also reads and hashes the file there.
+- `MarkdownDocument::open`:
+  - `resolvingSymlinksInPath` and the full file read;
+  - `DocumentStateStore.state` (reads the state file);
+  - `noteOpened` (reads and rewrites `recents.json`);
+  - `SnapshotStore.content(forHash:)` in the review-state restore (reads and decompresses an object);
+  - the structure-only parse;
+  - the `FileWatcher` above.
+- `MarkdownDocument::save`, `save_if_needed`, `recreate_missing_file`, `resolve_conflict_keeping_mine`, `toggle_task` (which saves):
+  - `inspect_disk_state` (a full read and hashes);
+  - encoding;
+  - the atomic write with `fsync`;
+  - the watcher acknowledgement;
+  - `DocumentStateStore.save`.
+- `MarkdownDocument::inspect_disk_state` and `discard_unsaved_changes`: a full read.
+- `MarkdownDocument::close`: `DocumentStateStore.save` (a write).
+- The renamed-file handling from a watcher event: `DocumentStateStore.save`.
+- `MarkdownDocument::versions`, `content`, `restore`: snapshot index and object reads.
+- `MarkdownDocument::adopt`, `apply`, `reparse_now`, `ensure_parsed_current`, and undo/redo: a synchronous `MarkdownParser.parse` of the whole buffer (by design in Swift: explicit transactions converge before returning).
+- `SiblingScanner::new` and `scan(true, _)`: a directory listing, plus a `DocumentStateStore` state read per sibling. With `compute_changes`, it also reads and hashes each sibling up to 2 MB.
+
+The external-write path (`handle_external_write` → absorb) reads and diffs off the main thread, as in Swift.
+
+**Tests**
+
+- Test binaries whose Swift originals run on the main actor, or whose code delivers to the main queue, are `harness = false` (`tests/main_thread/mod.rs`). They run on the main thread and pump the main run loop wherever the Swift test awaits.
+- The document tests never touch the real home (`tests/document_support/mod.rs`). They point Downright's own `DOWNRIGHT_SUPPORT_DIRECTORY` override at a temporary folder before any store is created, so `SnapshotStore.shared` and `DocumentStateStore.shared` keep their process-wide semantics inside the sandbox. Documents get a `Preferences::for_testing` instance, because loading `Preferences.shared` publishes the Quick Look appearance to the real user defaults.

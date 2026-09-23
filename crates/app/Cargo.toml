@@ -55,3 +55,27 @@ harness = false
 [[test]]
 name = "async_parse_tests"
 harness = false
+
+[[test]]
+name = "document_trust_state_tests"
+harness = false
+
+[[test]]
+name = "review_baseline_document_tests"
+harness = false
+
+[[test]]
+name = "app_layer_document_tests"
+harness = false
+
+[[test]]
+name = "autosave_lifecycle_tests"
+harness = false
+
+[[test]]
+name = "document_edit_projection_tests"
+harness = false
+
+[[test]]
+name = "markdown_document_tests"
+harness = false
