@@ -1,0 +1,107 @@
+{
+ "panel": "RenderTargetsView",
+ "theme": "Nord",
+ "dark": true,
+ "width": 336,
+ "height": 560,
+ "document": "corpus/panel-documents/diagnostics-targets.md",
+ "state": {},
+ "states": [
+  {
+   "name": "GitHub (default)"
+  },
+  {
+   "name": "Downright",
+   "profile": 0
+  },
+  {
+   "name": "CommonMark",
+   "profile": 1
+  },
+  {
+   "name": "GitHub",
+   "profile": 2
+  },
+  {
+   "name": "Obsidian",
+   "profile": 3
+  },
+  {
+   "name": "Pandoc",
+   "profile": 4
+  },
+  {
+   "name": "MultiMarkdown",
+   "profile": 5
+  },
+  {
+   "name": "Jekyll",
+   "profile": 6
+  },
+  {
+   "name": "Hugo",
+   "profile": 7
+  },
+  {
+   "name": "Quarto",
+   "profile": 8
+  },
+  {
+   "name": "select wikilink",
+   "select": 1
+  },
+  {
+   "name": "select then apply",
+   "select": 1,
+   "apply": true
+  },
+  {
+   "name": "apply",
+   "apply": true
+  },
+  {
+   "name": "select a group row",
+   "select": 0
+  },
+  {
+   "name": "custom profile",
+   "profiles": [
+    {
+     "name": "Strict docs",
+     "capabilities": [
+      "rawHTML"
+     ]
+    },
+    "gitHub"
+   ],
+   "profile": 0
+  },
+  {
+   "name": "custom profile, everything",
+   "profiles": [
+    {
+     "name": "Everything",
+     "capabilities": [
+      "tables",
+      "taskLists",
+      "strikethrough",
+      "footnotes",
+      "math",
+      "mermaid",
+      "calloutsAlerts",
+      "wikilinks",
+      "frontMatter",
+      "rawHTML",
+      "headingAttributes"
+     ]
+    }
+   ],
+   "profile": 0
+  },
+  {
+   "name": "restyled",
+   "profile": 1,
+   "restyle": true
+  }
+ ]
+}

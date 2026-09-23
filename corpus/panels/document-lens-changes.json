@@ -1,0 +1,1 @@
+{"panel": "DocumentLensView", "theme": "Paper Light", "dark": false, "width": 336, "height": 480, "document": "corpus/panel-documents/diagnostics-lens.md", "state": {"tab": "changes", "changes": [{"kind": "inserted", "location": 0, "length": 15}, {"kind": "modified", "location": 118, "length": 10}, {"kind": "deleted", "location": 200, "length": 0}]}}

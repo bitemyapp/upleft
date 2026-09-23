@@ -1,0 +1,1 @@
+{"panel": "LightboxWindow", "theme": "Warm Dark", "dark": true, "width": 480, "height": 360, "state": {"image": "corpus/render-images/img/tiny.png", "caption": "A very small image whose alternative text is much longer than the window is wide, so the caption pill truncates it"}}
