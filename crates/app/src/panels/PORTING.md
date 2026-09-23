@@ -112,6 +112,26 @@ upleft-conformance -p upleft-cli`, then `target/release/conform --suite panel
 --suite panel-model [--filter NAME]`. `scripts/jsondiff.py swift.json
 rust.json` localises a dump difference.
 
+### Harness facts worth knowing
+
+- `PanelFont` reads `Preferences.shared` (Swift) / `Preferences::shared()`
+  (Rust), as Downright does. Loading it publishes the Quick Look appearance
+  keys (`com.bitemyapp.upleft.quickLook.*`, defaults) to the global
+  preferences domain on both sides, as the app-window harness and
+  Downright's own tests do; `CFFIXED_USER_HOME` does not isolate that write.
+  The runner's sandbox home keeps `preferences.json` at its defaults.
+- Class names in the dump are `-class` (Swift: `type(of:)`), so the KVO
+  subclass AppKit gives a window once it is ordered in is hidden on both
+  sides; AppKit's own Swift classes keep their mangled runtime names.
+- Settling uses `cacheDisplay`; the PNG is the window server's composite
+  (`CGWindowListCreateImage`), so glass, visual-effect materials and layer
+  shadows are in the pixels.
+- Reduce Motion: the harness style sheet forces it on. The foundation
+  controls then snap (segmented thumb, progress fill, checkbox, floating
+  surface reveal, glass focus ring). `PanelSymbolButton` and
+  `ToolbarInteractiveButton` default to `StyleSheet.current` (the system
+  setting) and only animate on hover and press, which no scene drives.
+
 ## Status
 
 See the table at the end of this file (kept current by each commit).

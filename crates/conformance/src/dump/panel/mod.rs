@@ -122,6 +122,12 @@ pub fn repository_root() -> PathBuf {
 
 /// What a panel scene provides (`PanelScene` in Swift).
 pub trait PanelScene {
+    /// Computes the scene's inputs (parse a document, build a model) before
+    /// the panel is built; `bench-panel` does not time it.
+    fn prepare(&mut self, _scenario: &PanelScenario, _style_sheet: &Rc<StyleSheet>, _mtm: MainThreadMarker) -> Result<(), Failure> {
+        Ok(())
+    }
+
     /// Builds the panel and applies the scenario's state.
     fn build(&mut self, scenario: &PanelScenario, style_sheet: Rc<StyleSheet>, mtm: MainThreadMarker)
     -> Result<Retained<NSView>, Failure>;
@@ -277,6 +283,7 @@ fn start(mtm: MainThreadMarker) -> Result<(), String> {
         let scenario = session.scenario.clone();
         let (style_sheet, appearance) = panel_style_sheet(&scenario).map_err(failure_text)?;
         NSApplication::sharedApplication(mtm).setAppearance(Some(&appearance));
+        session.scene.prepare(&scenario, &style_sheet, mtm).map_err(failure_text)?;
         let panel = session.scene.build(&scenario, style_sheet, mtm).map_err(failure_text)?;
         let window = match session.scene.own_window(&panel) {
             Some(own) => own,
@@ -386,6 +393,7 @@ fn check_settled() {
 /// `PanelModelDump.run(input:flags:)`.
 pub fn run_model(request: &Request) -> Result<(), Failure> {
     let json = read_scenario_json(&request.input)?;
+    crate::dump::app_window::off_screen::install();
     let mtm = MainThreadMarker::new().expect("panel-model runs on the main thread");
     let _ = NSApplication::sharedApplication(mtm);
     let base = json.get("state").and_then(Value::as_object).cloned().unwrap_or_default();
@@ -404,9 +412,12 @@ pub fn run_model(request: &Request) -> Result<(), Failure> {
         let (style_sheet, appearance) = panel_style_sheet(&scenario)?;
         NSApplication::sharedApplication(mtm).setAppearance(Some(&appearance));
         let mut scene = scenes::make(&scenario.panel)?;
+        scene.prepare(&scenario, &style_sheet, mtm)?;
         let panel = scene.build(&scenario, style_sheet, mtm)?;
         panel.setFrame(NSRect::new(NSPoint::new(0.0, 0.0), NSSize::new(scenario.width, scenario.height)));
         panel.layoutSubtreeIfNeeded();
+        // Windowless, but a panel may order in a window of its own.
+        verify_visible_windows(mtm);
         let mut object = Map::new();
         object.insert("name".into(), Value::String(entry.get("name").and_then(Value::as_str).unwrap_or("").to_owned()));
         object.insert("fittingSize".into(), tree::size(panel.fittingSize()));
@@ -418,4 +429,74 @@ pub fn run_model(request: &Request) -> Result<(), Failure> {
     out.insert("panel".into(), Value::String(json.get("panel").and_then(Value::as_str).unwrap_or("").to_owned()));
     out.insert("states".into(), Value::Array(results));
     Ok(super::json::write(&Value::Object(out), &request.output)?)
+}
+
+// MARK: - bench-panel
+
+/// `PanelBench.run(input:)`: build + layout (+ draw) timings per state,
+/// windowless; `prepare` is not timed.
+pub fn run_bench(request: &Request) -> Result<(), Failure> {
+    let json = read_scenario_json(&request.input)?;
+    crate::dump::app_window::off_screen::install();
+    let mtm = MainThreadMarker::new().expect("bench-panel runs on the main thread");
+    let _ = NSApplication::sharedApplication(mtm);
+    let runs = json.get("runs").and_then(Value::as_i64).unwrap_or(20) as usize;
+    let warmup = json.get("warmup").and_then(Value::as_i64).unwrap_or(3) as usize;
+    let base = json.get("state").and_then(Value::as_object).cloned().unwrap_or_default();
+    let states: Vec<Map<String, Value>> = json
+        .get("states")
+        .and_then(Value::as_array)
+        .map(|states| states.iter().map(|state| state.as_object().cloned().unwrap_or_default()).collect())
+        .unwrap_or_else(|| vec![Map::new()]);
+    let mut stages = Vec::new();
+    for entry in states {
+        let mut merged = base.clone();
+        for (key, value) in &entry {
+            merged.insert(key.clone(), value.clone());
+        }
+        let scenario = PanelScenario::new(&json, Some(merged)).map_err(Failure::Error)?;
+        let (style_sheet, appearance) = panel_style_sheet(&scenario)?;
+        NSApplication::sharedApplication(mtm).setAppearance(Some(&appearance));
+        let draw = scenario.bool("draw");
+        let mut samples = Vec::with_capacity(runs);
+        for index in 0..(warmup + runs) {
+            let mut scene = scenes::make(&scenario.panel)?;
+            scene.prepare(&scenario, &style_sheet, mtm)?;
+            let start = Instant::now();
+            let panel = scene.build(&scenario, style_sheet.clone(), mtm)?;
+            panel.setFrame(NSRect::new(NSPoint::new(0.0, 0.0), NSSize::new(scenario.width, scenario.height)));
+            panel.layoutSubtreeIfNeeded();
+            if draw && let Some(rep) = panel.bitmapImageRepForCachingDisplayInRect(panel.bounds()) {
+                panel.cacheDisplayInRect_toBitmapImageRep(panel.bounds(), &rep);
+            }
+            let elapsed = start.elapsed().as_secs_f64() * 1000.0;
+            if index >= warmup {
+                samples.push(elapsed);
+            }
+            verify_visible_windows(mtm);
+            drop(panel);
+            drop(scene);
+        }
+        samples.sort_by(f64::total_cmp);
+        let p50 = samples[samples.len() / 2];
+        let p95 = samples[(samples.len() - 1).min((samples.len() as f64 * 0.95) as usize)];
+        let name = format!("{} {}", scenario.panel, entry.get("name").and_then(Value::as_str).unwrap_or(""));
+        println!("{name}  p50 {p50:.3} ms  p95 {p95:.3} ms");
+        let mut stage = Map::new();
+        stage.insert("name".into(), Value::String(name));
+        stage.insert("p50".into(), super::json::double(p50));
+        stage.insert("p95".into(), super::json::double(p95));
+        stage.insert("samples".into(), Value::Array(samples.iter().map(|sample| super::json::double(*sample)).collect()));
+        stages.push(Value::Object(stage));
+    }
+    let mut out = Map::new();
+    out.insert("stages".into(), Value::Array(stages));
+    Ok(super::json::write(&Value::Object(out), &request.output)?)
+}
+
+/// `OffScreenWindows.verify(NSApp.windows.filter { $0.isVisible })`.
+fn verify_visible_windows(mtm: MainThreadMarker) {
+    let visible: Vec<Retained<NSWindow>> =
+        NSApplication::sharedApplication(mtm).windows().iter().filter(|window| window.isVisible()).collect();
+    crate::dump::app_window::off_screen::verify(&visible, mtm);
 }
