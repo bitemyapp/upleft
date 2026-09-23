@@ -245,3 +245,10 @@ harness = false
 [[test]]
 name = "settings_pane_tests"
 harness = false
+
+# The start window (`App/StartWindowController.swift`): the `@MainActor`
+# StartWindowTests and RecentRowSubtitleTests, on the main thread
+# (tests/main_thread/mod.rs), in a sandboxed home.
+[[test]]
+name = "start_window_tests_window"
+harness = false
