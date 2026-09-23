@@ -16,5 +16,8 @@ These are Downright behaviours that look like bugs. Upleft reproduces them becau
 
 | Behaviour | Where |
 |---|---|
-| On first open the text view keeps its initial width (for example 404–504 pt) while its text container is 592 pt, so the text column is clipped on the right until something resizes the view. This was confirmed in the real Downright.app at `9be0680`. | `MarkdownContainerView` / `MarkdownTextView` first frame |
 | swift-markdown measures every table row as the width of the first row when it pads column alignments. cmark never produces rows of different widths, so real input is unaffected. | `upleft-markup` tables |
+
+## Retracted
+
+- **"Downright clips the text column on first open."** This was never Downright's behaviour. It came from SwiftPM stamping the binary `sdk 14.0`, which put AppKit into an older compatibility mode. With the canonical build version (docs/BUILD-VERSION.md), the text view takes its full width.
