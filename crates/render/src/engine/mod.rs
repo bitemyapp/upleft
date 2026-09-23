@@ -16,13 +16,13 @@ use upleft_core::NSRange;
 /// Every range the engine hands Foundation is non-negative (Swift would trap
 /// converting a negative `Int` to `NSUInteger` at the same call).
 #[inline]
-pub(crate) fn ns_range(range: NSRange) -> objc2_foundation::NSRange {
+pub fn ns_range(range: NSRange) -> objc2_foundation::NSRange {
     objc2_foundation::NSRange::new(range.location as usize, range.length as usize)
 }
 
 /// A Foundation `NSRange` in the engine's signed coordinates.
 #[inline]
-pub(crate) fn from_ns_range(range: objc2_foundation::NSRange) -> NSRange {
+pub fn from_ns_range(range: objc2_foundation::NSRange) -> NSRange {
     NSRange::new(range.location as isize, range.length as isize)
 }
 
