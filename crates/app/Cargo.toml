@@ -241,3 +241,7 @@ harness = false
 [[test]]
 name = "scroll_zoom_tests"
 harness = false
+
+[[test]]
+name = "settings_pane_tests"
+harness = false
