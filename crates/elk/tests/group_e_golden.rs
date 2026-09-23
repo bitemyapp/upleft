@@ -12,7 +12,6 @@
 
 use std::collections::HashMap;
 use std::path::Path;
-use std::rc::Rc;
 
 use serde_json::Value;
 use upleft_elk::org::eclipse::elk::alg::common::nodespacing::node_dimension_calculation::NodeDimensionCalculation;
@@ -24,7 +23,9 @@ use upleft_elk::org::eclipse::elk::alg::layered::intermediate::end_label_sorter:
 use upleft_elk::org::eclipse::elk::alg::layered::intermediate::innermost_node_margin_calculator::InnermostNodeMarginCalculator;
 use upleft_elk::org::eclipse::elk::alg::layered::intermediate::label_and_node_size_processor::LabelAndNodeSizeProcessor;
 use upleft_elk::org::eclipse::elk::alg::layered::intermediate::label_side_selector::LabelSideSelector;
+use upleft_elk::org::eclipse::elk::alg::common::overlaps::rectangle_strip_overlap_remover::{OverlapRemovalDirection, RectangleStripOverlapRemover};
 use upleft_elk::org::eclipse::elk::alg::layered::options::edge_label_side_selection::EdgeLabelSideSelection;
+use upleft_elk::org::eclipse::elk::core::math::elk_rectangle::ElkRectangle;
 use upleft_elk::org::eclipse::elk::core::alg::i_layout_processor::ILayoutProcessor;
 use upleft_elk::org::eclipse::elk::core::math::elk_margin::ElkMargin;
 use upleft_elk::org::eclipse::elk::core::math::elk_padding::ElkPadding;
@@ -380,6 +381,23 @@ fn run(spec: &Value) -> String {
             "SetPos" => {
                 lg[ids.nodes[parts[1]]].position = KVector::new(parts[2].parse().unwrap(), parts[3].parse().unwrap());
             }
+            "Remover" => {
+                // Remover:<direction>:<gapH>:<gapV>:<start>:x,y,w,h;x,y,w,h;...
+                let dir = pick(
+                    parts[1],
+                    &[OverlapRemovalDirection::UP, OverlapRemovalDirection::DOWN, OverlapRemovalDirection::LEFT, OverlapRemovalDirection::RIGHT],
+                );
+                let mut remover = RectangleStripOverlapRemover::create(dir).with_gap(parts[2].parse().unwrap(), parts[3].parse().unwrap());
+                for r in parts[5].split(';') {
+                    let v: Vec<f64> = r.split(',').map(|x| x.parse().unwrap()).collect();
+                    remover.add_rectangle(ElkRectangle::new(v[0], v[1], v[2], v[3]));
+                }
+                let size = remover.with_start_coordinate(parts[4].parse().unwrap()).remove_overlaps();
+                out += &format!("remover {} strip={}\n", parts[1], d(size));
+                for r in remover.original_rectangles() {
+                    out += &format!("  rect ({},{},{},{})\n", d(r.x), d(r.y), d(r.width), d(r.height));
+                }
+            }
             "Dump" => {
                 out += &format!("== {}\n", parts.get(1).copied().unwrap_or(""));
                 out += &dump(&lg, graph, &ids);
@@ -387,7 +405,6 @@ fn run(spec: &Value) -> String {
             _ => panic!("unknown step {step}"),
         }
     }
-    let _ = Rc::new(());
     out
 }
 
