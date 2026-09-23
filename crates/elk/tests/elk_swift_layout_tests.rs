@@ -65,33 +65,63 @@ fn bend_counts(e: &Map<String, Value>) -> Vec<usize> {
 
 // MARK: OverallLayoutTests (multipleEdgesInBothDirectionsNSNode)
 
-#[test]
-fn overall_node_coordinates_edges_size_orthogonality() {
-    let result = layout("OverallLayoutTests.test_multipleEdgesInBothDirectionsNSNode");
-    let children = objects(&result, "children");
-    for c in &children {
-        assert!(num(c, "x") >= 0.0 && num(c, "y") >= 0.0);
-    }
-    assert!(children.iter().any(|c| num(c, "x") > 0.0 || num(c, "y") > 0.0));
-    for e in objects(&result, "edges") {
+fn overall_result() -> Value {
+    layout("OverallLayoutTests.test_multipleEdgesInBothDirectionsNSNode")
+}
+
+/// Every section's start, bend and end points.
+fn section_points(result: &Value) -> Vec<Vec<(f64, f64)>> {
+    let mut out = Vec::new();
+    for e in objects(result, "edges") {
         for s in objects(&Value::Object(e.clone()), "sections") {
             let start = s["startPoint"].as_object().unwrap();
             let end = s["endPoint"].as_object().unwrap();
-            assert!(num(start, "x") > 0.0 && num(start, "y") > 0.0 && num(end, "x") > 0.0 && num(end, "y") > 0.0);
             let mut points = vec![(num(start, "x"), num(start, "y"))];
             for b in s.get("bendPoints").and_then(Value::as_array).cloned().unwrap_or_default() {
                 let b = b.as_object().unwrap().clone();
                 points.push((num(&b, "x"), num(&b, "y")));
             }
             points.push((num(end, "x"), num(end, "y")));
-            for w in points.windows(2) {
-                let dx = (w[0].0 - w[1].0).abs();
-                let dy = (w[0].1 - w[1].1).abs();
-                assert!(dx < 0.05 || dy < 0.05, "Edge segment not orthogonal: {w:?}");
-            }
+            out.push(points);
         }
     }
-    assert_positive_size(&result);
+    out
+}
+
+#[test]
+fn overall_node_coordinates() {
+    let result = overall_result();
+    let children = objects(&result, "children");
+    for c in &children {
+        assert!(num(c, "x") >= 0.0, "Node {:?} should have x >= 0", c.get("id"));
+        assert!(num(c, "y") >= 0.0, "Node {:?} should have y >= 0", c.get("id"));
+    }
+    assert!(children.iter().any(|c| num(c, "x") > 0.0 || num(c, "y") > 0.0), "At least one node should have non-zero coordinates");
+}
+
+#[test]
+fn overall_edge_coordinates() {
+    for points in section_points(&overall_result()) {
+        let (start, end) = (points[0], points[points.len() - 1]);
+        assert!(start.0 > 0.0 && start.1 > 0.0, "Edge start should be > 0: {start:?}");
+        assert!(end.0 > 0.0 && end.1 > 0.0, "Edge end should be > 0: {end:?}");
+    }
+}
+
+#[test]
+fn overall_graph_size() {
+    assert_positive_size(&overall_result());
+}
+
+#[test]
+fn overall_edge_orthogonality() {
+    for points in section_points(&overall_result()) {
+        for w in points.windows(2) {
+            let dx = (w[0].0 - w[1].0).abs();
+            let dy = (w[0].1 - w[1].1).abs();
+            assert!(dx < 0.05 || dy < 0.05, "Edge segment not orthogonal: {w:?}");
+        }
+    }
 }
 
 // MARK: GoldenOutputSnapshotTests
