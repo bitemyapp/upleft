@@ -24,6 +24,7 @@ objc2.workspace = true
 objc2-foundation = { workspace = true, features = [
     "NSArray", "NSAttributedString", "NSData", "NSDictionary", "NSEnumerator", "NSError", "NSGeometry",
     "NSJSONSerialization", "NSNotification", "NSRange", "NSString", "NSURL", "NSURLCache", "NSURLProtocol", "NSURLRequest", "NSURLResponse", "NSURLSession", "NSUUID", "NSUserDefaults", "NSValue", "block2",
+    "NSBundle", "NSProcessInfo",
 ] }
 objc2-app-kit = { workspace = true, features = [
     "NSAppearance", "NSApplication", "NSBitmapImageRep", "NSEvent", "NSClipView", "NSColor", "NSColorList", "NSColorSpace",
@@ -35,6 +36,7 @@ objc2-app-kit = { workspace = true, features = [
     "NSAttributedString", "NSParagraphStyle", "NSShadow", "NSTextAttachment", "NSTextList", "NSTextStorage",
     "NSTextTable", "NSEvent", "NSTableView", "NSTableCellView", "NSControl", "NSTextField", "NSPanel",
     "NSAccessibility", "NSAccessibilityProtocols",
+    "NSButton", "NSButtonCell", "NSToolbar", "NSToolbarItem", "NSWindowController",
 ] }
 objc2-quartz-core = { version = "0.3.2", default-features = false, features = [
     "std", "objc2-core-foundation", "objc2-core-graphics", "CALayer",

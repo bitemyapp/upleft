@@ -349,7 +349,7 @@ fn capture_next(filters: Arc<Vec<Retained<SCContentFilter>>>, images: Captured, 
 
 /// See `stackImages` in the Swift oracle: the captures one above the other,
 /// left-aligned, in the first capture's colour space.
-fn stack_images<T: std::ops::Deref<Target = CGImage>>(images: &[T]) -> Result<objc2_core_foundation::CFRetained<CGImage>, String> {
+pub(crate) fn stack_images<T: std::ops::Deref<Target = CGImage>>(images: &[T]) -> Result<objc2_core_foundation::CFRetained<CGImage>, String> {
     let width = images.iter().map(|image| CGImage::width(Some(image))).max().unwrap_or(0);
     let height: usize = images.iter().map(|image| CGImage::height(Some(image))).sum();
     let space = images.first().and_then(|image| CGImage::color_space(Some(image))).ok_or("cannot make the stacking context")?;

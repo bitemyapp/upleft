@@ -197,6 +197,27 @@ final class AppWindowScene {
             retained = controller
             window = controller.window
             show()
+        case "probe":
+            // Nothing of Downright's: a stock titled window, to prove the two
+            // harnesses' launch, off-screen placement and capture agree
+            // before any ported window is judged by them.
+            let probe = NSWindow(
+                contentRect: NSRect(x: 0, y: 0, width: 480, height: 320),
+                styleMask: [.titled, .closable, .miniaturizable, .resizable],
+                backing: .buffered, defer: false
+            )
+            probe.isReleasedWhenClosed = false
+            probe.title = "Probe"
+            let label = NSTextField(labelWithString: "The quick brown fox jumps over the lazy dog.")
+            label.frame = NSRect(x: 24, y: 140, width: 432, height: 24)
+            label.font = .systemFont(ofSize: 17)
+            let button = NSButton(title: "Continue", target: nil, action: nil)
+            button.bezelStyle = .push
+            button.frame = NSRect(x: 360, y: 20, width: 100, height: 32)
+            probe.contentView?.addSubview(label)
+            probe.contentView?.addSubview(button)
+            window = probe
+            show()
         default:
             throw AppOracleError(description: "unknown window \(scenario.window)")
         }

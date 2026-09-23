@@ -1540,6 +1540,24 @@
           "outline"
         ]
       ]
+    },
+    {
+      "name": "app-window",
+      "command": "app-window",
+      "oracle": "app",
+      "output": "png",
+      "input": "json",
+      "serial": true,
+      "only": [
+        "corpus/app-window/"
+      ],
+      "depends": [
+        "corpus/generated/docs/",
+        "corpus/generated/agent/"
+      ],
+      "variants": [
+        []
+      ]
     }
   ]
 }
