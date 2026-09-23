@@ -1,3 +1,8 @@
-//! Port of `vendor/elk-swift/Sources/ElkSwift/ELK/org/eclipse/elk/alg/layered/p4nodes/bk/org_eclipse_elk_alg_layered_p4nodes_bk_ICompactor.swift`.
-//!
-//! Not ported yet.
+//! Port of `alg/layered/p4nodes/bk/ICompactor.swift`.
+
+use super::bk_aligned_layout::BKAlignedLayout;
+use crate::prelude::*;
+
+pub trait ICompactor {
+    fn horizontal_compaction(&mut self, lg: &LGraphArena, bal: &mut BKAlignedLayout);
+}
