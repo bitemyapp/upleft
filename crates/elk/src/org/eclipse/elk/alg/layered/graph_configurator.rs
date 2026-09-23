@@ -64,7 +64,10 @@ impl Random {
     }
 
     pub fn next_long(&mut self) -> i64 {
-        ((self.next(32) as i64) << 32).wrapping_add(self.next(32) as i64)
+        // Swift: `(Int64(next(32)) << 32) + Int64(next(32))`. Unlike Java's
+        // wrapping `+`, Swift's traps when the high word is Int32.min and the
+        // low word is negative (about one draw in 2^33).
+        ((self.next(32) as i64) << 32).checked_add(self.next(32) as i64).expect("Swift traps: arithmetic overflow in Random.nextLong")
     }
 
     pub fn next_boolean(&mut self) -> bool {

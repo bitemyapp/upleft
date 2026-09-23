@@ -218,7 +218,6 @@ fn test_self_loops() {
 }
 
 #[test]
-#[ignore = "needs group A: PortListSorter::cmp_combined (SweepCopy panics on north/south port dummies)"]
 fn test_north_south_port_crossing() {
     for greedy_type in GREEDY_TYPES {
         let mut creator = TestGraphCreator::new();
