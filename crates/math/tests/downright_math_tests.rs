@@ -149,13 +149,13 @@ struct TemporaryDirectory(PathBuf);
 
 impl TemporaryDirectory {
     fn new() -> TemporaryDirectory {
+        // Tests run in parallel threads of one process, and the clock is too
+        // coarse to tell them apart, so a counter makes each name unique.
+        static NEXT: std::sync::atomic::AtomicUsize = std::sync::atomic::AtomicUsize::new(0);
         let unique = format!(
             "upleft-mathfonts-{}-{}",
             std::process::id(),
-            std::time::SystemTime::now()
-                .duration_since(std::time::UNIX_EPOCH)
-                .unwrap()
-                .as_nanos()
+            NEXT.fetch_add(1, std::sync::atomic::Ordering::Relaxed)
         );
         let root = std::env::temp_dir().join(unique);
         std::fs::create_dir_all(&root).unwrap();
