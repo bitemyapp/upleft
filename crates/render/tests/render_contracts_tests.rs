@@ -7,8 +7,8 @@
 use objc2::runtime::AnyObject;
 use objc2::{ClassType, Message};
 use objc2_app_kit::{NSAppearanceNameAqua, NSAppearanceNameDarkAqua};
-use objc2_foundation::{NSArray, NSRange};
-use upleft_render::core_types::{BlockIdentity, TableCell, TableData, TableRow};
+use objc2_foundation::NSArray;
+use upleft_render::core_types::{BlockIdentity, NSRange, TableCell, TableData, TableRow};
 use upleft_render::render_contracts::{
     FragmentKind, FragmentPayload, MarkdownRenderConfiguration, MarkdownRevealPolicy,
 };
