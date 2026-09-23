@@ -143,7 +143,12 @@ struct UrlComponents {
 
 impl UrlComponents {
     fn parse(string: &str) -> Option<UrlComponents> {
-        use swift_text::ns::foundation::to_string;
+        // The parts come back as Swift-backed `NSString`s, whose
+        // `getCharacters:range:` declares a signed range: objc2's debug
+        // encoding check rejects the `NSRange` call `ns::foundation::to_string`
+        // makes, so read them through `UTF8String` (`Display`) instead. URL
+        // components never hold lone surrogates, so nothing is lost.
+        let to_string = |s: &NSString| s.to_string();
         objc2::rc::autoreleasepool(|_| {
             let components: Retained<NSURLComponents> = NSURLComponents::componentsWithString(&ns_string(string))?;
             Some(UrlComponents {
