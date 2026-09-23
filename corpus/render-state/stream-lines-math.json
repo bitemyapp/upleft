@@ -1,0 +1,46 @@
+{
+ "document": "../generated/docs/Vendor__SwiftMath__EXAMPLES.md",
+ "initialText": "# SwiftMath Examples\n\n## Square of sums\n```LaTeX\n(a_1 + a_2)^2 = a_1^2 + 2a_1a_2 + a_2^2\n```\n\n![Square Formula](img/square-light.png#gh-light-mode-only)\n![Square Formula](img/square-dark.png#gh-dark-mode-only)\n\n## Quadratic Formula \n```LaTeX\nx = \\frac{-b \\pm \\sqrt{b^2-4ac}}{2a}\n```\n\n![Quadratic Formula](img/quadratic-light.png#gh-light-mode-only)\n![Quadratic Formula](img/quadratic-dark.png#gh-dark-mode-only)\n\n## Standard Deviation\n```LaTeX\n\\sigma = \\sqrt{\\frac{1}{N}\\sum_{i=1}^N (x_i - \\mu)^2}\n```\n\n![Standard Deviation](img/standard-light.png#gh-light-mode-only)\n",
+ "edits": [
+  {
+   "location": 568,
+   "length": 0,
+   "text": "![Standard Deviation](img/standard-dark.png#gh-dark-mode-only)\n\n## De Morgan's laws\n```LaTeX\n\\neg(P\\land Q) \\iff (\\neg P)\\lor(\\neg Q)\n```\n\n![De Morgan](img/demorgan-light.png#gh-light-mode-only)\n![De Morgan](img/demorgan-dark.png#gh-dark-mode-only)\n\n## Log Change of Base\n```LaTeX\n\\log_b(x) = \\frac{\\log_a(x)}{\\log_a(b)}\n```\n\n![Log Base Change](img/log-light.png#gh-light-mode-only)\n![Log Base Change](img/log-dark.png#gh-dark-mode-only)\n\n## Cosine addition\n```LaTeX\n\\cos(\\theta + \\varphi) = \\cos(\\theta)\\cos(\\varphi) - \\sin(\\theta)\\sin(\\varphi)\n```\n\n![Cos Sum](img/trig-light.png#gh-light-mode-only)\n"
+  },
+  {
+   "location": 1169,
+   "length": 0,
+   "text": "![Cos Sum](img/trig-dark.png#gh-dark-mode-only)\n\n## Limit e^k\n```LaTeX\n\\lim_{x\\to\\infty}\\left(1 + \\frac{k}{x}\\right)^x = e^k\n```\n\n![Limit](img/limit-light.png#gh-light-mode-only)\n![Limit](img/limit-dark.png#gh-dark-mode-only)\n\n## Calculus\n```LaTeX\nf(x) = \\int\\limits_{-\\infty}^\\infty\\hat f(\\xi)\\,e^{2 \\pi i \\xi x}\\,\\mathrm{d}\\xi\n```\n\n![Calculus](img/calculus-light.png#gh-light-mode-only)\n![Calculus](img/calculus-dark.png#gh-dark-mode-only)\n\n## Stirling Numbers of the Second Kind\n```LaTeX\n{n \\brace k} = \\frac{1}{k!}\\sum_{j=0}^k (-1)^{k-j}\\binom{k}{j}(k-j)^n\n```\n\n![Stirling Numbers](img/stirling-light.png#gh-light-mode-only)\n"
+  },
+  {
+   "location": 1798,
+   "length": 0,
+   "text": "![Stirling Numbers](img/stirling-dark.png#gh-dark-mode-only)\n\n## Gaussian Integral\n```LaTeX\n\\int_{-\\infty}^{\\infty} \\! e^{-x^2} dx = \\sqrt{\\pi}\n```\n\n![Gauss Integral](img/gaussintegral-light.png#gh-light-mode-only)\n![Gauss Integral](img/gaussintegral-dark.png#gh-dark-mode-only)\n\n## Arithmetic mean, geometric mean inequality\n```LaTeX\n\\frac{1}{n}\\sum_{i=1}^{n}x_i \\geq \\sqrt[n]{\\prod_{i=1}^{n}x_i}\n```\n\n![AM-GM](img/amgm-light.png#gh-light-mode-only)\n![AM-GM](img/amgm-dark.png#gh-dark-mode-only)\n\n## Cauchy-Schwarz inequality\n```LaTeX\n\\left(\\sum_{k=1}^n a_k b_k \\right)^2 \\le \\left(\\sum_{k=1}^n a_k^2\\right)\\left(\\sum_{k=1}^n b_k^2\\right)\n```\n\n![Cauchy Schwarz](img/cauchyschwarz-light.png#gh-light-mode-only)\n"
+  },
+  {
+   "location": 2509,
+   "length": 0,
+   "text": "![Cauchy Schwarz](img/cauchyschwarz-dark.png#gh-dark-mode-only)\n\n## Cauchy integral formula\n```LaTeX\nf^{(n)}(z_0) = \\frac{n!}{2\\pi i}\\oint_\\gamma\\frac{f(z)}{(z-z_0)^{n+1}}dz\n```\n\n![Cauchy Integral](img/cauchyintegral-light.png#gh-light-mode-only)\n![Cauchy Integral](img/cauchyintegral-dark.png#gh-dark-mode-only)\n\n## Schroedinger's Equation\n```LaTeX\ni\\hbar\\frac{\\partial}{\\partial t}\\mathbf\\Psi(\\mathbf{x},t) = -\\frac{\\hbar}{2m}\\nabla^2\\mathbf\\Psi(\\mathbf{x},t)\n+ V(\\mathbf{x})\\mathbf\\Psi(\\mathbf{x},t)\n```\n\n![Schroedinger](img/schroedinger-light.png#gh-light-mode-only)\n![Schroedinger](img/schroedinger-dark.png#gh-dark-mode-only)\n\n## Lorentz Equations\nUse the `gather` or `displaylines` environments to center multiple\nequations.\n```LaTeX\n\\begin{gather}\n"
+  },
+  {
+   "location": 3265,
+   "length": 0,
+   "text": "\\dot{x} = \\sigma(y-x) \\\\\n\\dot{y} = \\rho x - y - xz \\\\\n\\dot{z} = -\\beta z + xy\"\n\\end{gather}\n```\n\n![Lorentz](img/lorentz-light.png#gh-light-mode-only)\n![Lorentz](img/lorentz-dark.png#gh-dark-mode-only)\n\n## Cross product\n```LaTeX\n\\vec \\bf V_1 \\times \\vec \\bf V_2 =  \\begin{vmatrix}\n\\hat \\imath &\\hat \\jmath &\\hat k \\\\\n\\frac{\\partial X}{\\partial u} & \\frac{\\partial Y}{\\partial u} & 0 \\\\\n\\frac{\\partial X}{\\partial v} & \\frac{\\partial Y}{\\partial v} & 0\n\\end{vmatrix}\n```\n\n![Cross Product](img/cross-light.png#gh-light-mode-only)\n![Cross Product](img/cross-dark.png#gh-dark-mode-only)\n\n## Maxwell's Equations\nUse the `aligned`, `eqalign` or `split` environments to align\nmultiple equations.\n"
+  },
+  {
+   "location": 3953,
+   "length": 0,
+   "text": "```LaTeX\n\\begin{eqalign}\n\\nabla \\cdot \\vec{\\bf E} & = \\frac {\\rho} {\\varepsilon_0} \\\\\n\\nabla \\cdot \\vec{\\bf B} & = 0 \\\\\n\\nabla \\times \\vec{\\bf E} &= - \\frac{\\partial\\vec{\\bf B}}{\\partial t} \\\\\n\\nabla \\times \\vec{\\bf B} & = \\mu_0\\vec{\\bf J} + \\mu_0\\varepsilon_0 \\frac{\\partial\\vec{\\bf E}}{\\partial t}\n\\end{eqalign}\n```\n\n![Maxwell's Equations](img/maxwell-light.png#gh-light-mode-only)\n![Maxwell's Equations](img/maxwell-dark.png#gh-dark-mode-only)\n\n## Matrix multiplication\nSupported matrix environments: `matrix`, `pmatrix`, `bmatrix`, `Bmatrix`,\n`vmatrix`, `Vmatrix`.\n```LaTeX\n\\begin{pmatrix}\na & b\\\\ c & d\n\\end{pmatrix}\n\\begin{pmatrix}\n\\alpha & \\beta \\\\ \\gamma & \\delta\n\\end{pmatrix} = \n\\begin{pmatrix}\na\\alpha + b\\gamma & a\\beta + b \\delta \\\\\n"
+  },
+  {
+   "location": 4699,
+   "length": 0,
+   "text": "c\\alpha + d\\gamma & c\\beta + d \\delta \n\\end{pmatrix}\n```\n\n![Matrix Multiplication](img/matrixmult-light.png#gh-light-mode-only)\n![Matrix Multiplication](img/matrixmult-dark.png#gh-dark-mode-only)\n\n## Cases\n```LaTeX\nf(x) = \\begin{cases}\n\\frac{e^x}{2} & x \\geq 0 \\\\\n1 & x < 0\n\\end{cases}\n```\n\n![Cases](img/cases-light.png#gh-light-mode-only)\n![Cases](img/cases-dark.png#gh-dark-mode-only)\n\n## Splitting long equations\n```LaTeX\n\\frak Q(\\lambda,\\hat{\\lambda}) =\n-\\frac{1}{2} \\mathbb P(O \\mid \\lambda ) \\sum_s \\sum_m \\sum_t \\gamma_m^{(s)} (t) +\\\\\n\\quad \\left( \\log(2 \\pi ) + \\log \\left| \\cal C_m^{(s)} \\right| +\n\\left( o_t - \\hat{\\mu}_m^{(s)} \\right) ^T \\cal C_m^{(s)-1} \\right) \n"
+  },
+  {
+   "location": 5374,
+   "length": 0,
+   "text": "```\n\n![Long equation](img/long-light.png#gh-light-mode-only)\n![Long equation](img/long-dark.png#gh-dark-mode-only)\n"
+  }
+ ]
+}

@@ -122,7 +122,9 @@ fn parse_options() -> Options {
         suites: Vec::new(),
         filter: None,
         limit: None,
-        jobs: std::thread::available_parallelism().map_or(4, usize::from),
+        // Half the cores: enough to finish quickly, leaving the desktop
+        // responsive (the runner also lowers its own priority).
+        jobs: std::thread::available_parallelism().map_or(4, |cores| (usize::from(cores) / 2).max(1)),
         fail_fast: false,
         cache: true,
     };
@@ -555,6 +557,13 @@ fn main() -> ExitCode {
 }
 
 fn run() -> ExitCode {
+    // Lower priority for the runner and every oracle it starts, so a
+    // conformance run never competes with the owner's foreground work.
+    unsafe extern "C" {
+        fn setpriority(which: i32, who: u32, priority: i32) -> i32;
+    }
+    // SAFETY: PRIO_PROCESS (0) for this process (0) to nice 10.
+    unsafe { setpriority(0, 0, 10) };
     let options = parse_options();
     let root = root();
     let (corpus, exclude, suites) = load_suites(&root);

@@ -1,0 +1,13 @@
+{
+ "document": "../generated/docs/Docs__sample.md",
+ "mode": "read",
+ "configuration": {
+  "codeCollapseThreshold": 1
+ },
+ "collapseCode": [
+  {
+   "offset": 997,
+   "collapsed": false
+  }
+ ]
+}

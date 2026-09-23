@@ -12,7 +12,7 @@
       "name": "probe",
       "command": "probe",
       "output": "png",
-      "serial": true,
+      "serial": false,
       "only": [
         "corpus/generated/docs/Docs__sample.md",
         "corpus/generated/docs/README.md",
@@ -194,7 +194,7 @@
       "name": "render",
       "command": "render",
       "output": "png",
-      "serial": true,
+      "serial": false,
       "variants": [
         [
           "--mode",
@@ -223,7 +223,7 @@
       "name": "render-dark-themes",
       "command": "render",
       "output": "png",
-      "serial": true,
+      "serial": false,
       "only": [
         "corpus/generated/fixtures/MarkdownCoreTests__Corpus-001.md",
         "corpus/generated/fixtures/MarkdownRenderTests__DecorationTests-001.md",
@@ -296,7 +296,7 @@
       "name": "render-images",
       "command": "render",
       "output": "png",
-      "serial": true,
+      "serial": false,
       "input": "markdown",
       "only": [
         "corpus/render-images/"
@@ -840,7 +840,7 @@
       "name": "render-density",
       "command": "render",
       "output": "png",
-      "serial": true,
+      "serial": false,
       "only": [
         "corpus/generated/docs/Docs__MARKDOWN-COMPATIBILITY.md",
         "corpus/generated/docs/Docs__marketing__reddit-editor-showcase.prompt.md",
@@ -1726,6 +1726,15 @@
           "--height",
           "256"
         ]
+      ]
+    },
+    {
+      "name": "render-state",
+      "command": "render-state",
+      "output": "png",
+      "input": "json",
+      "only": [
+        "corpus/render-state/"
       ]
     }
   ]

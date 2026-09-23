@@ -1,0 +1,158 @@
+{
+ "document": "../generated/docs/Docs__sample.md",
+ "dark": true,
+ "theme": "Warm Dark",
+ "initialText": "# Renderer handoff: the file stays readable\n\nThis is the worki",
+ "edits": [
+  {
+   "location": 62,
+   "length": 0,
+   "text": "ng note for the renderer refactor. The page is a review\nsurfac"
+  },
+  {
+   "location": 124,
+   "length": 0,
+   "text": "e for a file people and coding agents change together: the sou"
+  },
+  {
+   "location": 186,
+   "length": 0,
+   "text": "rce stays\nplain, the document stays legible, and every decisio"
+  },
+  {
+   "location": 248,
+   "length": 0,
+   "text": "n has a place to land.\n\n**Inline** · **bold** · _italic_ · ~~d"
+  },
+  {
+   "location": 310,
+   "length": 0,
+   "text": "eprecated~~ · `RenderedDocument`\n\n**Links** · [open the issue]"
+  },
+  {
+   "location": 372,
+   "length": 0,
+   "text": "(https://github.com/ezzy1630/Downright/issues) · [[Renderer]] "
+  },
+  {
+   "location": 434,
+   "length": 0,
+   "text": "· <https://downright.cc> · note[^1]\n\n**Math** · $e^{i\\pi}+1=0$"
+  },
+  {
+   "location": 496,
+   "length": 0,
+   "text": " · $\\sqrt{x^2+y^2}$ · `$PATH`\n\n| Surface | State | Proof |\n|--"
+  },
+  {
+   "location": 558,
+   "length": 0,
+   "text": "-|---|---|\n| `Parse` | **stable** | immutable block index |\n| "
+  },
+  {
+   "location": 620,
+   "length": 0,
+   "text": "`Decorate` | **measured** | one pass per keystroke |\n| `Review"
+  },
+  {
+   "location": 682,
+   "length": 0,
+   "text": "` | **visible** | word-level change marks |\n\n> [!NOTE]\n> Nativ"
+  },
+  {
+   "location": 744,
+   "length": 0,
+   "text": "e: prose, source, state, and media in one surface.\n\n- [x] Pars"
+  },
+  {
+   "location": 806,
+   "length": 0,
+   "text": "e once and decorate from ranges\n- [x] Keep raw bytes available"
+  },
+  {
+   "location": 868,
+   "length": 0,
+   "text": " for review\n- [ ] Move the image store off the main actor\n\n**S"
+  },
+  {
+   "location": 930,
+   "length": 0,
+   "text": "yntax** · comments, keywords, types, strings, numbers, and cal"
+  },
+  {
+   "location": 992,
+   "length": 0,
+   "text": "ls:\n\n```swift\n@MainActor func render(_ source: String) -> Rend"
+  },
+  {
+   "location": 1054,
+   "length": 0,
+   "text": "eredDocument {\n    let index = parser.blockIndex(for: source)\n"
+  },
+  {
+   "location": 1116,
+   "length": 0,
+   "text": "    let image = cache.image(for: index)\n    return decorator.a"
+  },
+  {
+   "location": 1178,
+   "length": 0,
+   "text": "pply(image, ranges: index.ranges)\n}\n```\n\n**Math**\n\n$$\n\\mathop{"
+  },
+  {
+   "location": 1240,
+   "length": 0,
+   "text": "\\mathrm{parse}}(bytes) \\longrightarrow \\mathop{\\mathrm{decorat"
+  },
+  {
+   "location": 1302,
+   "length": 0,
+   "text": "e}}(surface)\n$$\n\n**Mermaid**\n\n```mermaid\nflowchart LR\n    A[MD"
+  },
+  {
+   "location": 1364,
+   "length": 0,
+   "text": "] --> B{?}\n    B -->|no| C[Keep]\n    B -->|yes| D[Render]\n```\n"
+  },
+  {
+   "location": 1426,
+   "length": 0,
+   "text": "\n## Review anchors\n\nThe document map draws from this same stru"
+  },
+  {
+   "location": 1488,
+   "length": 0,
+   "text": "cture, so every altitude has a floor to stand on.\n\n### Source\n"
+  },
+  {
+   "location": 1550,
+   "length": 0,
+   "text": "\nThe handoff stays source-first while the rendered surface sta"
+  },
+  {
+   "location": 1612,
+   "length": 0,
+   "text": "ys native.\n\n### State\n\nLinks, callouts, tasks, and math retain"
+  },
+  {
+   "location": 1674,
+   "length": 0,
+   "text": " their local state as the page grows.\n\n### Finish\n\nThis note s"
+  },
+  {
+   "location": 1736,
+   "length": 0,
+   "text": "tays useful after the agent leaves because its structure remai"
+  },
+  {
+   "location": 1798,
+   "length": 0,
+   "text": "ns visible.\n\n[^1]: Footnotes resolve locally without moving th"
+  },
+  {
+   "location": 1860,
+   "length": 0,
+   "text": "e reader away from the line.\n"
+  }
+ ]
+}

@@ -38,6 +38,8 @@ pub struct MarkdownScene {
     /// `--density leading|trailing` (see `DensityHost`).
     density: Option<String>,
     density_host: Option<Rc<DensityHost>>,
+    /// `render-state`: the state to drive the view into.
+    scenario: Option<super::render_state::RenderScenario>,
 }
 
 impl MarkdownScene {
@@ -48,7 +50,13 @@ impl MarkdownScene {
             container: None,
             density: None,
             density_host: None,
+            scenario: None,
         }
+    }
+
+    pub fn with_scenario(mut self, scenario: super::render_state::RenderScenario) -> MarkdownScene {
+        self.scenario = Some(scenario);
+        self
     }
 
     pub fn with_density(mut self, density: Option<String>) -> MarkdownScene {
@@ -67,14 +75,18 @@ impl MarkdownScene {
 
 impl CaptureScene for MarkdownScene {
     fn build(&mut self, window: &NSWindow, request: &CaptureRequest, mtm: MainThreadMarker) -> Result<Retained<NSView>, String> {
-        let text = super::markup::read_text(&request.input).map_err(|error| format!("{error:?}"))?;
+        let text = match self.scenario.as_ref().and_then(|scenario| scenario.initial_text.clone()) {
+            Some(text) => text,
+            None => super::markup::read_text(&request.input).map_err(|error| format!("{error:?}"))?,
+        };
         let appearance = appearance(request.dark);
         let themes = ThemeStore::shared().themes();
         let Some(theme) = themes.iter().find(|theme| theme.name == self.theme_name).cloned() else {
             let known: Vec<String> = themes.iter().map(|theme| theme.name.clone()).collect();
             return Err(format!("unknown theme {}; known: {}", self.theme_name, known.join(", ")));
         };
-        let style_sheet = Rc::new(StyleSheet::new(theme, &appearance, Some(true)));
+        let reduce_motion = self.scenario.as_ref().is_none_or(|scenario| scenario.reduce_motion);
+        let style_sheet = Rc::new(StyleSheet::new(theme, &appearance, Some(reduce_motion)));
         let storage = NSTextStorage::from_nsstring_storage(&NSString::from_str(&text));
         let container = MarkdownContainerView::new(&storage, style_sheet.clone(), mtm);
         if let Some(density) = &self.density {
@@ -93,6 +105,9 @@ impl CaptureScene for MarkdownScene {
         window.layoutIfNeeded();
         container.layoutSubtreeIfNeeded();
         let text_view = container.text_view();
+        if let Some(configuration) = self.scenario.as_ref().and_then(|scenario| scenario.configuration.clone()) {
+            text_view.set_configuration(configuration);
+        }
         text_view.set_mode(self.mode);
         let document = MarkdownParser::parse(&text);
         text_view.update(document.clone(), &DirtySet::wholesale(), true);
@@ -115,6 +130,9 @@ impl CaptureScene for MarkdownScene {
         text_view.displayIfNeeded();
         if let Some(host) = &self.density_host {
             host.update_gutter();
+        }
+        if let Some(scenario) = &self.scenario {
+            scenario.apply(text_view);
         }
     }
 

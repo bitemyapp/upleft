@@ -46,6 +46,8 @@ App-level window checks, of the real titled windows, need extra care. AppKit pul
 
 Borderless windows placed off-screen are not constrained. The render harness uses them with `cacheDisplay`. An off-screen window always draws in its inactive appearance.
 
+Headless captures share nothing on screen, so `conform` runs them in parallel on half the cores at lowered priority. Only `--capture screen` takes the machine-wide lock. docs/VALIDATION.md describes the renderer's checks, including `render-state` and the selector audit, and when to run them.
+
 `--capture screen` (activation plus a ScreenCaptureKit capture of the on-screen window) is opt-in. Use it only for a handful of representative cases, to confirm that headless and on-screen pixels still agree after a change to the capture path. Tests that need a window put it off-screen too.
 
 ## Gates

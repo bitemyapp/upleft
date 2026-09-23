@@ -17,6 +17,7 @@ pub mod math;
 pub mod math_bench;
 pub mod parse;
 pub mod render;
+pub mod render_state;
 pub mod view_bench;
 pub mod style_sheet;
 pub mod unicode;
@@ -200,6 +201,12 @@ pub fn run(request: &Request) -> Result<(), Failure> {
         "elk" => elk::run(&request.input, &request.output),
         "probe" => crate::capture::run(request.capture(), Box::new(crate::capture::ProbeScene)),
         "bench-view" => view_bench::run(request),
+        "render-state" => {
+            let scenario = render_state::RenderScenario::load(&request.input)?;
+            let capture = scenario.capture_request(request);
+            let scene = render::MarkdownScene::new(&scenario.mode, &scenario.theme).with_scenario(scenario);
+            crate::capture::run(capture, Box::new(scene))
+        }
         "render" => crate::capture::run(
             request.capture(),
             Box::new(render::MarkdownScene::new(&request.mode, &request.theme).with_density(request.density.clone())),

@@ -1,0 +1,35 @@
+{
+ "document": "../generated/agent/agent-400.md",
+ "changeMarks": [
+  {
+   "kind": "inserted",
+   "range": [
+    2526,
+    31
+   ],
+   "words": []
+  },
+  {
+   "kind": "modified",
+   "range": [
+    2606,
+    71
+   ],
+   "words": [
+    [
+     2606,
+     1
+    ]
+   ]
+  },
+  {
+   "kind": "deleted",
+   "range": [
+    2527,
+    0
+   ],
+   "words": [],
+   "deletedText": "a sentence an external edit removed"
+  }
+ ]
+}

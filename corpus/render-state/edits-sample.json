@@ -1,0 +1,30 @@
+{
+ "document": "../generated/docs/Docs__sample.md",
+ "edits": [
+  {
+   "location": 727,
+   "length": 0,
+   "text": "Freshly typed words land here. "
+  },
+  {
+   "location": 1461,
+   "length": 14,
+   "text": "A retitled section"
+  },
+  {
+   "location": 1028,
+   "length": 3,
+   "text": "``"
+  },
+  {
+   "location": 1028,
+   "length": 2,
+   "text": "```"
+  },
+  {
+   "location": 1028,
+   "length": 222,
+   "text": ""
+  }
+ ]
+}

@@ -76,7 +76,10 @@ final class CaptureSession: NSObject, NSApplicationDelegate {
     }
 
     static func run(request: RenderRequest, scene: CaptureScene) -> Never {
-        acquireWindowCaptureLock()
+        // Headless captures (off-screen borderless window, never activated)
+        // share nothing on screen, so they may run in parallel. Only on-screen
+        // captures compete for activation and window order.
+        if !request.headless { acquireWindowCaptureLock() }
         let app = NSApplication.shared
         app.setActivationPolicy(.accessory)
         let session = CaptureSession(request: request, scene: scene)
@@ -274,18 +277,21 @@ final class MarkdownScene: CaptureScene {
     /// `--density leading|trailing` (see `DensityHost`).
     let density: String?
     private(set) var densityHost: DensityHost?
+    /// `render-state`: the state to drive the view into (see RenderScenario).
+    let scenario: RenderScenario?
 
-    init(density: String? = nil) {
+    init(density: String? = nil, scenario: RenderScenario? = nil) {
         self.density = density
+        self.scenario = scenario
     }
 
     func build(in window: NSWindow, request: RenderRequest) throws -> NSView {
-        let text = try String(contentsOf: request.input, encoding: .utf8)
+        let text = try scenario?.initialText ?? String(contentsOf: request.input, encoding: .utf8)
         let appearance = NSAppearance(named: request.dark ? .darkAqua : .aqua)!
         guard let theme = ThemeStore.shared.themes.first(where: { $0.name == request.themeName }) else {
             throw OracleError.unknownTheme(request.themeName, ThemeStore.shared.themes.map(\.name))
         }
-        let styleSheet = StyleSheet(theme: theme, appearance: appearance, reduceMotionOverride: true)
+        let styleSheet = StyleSheet(theme: theme, appearance: appearance, reduceMotionOverride: scenario?.reduceMotion ?? true)
         let storage = NSTextStorage(string: text)
         container = MarkdownContainerView(storage: storage, styleSheet: styleSheet)
         if let density {
@@ -305,6 +311,7 @@ final class MarkdownScene: CaptureScene {
         // first document update resizes the text view to its content.
         window.layoutIfNeeded()
         container.layoutSubtreeIfNeeded()
+        if let configuration = scenario?.configuration { container.textView.configuration = configuration }
         container.textView.mode = request.mode
         let document = MarkdownParser.parse(text)
         container.textView.update(document: document, dirty: .wholesale)
@@ -323,6 +330,7 @@ final class MarkdownScene: CaptureScene {
         container.textView.prepareForDisplay()
         container.textView.displayIfNeeded()
         if let densityHost { MainActor.assumeIsolated { densityHost.updateGutter() } }
+        scenario?.apply(to: container.textView)
     }
 
     func beforeSettleCheck() {

@@ -1,0 +1,46 @@
+{
+ "document": "../generated/docs/Resources__Welcome.md",
+ "initialText": "# Welcome to Downright\n\nThis document is the tour. Everything it describes is happening on this page\nwhile you read it.\n\nDownright opens a Markdown file, renders it, and lets you edit the same text in\nplace. This is not a preview of something else. The words below are the file.\n\n## The strip down the left edge\n\nThat narrow lane is the density gutter, and it replaces the scrollbar. It draws\n",
+ "edits": [
+  {
+   "location": 393,
+   "length": 0,
+   "text": "the shape of the document: heading levels, code, tables, tasks, search hits, and\nanything that changed while you were reading. Drag it to move through the file.\n\nThe marks you can see now are the headings below. You are looking at the map and\nthe territory at the same time.\n\n## Structural zoom\n\nPress {{shortcut:zoomLevel1}}. The document collapses to its top-level headings.\n{{shortcut:zoomLevel2}} adds the level under those. {{shortcut:zoomLevel5}}\nbrings everything back.\n"
+  },
+  {
+   "location": 870,
+   "length": 0,
+   "text": "\nNothing is removed from the file, only from your eye. Use it on a long document\nwhen you want the argument before the detail.\n\n## Editing, without changing surfaces\n\nClick into this paragraph and type. The markers for the word you are in appear,\nand only those. Nothing else on the page moves.\n\nPress {{shortcut:sourceMode}} for Source Focus: the whole document becomes plain Markdown with line\nnumbers, and Done brings you back. The caret keeps its place in both directions,\n"
+  },
+  {
+   "location": 1347,
+   "length": 0,
+   "text": "and the file keeps its bytes.\n\n## What a document is made of\n\nA table:\n\n| Press | What happens |\n| --- | --- |\n| {{shortcut:commandPalette}} | Command palette, for anything you cannot remember |\n| {{shortcut:taskPanel}} | Tasks |\n| {{shortcut:nextHeading}} | Jump to the next heading |\n"
+  },
+  {
+   "location": 1633,
+   "length": 0,
+   "text": "\nA task list. Click a box — it edits one character of the file, and undo puts it\nback:\n\n- [x] Open a Markdown file\n- [ ] Press {{shortcut:zoomLevel1}}, then {{shortcut:zoomLevel5}}\n- [ ] Drag the gutter\n- [ ] Tick this box\n\nCode, fenced and highlighted:\n\n"
+  },
+  {
+   "location": 1888,
+   "length": 0,
+   "text": "```swift\nfunc greet(_ name: String) -> String {\n    \"Hello, \\(name).\"\n}\n```\n\nA callout, of the kind agents write constantly:\n\n> [!NOTE]\n> A blockquote that opens with a marker becomes a panel. NOTE, TIP, WARNING and\n> a dozen others are recognised, in any casing.\n"
+  },
+  {
+   "location": 2152,
+   "length": 0,
+   "text": "\nAnd a path: `Sources/MarkdownCore/Parser.swift`. Downright checks whether a path\nwritten in a document exists. One that does opens in your editor when you click\nit. One that does not is underlined, which is the point.[^paths]\n\n## When something else writes the file\n\nLeave a file open, let an agent edit it, and come back. The changed regions are\nmarked in the text and in the gutter, and {{shortcut:nextChange}} walks through\nthem one at a time.\n\n"
+  },
+  {
+   "location": 2601,
+   "length": 0,
+   "text": "Every outside write is snapshotted first. {{shortcut:versionTimeline}} opens the version timeline, so a\nchange you did not want is a change you can take back.\n\n> [!TIP]\n> None of this needs an account, a server, or an AI service.\n\n## Where to go next\n\nSettings ({{shortcut:preferences}}) has focused panes and a search field. Keys is where every shortcut\nprinted here can be changed — these are only the defaults.\n\n"
+  },
+  {
+   "location": 3016,
+   "length": 0,
+   "text": "You can close this document whenever you like. It is a copy, opened from a\ntemporary folder, so nothing you do to it touches your own files.\n\n[^paths]: A wrong path is the cheapest thing to write and the most expensive\nthing to find later.\n"
+  }
+ ]
+}

@@ -1,0 +1,7 @@
+{
+ "document": "../generated/agent/agent-400.md",
+ "mode": "read",
+ "configuration": {
+  "codeCollapseThreshold": 3
+ }
+}

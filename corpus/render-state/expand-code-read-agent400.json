@@ -1,0 +1,13 @@
+{
+ "document": "../generated/agent/agent-400.md",
+ "mode": "read",
+ "configuration": {
+  "codeCollapseThreshold": 1
+ },
+ "collapseCode": [
+  {
+   "offset": 1435,
+   "collapsed": false
+  }
+ ]
+}

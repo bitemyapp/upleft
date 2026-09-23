@@ -109,6 +109,98 @@ impl CaptureDelegate {
     }
 }
 
+/// Exits after a successful capture. With `UPLEFT_SELECTOR_AUDIT` set, first
+/// prints every method a class in this binary registers that neither its
+/// superclass nor any adopted protocol declares: the genuinely new methods
+/// (actions, timer targets) and, crucially, any override whose Swift name was
+/// mapped to the wrong Objective-C selector, which AppKit then never calls
+/// (`drawBackground(in:)` is `drawViewBackgroundInRect:`, not
+/// `drawBackgroundInRect:`). Run it after a render so the classes are loaded.
+fn finish() -> ! {
+    if std::env::var_os("UPLEFT_SELECTOR_AUDIT").is_some() {
+        selector_audit();
+    }
+    std::process::exit(0)
+}
+
+fn selector_audit() {
+    use objc2::runtime::{AnyClass, AnyProtocol, Bool, Sel};
+    use std::ffi::{CStr, c_char, c_void};
+    #[repr(C)]
+    struct MethodDescription {
+        name: *const c_void,
+        types: *const c_char,
+    }
+    unsafe extern "C" {
+        fn class_getImageName(class: *const AnyClass) -> *const c_char;
+        fn protocol_getMethodDescription(protocol: *const AnyProtocol, selector: Sel, required: Bool, instance: Bool) -> MethodDescription;
+    }
+    let executable = std::env::current_exe().ok().and_then(|path| path.canonicalize().ok());
+    fn protocols(class: &AnyClass, out: &mut Vec<&'static AnyProtocol>) {
+        fn walk(protocol: &'static AnyProtocol, out: &mut Vec<&'static AnyProtocol>) {
+            if out.iter().any(|seen| std::ptr::eq(*seen, protocol)) {
+                return;
+            }
+            out.push(protocol);
+            for inherited in protocol.adopted_protocols().iter() {
+                walk(inherited, out);
+            }
+        }
+        let mut current = Some(class);
+        while let Some(class) = current {
+            for protocol in class.adopted_protocols().iter() {
+                // SAFETY: protocols are registered for the process lifetime.
+                walk(unsafe { &*(*protocol as *const AnyProtocol) }, out);
+            }
+            current = class.superclass();
+        }
+    }
+    let mut findings = Vec::new();
+    for class in AnyClass::classes().iter() {
+        // Classes objc2 declares are created at run time, so they carry no
+        // image; so do the runtime's own KVO subclasses, which are skipped.
+        // SAFETY: the runtime hands out live classes; the name is a C string.
+        let image = unsafe { class_getImageName(*class) };
+        let name = class.name().to_string_lossy();
+        if !image.is_null() {
+            let image = unsafe { CStr::from_ptr(image) }.to_string_lossy().into_owned();
+            if executable.as_ref().is_none_or(|executable| std::path::Path::new(&image).canonicalize().ok().as_ref() != Some(executable)) {
+                continue;
+            }
+        } else if name.starts_with("NSKVONotifying_") || name.starts_with('_') {
+            continue;
+        }
+        let mut adopted = Vec::new();
+        protocols(class, &mut adopted);
+        for (is_instance, owner) in [(true, *class), (false, class.metaclass())] {
+            let superclass = if is_instance { class.superclass() } else { class.superclass().map(|superclass| superclass.metaclass()) };
+            for method in owner.instance_methods().iter() {
+                let selector = method.name();
+                if superclass.is_some_and(|superclass| superclass.responds_to(selector)) {
+                    continue;
+                }
+                let declared = adopted.iter().any(|protocol| {
+                    [true, false].iter().any(|&required| {
+                        // SAFETY: plain runtime lookup.
+                        let description = unsafe {
+                            protocol_getMethodDescription(*protocol, selector, Bool::new(required), Bool::new(is_instance))
+                        };
+                        !description.name.is_null()
+                    })
+                });
+                if !declared {
+                    findings.push(format!("{}{} {}", if is_instance { "-" } else { "+" }, class.name().to_string_lossy(), selector.name().to_string_lossy()));
+                }
+            }
+        }
+    }
+    findings.sort();
+    for finding in &findings {
+        eprintln!("SELECTOR-AUDIT {finding}");
+    }
+    eprintln!("SELECTOR-AUDIT {} new selector(s)", findings.len());
+}
+
 fn fail(message: &str) -> ! {
     eprintln!("render failed: {message}");
     std::process::exit(2)
@@ -116,7 +208,11 @@ fn fail(message: &str) -> ! {
 
 /// Runs the capture to completion; the process exits from inside.
 pub fn run(request: CaptureRequest, scene: Box<dyn CaptureScene>) -> ! {
-    acquire_window_capture_lock();
+    // Headless captures share nothing on screen and may run in parallel; see
+    // `CaptureSession.run` in the Swift oracle.
+    if !request.headless {
+        acquire_window_capture_lock();
+    }
     let mtm = MainThreadMarker::new().expect("capture runs on the main thread");
     let app = NSApplication::sharedApplication(mtm);
     app.setActivationPolicy(NSApplicationActivationPolicy::Accessory);
@@ -272,7 +368,7 @@ fn check_settled() {
     match next {
         Err(message) => fail(&message),
         Ok(Next::Wait) => schedule_check(),
-        Ok(Next::Written) => std::process::exit(0),
+        Ok(Next::Written) => finish(),
         Ok(Next::Capture { window_numbers, output }) => capture_window_from_screen(window_numbers, output),
     }
 }
@@ -343,7 +439,7 @@ fn capture_next(filters: Arc<Vec<Retained<SCContentFilter>>>, images: Captured, 
         if let Err(error) = std::fs::write(&output, png) {
             fail(&format!("window capture failed: {error}"));
         }
-        std::process::exit(0);
+        finish();
     }
     let filter = &filters[index];
     let configuration = unsafe { SCStreamConfiguration::new() };

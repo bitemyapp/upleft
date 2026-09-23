@@ -1,0 +1,206 @@
+{
+ "document": "../generated/docs/README.md",
+ "initialText": "<p align=\"center\">\n  <a href=\"https://downright.cc/\">\n    <img src=\"Resources/AppIcon.png\" width=\"128\" alt=\"Downright app icon\">\n  </a>\n</p>\n\n<h1 align=\"center\">Downright</h1>\n\n<p align=\"center\"><strong>A beautiful native Markdown editor and reader for macOS.</strong></p>\n\n<p align=\"center\">\n  Open ordinary Markdown files as polished",
+ "edits": [
+  {
+   "location": 335,
+   "length": 0,
+   "text": " Mac documents, edit their exact source,<br>\n  and preview them throughout Finder. Fast, private, offline, and genuinely native.\n</p>\n\n<p align=\"center\">\n  <a href=\"https://downright.cc/download/\"><img src=\"https://img.shields.io/badge/Download_for_macOS-007AFF?style=for-the-badge&amp;logo=apple&amp;logoColor=white\" alt=\"Download Dow"
+  },
+  {
+   "location": 670,
+   "length": 0,
+   "text": "nright for macOS\"></a>\n  <a href=\"https://github.com/ezzy1630/Downright\"><img src=\"https://img.shields.io/github/stars/ezzy1630/Downright?style=for-the-badge&amp;logo=github&amp;label=Star\" alt=\"Star Downright on GitHub\"></a>\n  <a href=\"https://github.com/sponsors/ezzy1630\"><img src=\"https://img.shields.io/badge/Sponsor-EA4AAA?style="
+  },
+  {
+   "location": 1005,
+   "length": 0,
+   "text": "for-the-badge&amp;logo=githubsponsors&amp;logoColor=white\" alt=\"Sponsor Downright\"></a>\n</p>\n\n<p align=\"center\">\n  <strong>Free and open source · macOS 14+ · Signed and notarized · Offline · No account · MIT</strong>\n</p>\n\n<p align=\"center\">\n  <a href=\"https://downright.cc/\">Website</a> ·\n  <a href=\"https://github.com/ezzy1630/Downri"
+  },
+  {
+   "location": 1340,
+   "length": 0,
+   "text": "ght/releases\">Releases</a> ·\n  <a href=\"CHANGELOG.md\">Changelog</a> ·\n  <a href=\"CONTRIBUTING.md\">Contributing</a>\n</p>\n\n<p align=\"center\">\n  <a href=\"https://github.com/ezzy1630/Downright/actions/workflows/ci.yml\"><img src=\"https://github.com/ezzy1630/Downright/actions/workflows/ci.yml/badge.svg\" alt=\"CI status\"></a>\n  <a href=\"http"
+  },
+  {
+   "location": 1675,
+   "length": 0,
+   "text": "s://github.com/ezzy1630/Downright/releases\"><img src=\"https://img.shields.io/github/v/release/ezzy1630/Downright?display_name=tag&amp;sort=semver\" alt=\"Latest release\"></a>\n  <a href=\"https://downright.cc/download/\"><img src=\"https://img.shields.io/endpoint?url=https%3A%2F%2Fgithub.com%2Fezzy1630%2FDownright%2Freleases%2Flatest%2Fdow"
+  },
+  {
+   "location": 2010,
+   "length": 0,
+   "text": "nload%2Fdownloads.json&amp;cacheSeconds=3600\" alt=\"Total downloads\"></a>\n  <a href=\"LICENSE\"><img src=\"https://img.shields.io/badge/license-MIT-307afe\" alt=\"MIT license\"></a>\n</p>\n\n---\n\n<p align=\"center\">\n  <a href=\"https://downright.cc/assets/downright-one-journey-master.mp4\">\n    <img src=\"Docs/downright-readme-demo.gif\" alt=\"Downr"
+  },
+  {
+   "location": 2345,
+   "length": 0,
+   "text": "ight opens a Markdown file from Finder, renders it as a native Mac document, switches to exact source, and reviews an external rewrite.\" width=\"800\">\n  </a>\n</p>\n\n<p align=\"center\"><a href=\"https://downright.cc/assets/downright-one-journey-master.mp4\">Watch the 23-second product film</a></p>\n\n## Markdown, treated like a Mac document\n"
+  },
+  {
+   "location": 2680,
+   "length": 0,
+   "text": "\nDownright opens the files you already have, wherever they already live. There\nis no library to import, vault to maintain, account to create, or web view\npretending to be a desktop app.\n\nThe interface and renderer are built with AppKit and TextKit 2. That means\nnative selection, keyboard behavior, menus, typography, accessibility, an"
+  },
+  {
+   "location": 3015,
+   "length": 0,
+   "text": "d\nperformance, with the original Markdown remaining authoritative on disk.\n\n| Read naturally | Edit precisely |\n|---|---|\n| Native CommonMark and GFM rendering | Exact source remains authoritative |\n| Beautiful typography and six themes | Document and Source views share position and selection |\n| Math, Mermaid, tables, tasks, callout"
+  },
+  {
+   "location": 3350,
+   "length": 0,
+   "text": "s, images, and footnotes | Safe external-change tracking and conflict protection |\n| Quick Look previews and Finder thumbnails | Local snapshots and a version timeline |\n| Outline, structural zoom, and density navigation | Search sibling files without creating a vault |\n| HTML/PDF export, Services, and Spotlight metadata | `down` and"
+  },
+  {
+   "location": 3685,
+   "length": 0,
+   "text": " `md` terminal commands |\n\nSupported files: `.md`, `.markdown`, `.mdown`, `.mkd`, `.mdx`, `.mdc`, `.qmd`,\nand `.rmd`.\n\nCommonMark is the portable baseline and GitHub-flavored Markdown is the default\ninterchange target. Downright also renders opt-in extensions without rewriting\nthem into a proprietary format. See [Markdown compatibili"
+  },
+  {
+   "location": 4020,
+   "length": 0,
+   "text": "ty](Docs/MARKDOWN-COMPATIBILITY.md)\nfor the exact boundary, including safe raw-HTML behavior.\n\n## Installation\n\n### Download the app\n\nDownload the latest signed and notarized release from\n[downright.cc/download](https://downright.cc/download/).\n\n1. Open `Downright.dmg`.\n2. Drag Downright into Applications.\n3. Launch it once to config"
+  },
+  {
+   "location": 4355,
+   "length": 0,
+   "text": "ure Markdown file associations, Quick Look, and the\n   CLI.\n\n### Homebrew cask\n\nThe public tap installs the same production app into `/Applications`:\n\n```bash\nbrew tap ezzy1630/downright && brew trust --cask ezzy1630/downright/downright && brew install --cask downright\n```\n\nThe app keeps its Sparkle updater after a cask install. GitH"
+  },
+  {
+   "location": 4690,
+   "length": 0,
+   "text": "ub records the DMG\nrequest in the release asset download count.\n\nThis is the developer tap. The tap-free `brew install --cask downright`\ncommand is not advertised until an official Homebrew Cask is accepted.\n\n### Command-line options\n\nThe first-party shell installer downloads the latest signed build, verifies its\npublished checksum a"
+  },
+  {
+   "location": 5025,
+   "length": 0,
+   "text": "nd app signature, installs it into `/Applications`,\nregisters the Finder integrations, and links `down` and `md` when possible:\n\n```bash\ncurl -fsSL https://downright.cc/install | bash\n```\n\nIf Node.js 18 or newer is already installed, the npm launcher runs the same\nfirst-party macOS installer:\n\n```bash\nnpx --yes downright-installer\n``"
+  },
+  {
+   "location": 5360,
+   "length": 0,
+   "text": "`\n\nEvery installation path leaves automatic Sparkle updates enabled. The curl\npath needs no Node.js; the npm path is macOS-only and requires Node.js 18+.\n\nA build published while the app is open is offered within about a minute: the\ntitlebar shows **Update Now**, one press installs it and relaunches, and\nresting on the button shows w"
+  },
+  {
+   "location": 5695,
+   "length": 0,
+   "text": "hat changed before you commit to it.\n\n## Why Downright\n\n- **Exact source.** Rendering decorates the original text storage; it does not\n  rebuild or normalize the document.\n- **Safe live updates.** External writes refresh in place while preserving the\n  reading position. Dirty local edits are never silently replaced.\n- **Native and fi"
+  },
+  {
+   "location": 6030,
+   "length": 0,
+   "text": "le-first.** TextKit 2, Core Text, SwiftMath, and native Mermaid\n  rendering keep the app and Quick Look extensions lean. There is no WebView,\n  workspace requirement, sync service, plugin runtime, or chat panel.\n- **Polished for everyday use.** Six themes, precise typography, native menus,\n  configurable shortcuts, and Finder integra"
+  },
+  {
+   "location": 6365,
+   "length": 0,
+   "text": "tion make Markdown feel at home on\n  macOS.\n\n### Review external edits when you need to\n\nIf another app or coding agent rewrites an open file, Downright can show the\nchange in place, preserve dirty local edits, and let you review word-level\ndifferences. It is a useful extra, not a different way of owning your files.\n\n## Everyday comm"
+  },
+  {
+   "location": 6700,
+   "length": 0,
+   "text": "ands\n\n```bash\ndown PLAN.md                              # open a file\ndown open --line 42 --review PLAN.md      # open an agent plan at a line for review\ndown open --reveal PLAN.md                # reveal a document in Finder\nprintf '# Draft\\n' | down                 # open piped Markdown\ndown read --json README.md                # i"
+  },
+  {
+   "location": 7035,
+   "length": 0,
+   "text": "nspect without launching the app\ndown outline --json README.md             # emit document structure\ndown export --format html -o out.html README.md\ndown check --target github Docs/sample.md # validate a render target\ndown doctor                               # diagnose app, CLI, Quick Look, and updater setup\n```\n\n`md` is installed a"
+  },
+  {
+   "location": 7370,
+   "length": 0,
+   "text": "s an alias for `down`. `down doctor --json` emits a\nmachine-readable support report without modifying the machine; use\n`down doctor --app path/to/Downright.app` to inspect a development bundle. Run\n`down --help` for every command.\n\n## Keyboard essentials\n\nAll bindings are editable in **Settings → Keys**.\n\n| Shortcut | Action | Shortc"
+  },
+  {
+   "location": 7705,
+   "length": 0,
+   "text": "ut | Action |\n|---|---|---|---|\n| `⌘F` | Find | `⌘E` | Find selected text |\n| `⌘⇧F` | Search sibling files | `⌘⇧E` | Source Focus |\n| `⌥⌘1`–`6` | Set heading level | `⌥⌘0` | Convert heading to body |\n| `⌘[` / `⌘]` | Promote / demote heading | `⌘⇧K` | Command palette |\n| `⌥⇧⌘3` | Task worklist | `⌥⌘V` | Version timeline |\n| `⌃⌥⌘1`–`5`"
+  },
+  {
+   "location": 8040,
+   "length": 0,
+   "text": " | Structural zoom | `⌥⇧↑` / `↓` | Previous / next change |\n| `⌘\\` | Split view | `⌘L` | Toggle task at caret |\n\nTwo fingers sideways across the document switch between Document and Source.\nThe titlebar's mode rail travels with your fingers, so you can see how far is\nfar enough; release short of that and it returns having changed not"
+  },
+  {
+   "location": 8375,
+   "length": 0,
+   "text": "hing. On\ndocuments short enough to render the other presentation in time — most of them —\nthe pages themselves slide past each other under your fingers.\n\nHold ⇧ and swipe sideways to move back and forward through jump history.\nPinch to change text size, ⌘-scroll to do the same with a mouse, and ⌥-scroll to\nstep through the structural"
+  },
+  {
+   "location": 8710,
+   "length": 0,
+   "text": " detail levels. Double-tap with two fingers toggles a\nlarger text size.\n\n## Themes and appearance\n\nDownright follows macOS Light and Dark appearances by default. Light and dark\npalettes are chosen separately under **Settings → Appearance** or\n**View → Theme**. Turning off **Follow macOS Appearance** deliberately keeps\nthe selected li"
+  },
+  {
+   "location": 9045,
+   "length": 0,
+   "text": "ght palette active.\n\nSix themes ship with the app. VS Code and Shiki themes can be imported, and\ncustom JSON themes hot-reload from:\n\n```text\n~/Library/Application Support/Downright/Themes/\n```\n\n## Privacy\n\nOpening, reading, editing, searching, diffing, and exporting are local. No\naccount or telemetry is required. Optional Apple Inte"
+  },
+  {
+   "location": 9380,
+   "length": 0,
+   "text": "lligence actions are\non-device, off by default, and receive only text selected by the user.\n\nSee [Privacy](Docs/PRIVACY.md).\n\n## Support Downright\n\nDownright is built and maintained independently. It is free, MIT-licensed,\noffline-first, and contains no advertising or app telemetry.\n\nIf Downright earns a place in your workflow, you c"
+  },
+  {
+   "location": 9715,
+   "length": 0,
+   "text": "an help sustain its\ndevelopment by:\n\n- [Starring the repository](https://github.com/ezzy1630/Downright)\n- [Sponsoring the project](https://github.com/sponsors/ezzy1630)\n- Sharing [downright.cc](https://downright.cc/) with someone who works in\n  Markdown\n\nSponsorship helps cover signing, distribution, ongoing macOS compatibility,\nand "
+  },
+  {
+   "location": 10050,
+   "length": 0,
+   "text": "the time required to keep Downright polished. The\n[sponsorship policy](Docs/SPONSORING.md) explains what support does and does not\nchange.\n\nThe first goal is 10 monthly sponsors to cover the Apple Developer membership\nand the routine infrastructure behind signed, notarized releases.\n\n## Development\n\nRequirements: macOS 14 or newer, X"
+  },
+  {
+   "location": 10385,
+   "length": 0,
+   "text": "code, xcodegen, and a Swift 6 toolchain.\n\nClone, build the complete app, and install it with Finder integration:\n\n```bash\ngit clone https://github.com/ezzy1630/Downright.git\ncd Downright\nScripts/bundle-xcode-app.sh\nAPP_SOURCE=.build-xcode/Build/Products/Release/Downright.app Scripts/install.sh\ndown README.md\n```\n\n`install.sh` links t"
+  },
+  {
+   "location": 10720,
+   "length": 0,
+   "text": "he `down` CLI into `/usr/local/bin`, which needs write\naccess on a default macOS setup. To link somewhere writable instead, set\n`BIN_DEST` (and put that directory on your `PATH`):\n\n```bash\nBIN_DEST=\"$HOME/.local/bin\" APP_SOURCE=.build-xcode/Build/Products/Release/Downright.app Scripts/install.sh\n```\n\nFor a faster SwiftPM development "
+  },
+  {
+   "location": 11055,
+   "length": 0,
+   "text": "build without Finder extensions:\n\n```bash\nScripts/bundle-app.sh\nopen .build-main/bundle/Downright.app\n```\n\nThe complete build requires Xcode and `xcodegen`; it embeds both the Quick Look\npreview and Finder thumbnail extensions. Launch Downright once after\ninstallation: the first-run setup offers default-app and CLI registration,\nregi"
+  },
+  {
+   "location": 11390,
+   "length": 0,
+   "text": "sters Quick Look, and can repeat every step later under **Settings →\nGeneral → System integration**. See [Quick Look](Docs/QUICKLOOK.md) and\n[Release](Docs/RELEASE.md) for details.\n\n## Architecture\n\n```text\nMarkdownCore     parsing, extensions, AST diff\nMarkdownRender   native decoration and layout\nDownrightApp     windows, commands,"
+  },
+  {
+   "location": 11725,
+   "length": 0,
+   "text": " panels, file watching\nDownrightQL      Quick Look preview\nDownrightThumb   Finder thumbnails\nDownrightSpotlightMetadata  shared unopened-file metadata extraction\nDownrightSpotlightImporter  macOS filesystem Spotlight importer\ndrdownright      shared CLI and integration support\ndown             terminal entry point\n```\n\nThe core rule"
+  },
+  {
+   "location": 12060,
+   "length": 0,
+   "text": " is simple: raw text remains the source of truth. One `NSTextView`\nmoves between rendered editing, scoped source, and full Source Focus while\npreserving selection, undo, and byte fidelity.\n\nMore detail: [Architecture](Docs/ARCHITECTURE.md) ·\n[Feature matrix](Docs/FEATURE-MATRIX.md) · [Performance](Docs/PERFORMANCE.md)\n\n## Test and ve"
+  },
+  {
+   "location": 12395,
+   "length": 0,
+   "text": "rify\n\nUse the repository gate instead of bare `swift test`:\n\n```bash\nScripts/check.sh\n```\n\nIt builds every package target, verifies versions and dependencies, runs the\ntest suites, checks theme contrast, and exercises the benchmark. Release\nperformance budgets can be enforced with:\n\n```bash\nRUN_DRBENCH=1 Scripts/check.sh\n```\n\nBundle "
+  },
+  {
+   "location": 12730,
+   "length": 0,
+   "text": "verification:\n\n```bash\nScripts/verify-bundle.sh .build-main/bundle/Downright.app\nScripts/check-app.sh\n```\n\nSee [CONTRIBUTING.md](CONTRIBUTING.md) before opening a pull request.\n\n## Project status\n\nThe current rolling release is tracked in\n[GitHub Releases](https://github.com/ezzy1630/Downright/releases), and current\npolish is tracked"
+  },
+  {
+   "location": 13065,
+   "length": 0,
+   "text": " under [Unreleased](CHANGELOG.md). The repository contains\nthe app, CLI, Quick Look extensions, updater, signing, notarization, DMG, and\nrelease automation. See [Status](Docs/STATUS.md) for known gaps and\nimplementation notes.\n\n## License\n\nDownright is available under the [MIT License](LICENSE). Vendored components\nretain their own l"
+  },
+  {
+   "location": 13400,
+   "length": 0,
+   "text": "icense files and notices.\n"
+  }
+ ]
+}

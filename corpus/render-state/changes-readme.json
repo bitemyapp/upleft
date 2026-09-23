@@ -1,0 +1,35 @@
+{
+ "document": "../generated/docs/README.md",
+ "changeMarks": [
+  {
+   "kind": "inserted",
+   "range": [
+    3712,
+    78
+   ],
+   "words": []
+  },
+  {
+   "kind": "modified",
+   "range": [
+    3804,
+    79
+   ],
+   "words": [
+    [
+     3804,
+     10
+    ]
+   ]
+  },
+  {
+   "kind": "deleted",
+   "range": [
+    3721,
+    0
+   ],
+   "words": [],
+   "deletedText": "a sentence an external edit removed"
+  }
+ ]
+}

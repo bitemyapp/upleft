@@ -109,3 +109,17 @@ panel-bench *args: corpus
 app-window-bench *args: corpus
     cargo build --release -p upleft-conformance
     python3 scripts/app-window-bench-compare.py {{args}}
+
+# Regenerate corpus/render-state (the render-state scenarios; see docs/VALIDATION.md).
+render-state-corpus: corpus
+    cargo build --release -p upleft-conformance
+    python3 scripts/build-render-state-corpus.py
+
+# Render a few scenarios with the runtime selector audit on: lists methods no
+# superclass or protocol declares, which is where a wrong override selector shows.
+selector-audit:
+    cargo build --release -p upleft-conformance
+    for scenario in focus-source-sample collapse-code-sample changes-sample search-sample read-images stream-tokens-math; do \
+        HOME={{scratch}}/conform-home CFFIXED_USER_HOME={{scratch}}/conform-home UPLEFT_SELECTOR_AUDIT=1 \
+        target/release/upleft-oracle render-state corpus/render-state/$scenario.json {{scratch}}/selector-audit.png 2>&1 | grep SELECTOR-AUDIT; \
+    done | sort -u

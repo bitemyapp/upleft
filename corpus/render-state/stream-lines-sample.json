@@ -1,0 +1,71 @@
+{
+ "document": "../generated/docs/Docs__sample.md",
+ "initialText": "# Renderer handoff: the file stays readable\n\nThis is the working note for the renderer refactor. The page is a review\nsurface for a file people and coding agents change together: the source stays\nplain, the document stays legible, and every decision has a place to land.\n",
+ "edits": [
+  {
+   "location": 271,
+   "length": 0,
+   "text": "\n**Inline** · **bold** · _italic_ · ~~deprecated~~ · `RenderedDocument`\n\n**Links** · [open the issue](https://github.com/ezzy1630/Downright/issues) · [[Renderer]] · <https://downright.cc> · note[^1]\n\n"
+  },
+  {
+   "location": 471,
+   "length": 0,
+   "text": "**Math** · $e^{i\\pi}+1=0$ · $\\sqrt{x^2+y^2}$ · `$PATH`\n\n| Surface | State | Proof |\n|---|---|---|\n| `Parse` | **stable** | immutable block index |\n"
+  },
+  {
+   "location": 618,
+   "length": 0,
+   "text": "| `Decorate` | **measured** | one pass per keystroke |\n| `Review` | **visible** | word-level change marks |\n\n> [!NOTE]\n> Native: prose, source, state, and media in one surface.\n"
+  },
+  {
+   "location": 795,
+   "length": 0,
+   "text": "\n- [x] Parse once and decorate from ranges\n- [x] Keep raw bytes available for review\n- [ ] Move the image store off the main actor\n\n"
+  },
+  {
+   "location": 927,
+   "length": 0,
+   "text": "**Syntax** · comments, keywords, types, strings, numbers, and calls:\n\n```swift\n@MainActor func render(_ source: String) -> RenderedDocument {\n    let index = parser.blockIndex(for: source)\n"
+  },
+  {
+   "location": 1116,
+   "length": 0,
+   "text": "    let image = cache.image(for: index)\n    return decorator.apply(image, ranges: index.ranges)\n}\n```\n\n"
+  },
+  {
+   "location": 1219,
+   "length": 0,
+   "text": "**Math**\n\n$$\n\\mathop{\\mathrm{parse}}(bytes) \\longrightarrow \\mathop{\\mathrm{decorate}}(surface)\n$$\n"
+  },
+  {
+   "location": 1318,
+   "length": 0,
+   "text": "\n**Mermaid**\n\n```mermaid\nflowchart LR\n"
+  },
+  {
+   "location": 1356,
+   "length": 0,
+   "text": "    A[MD] --> B{?}\n    B -->|no| C[Keep]\n    B -->|yes| D[Render]\n```\n\n"
+  },
+  {
+   "location": 1427,
+   "length": 0,
+   "text": "## Review anchors\n\nThe document map draws from this same structure, so every altitude has a floor to stand on.\n\n### Source\n"
+  },
+  {
+   "location": 1550,
+   "length": 0,
+   "text": "\nThe handoff stays source-first while the rendered surface stays native.\n\n### State\n\n"
+  },
+  {
+   "location": 1635,
+   "length": 0,
+   "text": "Links, callouts, tasks, and math retain their local state as the page grows.\n\n### Finish\n\nThis note stays useful after the agent leaves because its structure remains visible.\n"
+  },
+  {
+   "location": 1810,
+   "length": 0,
+   "text": "\n[^1]: Footnotes resolve locally without moving the reader away from the line.\n"
+  }
+ ]
+}

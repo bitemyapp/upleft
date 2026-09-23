@@ -1,0 +1,8 @@
+{
+ "document": "../generated/docs/README.md",
+ "dark": true,
+ "scroll": {
+  "offset": 4475,
+  "position": "center"
+ }
+}

@@ -1,0 +1,35 @@
+{
+ "document": "../generated/docs/Docs__sample.md",
+ "changeMarks": [
+  {
+   "kind": "inserted",
+   "range": [
+    527,
+    27
+   ],
+   "words": []
+  },
+  {
+   "kind": "modified",
+   "range": [
+    727,
+    9
+   ],
+   "words": [
+    [
+     727,
+     1
+    ]
+   ]
+  },
+  {
+   "kind": "deleted",
+   "range": [
+    528,
+    0
+   ],
+   "words": [],
+   "deletedText": "a sentence an external edit removed"
+  }
+ ]
+}

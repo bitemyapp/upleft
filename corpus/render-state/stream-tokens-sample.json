@@ -1,0 +1,306 @@
+{
+ "document": "../generated/docs/Docs__sample.md",
+ "initialText": "# Renderer handoff: the file st",
+ "edits": [
+  {
+   "location": 31,
+   "length": 0,
+   "text": "ays readable\n\nThis is the worki"
+  },
+  {
+   "location": 62,
+   "length": 0,
+   "text": "ng note for the renderer refact"
+  },
+  {
+   "location": 93,
+   "length": 0,
+   "text": "or. The page is a review\nsurfac"
+  },
+  {
+   "location": 124,
+   "length": 0,
+   "text": "e for a file people and coding "
+  },
+  {
+   "location": 155,
+   "length": 0,
+   "text": "agents change together: the sou"
+  },
+  {
+   "location": 186,
+   "length": 0,
+   "text": "rce stays\nplain, the document s"
+  },
+  {
+   "location": 217,
+   "length": 0,
+   "text": "tays legible, and every decisio"
+  },
+  {
+   "location": 248,
+   "length": 0,
+   "text": "n has a place to land.\n\n**Inlin"
+  },
+  {
+   "location": 279,
+   "length": 0,
+   "text": "e** · **bold** · _italic_ · ~~d"
+  },
+  {
+   "location": 310,
+   "length": 0,
+   "text": "eprecated~~ · `RenderedDocument"
+  },
+  {
+   "location": 341,
+   "length": 0,
+   "text": "`\n\n**Links** · [open the issue]"
+  },
+  {
+   "location": 372,
+   "length": 0,
+   "text": "(https://github.com/ezzy1630/Do"
+  },
+  {
+   "location": 403,
+   "length": 0,
+   "text": "wnright/issues) · [[Renderer]] "
+  },
+  {
+   "location": 434,
+   "length": 0,
+   "text": "· <https://downright.cc> · note"
+  },
+  {
+   "location": 465,
+   "length": 0,
+   "text": "[^1]\n\n**Math** · $e^{i\\pi}+1=0$"
+  },
+  {
+   "location": 496,
+   "length": 0,
+   "text": " · $\\sqrt{x^2+y^2}$ · `$PATH`\n\n"
+  },
+  {
+   "location": 527,
+   "length": 0,
+   "text": "| Surface | State | Proof |\n|--"
+  },
+  {
+   "location": 558,
+   "length": 0,
+   "text": "-|---|---|\n| `Parse` | **stable"
+  },
+  {
+   "location": 589,
+   "length": 0,
+   "text": "** | immutable block index |\n| "
+  },
+  {
+   "location": 620,
+   "length": 0,
+   "text": "`Decorate` | **measured** | one"
+  },
+  {
+   "location": 651,
+   "length": 0,
+   "text": " pass per keystroke |\n| `Review"
+  },
+  {
+   "location": 682,
+   "length": 0,
+   "text": "` | **visible** | word-level ch"
+  },
+  {
+   "location": 713,
+   "length": 0,
+   "text": "ange marks |\n\n> [!NOTE]\n> Nativ"
+  },
+  {
+   "location": 744,
+   "length": 0,
+   "text": "e: prose, source, state, and me"
+  },
+  {
+   "location": 775,
+   "length": 0,
+   "text": "dia in one surface.\n\n- [x] Pars"
+  },
+  {
+   "location": 806,
+   "length": 0,
+   "text": "e once and decorate from ranges"
+  },
+  {
+   "location": 837,
+   "length": 0,
+   "text": "\n- [x] Keep raw bytes available"
+  },
+  {
+   "location": 868,
+   "length": 0,
+   "text": " for review\n- [ ] Move the imag"
+  },
+  {
+   "location": 899,
+   "length": 0,
+   "text": "e store off the main actor\n\n**S"
+  },
+  {
+   "location": 930,
+   "length": 0,
+   "text": "yntax** · comments, keywords, t"
+  },
+  {
+   "location": 961,
+   "length": 0,
+   "text": "ypes, strings, numbers, and cal"
+  },
+  {
+   "location": 992,
+   "length": 0,
+   "text": "ls:\n\n```swift\n@MainActor func r"
+  },
+  {
+   "location": 1023,
+   "length": 0,
+   "text": "ender(_ source: String) -> Rend"
+  },
+  {
+   "location": 1054,
+   "length": 0,
+   "text": "eredDocument {\n    let index = "
+  },
+  {
+   "location": 1085,
+   "length": 0,
+   "text": "parser.blockIndex(for: source)\n"
+  },
+  {
+   "location": 1116,
+   "length": 0,
+   "text": "    let image = cache.image(for"
+  },
+  {
+   "location": 1147,
+   "length": 0,
+   "text": ": index)\n    return decorator.a"
+  },
+  {
+   "location": 1178,
+   "length": 0,
+   "text": "pply(image, ranges: index.range"
+  },
+  {
+   "location": 1209,
+   "length": 0,
+   "text": "s)\n}\n```\n\n**Math**\n\n$$\n\\mathop{"
+  },
+  {
+   "location": 1240,
+   "length": 0,
+   "text": "\\mathrm{parse}}(bytes) \\longrig"
+  },
+  {
+   "location": 1271,
+   "length": 0,
+   "text": "htarrow \\mathop{\\mathrm{decorat"
+  },
+  {
+   "location": 1302,
+   "length": 0,
+   "text": "e}}(surface)\n$$\n\n**Mermaid**\n\n`"
+  },
+  {
+   "location": 1333,
+   "length": 0,
+   "text": "``mermaid\nflowchart LR\n    A[MD"
+  },
+  {
+   "location": 1364,
+   "length": 0,
+   "text": "] --> B{?}\n    B -->|no| C[Keep"
+  },
+  {
+   "location": 1395,
+   "length": 0,
+   "text": "]\n    B -->|yes| D[Render]\n```\n"
+  },
+  {
+   "location": 1426,
+   "length": 0,
+   "text": "\n## Review anchors\n\nThe documen"
+  },
+  {
+   "location": 1457,
+   "length": 0,
+   "text": "t map draws from this same stru"
+  },
+  {
+   "location": 1488,
+   "length": 0,
+   "text": "cture, so every altitude has a "
+  },
+  {
+   "location": 1519,
+   "length": 0,
+   "text": "floor to stand on.\n\n### Source\n"
+  },
+  {
+   "location": 1550,
+   "length": 0,
+   "text": "\nThe handoff stays source-first"
+  },
+  {
+   "location": 1581,
+   "length": 0,
+   "text": " while the rendered surface sta"
+  },
+  {
+   "location": 1612,
+   "length": 0,
+   "text": "ys native.\n\n### State\n\nLinks, c"
+  },
+  {
+   "location": 1643,
+   "length": 0,
+   "text": "allouts, tasks, and math retain"
+  },
+  {
+   "location": 1674,
+   "length": 0,
+   "text": " their local state as the page "
+  },
+  {
+   "location": 1705,
+   "length": 0,
+   "text": "grows.\n\n### Finish\n\nThis note s"
+  },
+  {
+   "location": 1736,
+   "length": 0,
+   "text": "tays useful after the agent lea"
+  },
+  {
+   "location": 1767,
+   "length": 0,
+   "text": "ves because its structure remai"
+  },
+  {
+   "location": 1798,
+   "length": 0,
+   "text": "ns visible.\n\n[^1]: Footnotes re"
+  },
+  {
+   "location": 1829,
+   "length": 0,
+   "text": "solve locally without moving th"
+  },
+  {
+   "location": 1860,
+   "length": 0,
+   "text": "e reader away from the line.\n"
+  }
+ ]
+}

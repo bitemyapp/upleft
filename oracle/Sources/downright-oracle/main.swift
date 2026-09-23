@@ -160,6 +160,14 @@ do {
     case "bench-math":
         try MathBench.run(input, to: output)
 
+    case "render-state":
+        let scenario = try RenderScenario.load(input)
+        let request = scenario.request(
+            output: URL(fileURLWithPath: output), layout: flags.layout,
+            headless: flags.headless, captureFromScreen: flags.captureFromScreen
+        )
+        CaptureSession.run(request: request, scene: MarkdownScene(scenario: scenario))
+
     case "render", "probe":
         let request = RenderRequest(
             input: input,
