@@ -82,18 +82,12 @@ impl FrontMatterScanner {
             // `key: |` and `key: >` block scalars span the following indented
             // lines, which are folded into the value.
             if Self::is_block_scalar_indicator(trimmed_value) {
-                let style =
-                    if swift_text::contains(trimmed_value, ">") { BlockScalarStyle::Folded } else { BlockScalarStyle::Literal };
+                let style = if swift_text::contains(trimmed_value, ">") { BlockScalarStyle::Folded } else { BlockScalarStyle::Literal };
                 let (parts, consumed) = Self::block_scalar(map, current + 1, to);
                 if !parts.is_empty() {
                     let end = map.content_range_of_line(current + consumed).upper_bound();
                     let value = if style == BlockScalarStyle::Literal { parts.join("\n") } else { parts.join(" ") };
-                    fields.push(FrontMatterField::new(
-                        key,
-                        value,
-                        key_range,
-                        NSRange::new(value_start, 0.max(end - value_start)),
-                    ));
+                    fields.push(FrontMatterField::new(key, value, key_range, NSRange::new(value_start, 0.max(end - value_start))));
                     line += consumed;
                 }
                 continue;
