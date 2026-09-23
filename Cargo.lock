@@ -455,6 +455,7 @@ version = "0.1.0"
 dependencies = [
  "png",
  "serde_json",
+ "upleft-core",
  "upleft-markup",
 ]
 
@@ -468,7 +469,7 @@ dependencies = [
  "objc2-natural-language",
  "sha2",
  "unicode-normalization",
- "unicode-segmentation",
+ "upleft-markup",
  "uuid",
 ]
 
