@@ -8,6 +8,82 @@ compared as exact `f64`s. "Close" is a failure. Bugs are ported, not fixed.
 
 Read the root `AGENTS.md` too; it is binding.
 
+## Status (2026-09-23)
+
+**Done for everything reachable through the JSON bridge.** `just conform
+--suite elk` passes 449/449 against the stamped `downright-oracle` (minos 14.0,
+SDK 27.0), with no failures and no errors. The corpus (`corpus/elk/`):
+
+| Directory | Graphs | What |
+|---|---|---|
+| `mermaid/` | 136 | the ELK graphs beautiful-mermaid builds for real diagrams (captured from the Swift, `tools/elk-corpus.sh`): corpus fences, beautiful-mermaid's tests and samples, 55 hand-written diagrams (`tools/mermaid/handwritten.py`) |
+| `elk-swift-tests/` | 20 | the graph literals of elk-swift's own tests (`tools/extract_test_graphs.py`) |
+| `random/` | 180 | 1–300 nodes, DAGs and cyclic, six families with beautiful-mermaid's option sets (`tools/gen_random_graphs.py`) |
+| `polyline/` | 113 | `ConcurrentLayoutTests.makeGraphCorpus()` plus existing graphs switched to `POLYLINE` (`tools/gen_polyline_corpus.py`) |
+
+**Nondeterminism.** elk-swift itself gives different results from run to run
+on 50 of these graphs (47 random, 3 of their polyline copies; none of the
+Mermaid or elk-swift test graphs). The sources are hash-ordered collections
+and `Int.random` (list below). `downright-oracle elk` therefore lays each graph
+out in 16 separate processes plus once in the instrumented lab
+(`target/elklab`, insertion order everywhere); `conform` accepts a Rust result
+equal to any of these. Rust always takes the insertion-order outcome. It
+equals one of the 16 real elk-swift runs on 37 of the 50 graphs; on the other
+13 it equals the lab's result, which 16 real runs didn't produce. On the 399
+deterministic graphs Rust is identical to elk-swift. Rust is also
+byte-identical to the lab on all 449 graphs. The one exception is
+`hw-unicode`, where the dumps escape non-BMP characters differently but the
+JSON values are equal.
+
+Places where elk-swift's order depends on hashing, and the order the port uses:
+
+| Site | Port's order | Visible in output? |
+|---|---|---|
+| `NetworkSimplex.treeEdges` (`Set<NEdge>`) | insertion | yes (layering/placement) |
+| `ComponentGroup.components` (`[Set<PortSide>: [LGraph]]`) | insertion | order of component nodes |
+| `HyperEdgeCycleDetector.nextRandomInt` without a random (`Int.random`) | 0 (first candidate) | yes (edge routing slots) |
+| `EndLabelSorter` label groups (`[LEdge: LabelGroup]`) | first seen | ties only |
+| self-loop edge set (`SelfLoopHolder`), `RoutingDirector` port sides | insertion / first appearance | ties only |
+| `CrossHierarchyMap` (compound postprocessor) | insertion | head/tail label order on merged segments |
+| `ModelOrderPortComparator` (`ObjectIdentifier.hashValue`) | arena order | multiplied by a 0 influence by default |
+| `HyperedgeCrossingsCounter` ties, `SweepCopy.updatePortOrder`, `BKCompactor.placeClasses` | creation / insertion | no (counts, per-node writes, min/max) |
+| `GreedyCycleBreaker` without `RANDOM` | first node | unreachable |
+
+**Deliberate deviations.** `CompoundGraphPreprocessor.portToNodeEntries` is
+cleared at the start of each run. Swift never clears it, but the stale entries
+only touch graphs of earlier layouts, so the output is the same.
+`Random.nextLong` traps on `Int64` overflow as Swift's `+` does.
+
+**Known gaps (unreachable from JSON, not ported):**
+* Phase strategies other than the defaults: the other `p1cycles` breakers,
+  `p2layers` layerers (several are 11-line stubs in elk-swift),
+  `InteractiveCrossingMinimizer`, `NoCrossingMinimizer`, `MedianHeuristic`,
+  `LinearSegmentsNodePlacer`, `NetworkSimplexPlacer`, `SimpleNodePlacer`,
+  `InteractiveNodePlacer`. The JSON importer keeps their option values as
+  strings, so the typed reads fall back to the defaults. `PhaseFactory::create`
+  panics for the others.
+* Top-down layout (`RecursiveGraphLayoutEngine` panics on it), splines
+  (`ElkMath`, `BezierSpline`, `CubicSplineInterpolator`), `ComponentsCompactor`
+  (`compaction.connectedComponents`), the one-dimensional compaction
+  machinery (elk-swift's own `HorizontalGraphCompactor` stops after the `NONE`
+  check, and most of those files are empty in elk-swift), wrapping's cut-index
+  heuristics, `DummySelfLoopProcessor`, label managers.
+* Interfaces and utilities that have no behaviour of their own or are only
+  used by the above (`i_*.rs`, factories, `Maybe`, `Triple`, `Quadruple`,
+  `Tarjan`, `SCConnectivity`, `LayoutConfigurator`, metadata classes). The
+  `graph/elk_*.rs` protocols are implemented by the arena in
+  `bridge/elk_graph_impl.rs`, and `InstancePool` by the provider pool in
+  `layered_layout_provider.rs`. Every such module still says "Not ported yet."
+* Two reference aliases that the JSON importer cannot trigger are copied
+  instead of shared: `EXT_PORT_SIZE` (only read under `FIXED_RATIO`/`FIXED_POS`
+  graph port constraints) and an explicit `PORT_ANCHOR` on a hierarchical port.
+
+**Speed.** On the 20 largest corpus graphs, a full layout (import, layout,
+export; 10 runs each) takes 5.1–46.7 ms in Rust against 44–510 ms in elk-swift
+1.0.2 release, which is 6.6× to 14.2× faster by minimum time. Measured with
+`cargo run --release -p upleft-elk --example elk_bench` and
+`tools/elk-bench`.
+
 ## Where things are
 
 * One Rust module per Swift file. `src/org/eclipse/elk/...` mirrors
@@ -197,8 +273,9 @@ Progress monitors: port `begin`/`done`/`subTask` calls as written
 Only the defaults of the phase strategies can be selected through the JSON
 bridge (see `layered_phases.rs`): `GreedyCycleBreaker`,
 `NetworkSimplexLayerer`, `LayerSweepCrossingMinimizer(BARYCENTER)`,
-`BKNodePlacer`, `OrthogonalEdgeRouter` (and `PolylineEdgeRouter` if a graph
-asks for `POLYLINE`). The other phase implementations are not ported. Within a
+`BKNodePlacer`, `OrthogonalEdgeRouter` and `PolylineEdgeRouter` (for
+`POLYLINE`; beautiful-mermaid never asks for it, elk-swift's tests do). The
+other phase implementations are not ported. Within a
 reachable class, port everything, including branches beautiful-mermaid's
 options don't take. Mermaid's options are listed in
 `vendor/beautiful-mermaid-swift/Sources/BeautifulMermaidSwift/Mermaid/src_layout.swift`
@@ -211,6 +288,28 @@ Port the relevant tests from `vendor/elk-swift/Tests/ElkSwiftTests` into Rust
 (`#[cfg(test)] mod tests` in the module, or `crates/elk/tests/*.rs` using the
 shared helpers in `crates/elk/tests/common/`). Same assertions, same numbers.
 
+All 22 elk-swift test files are ported (`cargo test -p upleft-elk`: 236
+tests, all passing):
+* one file per Swift file for the crossing counters, barycenter and port
+  distributors, greedy switch, switch decider, binary indexed tree,
+  `JavaRandomTest`, `SelfLoopTests`, `ConcurrentLayoutTests`,
+  `ElkPhaseSnapshotTest` (on the layout-test API `ElkLayered::prepare_layout_test`
+  / `run_layout_test_step`); `NetworkSimplexTests` is in
+  `network_simplex.rs`;
+* `elk_swift_layout_tests.rs`: `OverallLayoutTests`,
+  `GoldenOutputSnapshotTests`, `IssueRegressionTests`, `LayeredSpacingTests`,
+  `ElkSwiftTests`;
+* differential tests against dumps from instrumented elk-swift, one set per
+  part of the pipeline: `group_a_chain.rs` and `group_a_components.rs`
+  (early processors, components), `crossmin_differential.rs` (P3; set
+  `UPLEFT_ELK_CMDUMP_DIR` for the full dump tree), `group_c_snapshots.rs` (P4,
+  P5 and their processors; `UPLEFT_ELK_SNAPDIR`), `group_d_golden.rs` (graph
+  transformer, self loops, label dummies, compound), `group_e_golden.rs` (node
+  sizing, margins, end labels). The Swift dumpers they were generated with
+  are next to the data;
+* `swift_trap_tests.rs`: the two corpus-generator graphs on which elk-swift
+  traps (`tests/data/swift-traps/`) panic in the same place in Rust.
+
 ## Checking against Swift
 
 * `just oracle` builds `target/oracle/release/downright-oracle`; its `elk`
@@ -221,3 +320,8 @@ shared helpers in `crates/elk/tests/common/`). Same assertions, same numbers.
   `vendor/`) with the same trace (`ELKLAB_TRACE=1`) is built by
   `tools/elklab.sh`; diff the two traces to find the first diverging
   processor. Copy the lab if you want to add your own instrumentation.
+* The lab also replaces elk-swift's hash-ordered iteration with the port's
+  order (`NetworkSimplex.treeEdges`, `ComponentGroup.components`,
+  `HyperEdgeCycleDetector` ties); `ELKLAB_HASHSET=1` restores Swift's. `lab
+  in.json out.json` writes the oracle's dump format, so `cmp` against
+  `upleft-oracle elk` is a quick whole-corpus check.
