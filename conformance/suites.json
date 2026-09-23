@@ -109,6 +109,16 @@
       ]
     },
     {
+      "name": "incremental",
+      "command": "incremental",
+      "output": "json",
+      "variants": [
+        ["--mode", "live"],
+        ["--mode", "source"],
+        ["--mode", "read"]
+      ]
+    },
+    {
       "name": "render",
       "command": "render",
       "output": "png",

@@ -7,6 +7,7 @@ import MarkdownRender
 //   downright-oracle parse    <file.md> <out.json>
 //   downright-oracle markup   <file.md> <out.json>
 //   downright-oracle decorate <file.md> <out.json> [--mode M] [--theme NAME] [--dark]
+//   downright-oracle incremental <file.md> <out.json> [--mode M] [--theme NAME] [--dark]
 //   downright-oracle render   <file.md> <out.png> [--layout out.json] [--mode M]
 //                             [--theme NAME] [--dark] [--width W] [--height H]
 //   downright-oracle stylesheet   <file.md> <out.json> [--theme NAME] [--dark]
@@ -109,6 +110,10 @@ do {
         let storage = NSTextStorage(string: text)
         engine.decorate(storage, document: MarkdownParser.parse(text), dirty: .wholesale)
         try write(AttributeDump.storage(storage), to: output)
+
+    case "incremental":
+        let text = try String(contentsOf: input, encoding: .utf8)
+        try write(IncrementalDump.run(text: text, flags: flags), to: output)
 
     case "math":
         try MathDump.image(input, to: output)

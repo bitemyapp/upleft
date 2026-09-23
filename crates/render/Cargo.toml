@@ -17,6 +17,7 @@ unicode-segmentation = "1.13"
 objc2-foundation = { workspace = true, features = [
     "NSArray",
     "NSAttributedString",
+    "block2",
     "NSData",
     "NSDictionary",
     "NSEnumerator",

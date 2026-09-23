@@ -23,6 +23,7 @@ pub mod fragments;
 pub mod motion;
 pub mod render_contracts;
 pub mod swift_compat;
+pub mod swift_value;
 pub mod syntax;
 pub mod theme;
 pub mod view;
