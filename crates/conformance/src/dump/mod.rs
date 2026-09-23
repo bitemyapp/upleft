@@ -1,8 +1,11 @@
 //! Rust counterparts of the Swift oracle's dumps (`oracle/Sources/downright-oracle`).
 //! Each submodule mirrors one Swift file and must emit the same JSON shape.
 
+pub mod attribute_dump;
+pub mod highlight;
 pub mod json;
 pub mod markup;
+pub mod style_sheet;
 
 use std::path::PathBuf;
 
@@ -77,6 +80,18 @@ impl From<std::io::Error> for Failure {
 pub fn run(request: &Request) -> Result<(), Failure> {
     match request.command.as_str() {
         "markup" => markup::run(&request.input, &request.output),
+        "stylesheet" => {
+            let value = style_sheet::dump(&request.theme, request.dark)?;
+            Ok(json::write(&value, &request.output)?)
+        }
+        "highlight" => {
+            let text = std::fs::read_to_string(&request.input)?;
+            Ok(json::write(&highlight::document(&text), &request.output)?)
+        }
+        "vscode-theme" => {
+            let data = std::fs::read(&request.input)?;
+            Ok(json::write(&highlight::vscode_theme(&data, &request.input), &request.output)?)
+        }
         _ => Err(Failure::NotPorted),
     }
 }

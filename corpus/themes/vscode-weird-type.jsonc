@@ -1,0 +1,6 @@
+{
+  "name": "Weird Type",
+  "type": "Solarized-LIGHT-ish",
+  "colors": { "editor.background": "#002B36" },
+  "tokenColors": [ { "scope": "keyword, , ,  storage ", "settings": { "foreground": "#859900" } } ]
+}

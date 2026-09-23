@@ -37,6 +37,40 @@
         ["--mode", "source"],
         ["--mode", "live", "--width", "1400", "--height", "1000"]
       ]
+    },
+    {
+      "name": "stylesheet",
+      "command": "stylesheet",
+      "output": "json",
+      "only": ["corpus/generated/agent/agent-40.md"],
+      "variants": [
+        ["--theme", "High Contrast"],
+        ["--theme", "High Contrast", "--dark"],
+        ["--theme", "Nord"],
+        ["--theme", "Nord", "--dark"],
+        ["--theme", "Paper Light"],
+        ["--theme", "Paper Light", "--dark"],
+        ["--theme", "Solarized Light"],
+        ["--theme", "Solarized Light", "--dark"],
+        ["--theme", "System"],
+        ["--theme", "System", "--dark"],
+        ["--theme", "Warm Dark"],
+        ["--theme", "Warm Dark", "--dark"]
+      ]
+    },
+    {
+      "name": "highlight",
+      "command": "highlight",
+      "output": "json",
+      "variants": [[]]
+    },
+    {
+      "name": "vscode-theme",
+      "command": "vscode-theme",
+      "output": "json",
+      "input": "jsonc",
+      "only": ["corpus/themes/"],
+      "variants": [[]]
     }
   ]
 }

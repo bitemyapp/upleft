@@ -1,0 +1,9 @@
+{
+  "name": "Untyped Light Background",
+  "colors": { "editor.background": "#F5F0E6", "editor.foreground": "#3B3228" },
+  "tokenColors": [
+    { "scope": "source", "settings": { "foreground": "#123123" } },
+    { "scope": "constant", "settings": { "foreground": "#AA3731" } },
+    { "scope": "entity.name.function.member", "settings": { "foreground": "#325CC0" } }
+  ]
+}
