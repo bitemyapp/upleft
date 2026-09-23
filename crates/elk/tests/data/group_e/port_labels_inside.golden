@@ -1,0 +1,130 @@
+== sized
+graph size=(0.0,0.0)
+L0 node I1 normal id=0 pos=(0.0,0.0) size=(85.0,52.0) margin=(0.0,0.0,0.0,0.0) padding=(0.0,0.0,0.0,0.0)
+  port i1n0 north id=0 pos=(14.0,-6.0) size=(6.0,6.0) anchor=(3.0,0.0) met=-
+    label i1n0l pos=(-6.0,9.0) size=(18.0,7.0) side=- edge=-
+  port i1n1 north id=1 pos=(37.5,-6.0) size=(6.0,6.0) anchor=(3.0,0.0) met=-
+    label i1n1l pos=(-7.5,9.0) size=(21.0,7.0) side=- edge=-
+  port i1n2 north id=2 pos=(64.0,-6.0) size=(6.0,6.0) anchor=(3.0,0.0) met=-
+    label i1n2l pos=(-9.0,9.0) size=(24.0,7.0) side=- edge=-
+  port i1e0 east id=3 pos=(85.0,17.0) size=(6.0,6.0) anchor=(6.0,3.0) met=-
+    label i1e0l pos=(-16.0,-1.0) size=(14.0,8.0) side=- edge=-
+  port i1e1 east id=4 pos=(85.0,29.0) size=(6.0,6.0) anchor=(6.0,3.0) met=-
+    label i1e1l pos=(-17.0,-1.0) size=(15.0,8.0) side=- edge=-
+  port i1s0 south id=5 pos=(58.33333333333333,52.0) size=(6.0,6.0) anchor=(3.0,6.0) met=-
+    label i1s0l pos=(-6.0,-12.0) size=(18.0,9.0) side=- edge=-
+  port i1s1 south id=6 pos=(25.166666666666664,52.0) size=(6.0,6.0) anchor=(3.0,6.0) met=-
+    label i1s1l pos=(-8.5,-12.0) size=(23.0,9.0) side=- edge=-
+  port i1w0 west id=7 pos=(-6.0,23.0) size=(6.0,6.0) anchor=(0.0,3.0) met=-
+    label i1w0l pos=(8.0,0.0) size=(10.0,6.0) side=- edge=-
+L1 node I2 normal id=0 pos=(0.0,0.0) size=(50.0,24.0) margin=(0.0,0.0,0.0,0.0) padding=(0.0,0.0,0.0,0.0)
+  port i2n0 north id=0 pos=(8.0,-6.0) size=(6.0,6.0) anchor=(3.0,0.0) met=-
+    label i2n0l pos=(-3.0,9.0) size=(30.0,7.0) side=- edge=-
+  port i2n1 north id=1 pos=(18.0,-6.0) size=(6.0,6.0) anchor=(3.0,0.0) met=-
+    label i2n1l pos=(-13.0,19.0) size=(33.0,7.0) side=- edge=-
+  port i2n2 north id=2 pos=(28.0,-6.0) size=(6.0,6.0) anchor=(3.0,0.0) met=-
+    label i2n2l pos=(-19.0,39.0) size=(36.0,7.0) side=- edge=-
+  port i2n3 north id=3 pos=(38.0,-6.0) size=(6.0,6.0) anchor=(3.0,0.0) met=-
+    label i2n3l pos=(-32.0,29.0) size=(39.0,7.0) side=- edge=-
+  port i2e0 east id=4 pos=(50.0,4.0) size=(6.0,6.0) anchor=(6.0,3.0) met=-
+    label i2e0l pos=(-16.0,-1.0) size=(14.0,8.0) side=- edge=-
+  port i2e1 east id=5 pos=(50.0,14.0) size=(6.0,6.0) anchor=(6.0,3.0) met=-
+    label i2e1l pos=(-17.0,-1.0) size=(15.0,8.0) side=- edge=-
+  port i2s0 south id=6 pos=(35.5,24.0) size=(6.0,6.0) anchor=(3.0,6.0) met=-
+    label i2s0l pos=(-20.5,-36.0) size=(30.0,9.0) side=- edge=-
+  port i2s1 south id=7 pos=(23.0,24.0) size=(6.0,6.0) anchor=(3.0,6.0) met=-
+    label i2s1l pos=(-14.5,-24.0) size=(35.0,9.0) side=- edge=-
+  port i2s2 south id=8 pos=(10.5,24.0) size=(6.0,6.0) anchor=(3.0,6.0) met=-
+    label i2s2l pos=(-5.5,-12.0) size=(40.0,9.0) side=- edge=-
+  port i2w0 west id=9 pos=(-6.0,9.0) size=(6.0,6.0) anchor=(0.0,3.0) met=-
+    label i2w0l pos=(8.0,0.0) size=(10.0,6.0) side=- edge=-
+L1 node I3 normal id=0 pos=(0.0,0.0) size=(53.5,44.0) margin=(0.0,0.0,0.0,0.0) padding=(0.0,0.0,0.0,0.0)
+  port i3n0 north id=0 pos=(8.0,-7.0) size=(4.0,4.0) anchor=(2.0,0.0) met=-
+    label i3n0l pos=(6.0,12.0) size=(20.0,5.0) side=- edge=-
+  port i3n1 north id=1 pos=(40.0,-2.0) size=(4.0,4.0) anchor=(2.0,0.0) met=-
+    label i3n1l pos=(-2.0,7.0) size=(8.0,5.0) side=- edge=-
+  port i3e0 east id=2 pos=(52.0,21.0) size=(4.0,4.0) anchor=(4.0,2.0) met=-
+    label i3e0l pos=(-11.0,-6.0) size=(9.0,12.0) side=- edge=-
+    label i3e0m pos=(-9.0,6.0) size=(7.0,4.0) side=- edge=-
+  port i3s0 south id=3 pos=(25.0,44.0) size=(4.0,4.0) anchor=(2.0,4.0) met=-
+    label i3s0l pos=(-3.5,-9.0) size=(11.0,6.0) side=- edge=-
+  port i3w0 west id=4 pos=(-4.0,18.0) size=(4.0,4.0) anchor=(0.0,2.0) met=-
+    label i3w0l pos=(6.0,7.0) size=(6.0,3.0) side=- edge=-
+L1 node I4 normal id=0 pos=(0.0,0.0) size=(22.0,26.0) margin=(0.0,0.0,0.0,0.0) padding=(0.0,0.0,0.0,0.0)
+  port i4e0 east id=0 pos=(22.0,9.0) size=(4.0,4.0) anchor=(4.0,2.0) met=-
+    label i4e0l pos=(-11.0,-4.0) size=(9.0,12.0) side=- edge=-
+    label i4e0m pos=(-9.0,8.0) size=(7.0,4.0) side=- edge=-
+  port i4w0 west id=1 pos=(-4.0,8.0) size=(4.0,4.0) anchor=(0.0,2.0) met=-
+    label i4w0l pos=(6.0,-4.0) size=(5.0,12.0) side=- edge=-
+    label i4w0m pos=(6.0,8.0) size=(4.0,6.0) side=- edge=-
+L1 node I5 normal id=0 pos=(0.0,0.0) size=(20.0,0.0) margin=(0.0,0.0,0.0,0.0) padding=(0.0,0.0,0.0,0.0)
+  port i5n0 north id=0 pos=(8.0,-6.0) size=(6.0,6.0) anchor=(3.0,0.0) met=-
+    label i5n0l pos=(-3.0,9.0) size=(18.0,7.0) side=- edge=-
+  port i5s0 south id=1 pos=(8.0,0.0) size=(6.0,6.0) anchor=(3.0,6.0) met=-
+    label i5s0l pos=(-3.0,-12.0) size=(18.0,9.0) side=- edge=-
+edge e1
+== margins
+graph size=(0.0,0.0)
+L0 node I1 normal id=0 pos=(0.0,0.0) size=(85.0,52.0) margin=(6.0,6.0,6.0,6.0) padding=(0.0,0.0,0.0,0.0)
+  port i1n0 north id=0 pos=(14.0,-6.0) size=(6.0,6.0) anchor=(3.0,0.0) met=-
+    label i1n0l pos=(-6.0,9.0) size=(18.0,7.0) side=- edge=-
+  port i1n1 north id=1 pos=(37.5,-6.0) size=(6.0,6.0) anchor=(3.0,0.0) met=-
+    label i1n1l pos=(-7.5,9.0) size=(21.0,7.0) side=- edge=-
+  port i1n2 north id=2 pos=(64.0,-6.0) size=(6.0,6.0) anchor=(3.0,0.0) met=-
+    label i1n2l pos=(-9.0,9.0) size=(24.0,7.0) side=- edge=-
+  port i1e0 east id=3 pos=(85.0,17.0) size=(6.0,6.0) anchor=(6.0,3.0) met=-
+    label i1e0l pos=(-16.0,-1.0) size=(14.0,8.0) side=- edge=-
+  port i1e1 east id=4 pos=(85.0,29.0) size=(6.0,6.0) anchor=(6.0,3.0) met=-
+    label i1e1l pos=(-17.0,-1.0) size=(15.0,8.0) side=- edge=-
+  port i1s0 south id=5 pos=(58.33333333333333,52.0) size=(6.0,6.0) anchor=(3.0,6.0) met=-
+    label i1s0l pos=(-6.0,-12.0) size=(18.0,9.0) side=- edge=-
+  port i1s1 south id=6 pos=(25.166666666666664,52.0) size=(6.0,6.0) anchor=(3.0,6.0) met=-
+    label i1s1l pos=(-8.5,-12.0) size=(23.0,9.0) side=- edge=-
+  port i1w0 west id=7 pos=(-6.0,23.0) size=(6.0,6.0) anchor=(0.0,3.0) met=-
+    label i1w0l pos=(8.0,0.0) size=(10.0,6.0) side=- edge=-
+L1 node I2 normal id=0 pos=(0.0,0.0) size=(50.0,24.0) margin=(12.0,6.0,16.0,6.0) padding=(0.0,0.0,0.0,0.0)
+  port i2n0 north id=0 pos=(8.0,-6.0) size=(6.0,6.0) anchor=(3.0,0.0) met=-
+    label i2n0l pos=(-3.0,9.0) size=(30.0,7.0) side=- edge=-
+  port i2n1 north id=1 pos=(18.0,-6.0) size=(6.0,6.0) anchor=(3.0,0.0) met=-
+    label i2n1l pos=(-13.0,19.0) size=(33.0,7.0) side=- edge=-
+  port i2n2 north id=2 pos=(28.0,-6.0) size=(6.0,6.0) anchor=(3.0,0.0) met=-
+    label i2n2l pos=(-19.0,39.0) size=(36.0,7.0) side=- edge=-
+  port i2n3 north id=3 pos=(38.0,-6.0) size=(6.0,6.0) anchor=(3.0,0.0) met=-
+    label i2n3l pos=(-32.0,29.0) size=(39.0,7.0) side=- edge=-
+  port i2e0 east id=4 pos=(50.0,4.0) size=(6.0,6.0) anchor=(6.0,3.0) met=-
+    label i2e0l pos=(-16.0,-1.0) size=(14.0,8.0) side=- edge=-
+  port i2e1 east id=5 pos=(50.0,14.0) size=(6.0,6.0) anchor=(6.0,3.0) met=-
+    label i2e1l pos=(-17.0,-1.0) size=(15.0,8.0) side=- edge=-
+  port i2s0 south id=6 pos=(35.5,24.0) size=(6.0,6.0) anchor=(3.0,6.0) met=-
+    label i2s0l pos=(-20.5,-36.0) size=(30.0,9.0) side=- edge=-
+  port i2s1 south id=7 pos=(23.0,24.0) size=(6.0,6.0) anchor=(3.0,6.0) met=-
+    label i2s1l pos=(-14.5,-24.0) size=(35.0,9.0) side=- edge=-
+  port i2s2 south id=8 pos=(10.5,24.0) size=(6.0,6.0) anchor=(3.0,6.0) met=-
+    label i2s2l pos=(-5.5,-12.0) size=(40.0,9.0) side=- edge=-
+  port i2w0 west id=9 pos=(-6.0,9.0) size=(6.0,6.0) anchor=(0.0,3.0) met=-
+    label i2w0l pos=(8.0,0.0) size=(10.0,6.0) side=- edge=-
+L1 node I3 normal id=0 pos=(0.0,0.0) size=(53.5,44.0) margin=(7.0,2.5,4.0,4.0) padding=(0.0,0.0,0.0,0.0)
+  port i3n0 north id=0 pos=(8.0,-7.0) size=(4.0,4.0) anchor=(2.0,0.0) met=-
+    label i3n0l pos=(6.0,12.0) size=(20.0,5.0) side=- edge=-
+  port i3n1 north id=1 pos=(40.0,-2.0) size=(4.0,4.0) anchor=(2.0,0.0) met=-
+    label i3n1l pos=(-2.0,7.0) size=(8.0,5.0) side=- edge=-
+  port i3e0 east id=2 pos=(52.0,21.0) size=(4.0,4.0) anchor=(4.0,2.0) met=-
+    label i3e0l pos=(-11.0,-6.0) size=(9.0,12.0) side=- edge=-
+    label i3e0m pos=(-9.0,6.0) size=(7.0,4.0) side=- edge=-
+  port i3s0 south id=3 pos=(25.0,44.0) size=(4.0,4.0) anchor=(2.0,4.0) met=-
+    label i3s0l pos=(-3.5,-9.0) size=(11.0,6.0) side=- edge=-
+  port i3w0 west id=4 pos=(-4.0,18.0) size=(4.0,4.0) anchor=(0.0,2.0) met=-
+    label i3w0l pos=(6.0,7.0) size=(6.0,3.0) side=- edge=-
+L1 node I4 normal id=0 pos=(0.0,0.0) size=(22.0,26.0) margin=(0.0,4.0,0.0,4.0) padding=(0.0,0.0,0.0,0.0)
+  port i4e0 east id=0 pos=(22.0,9.0) size=(4.0,4.0) anchor=(4.0,2.0) met=-
+    label i4e0l pos=(-11.0,-4.0) size=(9.0,12.0) side=- edge=-
+    label i4e0m pos=(-9.0,8.0) size=(7.0,4.0) side=- edge=-
+  port i4w0 west id=1 pos=(-4.0,8.0) size=(4.0,4.0) anchor=(0.0,2.0) met=-
+    label i4w0l pos=(6.0,-4.0) size=(5.0,12.0) side=- edge=-
+    label i4w0m pos=(6.0,8.0) size=(4.0,6.0) side=- edge=-
+L1 node I5 normal id=0 pos=(0.0,0.0) size=(20.0,0.0) margin=(12.0,3.0,10.0,0.0) padding=(0.0,0.0,0.0,0.0)
+  port i5n0 north id=0 pos=(8.0,-6.0) size=(6.0,6.0) anchor=(3.0,0.0) met=-
+    label i5n0l pos=(-3.0,9.0) size=(18.0,7.0) side=- edge=-
+  port i5s0 south id=1 pos=(8.0,0.0) size=(6.0,6.0) anchor=(3.0,6.0) met=-
+    label i5s0l pos=(-3.0,-12.0) size=(18.0,9.0) side=- edge=-
+edge e1
