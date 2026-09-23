@@ -1,3 +1,12 @@
-//! Port of `vendor/elk-swift/Sources/ElkSwift/ELK/org/eclipse/elk/alg/common/nodespacing/cellsystem/org_eclipse_elk_alg_common_nodespacing_cellsystem_HorizontalLabelAlignment.swift`.
-//!
-//! Not ported yet.
+//! Port of `alg/common/nodespacing/cellsystem/HorizontalLabelAlignment.swift`.
+
+/// Horizontal alignment of labels.
+#[derive(Clone, Copy, PartialEq, Eq, Hash, Debug)]
+pub enum HorizontalLabelAlignment {
+    /// Labels are left-aligned.
+    LEFT,
+    /// Labels are centered.
+    CENTER,
+    /// Labels are right-aligned.
+    RIGHT,
+}

@@ -1,3 +1,12 @@
-//! Port of `vendor/elk-swift/Sources/ElkSwift/ELK/org/eclipse/elk/alg/common/nodespacing/cellsystem/org_eclipse_elk_alg_common_nodespacing_cellsystem_VerticalLabelAlignment.swift`.
-//!
-//! Not ported yet.
+//! Port of `alg/common/nodespacing/cellsystem/VerticalLabelAlignment.swift`.
+
+/// Vertical alignment of labels.
+#[derive(Clone, Copy, PartialEq, Eq, Hash, Debug)]
+pub enum VerticalLabelAlignment {
+    /// Labels are top-aligned.
+    TOP,
+    /// Labels are centered.
+    CENTER,
+    /// Labels are bottom-aligned.
+    BOTTOM,
+}

@@ -1,5 +1,13 @@
 //! Port of `core/options/LabelSide.swift`.
 
+use crate::org::eclipse::elk::graph::properties::keys;
+use crate::org::eclipse::elk::graph::properties::property::{PropValue, Property};
+
+/// `LabelSide.LABEL_SIDE`: set on edge and port labels by layout algorithms
+/// depending on which side they decide is appropriate for any given label.
+/// (The layered algorithm uses `InternalProperties.LABEL_SIDE` instead.)
+pub static LABEL_SIDE: Property = Property::with_default(keys::ELK_LABEL_SIDE, || PropValue::LabelSide(LabelSide::UNKNOWN));
+
 #[derive(Clone, Copy, PartialEq, Eq, Hash, Debug, PartialOrd, Ord)]
 pub enum LabelSide {
     UNKNOWN,

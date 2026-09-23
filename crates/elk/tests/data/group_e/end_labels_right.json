@@ -1,0 +1,475 @@
+{
+ "graph": {
+  "props": [
+   [
+    "org.eclipse.elk.direction",
+    "Direction",
+    "RIGHT"
+   ],
+   [
+    "org.eclipse.elk.spacing.edgeLabel",
+    "Double",
+    2.0
+   ],
+   [
+    "org.eclipse.elk.spacing.labelLabel",
+    "Double",
+    1.0
+   ]
+  ]
+ },
+ "nodes": [
+  {
+   "id": "E1",
+   "size": [
+    40,
+    60
+   ],
+   "ports": [
+    {
+     "id": "pe1",
+     "side": "EAST",
+     "size": [
+      4,
+      4
+     ],
+     "pos": [
+      40,
+      10
+     ]
+    },
+    {
+     "id": "pe2",
+     "side": "EAST",
+     "size": [
+      4,
+      4
+     ],
+     "pos": [
+      40,
+      30
+     ]
+    },
+    {
+     "id": "pe3",
+     "side": "NORTH",
+     "size": [
+      4,
+      4
+     ],
+     "pos": [
+      10,
+      -4
+     ]
+    },
+    {
+     "id": "pe4",
+     "side": "SOUTH",
+     "size": [
+      4,
+      4
+     ],
+     "pos": [
+      20,
+      60
+     ]
+    }
+   ],
+   "margin": [
+    1,
+    2,
+    3,
+    4
+   ]
+  },
+  {
+   "id": "E2",
+   "size": [
+    50,
+    50
+   ],
+   "ports": [
+    {
+     "id": "pw1",
+     "side": "WEST",
+     "size": [
+      4,
+      4
+     ],
+     "pos": [
+      -4,
+      20
+     ]
+    },
+    {
+     "id": "pw2",
+     "side": "WEST",
+     "size": [
+      4,
+      4
+     ],
+     "pos": [
+      -4,
+      40
+     ]
+    },
+    {
+     "id": "pn2",
+     "side": "NORTH",
+     "size": [
+      4,
+      4
+     ],
+     "pos": [
+      25,
+      -4
+     ]
+    }
+   ]
+  },
+  {
+   "id": "E3",
+   "size": [
+    30,
+    30
+   ],
+   "ports": [
+    {
+     "id": "pw3",
+     "side": "WEST",
+     "size": [
+      4,
+      4
+     ],
+     "pos": [
+      -4,
+      10
+     ]
+    },
+    {
+     "id": "ps3",
+     "side": "SOUTH",
+     "size": [
+      4,
+      4
+     ],
+     "pos": [
+      10,
+      30
+     ]
+    }
+   ]
+  }
+ ],
+ "edges": [
+  {
+   "id": "ea",
+   "source": "pe1",
+   "target": "pw1",
+   "props": [
+    [
+     "org.eclipse.elk.edge.thickness",
+     "Double",
+     3.0
+    ]
+   ],
+   "labels": [
+    {
+     "text": "ta1",
+     "size": [
+      20,
+      8
+     ],
+     "props": [
+      [
+       "org.eclipse.elk.edgeLabels.placement",
+       "EdgeLabelPlacement",
+       "TAIL"
+      ]
+     ]
+    },
+    {
+     "text": "ta2",
+     "size": [
+      14,
+      6
+     ],
+     "props": [
+      [
+       "org.eclipse.elk.edgeLabels.placement",
+       "EdgeLabelPlacement",
+       "TAIL"
+      ]
+     ]
+    },
+    {
+     "text": "ha1",
+     "size": [
+      12,
+      7
+     ],
+     "props": [
+      [
+       "org.eclipse.elk.edgeLabels.placement",
+       "EdgeLabelPlacement",
+       "HEAD"
+      ],
+      [
+       "labelSide",
+       "LabelSide",
+       "BELOW"
+      ]
+     ]
+    },
+    {
+     "text": "ca1",
+     "size": [
+      9,
+      9
+     ]
+    }
+   ]
+  },
+  {
+   "id": "eb",
+   "source": "pe1",
+   "target": "pw3",
+   "labels": [
+    {
+     "text": "tb1",
+     "size": [
+      25,
+      9
+     ],
+     "props": [
+      [
+       "org.eclipse.elk.edgeLabels.placement",
+       "EdgeLabelPlacement",
+       "TAIL"
+      ],
+      [
+       "labelSide",
+       "LabelSide",
+       "ABOVE"
+      ]
+     ]
+    },
+    {
+     "text": "hb1",
+     "size": [
+      10,
+      5
+     ],
+     "props": [
+      [
+       "org.eclipse.elk.edgeLabels.placement",
+       "EdgeLabelPlacement",
+       "HEAD"
+      ]
+     ]
+    }
+   ]
+  },
+  {
+   "id": "ec",
+   "source": "pe2",
+   "target": "pw1",
+   "props": [
+    [
+     "org.eclipse.elk.edge.thickness",
+     "Double",
+     1.5
+    ]
+   ],
+   "labels": [
+    {
+     "text": "tc1",
+     "size": [
+      11,
+      4
+     ],
+     "props": [
+      [
+       "org.eclipse.elk.edgeLabels.placement",
+       "EdgeLabelPlacement",
+       "TAIL"
+      ]
+     ]
+    },
+    {
+     "text": "hc1",
+     "size": [
+      16,
+      8
+     ],
+     "props": [
+      [
+       "org.eclipse.elk.edgeLabels.placement",
+       "EdgeLabelPlacement",
+       "HEAD"
+      ],
+      [
+       "labelSide",
+       "LabelSide",
+       "ABOVE"
+      ]
+     ]
+    }
+   ]
+  },
+  {
+   "id": "ed",
+   "source": "pe3",
+   "target": "pn2",
+   "labels": [
+    {
+     "text": "td1",
+     "size": [
+      8,
+      8
+     ],
+     "props": [
+      [
+       "org.eclipse.elk.edgeLabels.placement",
+       "EdgeLabelPlacement",
+       "TAIL"
+      ],
+      [
+       "labelSide",
+       "LabelSide",
+       "ABOVE"
+      ]
+     ]
+    },
+    {
+     "text": "hd1",
+     "size": [
+      9,
+      9
+     ],
+     "props": [
+      [
+       "org.eclipse.elk.edgeLabels.placement",
+       "EdgeLabelPlacement",
+       "HEAD"
+      ],
+      [
+       "labelSide",
+       "LabelSide",
+       "ABOVE"
+      ]
+     ]
+    }
+   ]
+  },
+  {
+   "id": "ee",
+   "source": "pe4",
+   "target": "ps3",
+   "labels": [
+    {
+     "text": "te1",
+     "size": [
+      7,
+      3
+     ],
+     "props": [
+      [
+       "org.eclipse.elk.edgeLabels.placement",
+       "EdgeLabelPlacement",
+       "TAIL"
+      ],
+      [
+       "labelSide",
+       "LabelSide",
+       "BELOW"
+      ]
+     ]
+    },
+    {
+     "text": "he1",
+     "size": [
+      6,
+      6
+     ],
+     "props": [
+      [
+       "org.eclipse.elk.edgeLabels.placement",
+       "EdgeLabelPlacement",
+       "HEAD"
+      ]
+     ]
+    }
+   ]
+  },
+  {
+   "id": "ef",
+   "source": "pe2",
+   "target": "pw2",
+   "labels": [
+    {
+     "text": "cf1",
+     "size": [
+      5,
+      5
+     ]
+    }
+   ]
+  },
+  {
+   "id": "eg",
+   "source": "pe1",
+   "target": "pw2",
+   "labels": [
+    {
+     "text": "tg1",
+     "size": [
+      3,
+      3
+     ],
+     "props": [
+      [
+       "org.eclipse.elk.edgeLabels.placement",
+       "EdgeLabelPlacement",
+       "TAIL"
+      ]
+     ]
+    },
+    {
+     "text": "tg2",
+     "size": [
+      4,
+      2
+     ],
+     "props": [
+      [
+       "org.eclipse.elk.edgeLabels.placement",
+       "EdgeLabelPlacement",
+       "TAIL"
+      ]
+     ]
+    }
+   ]
+  }
+ ],
+ "layers": [
+  [
+   "E1"
+  ],
+  [
+   "E2",
+   "E3"
+  ]
+ ],
+ "run": [
+  "EndLabelPreprocessor",
+  "Dump:pre",
+  "EndLabelSorter",
+  "Dump:sorted",
+  "SetPos:E1:10:20",
+  "SetPos:E2:200:30",
+  "SetPos:E3:210:130",
+  "EndLabelPostprocessor",
+  "Dump:post"
+ ]
+}

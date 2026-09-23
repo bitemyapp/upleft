@@ -1,0 +1,28 @@
+== sized
+graph size=(0.0,0.0)
+L0 node W1 normal id=0 pos=(0.0,0.0) size=(0.0,0.0) margin=(0.0,0.0,0.0,0.0) padding=(0.0,0.0,0.0,0.0)
+L0 node W2 normal id=0 pos=(0.0,0.0) size=(20.0,20.0) margin=(0.0,0.0,0.0,0.0) padding=(0.0,0.0,0.0,0.0)
+L1 node W3 normal id=0 pos=(0.0,0.0) size=(0.0,24.0) margin=(0.0,0.0,0.0,0.0) padding=(0.0,0.0,0.0,0.0)
+  port w3e east id=0 pos=(0.0,10.0) size=(4.0,4.0) anchor=(4.0,2.0) met=-
+    label w3el pos=(0.0,0.0) size=(6.0,5.0) side=- edge=-
+  port w3w west id=1 pos=(-4.0,10.0) size=(4.0,4.0) anchor=(0.0,2.0) met=-
+L1 node W4 normal id=0 pos=(100.0,0.0) size=(10.0,10.0) margin=(0.0,0.0,0.0,0.0) padding=(0.0,0.0,0.0,0.0)
+  port w4w west id=0 pos=(-2.0,4.0) size=(2.0,2.0) anchor=(0.0,1.0) met=-
+edge x1
+  label xt pos=(0.0,0.0) size=(9.0,4.0) side=- edge=-
+edge x2
+  label yh pos=(0.0,0.0) size=(7.0,6.0) side=- edge=-
+== margin
+graph size=(0.0,0.0)
+L0 node W1 normal id=0 pos=(0.0,0.0) size=(0.0,0.0) margin=(0.0,0.0,0.0,0.0) padding=(0.0,0.0,0.0,0.0)
+L0 node W2 normal id=0 pos=(0.0,0.0) size=(20.0,20.0) margin=(0.0,0.0,0.0,0.0) padding=(0.0,0.0,0.0,0.0)
+L1 node W3 normal id=0 pos=(0.0,0.0) size=(0.0,24.0) margin=(0.0,13.0,0.0,11.0) padding=(0.0,0.0,0.0,0.0)
+  port w3e east id=0 pos=(0.0,10.0) size=(4.0,4.0) anchor=(4.0,2.0) met=-
+    label w3el pos=(0.0,0.0) size=(6.0,5.0) side=- edge=-
+  port w3w west id=1 pos=(-4.0,10.0) size=(4.0,4.0) anchor=(0.0,2.0) met=-
+L1 node W4 normal id=0 pos=(100.0,0.0) size=(10.0,10.0) margin=(0.0,0.0,0.0,0.0) padding=(0.0,0.0,0.0,0.0)
+  port w4w west id=0 pos=(-2.0,4.0) size=(2.0,2.0) anchor=(0.0,1.0) met=-
+edge x1
+  label xt pos=(0.0,0.0) size=(9.0,4.0) side=- edge=-
+edge x2
+  label yh pos=(0.0,0.0) size=(7.0,6.0) side=- edge=-
