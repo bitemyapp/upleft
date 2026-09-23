@@ -23,7 +23,9 @@ use controller_support::{
 };
 use objc2::rc::Retained;
 use objc2::runtime::AnyObject;
-use objc2_app_kit::{NSStandardKeyBindingResponding, NSTextInputClient, NSTextLayoutFragmentEnumerationOptions};
+use objc2_app_kit::{
+    NSStandardKeyBindingResponding, NSTextElementProvider, NSTextInputClient, NSTextLayoutFragmentEnumerationOptions,
+};
 use objc2_core_foundation::CGFloat;
 use objc2_foundation::{NSRect, NSSize, NSString};
 use upleft_app::ai::document_state_store::DocumentStateStore;
@@ -65,12 +67,14 @@ fn clip_origin_y(controller: &Closing) -> CGFloat {
 /// options: [.ensuresLayout])`, collecting every fragment frame.
 fn layout_fragment_frames(view: &MarkdownTextView) -> Vec<NSRect> {
     let layout = view.textLayoutManager().expect("a TextKit 2 layout manager");
-    let document = layout.documentRange();
+    // `NSTextLayoutManager.documentRange` is its content manager's.
+    let document = layout.textContentManager().expect("a content manager").documentRange();
     layout.ensureLayoutForRange(&document);
-    let frames = std::cell::RefCell::new(Vec::new());
-    let block = block2::RcBlock::new(|fragment: std::ptr::NonNull<objc2_app_kit::NSTextLayoutFragment>| {
+    let frames = std::rc::Rc::new(std::cell::RefCell::new(Vec::new()));
+    let collected = frames.clone();
+    let block = block2::RcBlock::new(move |fragment: std::ptr::NonNull<objc2_app_kit::NSTextLayoutFragment>| {
         // SAFETY: TextKit hands the block a live fragment.
-        frames.borrow_mut().push(unsafe { fragment.as_ref() }.layoutFragmentFrame());
+        collected.borrow_mut().push(unsafe { fragment.as_ref() }.layoutFragmentFrame());
         objc2::runtime::Bool::YES
     });
     let _ = layout.enumerateTextLayoutFragmentsFromLocation_options_usingBlock(
@@ -78,7 +82,8 @@ fn layout_fragment_frames(view: &MarkdownTextView) -> Vec<NSRect> {
         NSTextLayoutFragmentEnumerationOptions::EnsuresLayout,
         &block,
     );
-    frames.into_inner()
+    let frames = frames.borrow().clone();
+    frames
 }
 
 fn opening_document_starts_with_caret_only() {
@@ -247,7 +252,8 @@ fn select_all_survives_fully_elided_projection() {
     // elided while this test exercises Select All.
     view.set_source_selected_ranges(&[NSRange::new(0, 1)]);
     view.set_zoom_level(ZoomLevel::H1);
-    let storage = view.textStorage().expect("the text storage");
+    // SAFETY: the text view's own storage.
+    let storage = unsafe { view.textStorage() }.expect("the text storage");
     // SAFETY: index 0 is inside the non-empty storage.
     let elided: Option<Retained<AnyObject>> =
         unsafe { storage.attribute_atIndex_effectiveRange(dr_elided(), 0, std::ptr::null_mut()) };
@@ -344,7 +350,8 @@ fn native_word_movement_preserves_source_caret() {
     view.set_source_selected_ranges(&[NSRange::new(gamma.upper_bound(), 0)]);
     assert!(pump_main_run_loop(|| view.rect_for_offset(gamma.upper_bound()).is_some(), 1.0));
 
-    view.moveWordBackward(None);
+    // SAFETY: a nil sender, as Swift passes.
+    unsafe { view.moveWordBackward(None) };
 
     assert_eq!(view.source_selected_range(), NSRange::new(gamma.location, 0));
 }
@@ -485,7 +492,8 @@ fn tab_after_live_edits_keeps_layout_and_viewport_stable() {
 
     type_character('x', &view);
     press_delete(&view);
-    view.insertNewline(None);
+    // SAFETY: a nil sender, as Swift passes.
+    unsafe { view.insertNewline(None) };
     type_character('t', &view);
     type_character('a', &view);
     type_character('i', &view);
