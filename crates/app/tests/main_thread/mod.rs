@@ -8,8 +8,9 @@
 //! (Swift's `@Suite(.serialized)`), and waiting pumps the main run loop,
 //! which drains the main queue, as Swift Testing's main actor does.
 //!
-//! Positional arguments filter tests by substring, like libtest; `--list`
-//! lists them; other flags are ignored.
+//! Positional arguments filter tests by substring and `--skip` excludes, as
+//! in libtest; `--list` lists them; other flags (and their values) are
+//! ignored.
 
 #![allow(dead_code)]
 
@@ -66,10 +67,24 @@ pub fn run(tests: &[(&str, TestFn)]) {
         }
         return;
     }
-    let filters: Vec<&String> = arguments.iter().filter(|argument| !argument.starts_with('-')).collect();
+    // libtest's flags that take a separate value; `--skip` excludes.
+    const VALUED: [&str; 5] = ["--test-threads", "--color", "--format", "--logfile", "--shuffle-seed"];
+    let mut filters: Vec<&String> = Vec::new();
+    let mut skips: Vec<&String> = Vec::new();
+    let mut arguments_iter = arguments.iter();
+    while let Some(argument) = arguments_iter.next() {
+        if argument == "--skip" {
+            skips.extend(arguments_iter.next());
+        } else if VALUED.contains(&argument.as_str()) {
+            arguments_iter.next();
+        } else if !argument.starts_with('-') {
+            filters.push(argument);
+        }
+    }
     let selected: Vec<&(&str, TestFn)> = tests
         .iter()
         .filter(|(name, _)| filters.is_empty() || filters.iter().any(|filter| name.contains(filter.as_str())))
+        .filter(|(name, _)| !skips.iter().any(|skip| name.contains(skip.as_str())))
         .collect();
     println!("\nrunning {} tests", selected.len());
     let mut failed = Vec::new();
