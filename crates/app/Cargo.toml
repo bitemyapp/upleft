@@ -196,3 +196,7 @@ harness = false
 [[test]]
 name = "workspace_tests"
 harness = false
+
+[[test]]
+name = "settings_pane_tests"
+harness = false

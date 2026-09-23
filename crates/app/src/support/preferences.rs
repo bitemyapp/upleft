@@ -345,6 +345,15 @@ impl Preferences {
         })
     }
 
+    /// Makes `preferences` the instance [`Preferences::shared`] returns, so a
+    /// test process can run code that reads `Preferences.shared` (the
+    /// Settings window) without publishing to the user's real preferences
+    /// domain. Works only before the first `shared()` call; otherwise hands
+    /// `preferences` back. Not called by the app.
+    pub fn install_shared(preferences: Preferences) -> Result<(), Preferences> {
+        SHARED.set(preferences)
+    }
+
     /// A `Preferences` reading and writing `preferences_file` only: no Quick
     /// Look publication and no notification. `snapshot_store`, when given,
     /// receives the history limits as `SnapshotStore.shared` does.
