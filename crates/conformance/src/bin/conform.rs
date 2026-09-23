@@ -46,6 +46,10 @@ struct Suite {
     /// Further binaries the Swift result depends on (`"stamps"`, paths from
     /// the repository root), folded into the cache key.
     stamps: Vec<String>,
+    /// The Swift result depends on the input's path as well as its bytes
+    /// (`"keyByPath": true`; Spotlight titles fall back to the file name), so
+    /// the path relative to the repository is folded into the cache key.
+    key_by_path: bool,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -166,6 +170,7 @@ fn load_suites(root: &Path) -> (Vec<PathBuf>, Vec<String>, Vec<Suite>) {
                 Some(other) => panic!("{}: unknown oracle {other}", path.display()),
             },
             stamps: strings(&suite["stamps"]),
+            key_by_path: suite["keyByPath"].as_bool().unwrap_or(false),
         })
         .collect();
     (corpus, exclude, suites)
@@ -263,6 +268,9 @@ fn run_case(context: &Context, case: &Case) -> (Outcome, String) {
     (binary_stamp(&swift_oracle), &input_bytes, &suite.command, flags).hash(&mut hasher);
     for stamp in &suite.stamps {
         optional_stamp(&context.root.join(stamp)).hash(&mut hasher);
+    }
+    if suite.key_by_path {
+        case.input.strip_prefix(&context.root).unwrap_or(&case.input).hash(&mut hasher);
     }
     let key = format!("{:016x}", hasher.finish());
     let (swift_output, swift_layout) = match &context.cache {

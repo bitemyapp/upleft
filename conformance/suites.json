@@ -3,7 +3,8 @@
     "corpus"
   ],
   "exclude": [
-    "corpus/workspace/"
+    "corpus/workspace/",
+    "corpus/spotlight/"
   ],
   "suites": [
     {
@@ -361,6 +362,8 @@
       "command": "spotlight",
       "oracle": "app",
       "output": "json",
+      "keyByPath": true,
+      "only": ["corpus/generated/", "corpus/highlight/", "corpus/spotlight/"],
       "variants": [[]]
     },
     {
