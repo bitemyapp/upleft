@@ -1,3 +1,9 @@
-//! Port of `vendor/elk-swift/Sources/ElkSwift/ELK/org/eclipse/elk/alg/layered/p5edges/orthogonal/direction/org_eclipse_elk_alg_layered_p5edges_orthogonal_direction_SouthToNorthRoutingStrategy.swift`.
+//! Port of `alg/layered/p5edges/orthogonal/direction/SouthToNorthRoutingStrategy.swift`.
 //!
-//! Not ported yet.
+//! Like `NorthToSouthRoutingStrategy`, an empty subclass in elk-swift: it
+//! behaves exactly like `BaseRoutingDirectionStrategy` (port positions 0, port
+//! sides `UNDEFINED`, no bend points).
+
+/// Marker for the (empty) Swift class.
+#[derive(Clone, Copy, Debug, Default)]
+pub struct SouthToNorthRoutingStrategy;
