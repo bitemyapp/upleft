@@ -98,7 +98,7 @@ impl Scenario {
 /// Window kinds this oracle can build yet. Anything else is "not ported",
 /// reported before the application starts.
 fn is_ported(window: &str) -> bool {
-    matches!(window, "probe" | "start" | "setup" | "preferences")
+    matches!(window, "probe" | "start" | "setup" | "preferences" | "document")
 }
 
 // MARK: - Sandbox
@@ -322,11 +322,43 @@ struct Scene {
     pending_commands: Option<Vec<String>>,
     /// Keeps the window's controller alive (`retained` in Swift).
     _retained: Option<Retained<NSObject>>,
+    /// `documentController`: the document window's controller, which also
+    /// performs the scenario's commands.
+    document_controller: Option<Retained<upleft_app::app::document_window_controller::DocumentWindowController>>,
 }
 
 impl Scene {
-    fn build(scenario: &Scenario, _root: &Path, mtm: MainThreadMarker) -> Result<Scene, Failure> {
+    fn build(scenario: &Scenario, root: &Path, mtm: MainThreadMarker) -> Result<Scene, Failure> {
         match scenario.window.as_str() {
+            "document" => {
+                use upleft_app::app::document_window_controller::DocumentWindowController;
+                use upleft_render::render_contracts::RenderMode;
+                let path = scenario
+                    .document
+                    .as_ref()
+                    .ok_or_else(|| Failure::Error("document scenario needs \"document\"".into()))?;
+                let url = upleft_foundation::url::FileUrl::from_path(&root.join(path).to_string_lossy());
+                let mode = match scenario.mode.as_str() {
+                    "read" => RenderMode::Read,
+                    "source" => RenderMode::Source,
+                    _ => RenderMode::Live,
+                };
+                let controller = DocumentWindowController::new(mtm);
+                if let (Some(size), Some(window)) = (scenario.size, controller.window()) {
+                    window.setContentSize(size);
+                }
+                controller.open(&url, mode).map_err(|error| Failure::Error(error.localized_description()))?;
+                let window = controller.window().ok_or_else(|| Failure::Error("document controller has no window".into()))?;
+                let scene = Scene {
+                    window,
+                    pending_commands: None,
+                    _retained: None,
+                    document_controller: Some(controller.clone()),
+                };
+                scene.show(mtm);
+                controller.apply_command_line_open(None, false);
+                Ok(scene)
+            }
             "probe" => {
                 let probe = unsafe {
                     NSWindow::initWithContentRect_styleMask_backing_defer(
@@ -356,7 +388,7 @@ impl Scene {
                 let content = probe.contentView().expect("content view");
                 content.addSubview(&label);
                 content.addSubview(&button);
-                let scene = Scene { window: probe, pending_commands: None, _retained: None };
+                let scene = Scene { window: probe, pending_commands: None, _retained: None, document_controller: None };
                 scene.show(mtm);
                 Ok(scene)
             }
@@ -371,7 +403,12 @@ impl Scene {
                 let recents = DocumentStateStore::shared().recents(StartWindowController::RECENT_DISPLAY_LIMIT);
                 let controller = StartWindowController::new(recents, guide, mtm);
                 let window = controller.window().ok_or_else(|| Failure::Error("start controller has no window".into()))?;
-                let scene = Scene { window, pending_commands: None, _retained: Some(Retained::into_super(Retained::into_super(Retained::into_super(controller)))) };
+                let scene = Scene {
+                    window,
+                    pending_commands: None,
+                    _retained: Some(Retained::into_super(Retained::into_super(Retained::into_super(controller)))),
+                    document_controller: None,
+                };
                 scene.show(mtm);
                 Ok(scene)
             }
@@ -381,7 +418,12 @@ impl Scene {
                     Failure::Error("SetupWindowController.makeIfNeeded() returned nil on this machine".into())
                 })?;
                 let window = controller.window().ok_or_else(|| Failure::Error("setup controller has no window".into()))?;
-                let scene = Scene { window, pending_commands: None, _retained: Some(Retained::into_super(Retained::into_super(Retained::into_super(controller)))) };
+                let scene = Scene {
+                    window,
+                    pending_commands: None,
+                    _retained: Some(Retained::into_super(Retained::into_super(Retained::into_super(controller)))),
+                    document_controller: None,
+                };
                 scene.show(mtm);
                 Ok(scene)
             }
@@ -394,7 +436,12 @@ impl Scene {
                     controller.select(pane);
                 }
                 let window = controller.window().ok_or_else(|| Failure::Error("Settings has no window".into()))?;
-                let scene = Scene { window, pending_commands: None, _retained: Some(Retained::into_super(Retained::into_super(Retained::into_super(controller)))) };
+                let scene = Scene {
+                    window,
+                    pending_commands: None,
+                    _retained: Some(Retained::into_super(Retained::into_super(Retained::into_super(controller)))),
+                    document_controller: None,
+                };
                 scene.show(mtm);
                 Ok(scene)
             }
@@ -416,7 +463,13 @@ impl Scene {
             return Ok(false);
         }
         let name = commands.remove(0);
-        Err(Failure::Error(format!("commands need a document window (got {name})")))
+        let Some(controller) = &self.document_controller else {
+            return Err(Failure::Error(format!("commands need a document window (got {name})")));
+        };
+        let command = upleft_app::support::commands::Command::from_raw_value(&name)
+            .ok_or_else(|| Failure::Error(format!("unknown command {name}")))?;
+        let _ = controller.perform(command);
+        Ok(true)
     }
 
     fn captured_windows(&self) -> Vec<Retained<NSWindow>> {

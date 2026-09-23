@@ -24,6 +24,7 @@ pub mod unicode;
 // App-layer suites (Swift side: oracle/app, `downright-app-oracle`).
 pub mod app_bench;
 pub mod app_window;
+pub mod app_window_bench;
 pub mod panel;
 pub mod down_cli;
 pub mod find;
@@ -224,8 +225,7 @@ pub fn run(request: &Request) -> Result<(), Failure> {
         "bench-workspace" => app_bench::workspace(request),
         "bench-find" => app_bench::find(request),
         "app-window" => app_window::run(request),
-        // app_window_bench.rs, registered once DocumentWindowController lands.
-        "bench-app-window" => Err(Failure::NotPorted),
+        "bench-app-window" => app_window_bench::run(request),
         "app-menu" => app_window::menu(request),
         "panel" => panel::run_capture(request),
         "panel-model" => panel::run_model(request),
