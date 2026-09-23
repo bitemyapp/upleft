@@ -105,3 +105,23 @@ they need unported code: `ClickStabilityTests.checkboxDoubleClickDoesNotToggleTw
   `containerGeometryDidChange` on it by selector.
 - `render` conformance for documents that use object fragments waits on
   those ports.
+
+## Conformance and performance (2026-09-23)
+
+`render`: every document whose blocks need only prose, elided or cue
+fragments (558 of 909) is identical in all four variants (2232/2232 cases,
+pixels and layout dump), and every document is identical in Source mode
+(351/351 more, since Source mode renders no objects). The remaining 1053
+cases need the object fragments.
+
+`bench-view` (both oracles, 10 runs, best p50 of three interleaved rounds,
+on a loaded machine), time from `update(document:)` to settled:
+
+| document | Swift | Rust |
+|---|---|---|
+| agent-5000, Source mode (like for like) | 384.5 ms | 324.0 ms |
+| synthetic prose, 5833 lines, Live (like for like) | 279.5 ms | 225.2 ms |
+| agent-5000, Live (Rust draws objects as prose) | 275.7 ms | 223.6 ms |
+
+`update(document:)` alone is 37–41% faster; the settle pass (TextKit
+laying out the document) is 2–4% faster.
