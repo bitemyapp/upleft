@@ -226,6 +226,7 @@ pub fn run(request: &Request) -> Result<(), Failure> {
         "bench-app-window" => app_window::bench(request),
         "panel" => panel::run_capture(request),
         "panel-model" => panel::run_model(request),
+        "bench-panel" => panel::run_bench(request),
         _ => Err(Failure::NotPorted),
     }
 }

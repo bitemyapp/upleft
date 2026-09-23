@@ -1,0 +1,25 @@
+{
+ "panel": "ActivityIndicatorView",
+ "theme": "Paper Light",
+ "width": 26,
+ "height": 26,
+ "state": {},
+ "states": [
+  {
+   "name": "idle"
+  },
+  {
+   "name": "begin",
+   "begin": true
+  },
+  {
+   "name": "end only",
+   "end": true
+  },
+  {
+   "name": "begin end",
+   "begin": true,
+   "end": true
+  }
+ ]
+}

@@ -83,3 +83,9 @@ corpus:
 conform *args: corpus
     cargo build --release -p upleft-conformance -p upleft-cli
     target/release/conform {{args}}
+
+# Compare the panels' build, layout and draw timings (corpus/panel-bench)
+# between downright-app-oracle and upleft-oracle; fails on a slower stage.
+panel-bench *args: corpus
+    cargo build --release -p upleft-conformance
+    python3 scripts/panel-bench-compare.py {{args}}

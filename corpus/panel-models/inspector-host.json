@@ -1,0 +1,141 @@
+{
+ "panel": "InspectorHostView",
+ "theme": "Paper Light",
+ "width": 336,
+ "height": 400,
+ "state": {},
+ "states": [
+  {
+   "name": "empty"
+  },
+  {
+   "name": "tasks",
+   "sections": [
+    "tasks"
+   ]
+  },
+  {
+   "name": "history",
+   "sections": [
+    "history"
+   ]
+  },
+  {
+   "name": "context",
+   "sections": [
+    "context"
+   ]
+  },
+  {
+   "name": "search",
+   "sections": [
+    "search"
+   ]
+  },
+  {
+   "name": "tasks history",
+   "sections": [
+    "tasks",
+    "history"
+   ]
+  },
+  {
+   "name": "all three",
+   "sections": [
+    "tasks",
+    "history",
+    "context"
+   ]
+  },
+  {
+   "name": "all four",
+   "sections": [
+    "tasks",
+    "history",
+    "context",
+    "search"
+   ]
+  },
+  {
+   "name": "select context",
+   "sections": [
+    "tasks",
+    "history",
+    "context"
+   ],
+   "select": "context"
+  },
+  {
+   "name": "renamed selected",
+   "sections": [
+    "tasks",
+    "context"
+   ],
+   "titles": {
+    "context": "Front Matter"
+   },
+   "select": "context"
+  },
+  {
+   "name": "renamed unselected",
+   "sections": [
+    "tasks",
+    "context"
+   ],
+   "titles": {
+    "context": "Front Matter"
+   },
+   "select": "tasks"
+  },
+  {
+   "name": "renamed single",
+   "sections": [
+    "context"
+   ],
+   "titles": {
+    "context": "Review"
+   }
+  },
+  {
+   "name": "remove selected",
+   "sections": [
+    "tasks",
+    "history",
+    "context"
+   ],
+   "select": "history",
+   "remove": [
+    "history"
+   ]
+  },
+  {
+   "name": "remove unselected",
+   "sections": [
+    "tasks",
+    "history"
+   ],
+   "select": "tasks",
+   "remove": [
+    "history"
+   ]
+  },
+  {
+   "name": "remove all",
+   "sections": [
+    "tasks"
+   ],
+   "remove": [
+    "tasks"
+   ]
+  },
+  {
+   "name": "remove missing",
+   "sections": [
+    "tasks"
+   ],
+   "remove": [
+    "search"
+   ]
+  }
+ ]
+}
