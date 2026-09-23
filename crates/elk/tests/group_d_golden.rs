@@ -12,7 +12,16 @@ use std::rc::Rc;
 use upleft_elk::org::eclipse::elk::alg::layered::graph::l_graph::{LEdgeId, LGraphArena, LGraphId, LLabelId, LNodeId, LPortId};
 use upleft_elk::org::eclipse::elk::alg::layered::graph::l_node::NodeType;
 use upleft_elk::org::eclipse::elk::alg::layered::intermediate::graph_transformer::{GraphTransformer, Mode};
+use upleft_elk::org::eclipse::elk::alg::layered::intermediate::hierarchical_node_resizing_processor::HierarchicalNodeResizingProcessor;
+use upleft_elk::org::eclipse::elk::alg::layered::intermediate::label_dummy_switcher::{LabelDummySwitcher, INCLUDE_LABEL};
 use upleft_elk::org::eclipse::elk::alg::layered::intermediate::self_loop_port_restorer::SelfLoopPortRestorer;
+use upleft_elk::org::eclipse::elk::alg::layered::options::center_edge_label_placement_strategy::CenterEdgeLabelPlacementStrategy;
+use upleft_elk::org::eclipse::elk::alg::layered::options::graph_properties::GraphProperties;
+use upleft_elk::org::eclipse::elk::alg::layered::graph::l_graph::LayerId;
+use upleft_elk::bridge::java_compat::EnumSet;
+use upleft_elk::org::eclipse::elk::core::options::content_alignment::ContentAlignment;
+use upleft_elk::org::eclipse::elk::core::options::size_constraint::SizeConstraint;
+use upleft_elk::org::eclipse::elk::core::options::size_options::SizeOptions;
 use upleft_elk::org::eclipse::elk::alg::layered::intermediate::self_loop_post_processor::SelfLoopPostProcessor;
 use upleft_elk::org::eclipse::elk::alg::layered::intermediate::self_loop_pre_processor::SelfLoopPreProcessor;
 use upleft_elk::org::eclipse::elk::alg::layered::intermediate::self_loop_router::SelfLoopRouter;
@@ -477,5 +486,229 @@ fn self_loops_match_swift() {
         run(&mut lg, g, &mut SelfLoopRouter::new());
         run(&mut lg, g, &mut SelfLoopPostProcessor::new());
         check(&golden, &format!("{header} routed"), &dump(&lg, g));
+    }
+}
+
+// MARK: - Label dummy switcher
+
+fn chain_node(lg: &mut LGraphArena, g: LGraphId, layer: LayerId, t: NodeType, w: f64, h: f64) -> LNodeId {
+    let n = lg.new_node(Some(g));
+    lg[n].node_type = t;
+    lg[n].size = KVector::new(w, h);
+    lg.node_set_layer(n, Some(layer));
+    let i = lg.new_port();
+    lg.port_set_node(i, Some(n));
+    lg.port_set_side(i, PortSide::WEST);
+    let o = lg.new_port();
+    lg.port_set_node(o, Some(n));
+    lg.port_set_side(o, PortSide::EAST);
+    n
+}
+
+fn chain(lg: &mut LGraphArena, nodes: &[LNodeId], reversed: bool) {
+    for k in 0..nodes.len() - 1 {
+        let e = lg.new_edge();
+        let s = lg[nodes[k]].ports[1];
+        let t = lg[nodes[k + 1]].ports[0];
+        lg.edge_set_source(e, Some(s));
+        lg.edge_set_target(e, Some(t));
+        if reversed {
+            lg[e].props.set(&InternalProperties::REVERSED, true);
+        }
+    }
+}
+
+type Cs = CenterEdgeLabelPlacementStrategy;
+
+fn switcher_graph(lg: &mut LGraphArena, strategy: Option<Cs>, override_: Option<Cs>, trivial: bool) -> (LGraphId, Vec<LLabelId>) {
+    let g = lg.new_graph();
+    lg[g].props.set(&LayeredOptions::DIRECTION, Direction::RIGHT);
+    if let Some(s) = strategy {
+        lg[g].props.set(&LayeredOptions::EDGE_LABELS_CENTER_LABEL_PLACEMENT_STRATEGY, s);
+    }
+    let widths = [30.0, 50.0, 10.0, 25.0, 70.0, 20.0, 30.0];
+    let mut layers = Vec::new();
+    for w in widths {
+        let l = lg.new_layer(g);
+        lg[l].size.x = w + 5.0;
+        lg[g].layers.push(l);
+        layers.push(l);
+    }
+    for k in 0..7 {
+        chain_node(lg, g, layers[k], NodeType::NORMAL, widths[k], 10.0);
+    }
+    let mut labels = Vec::new();
+    let mut label_dummy = |lg: &mut LGraphArena, layer: LayerId, w: f64| {
+        let n = chain_node(lg, g, layer, NodeType::LABEL, w, 12.0);
+        let l = label(lg, w, 12.0, 0.0, 0.0);
+        if let Some(o) = override_ {
+            lg[l].props.set(&LayeredOptions::EDGE_LABELS_CENTER_LABEL_PLACEMENT_STRATEGY, o);
+        }
+        lg[n].props.set(&InternalProperties::REPRESENTED_LABELS, vec![l]);
+        labels.push(l);
+        n
+    };
+    let c1 = vec![
+        chain_node(lg, g, layers[0], NodeType::NORMAL, 30.0, 20.0),
+        chain_node(lg, g, layers[1], NodeType::LONG_EDGE, 0.0, 0.0),
+        chain_node(lg, g, layers[2], NodeType::LONG_EDGE, 0.0, 0.0),
+        label_dummy(lg, layers[3], 40.0),
+        chain_node(lg, g, layers[4], NodeType::LONG_EDGE, 0.0, 0.0),
+        chain_node(lg, g, layers[5], NodeType::LONG_EDGE, 0.0, 0.0),
+        chain_node(lg, g, layers[6], NodeType::NORMAL, 30.0, 20.0),
+    ];
+    chain(lg, &c1, false);
+    if trivial {
+        let c2 = vec![
+            chain_node(lg, g, layers[2], NodeType::NORMAL, 10.0, 10.0),
+            label_dummy(lg, layers[3], 8.0),
+            chain_node(lg, g, layers[4], NodeType::NORMAL, 10.0, 10.0),
+        ];
+        chain(lg, &c2, false);
+    }
+    let c3 = vec![
+        chain_node(lg, g, layers[1], NodeType::NORMAL, 10.0, 10.0),
+        chain_node(lg, g, layers[2], NodeType::LONG_EDGE, 0.0, 0.0),
+        label_dummy(lg, layers[3], 90.0),
+        chain_node(lg, g, layers[4], NodeType::LONG_EDGE, 0.0, 0.0),
+        chain_node(lg, g, layers[5], NodeType::NORMAL, 10.0, 10.0),
+    ];
+    chain(lg, &c3, true);
+    let c4 = vec![
+        chain_node(lg, g, layers[0], NodeType::NORMAL, 10.0, 10.0),
+        label_dummy(lg, layers[1], 60.0),
+        chain_node(lg, g, layers[2], NodeType::LONG_EDGE, 0.0, 0.0),
+        chain_node(lg, g, layers[3], NodeType::LONG_EDGE, 0.0, 0.0),
+        chain_node(lg, g, layers[4], NodeType::LONG_EDGE, 0.0, 0.0),
+        chain_node(lg, g, layers[5], NodeType::NORMAL, 10.0, 10.0),
+    ];
+    chain(lg, &c4, false);
+    (g, labels)
+}
+
+fn switcher_dump(lg: &LGraphArena, g: LGraphId, labels: &[LLabelId]) -> String {
+    let mut s = String::new();
+    for (li, &l) in lg[g].layers.iter().enumerate() {
+        s += &format!("L{li} id={}:", lg[l].id);
+        for &n in &lg[l].nodes {
+            let lebld = lg[n].props.get_as::<bool>(&InternalProperties::LONG_EDGE_BEFORE_LABEL_DUMMY).map_or("", |b| if b { "b" } else { "n" });
+            let pred = lg.node_incoming_edges(n).first().and_then(|&e| lg.edge_source_node(e));
+            let pred_ref = pred
+                .and_then(|p| {
+                    let pl = lg[p].layer?;
+                    let pli = lg[g].layers.iter().position(|&x| x == pl)?;
+                    let pi = lg[pl].nodes.iter().position(|&x| x == p)?;
+                    Some(format!("{pli}.{pi}"))
+                })
+                .unwrap_or_else(|| "-".to_string());
+            s += &format!(
+                " {}{lebld}<{pred_ref} {}",
+                &lg[n].node_type.raw_value()[..2],
+                align_name(lg[n].props.get_as::<Alignment>(&LayeredOptions::ALIGNMENT))
+            );
+        }
+        s += "\n";
+    }
+    s += "labels:";
+    for &l in labels {
+        s += &format!(" {}", opt(lg[l].props.get_as::<bool>(&INCLUDE_LABEL)));
+    }
+    s += "\n";
+    s
+}
+
+#[test]
+fn label_dummy_switcher_matches_swift() {
+    let golden = golden_sections();
+    let strategies = [None, Some(Cs::MEDIAN_LAYER), Some(Cs::TAIL_LAYER), Some(Cs::HEAD_LAYER), Some(Cs::SPACE_EFFICIENT_LAYER), Some(Cs::WIDEST_LAYER), Some(Cs::CENTER_LAYER)];
+    for strategy in strategies {
+        for override_ in [None, Some(Cs::HEAD_LAYER), Some(Cs::CENTER_LAYER), Some(Cs::WIDEST_LAYER)] {
+            let widest = strategy == Some(Cs::WIDEST_LAYER) || override_ == Some(Cs::WIDEST_LAYER);
+            let mut lg = LGraphArena::new();
+            let (g, labels) = switcher_graph(&mut lg, strategy, override_, !widest);
+            run(&mut lg, g, &mut LabelDummySwitcher::new());
+            check(&golden, &format!("switcher {} {}", opt(strategy), opt(override_)), &switcher_dump(&lg, g, &labels));
+        }
+    }
+}
+
+/// Swift traps on `(l + 1)...r` when a WIDEST_LAYER label dummy sits between
+/// two normal nodes (l == r).
+#[test]
+#[should_panic(expected = "Range requires lowerBound <= upperBound")]
+fn label_dummy_switcher_widest_layer_traps_like_swift() {
+    let mut lg = LGraphArena::new();
+    let (g, _) = switcher_graph(&mut lg, Some(Cs::WIDEST_LAYER), None, true);
+    run(&mut lg, g, &mut LabelDummySwitcher::new());
+}
+
+// MARK: - Hierarchical node resizing
+
+fn graph_props_names(lg: &LGraphArena, g: LGraphId) -> String {
+    match lg[g].props.get_as::<EnumSet<GraphProperties>>(&InternalProperties::GRAPH_PROPERTIES) {
+        None => "-".into(),
+        Some(set) => {
+            let mut names: Vec<String> = set.iter().map(|p| format!("{p:?}")).collect();
+            names.sort();
+            names.join(",")
+        }
+    }
+}
+
+#[test]
+fn hierarchical_node_resizing_matches_swift() {
+    let golden = golden_sections();
+    for (parent_dir, child_dir) in [(Direction::RIGHT, Direction::RIGHT), (Direction::DOWN, Direction::RIGHT), (Direction::RIGHT, Direction::UP), (Direction::UP, Direction::DOWN)] {
+        for variant in 0..3 {
+            let mut lg = LGraphArena::new();
+            let g = lg.new_graph();
+            lg[g].props.set(&LayeredOptions::DIRECTION, parent_dir);
+            lg[g].props.set(&InternalProperties::GRAPH_PROPERTIES, EnumSet::of(&[GraphProperties::HYPEREDGES]));
+            let p = node(&mut lg, g, 5.0, 6.0, 10.0, 10.0);
+            let pp = port(&mut lg, p, PortSide::EAST, 10.0, 5.0, 2.0, 3.0);
+            let pl = label(&mut lg, 4.0, 4.0, 11.0, 12.0);
+            lg[p].labels.push(pl);
+            let c = lg.new_graph();
+            lg[c].parent_node = Some(p);
+            lg[p].nested_graph = Some(c);
+            lg[c].props.set(&LayeredOptions::DIRECTION, child_dir);
+            lg[c].size = KVector::new(80.0, 40.0);
+            lg[c].padding.0 = Spacing::new(2.0, 3.0, 4.0, 5.0);
+            lg[c].offset = KVector::new(1.0, 2.0);
+            let layer = lg.new_layer(c);
+            lg[c].layers.push(layer);
+            let inner = lg.new_node(Some(c));
+            lg[inner].position = KVector::new(10.0, 12.0);
+            lg[inner].size = KVector::new(20.0, 10.0);
+            lg.node_set_layer(inner, Some(layer));
+            let ext = lg.new_node(Some(c));
+            lg[ext].node_type = NodeType::EXTERNAL_PORT;
+            lg[ext].size = KVector::new(4.0, 6.0);
+            lg[ext].position = KVector::new(90.0, 17.0);
+            lg[ext].props.set(&InternalProperties::ORIGIN, PropValue::LPort(pp));
+            lg[ext].props.set(&InternalProperties::EXT_PORT_SIDE, PortSide::EAST);
+            lg[ext].props.set(&LayeredOptions::PORT_BORDER_OFFSET, 1.5);
+            lg.node_set_layer(ext, Some(layer));
+            if variant >= 1 {
+                lg[c].props.set(&InternalProperties::GRAPH_PROPERTIES, EnumSet::of(&[GraphProperties::EXTERNAL_PORTS]));
+            }
+            if variant == 2 {
+                lg[c].props.set(&LayeredOptions::NODE_SIZE_CONSTRAINTS, SizeConstraint::MINIMUM_SIZE);
+                lg[c].props.set(&LayeredOptions::NODE_SIZE_OPTIONS, SizeOptions::DEFAULT_MINIMUM_SIZE);
+                lg[c].props.set(&LayeredOptions::NODE_SIZE_MINIMUM, PropValue::kvector(KVector::new(120.0, 0.0)));
+                lg[c].props.set(&LayeredOptions::CONTENT_ALIGNMENT, ContentAlignment::H_CENTER | ContentAlignment::V_BOTTOM);
+            }
+            run(&mut lg, c, &mut HierarchicalNodeResizingProcessor::new());
+            let cmin = lg[c].props.get_as::<KVectorRef>(&LayeredOptions::NODE_SIZE_MINIMUM).map_or("-".to_string(), |k| v(*k.borrow()));
+            let out = format!(
+                "parent props={} layers={} inner.layer={} cmin={}\n{}",
+                graph_props_names(&lg, g),
+                lg[c].layers.len(),
+                if lg[inner].layer.is_none() { "nil" } else { "set" },
+                cmin,
+                dump(&lg, g)
+            );
+            check(&golden, &format!("resizer {parent_dir:?} {child_dir:?} {variant}"), &out);
+        }
     }
 }

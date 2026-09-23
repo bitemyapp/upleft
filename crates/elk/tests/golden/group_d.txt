@@ -1500,3 +1500,387 @@ N0 NORMAL pos=100.0,50.0 size=60.0,40.0 margin=20.0,36.0,51.0,40.0 padding=0.0,0
  P15 side=WEST pos=0.0,32.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
 N1 NORMAL pos=200.0,0.0 size=20.0,20.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=0 align=- nlplace=- position=- min=- lc=- ilc=- eps=- pc=-
  P0 side=WEST pos=0.0,10.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+== switcher - -
+L0 id=0: NO<- - NO<- - NO<- -
+L1 id=1: NO<- - LOb<0.1 - NO<- - LOb<0.2 -
+L2 id=2: NO<- - LOb<1.1 - NO<- - LOb<1.2 - LA<1.3 -
+L3 id=3: NO<- - LA<2.1 - LA<2.2 - LA<2.3 - LO<2.4 -
+L4 id=4: NO<- - LO<3.1 - NO<3.2 - LO<3.3 - LO<3.4 -
+L5 id=5: NO<- - LO<4.1 - NO<4.3 - NO<4.4 -
+L6 id=6: NO<- - NO<5.1 -
+labels: true true true true
+== switcher - HEAD_LAYER
+L0 id=0: NO<- - NO<- - NO<- -
+L1 id=1: NO<- - LOb<0.1 - NO<- - LOb<0.2 -
+L2 id=2: NO<- - LOb<1.1 - NO<- - LA<1.2 LEFT LOb<1.3 -
+L3 id=3: NO<- - LOb<2.1 - LA<2.2 RIGHT LO<2.3 - LOb<2.4 -
+L4 id=4: NO<- - LOb<3.1 - NO<3.2 - LO<3.3 - LA<3.4 RIGHT
+L5 id=5: NO<- - LA<4.1 RIGHT NO<4.3 - NO<4.4 -
+L6 id=6: NO<- - NO<5.1 -
+labels: true true true true
+== switcher - CENTER_LAYER
+L0 id=0: NO<- - NO<- - NO<- -
+L1 id=1: NO<- - LOb<0.1 - NO<- - LOb<0.2 -
+L2 id=2: NO<- - LOb<1.1 - NO<- - LOb<1.2 - LOb<1.3 -
+L3 id=3: NO<- - LA<2.1 - LA<2.2 - LA<2.3 - LA<2.4 -
+L4 id=4: NO<- - LO<3.1 - NO<3.2 - LO<3.3 - LO<3.4 -
+L5 id=5: NO<- - LO<4.1 - NO<4.3 - NO<4.4 -
+L6 id=6: NO<- - NO<5.1 -
+labels: true true true true
+== switcher - WIDEST_LAYER
+L0 id=0: NO<- - NO<- - NO<- -
+L1 id=1: NO<- - LOb<0.1 - NO<- - LOb<0.2 -
+L2 id=2: NO<- - LOb<1.1 - LOb<1.2 - LOb<1.3 -
+L3 id=3: NO<- - LOb<2.1 - LOb<2.2 - LOb<2.3 -
+L4 id=4: NO<- - LA<3.1 - LA<3.2 - LA<3.3 -
+L5 id=5: NO<- - LO<4.1 - NO<4.2 - NO<4.3 -
+L6 id=6: NO<- - NO<5.1 -
+labels: true true true
+== switcher MEDIAN_LAYER -
+L0 id=0: NO<- - NO<- - NO<- -
+L1 id=1: NO<- - LOb<0.1 - NO<- - LOb<0.2 -
+L2 id=2: NO<- - LOb<1.1 - NO<- - LOb<1.2 - LA<1.3 -
+L3 id=3: NO<- - LA<2.1 - LA<2.2 - LA<2.3 - LO<2.4 -
+L4 id=4: NO<- - LO<3.1 - NO<3.2 - LO<3.3 - LO<3.4 -
+L5 id=5: NO<- - LO<4.1 - NO<4.3 - NO<4.4 -
+L6 id=6: NO<- - NO<5.1 -
+labels: true true true true
+== switcher MEDIAN_LAYER HEAD_LAYER
+L0 id=0: NO<- - NO<- - NO<- -
+L1 id=1: NO<- - LOb<0.1 - NO<- - LOb<0.2 -
+L2 id=2: NO<- - LOb<1.1 - NO<- - LA<1.2 LEFT LOb<1.3 -
+L3 id=3: NO<- - LOb<2.1 - LA<2.2 RIGHT LO<2.3 - LOb<2.4 -
+L4 id=4: NO<- - LOb<3.1 - NO<3.2 - LO<3.3 - LA<3.4 RIGHT
+L5 id=5: NO<- - LA<4.1 RIGHT NO<4.3 - NO<4.4 -
+L6 id=6: NO<- - NO<5.1 -
+labels: true true true true
+== switcher MEDIAN_LAYER CENTER_LAYER
+L0 id=0: NO<- - NO<- - NO<- -
+L1 id=1: NO<- - LOb<0.1 - NO<- - LOb<0.2 -
+L2 id=2: NO<- - LOb<1.1 - NO<- - LOb<1.2 - LOb<1.3 -
+L3 id=3: NO<- - LA<2.1 - LA<2.2 - LA<2.3 - LA<2.4 -
+L4 id=4: NO<- - LO<3.1 - NO<3.2 - LO<3.3 - LO<3.4 -
+L5 id=5: NO<- - LO<4.1 - NO<4.3 - NO<4.4 -
+L6 id=6: NO<- - NO<5.1 -
+labels: true true true true
+== switcher MEDIAN_LAYER WIDEST_LAYER
+L0 id=0: NO<- - NO<- - NO<- -
+L1 id=1: NO<- - LOb<0.1 - NO<- - LOb<0.2 -
+L2 id=2: NO<- - LOb<1.1 - LOb<1.2 - LOb<1.3 -
+L3 id=3: NO<- - LOb<2.1 - LOb<2.2 - LOb<2.3 -
+L4 id=4: NO<- - LA<3.1 - LA<3.2 - LA<3.3 -
+L5 id=5: NO<- - LO<4.1 - NO<4.2 - NO<4.3 -
+L6 id=6: NO<- - NO<5.1 -
+labels: true true true
+== switcher TAIL_LAYER -
+L0 id=0: NO<- - NO<- - NO<- -
+L1 id=1: NO<- - LA<0.1 LEFT NO<- - LA<0.2 LEFT
+L2 id=2: NO<- - LO<1.1 - NO<- - LOb<1.2 - LO<1.3 -
+L3 id=3: NO<- - LO<2.1 - LA<2.2 LEFT LOb<2.3 - LO<2.4 -
+L4 id=4: NO<- - LO<3.1 - NO<3.2 - LA<3.3 RIGHT LO<3.4 -
+L5 id=5: NO<- - LO<4.1 - NO<4.3 - NO<4.4 -
+L6 id=6: NO<- - NO<5.1 -
+labels: true true true true
+== switcher TAIL_LAYER HEAD_LAYER
+L0 id=0: NO<- - NO<- - NO<- -
+L1 id=1: NO<- - LOb<0.1 - NO<- - LOb<0.2 -
+L2 id=2: NO<- - LOb<1.1 - NO<- - LA<1.2 LEFT LOb<1.3 -
+L3 id=3: NO<- - LOb<2.1 - LA<2.2 RIGHT LO<2.3 - LOb<2.4 -
+L4 id=4: NO<- - LOb<3.1 - NO<3.2 - LO<3.3 - LA<3.4 RIGHT
+L5 id=5: NO<- - LA<4.1 RIGHT NO<4.3 - NO<4.4 -
+L6 id=6: NO<- - NO<5.1 -
+labels: true true true true
+== switcher TAIL_LAYER CENTER_LAYER
+L0 id=0: NO<- - NO<- - NO<- -
+L1 id=1: NO<- - LOb<0.1 - NO<- - LOb<0.2 -
+L2 id=2: NO<- - LOb<1.1 - NO<- - LOb<1.2 - LOb<1.3 -
+L3 id=3: NO<- - LA<2.1 - LA<2.2 - LA<2.3 - LA<2.4 -
+L4 id=4: NO<- - LO<3.1 - NO<3.2 - LO<3.3 - LO<3.4 -
+L5 id=5: NO<- - LO<4.1 - NO<4.3 - NO<4.4 -
+L6 id=6: NO<- - NO<5.1 -
+labels: true true true true
+== switcher TAIL_LAYER WIDEST_LAYER
+L0 id=0: NO<- - NO<- - NO<- -
+L1 id=1: NO<- - LOb<0.1 - NO<- - LOb<0.2 -
+L2 id=2: NO<- - LOb<1.1 - LOb<1.2 - LOb<1.3 -
+L3 id=3: NO<- - LOb<2.1 - LOb<2.2 - LOb<2.3 -
+L4 id=4: NO<- - LA<3.1 - LA<3.2 - LA<3.3 -
+L5 id=5: NO<- - LO<4.1 - NO<4.2 - NO<4.3 -
+L6 id=6: NO<- - NO<5.1 -
+labels: true true true
+== switcher HEAD_LAYER -
+L0 id=0: NO<- - NO<- - NO<- -
+L1 id=1: NO<- - LOb<0.1 - NO<- - LOb<0.2 -
+L2 id=2: NO<- - LOb<1.1 - NO<- - LA<1.2 LEFT LOb<1.3 -
+L3 id=3: NO<- - LOb<2.1 - LA<2.2 RIGHT LO<2.3 - LOb<2.4 -
+L4 id=4: NO<- - LOb<3.1 - NO<3.2 - LO<3.3 - LA<3.4 RIGHT
+L5 id=5: NO<- - LA<4.1 RIGHT NO<4.3 - NO<4.4 -
+L6 id=6: NO<- - NO<5.1 -
+labels: true true true true
+== switcher HEAD_LAYER HEAD_LAYER
+L0 id=0: NO<- - NO<- - NO<- -
+L1 id=1: NO<- - LOb<0.1 - NO<- - LOb<0.2 -
+L2 id=2: NO<- - LOb<1.1 - NO<- - LA<1.2 LEFT LOb<1.3 -
+L3 id=3: NO<- - LOb<2.1 - LA<2.2 RIGHT LO<2.3 - LOb<2.4 -
+L4 id=4: NO<- - LOb<3.1 - NO<3.2 - LO<3.3 - LA<3.4 RIGHT
+L5 id=5: NO<- - LA<4.1 RIGHT NO<4.3 - NO<4.4 -
+L6 id=6: NO<- - NO<5.1 -
+labels: true true true true
+== switcher HEAD_LAYER CENTER_LAYER
+L0 id=0: NO<- - NO<- - NO<- -
+L1 id=1: NO<- - LOb<0.1 - NO<- - LOb<0.2 -
+L2 id=2: NO<- - LOb<1.1 - NO<- - LOb<1.2 - LOb<1.3 -
+L3 id=3: NO<- - LA<2.1 - LA<2.2 - LA<2.3 - LA<2.4 -
+L4 id=4: NO<- - LO<3.1 - NO<3.2 - LO<3.3 - LO<3.4 -
+L5 id=5: NO<- - LO<4.1 - NO<4.3 - NO<4.4 -
+L6 id=6: NO<- - NO<5.1 -
+labels: true true true true
+== switcher HEAD_LAYER WIDEST_LAYER
+L0 id=0: NO<- - NO<- - NO<- -
+L1 id=1: NO<- - LOb<0.1 - NO<- - LOb<0.2 -
+L2 id=2: NO<- - LOb<1.1 - LOb<1.2 - LOb<1.3 -
+L3 id=3: NO<- - LOb<2.1 - LOb<2.2 - LOb<2.3 -
+L4 id=4: NO<- - LA<3.1 - LA<3.2 - LA<3.3 -
+L5 id=5: NO<- - LO<4.1 - NO<4.2 - NO<4.3 -
+L6 id=6: NO<- - NO<5.1 -
+labels: true true true
+== switcher SPACE_EFFICIENT_LAYER -
+L0 id=0: NO<- - NO<- - NO<- -
+L1 id=1: NO<- - LA<0.1 - NO<- - LO<0.2 -
+L2 id=2: NO<- - LO<1.1 - NO<- - LO<1.2 - LO<1.3 -
+L3 id=3: NO<- - LO<2.1 - LA<2.2 - LO<2.3 - LO<2.4 -
+L4 id=4: NO<- - LO<3.1 - NO<3.2 - LA<3.3 - LA<3.4 -
+L5 id=5: NO<- - LO<4.1 - NO<4.3 - NO<4.4 -
+L6 id=6: NO<- - NO<5.1 -
+labels: true true true true
+== switcher SPACE_EFFICIENT_LAYER HEAD_LAYER
+L0 id=0: NO<- - NO<- - NO<- -
+L1 id=1: NO<- - LOb<0.1 - NO<- - LOb<0.2 -
+L2 id=2: NO<- - LOb<1.1 - NO<- - LA<1.2 LEFT LOb<1.3 -
+L3 id=3: NO<- - LOb<2.1 - LA<2.2 RIGHT LO<2.3 - LOb<2.4 -
+L4 id=4: NO<- - LOb<3.1 - NO<3.2 - LO<3.3 - LA<3.4 RIGHT
+L5 id=5: NO<- - LA<4.1 RIGHT NO<4.3 - NO<4.4 -
+L6 id=6: NO<- - NO<5.1 -
+labels: true true true true
+== switcher SPACE_EFFICIENT_LAYER CENTER_LAYER
+L0 id=0: NO<- - NO<- - NO<- -
+L1 id=1: NO<- - LOb<0.1 - NO<- - LOb<0.2 -
+L2 id=2: NO<- - LOb<1.1 - NO<- - LOb<1.2 - LOb<1.3 -
+L3 id=3: NO<- - LA<2.1 - LA<2.2 - LA<2.3 - LA<2.4 -
+L4 id=4: NO<- - LO<3.1 - NO<3.2 - LO<3.3 - LO<3.4 -
+L5 id=5: NO<- - LO<4.1 - NO<4.3 - NO<4.4 -
+L6 id=6: NO<- - NO<5.1 -
+labels: true true true true
+== switcher SPACE_EFFICIENT_LAYER WIDEST_LAYER
+L0 id=0: NO<- - NO<- - NO<- -
+L1 id=1: NO<- - LOb<0.1 - NO<- - LOb<0.2 -
+L2 id=2: NO<- - LOb<1.1 - LOb<1.2 - LOb<1.3 -
+L3 id=3: NO<- - LOb<2.1 - LOb<2.2 - LOb<2.3 -
+L4 id=4: NO<- - LA<3.1 - LA<3.2 - LA<3.3 -
+L5 id=5: NO<- - LO<4.1 - NO<4.2 - NO<4.3 -
+L6 id=6: NO<- - NO<5.1 -
+labels: true true true
+== switcher WIDEST_LAYER -
+L0 id=0: NO<- - NO<- - NO<- -
+L1 id=1: NO<- - LOb<0.1 - NO<- - LOb<0.2 -
+L2 id=2: NO<- - LOb<1.1 - LOb<1.2 - LOb<1.3 -
+L3 id=3: NO<- - LOb<2.1 - LOb<2.2 - LOb<2.3 -
+L4 id=4: NO<- - LA<3.1 - LA<3.2 - LA<3.3 -
+L5 id=5: NO<- - LO<4.1 - NO<4.2 - NO<4.3 -
+L6 id=6: NO<- - NO<5.1 -
+labels: true true true
+== switcher WIDEST_LAYER HEAD_LAYER
+L0 id=0: NO<- - NO<- - NO<- -
+L1 id=1: NO<- - LOb<0.1 - NO<- - LOb<0.2 -
+L2 id=2: NO<- - LOb<1.1 - LA<1.2 LEFT LOb<1.3 -
+L3 id=3: NO<- - LOb<2.1 - LO<2.2 - LOb<2.3 -
+L4 id=4: NO<- - LOb<3.1 - LO<3.2 - LA<3.3 RIGHT
+L5 id=5: NO<- - LA<4.1 RIGHT NO<4.2 - NO<4.3 -
+L6 id=6: NO<- - NO<5.1 -
+labels: true true true
+== switcher WIDEST_LAYER CENTER_LAYER
+L0 id=0: NO<- - NO<- - NO<- -
+L1 id=1: NO<- - LOb<0.1 - NO<- - LOb<0.2 -
+L2 id=2: NO<- - LOb<1.1 - LOb<1.2 - LOb<1.3 -
+L3 id=3: NO<- - LA<2.1 - LA<2.2 - LA<2.3 -
+L4 id=4: NO<- - LO<3.1 - LO<3.2 - LO<3.3 -
+L5 id=5: NO<- - LO<4.1 - NO<4.2 - NO<4.3 -
+L6 id=6: NO<- - NO<5.1 -
+labels: true true true
+== switcher WIDEST_LAYER WIDEST_LAYER
+L0 id=0: NO<- - NO<- - NO<- -
+L1 id=1: NO<- - LOb<0.1 - NO<- - LOb<0.2 -
+L2 id=2: NO<- - LOb<1.1 - LOb<1.2 - LOb<1.3 -
+L3 id=3: NO<- - LOb<2.1 - LOb<2.2 - LOb<2.3 -
+L4 id=4: NO<- - LA<3.1 - LA<3.2 - LA<3.3 -
+L5 id=5: NO<- - LO<4.1 - NO<4.2 - NO<4.3 -
+L6 id=6: NO<- - NO<5.1 -
+labels: true true true
+== switcher CENTER_LAYER -
+L0 id=0: NO<- - NO<- - NO<- -
+L1 id=1: NO<- - LOb<0.1 - NO<- - LOb<0.2 -
+L2 id=2: NO<- - LOb<1.1 - NO<- - LOb<1.2 - LOb<1.3 -
+L3 id=3: NO<- - LA<2.1 - LA<2.2 - LA<2.3 - LA<2.4 -
+L4 id=4: NO<- - LO<3.1 - NO<3.2 - LO<3.3 - LO<3.4 -
+L5 id=5: NO<- - LO<4.1 - NO<4.3 - NO<4.4 -
+L6 id=6: NO<- - NO<5.1 -
+labels: true true true true
+== switcher CENTER_LAYER HEAD_LAYER
+L0 id=0: NO<- - NO<- - NO<- -
+L1 id=1: NO<- - LOb<0.1 - NO<- - LOb<0.2 -
+L2 id=2: NO<- - LOb<1.1 - NO<- - LA<1.2 LEFT LOb<1.3 -
+L3 id=3: NO<- - LOb<2.1 - LA<2.2 RIGHT LO<2.3 - LOb<2.4 -
+L4 id=4: NO<- - LOb<3.1 - NO<3.2 - LO<3.3 - LA<3.4 RIGHT
+L5 id=5: NO<- - LA<4.1 RIGHT NO<4.3 - NO<4.4 -
+L6 id=6: NO<- - NO<5.1 -
+labels: true true true true
+== switcher CENTER_LAYER CENTER_LAYER
+L0 id=0: NO<- - NO<- - NO<- -
+L1 id=1: NO<- - LOb<0.1 - NO<- - LOb<0.2 -
+L2 id=2: NO<- - LOb<1.1 - NO<- - LOb<1.2 - LOb<1.3 -
+L3 id=3: NO<- - LA<2.1 - LA<2.2 - LA<2.3 - LA<2.4 -
+L4 id=4: NO<- - LO<3.1 - NO<3.2 - LO<3.3 - LO<3.4 -
+L5 id=5: NO<- - LO<4.1 - NO<4.3 - NO<4.4 -
+L6 id=6: NO<- - NO<5.1 -
+labels: true true true true
+== switcher CENTER_LAYER WIDEST_LAYER
+L0 id=0: NO<- - NO<- - NO<- -
+L1 id=1: NO<- - LOb<0.1 - NO<- - LOb<0.2 -
+L2 id=2: NO<- - LOb<1.1 - LOb<1.2 - LOb<1.3 -
+L3 id=3: NO<- - LOb<2.1 - LOb<2.2 - LOb<2.3 -
+L4 id=4: NO<- - LA<3.1 - LA<3.2 - LA<3.3 -
+L5 id=5: NO<- - LO<4.1 - NO<4.2 - NO<4.3 -
+L6 id=6: NO<- - NO<5.1 -
+labels: true true true
+== resizer RIGHT RIGHT 0
+parent props=HYPEREDGES layers=0 inner.layer=nil cmin=-
+graph size=0.0,0.0 offset=0.0,0.0 padding=0.0,0.0,0.0,0.0 nlp=- elss=-
+N0 NORMAL pos=5.0,6.0 size=88.0,46.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=- ilc=- eps=- pc=-
+ P0 side=EAST pos=167.5,103.49999999999999 anchor=2.0,1.5 size=2.0,3.0 idx=-
+ NL pos=112.4,48.0 size=4.0,4.0 nlplace=-
+ nested {
+graph size=80.0,40.0 offset=1.0,2.0 padding=2.0,3.0,4.0,5.0 nlp=- elss=-
+N0 NORMAL pos=10.0,12.0 size=20.0,10.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=- ilc=- eps=- pc=-
+N1 EXTERNAL_PORT pos=83.5,17.0 size=4.0,6.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=- ilc=- eps=EAST pc=-
+ }
+== resizer RIGHT RIGHT 1
+parent props=HYPEREDGES,NON_FREE_PORTS layers=0 inner.layer=nil cmin=-
+graph size=0.0,0.0 offset=0.0,0.0 padding=0.0,0.0,0.0,0.0 nlp=- elss=-
+N0 NORMAL pos=5.0,6.0 size=88.0,46.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=- ilc=- eps=- pc=fixedPos
+ P0 side=EAST pos=89.5,22.5 anchor=2.0,1.5 size=2.0,3.0 idx=-
+ NL pos=112.4,48.0 size=4.0,4.0 nlplace=-
+ nested {
+graph size=80.0,40.0 offset=1.0,2.0 padding=2.0,3.0,4.0,5.0 nlp=- elss=-
+N0 NORMAL pos=10.0,12.0 size=20.0,10.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=- ilc=- eps=- pc=-
+N1 EXTERNAL_PORT pos=83.5,17.0 size=4.0,6.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=- ilc=- eps=EAST pc=-
+ }
+== resizer RIGHT RIGHT 2
+parent props=HYPEREDGES,NON_FREE_PORTS layers=0 inner.layer=nil cmin=120.0,20.0
+graph size=0.0,0.0 offset=0.0,0.0 padding=0.0,0.0,0.0,0.0 nlp=- elss=-
+N0 NORMAL pos=5.0,6.0 size=120.0,46.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=- ilc=- eps=- pc=fixedPos
+ P0 side=EAST pos=121.5,22.5 anchor=2.0,1.5 size=2.0,3.0 idx=-
+ NL pos=154.0,48.0 size=4.0,4.0 nlplace=-
+ nested {
+graph size=112.0,40.0 offset=17.0,2.0 padding=2.0,3.0,4.0,5.0 nlp=- elss=-
+N0 NORMAL pos=10.0,12.0 size=20.0,10.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=- ilc=- eps=- pc=-
+N1 EXTERNAL_PORT pos=99.5,17.0 size=4.0,6.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=- ilc=- eps=EAST pc=-
+ }
+== resizer DOWN RIGHT 0
+parent props=HYPEREDGES layers=0 inner.layer=nil cmin=-
+graph size=0.0,0.0 offset=0.0,0.0 padding=0.0,0.0,0.0,0.0 nlp=- elss=-
+N0 NORMAL pos=5.0,6.0 size=46.0,88.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=- ilc=- eps=- pc=-
+ P0 side=EAST pos=58.5,787.6 anchor=2.0,1.5 size=2.0,3.0 idx=-
+ NL pos=57.800000000000004,90.0 size=4.0,4.0 nlplace=-
+ nested {
+graph size=80.0,40.0 offset=1.0,2.0 padding=2.0,3.0,4.0,5.0 nlp=- elss=-
+N0 NORMAL pos=10.0,12.0 size=20.0,10.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=- ilc=- eps=- pc=-
+N1 EXTERNAL_PORT pos=83.5,17.0 size=4.0,6.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=- ilc=- eps=EAST pc=-
+ }
+== resizer DOWN RIGHT 1
+parent props=HYPEREDGES,NON_FREE_PORTS layers=0 inner.layer=nil cmin=-
+graph size=0.0,0.0 offset=0.0,0.0 padding=0.0,0.0,0.0,0.0 nlp=- elss=-
+N0 NORMAL pos=5.0,6.0 size=46.0,88.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=- ilc=- eps=- pc=fixedPos
+ P0 side=EAST pos=22.5,89.5 anchor=2.0,1.5 size=2.0,3.0 idx=-
+ NL pos=57.800000000000004,90.0 size=4.0,4.0 nlplace=-
+ nested {
+graph size=80.0,40.0 offset=1.0,2.0 padding=2.0,3.0,4.0,5.0 nlp=- elss=-
+N0 NORMAL pos=10.0,12.0 size=20.0,10.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=- ilc=- eps=- pc=-
+N1 EXTERNAL_PORT pos=83.5,17.0 size=4.0,6.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=- ilc=- eps=EAST pc=-
+ }
+== resizer DOWN RIGHT 2
+parent props=HYPEREDGES,NON_FREE_PORTS layers=0 inner.layer=nil cmin=120.0,20.0
+graph size=0.0,0.0 offset=0.0,0.0 padding=0.0,0.0,0.0,0.0 nlp=- elss=-
+N0 NORMAL pos=5.0,6.0 size=46.0,120.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=- ilc=- eps=- pc=fixedPos
+ P0 side=EAST pos=22.5,121.5 anchor=2.0,1.5 size=2.0,3.0 idx=-
+ NL pos=57.800000000000004,122.0 size=4.0,4.0 nlplace=-
+ nested {
+graph size=112.0,40.0 offset=17.0,2.0 padding=2.0,3.0,4.0,5.0 nlp=- elss=-
+N0 NORMAL pos=10.0,12.0 size=20.0,10.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=- ilc=- eps=- pc=-
+N1 EXTERNAL_PORT pos=99.5,17.0 size=4.0,6.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=- ilc=- eps=EAST pc=-
+ }
+== resizer RIGHT UP 0
+parent props=HYPEREDGES layers=0 inner.layer=nil cmin=-
+graph size=0.0,0.0 offset=0.0,0.0 padding=0.0,0.0,0.0,0.0 nlp=- elss=-
+N0 NORMAL pos=5.0,6.0 size=46.0,88.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=- ilc=- eps=- pc=-
+ P0 side=EAST pos=58.5,787.6 anchor=2.0,1.5 size=2.0,3.0 idx=-
+ NL pos=57.800000000000004,90.0 size=4.0,4.0 nlplace=-
+ nested {
+graph size=80.0,40.0 offset=1.0,2.0 padding=2.0,3.0,4.0,5.0 nlp=- elss=-
+N0 NORMAL pos=10.0,12.0 size=20.0,10.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=- ilc=- eps=- pc=-
+N1 EXTERNAL_PORT pos=83.5,17.0 size=4.0,6.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=- ilc=- eps=EAST pc=-
+ }
+== resizer RIGHT UP 1
+parent props=HYPEREDGES,NON_FREE_PORTS layers=0 inner.layer=nil cmin=-
+graph size=0.0,0.0 offset=0.0,0.0 padding=0.0,0.0,0.0,0.0 nlp=- elss=-
+N0 NORMAL pos=5.0,6.0 size=46.0,88.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=- ilc=- eps=- pc=fixedPos
+ P0 side=EAST pos=22.5,89.5 anchor=2.0,1.5 size=2.0,3.0 idx=-
+ NL pos=57.800000000000004,90.0 size=4.0,4.0 nlplace=-
+ nested {
+graph size=80.0,40.0 offset=1.0,2.0 padding=2.0,3.0,4.0,5.0 nlp=- elss=-
+N0 NORMAL pos=10.0,12.0 size=20.0,10.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=- ilc=- eps=- pc=-
+N1 EXTERNAL_PORT pos=83.5,17.0 size=4.0,6.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=- ilc=- eps=EAST pc=-
+ }
+== resizer RIGHT UP 2
+parent props=HYPEREDGES,NON_FREE_PORTS layers=0 inner.layer=nil cmin=120.0,20.0
+graph size=0.0,0.0 offset=0.0,0.0 padding=0.0,0.0,0.0,0.0 nlp=- elss=-
+N0 NORMAL pos=5.0,6.0 size=46.0,120.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=- ilc=- eps=- pc=fixedPos
+ P0 side=EAST pos=22.5,121.5 anchor=2.0,1.5 size=2.0,3.0 idx=-
+ NL pos=57.800000000000004,122.0 size=4.0,4.0 nlplace=-
+ nested {
+graph size=112.0,40.0 offset=17.0,2.0 padding=2.0,3.0,4.0,5.0 nlp=- elss=-
+N0 NORMAL pos=10.0,12.0 size=20.0,10.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=- ilc=- eps=- pc=-
+N1 EXTERNAL_PORT pos=99.5,17.0 size=4.0,6.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=- ilc=- eps=EAST pc=-
+ }
+== resizer UP DOWN 0
+parent props=HYPEREDGES layers=0 inner.layer=nil cmin=-
+graph size=0.0,0.0 offset=0.0,0.0 padding=0.0,0.0,0.0,0.0 nlp=- elss=-
+N0 NORMAL pos=5.0,6.0 size=88.0,46.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=- ilc=- eps=- pc=-
+ P0 side=EAST pos=167.5,103.49999999999999 anchor=2.0,1.5 size=2.0,3.0 idx=-
+ NL pos=112.4,48.0 size=4.0,4.0 nlplace=-
+ nested {
+graph size=80.0,40.0 offset=1.0,2.0 padding=2.0,3.0,4.0,5.0 nlp=- elss=-
+N0 NORMAL pos=10.0,12.0 size=20.0,10.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=- ilc=- eps=- pc=-
+N1 EXTERNAL_PORT pos=83.5,17.0 size=4.0,6.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=- ilc=- eps=EAST pc=-
+ }
+== resizer UP DOWN 1
+parent props=HYPEREDGES,NON_FREE_PORTS layers=0 inner.layer=nil cmin=-
+graph size=0.0,0.0 offset=0.0,0.0 padding=0.0,0.0,0.0,0.0 nlp=- elss=-
+N0 NORMAL pos=5.0,6.0 size=88.0,46.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=- ilc=- eps=- pc=fixedPos
+ P0 side=EAST pos=89.5,22.5 anchor=2.0,1.5 size=2.0,3.0 idx=-
+ NL pos=112.4,48.0 size=4.0,4.0 nlplace=-
+ nested {
+graph size=80.0,40.0 offset=1.0,2.0 padding=2.0,3.0,4.0,5.0 nlp=- elss=-
+N0 NORMAL pos=10.0,12.0 size=20.0,10.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=- ilc=- eps=- pc=-
+N1 EXTERNAL_PORT pos=83.5,17.0 size=4.0,6.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=- ilc=- eps=EAST pc=-
+ }
+== resizer UP DOWN 2
+parent props=HYPEREDGES,NON_FREE_PORTS layers=0 inner.layer=nil cmin=120.0,20.0
+graph size=0.0,0.0 offset=0.0,0.0 padding=0.0,0.0,0.0,0.0 nlp=- elss=-
+N0 NORMAL pos=5.0,6.0 size=120.0,46.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=- ilc=- eps=- pc=fixedPos
+ P0 side=EAST pos=121.5,22.5 anchor=2.0,1.5 size=2.0,3.0 idx=-
+ NL pos=154.0,48.0 size=4.0,4.0 nlplace=-
+ nested {
+graph size=112.0,40.0 offset=17.0,2.0 padding=2.0,3.0,4.0,5.0 nlp=- elss=-
+N0 NORMAL pos=10.0,12.0 size=20.0,10.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=- ilc=- eps=- pc=-
+N1 EXTERNAL_PORT pos=99.5,17.0 size=4.0,6.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=- ilc=- eps=EAST pc=-
+ }
