@@ -86,13 +86,28 @@ pub fn container(text: &str, width: f64, height: f64, mtm: MainThreadMarker) -> 
 }
 
 /// Runs the main run loop (and so the main dispatch queue) until `condition`
-/// holds or `timeout` passes, like Swift's `pumpMainQueue(until:)`.
+/// holds, like Swift's `pumpMainQueue(until:timeout:)`.
+///
+/// Swift measures its timeout on the wall clock. On a loaded machine the
+/// view's 40–80 ms idle timers fire hundreds of milliseconds late without
+/// this process doing any work, which made the wall-clock budget measure
+/// the machine rather than the view. The budget here is the process's own
+/// CPU time — what the view could spend getting to the condition — with a
+/// generous wall-clock backstop so a genuine hang still fails.
 pub fn pump_main_queue(condition: impl Fn() -> bool, timeout: Duration) -> bool {
-    let deadline = Instant::now() + timeout;
-    while !condition() && Instant::now() < deadline {
+    let cpu_start = process_cpu_time();
+    let wall_deadline = Instant::now() + timeout * 30;
+    while !condition() && process_cpu_time() - cpu_start < timeout && Instant::now() < wall_deadline {
         CFRunLoop::run_in_mode(unsafe { kCFRunLoopDefaultMode }, 0.005, true);
     }
     condition()
+}
+
+fn process_cpu_time() -> Duration {
+    let mut spec = libc::timespec { tv_sec: 0, tv_nsec: 0 };
+    // SAFETY: `spec` is a valid out parameter.
+    unsafe { libc::clock_gettime(libc::CLOCK_PROCESS_CPUTIME_ID, &mut spec) };
+    Duration::new(spec.tv_sec as u64, spec.tv_nsec as u32)
 }
 
 pub fn pump(condition: impl Fn() -> bool) -> bool {
