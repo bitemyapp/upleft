@@ -16,16 +16,9 @@ use crate::org::eclipse::elk::core::util::i_elk_progress_monitor::IElkProgressMo
 use crate::org::eclipse::elk::graph::properties::property::PropValue;
 use crate::swift;
 
-/// `LongEdgeSplitter.splitEdge(_:_:)` (group A,
-/// `intermediate::long_edge_splitter::LongEdgeSplitter::split_edge`).
-/// Placeholder until the merge wires it.
+/// `LongEdgeSplitter.splitEdge(_:_:)`.
 fn split_edge(lg: &mut LGraphArena, edge: LEdgeId, dummy_node: LNodeId) -> LEdgeId {
-    _needs_group_a_long_edge_splitter_split_edge(lg, edge, dummy_node)
-}
-
-#[allow(unused_variables)]
-fn _needs_group_a_long_edge_splitter_split_edge(lg: &mut LGraphArena, edge: LEdgeId, dummy_node: LNodeId) -> LEdgeId {
-    unimplemented!("wire to LongEdgeSplitter::split_edge(lg, edge, dummy_node) (group A)")
+    crate::org::eclipse::elk::alg::layered::intermediate::long_edge_splitter::LongEdgeSplitter::split_edge(lg, edge, dummy_node)
 }
 
 #[derive(Default)]
