@@ -5,6 +5,7 @@ import MarkdownRender
 // downright-oracle — the Swift reference for Upleft's conformance harness.
 //
 //   downright-oracle parse    <file.md> <out.json>
+//   downright-oracle markup   <file.md> <out.json>
 //   downright-oracle decorate <file.md> <out.json> [--mode M] [--theme NAME] [--dark]
 //   downright-oracle render   <file.md> <out.png> [--layout out.json] [--mode M]
 //                             [--theme NAME] [--dark] [--width W] [--height H]
@@ -16,6 +17,7 @@ func usage() -> Never {
     FileHandle.standardError.write("""
     usage:
       downright-oracle parse    <file.md> <out.json>
+      downright-oracle markup   <file.md> <out.json>
       downright-oracle decorate <file.md> <out.json> [--mode read|live|source] [--theme NAME] [--dark]
       downright-oracle render   <file.md> <out.png> [--layout out.json] [--mode M] [--theme NAME] [--dark] [--width W] [--height H] [--capture screen|view]
 
@@ -81,6 +83,13 @@ do {
 
     case "bench-core-text":
         try write(CoreTextBench.run(text: try String(contentsOf: input, encoding: .utf8)), to: output)
+
+    case "markup":
+        let text = try String(contentsOf: input, encoding: .utf8)
+        try write(MarkupDump.document(text), to: output)
+
+    case "markup-bench":
+        try MarkupBench.run(input, output: output)
 
     case "decorate":
         let text = try String(contentsOf: input, encoding: .utf8)

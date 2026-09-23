@@ -455,6 +455,7 @@ version = "0.1.0"
 dependencies = [
  "png",
  "serde_json",
+ "upleft-markup",
 ]
 
 [[package]]
@@ -469,6 +470,15 @@ dependencies = [
  "unicode-normalization",
  "unicode-segmentation",
  "uuid",
+]
+
+[[package]]
+name = "upleft-markup"
+version = "0.1.0"
+dependencies = [
+ "unicode-normalization",
+ "unicode-segmentation",
+ "upleft-cmark-gfm-sys",
 ]
 
 [[package]]
