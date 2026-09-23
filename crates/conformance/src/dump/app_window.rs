@@ -442,11 +442,19 @@ mod geometry {
         }
     }
 
+    /// See `AppWindowGeometry.view` in the Swift harness: a view with an
+    /// ambiguous Auto Layout solution, and its subtree, report "ambiguous".
     pub fn view(view: &NSView) -> Value {
+        view_in(view, false)
+    }
+
+    fn view_in(view: &NSView, ambiguous_ancestor: bool) -> Value {
+        let ambiguous = ambiguous_ancestor || view.hasAmbiguousLayout();
+        let geometry = |value: NSRect| if ambiguous { Value::String("ambiguous".into()) } else { rect(value) };
         let mut object = Object::new()
             .with("class", class_name(view.class()))
-            .with("frame", rect(view.frame()))
-            .with("bounds", rect(view.bounds()))
+            .with("frame", geometry(view.frame()))
+            .with("bounds", geometry(view.bounds()))
             .with("hidden", view.isHidden())
             .with("alpha", json::double(view.alphaValue()));
         if let Some(field) = view.downcast_ref::<NSTextField>() {
@@ -454,7 +462,7 @@ mod geometry {
         } else if let Some(button) = view.downcast_ref::<NSButton>() {
             object = object.with("title", button.title().to_string()).with("state", button.state());
         }
-        let subviews: Vec<Value> = view.subviews().iter().map(|subview| self::view(&subview)).collect();
+        let subviews: Vec<Value> = view.subviews().iter().map(|subview| view_in(&subview, ambiguous)).collect();
         object.with("subviews", Value::Array(subviews)).build()
     }
 

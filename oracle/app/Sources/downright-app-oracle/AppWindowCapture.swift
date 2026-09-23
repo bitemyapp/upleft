@@ -287,11 +287,17 @@ enum AppWindowGeometry {
         return String(identifier[..<range.lowerBound]) + "(0x…)"
     }
 
-    static func view(_ view: NSView) -> JSON {
+    /// A view whose Auto Layout solution is ambiguous (`hasAmbiguousLayout`)
+    /// gets whichever solution the engine happens to pick, run to run, in
+    /// Swift as in Rust (Settings' form stacks do). Its geometry and its
+    /// subtree's are reported as ambiguous rather than compared; the pixels
+    /// still are.
+    static func view(_ view: NSView, ambiguousAncestor: Bool = false) -> JSON {
+        let ambiguous = ambiguousAncestor || view.hasAmbiguousLayout
         var pairs: [(String, JSON)] = [
             ("class", .string(className(view))),
-            ("frame", rect(view.frame)),
-            ("bounds", rect(view.bounds)),
+            ("frame", ambiguous ? .string("ambiguous") : rect(view.frame)),
+            ("bounds", ambiguous ? .string("ambiguous") : rect(view.bounds)),
             ("hidden", .bool(view.isHidden)),
             ("alpha", .double(Double(view.alphaValue))),
         ]
@@ -301,7 +307,7 @@ enum AppWindowGeometry {
             pairs.append(("title", .string(button.title)))
             pairs.append(("state", .int(button.state.rawValue)))
         }
-        pairs.append(("subviews", .array(view.subviews.map { Self.view($0) })))
+        pairs.append(("subviews", .array(view.subviews.map { Self.view($0, ambiguousAncestor: ambiguous) })))
         return .object(pairs)
     }
 
