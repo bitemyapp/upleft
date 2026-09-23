@@ -347,3 +347,19 @@ harness = false
 [[test]]
 name = "presentation_swipe_tests_controller"
 harness = false
+
+# Window-level cases of the DocumentWindowController panel extensions
+# (`+AssetInsertion`, `+ContinuityCamera`, `+CommandPalette`): `@MainActor`
+# suites over a real controller whose window is never ordered in
+# (tests/controller_support).
+[[test]]
+name = "document_drop_tests_window"
+harness = false
+
+[[test]]
+name = "share_and_capture_tests_window"
+harness = false
+
+[[test]]
+name = "command_palette_navigation_regression_tests"
+harness = false
