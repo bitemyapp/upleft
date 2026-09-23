@@ -15,7 +15,6 @@ use objc2_foundation::{NSIndexSet, NSPoint, NSString};
 use serde_json::{Map, Value};
 use upleft_app::panels::panel_chrome::PanelTableView;
 use upleft_app::panels::task_panel_view::{TaskPanelDelegate, TaskPanelView};
-use upleft_core::parser::MarkdownParser;
 use upleft_render::theme::style_sheet::StyleSheet;
 
 use crate::dump::Failure;
@@ -137,7 +136,7 @@ impl PanelScene for TaskPanelViewScene {
         style_sheet: Rc<StyleSheet>,
         mtm: MainThreadMarker,
     ) -> Result<Retained<NSView>, Failure> {
-        let document = MarkdownParser::parse(&scenario.document_text().map_err(Failure::Error)?);
+        let document = scenario.parsed_document().map_err(Failure::Error)?;
         let panel = TaskPanelView::new_current(mtm);
         let recorder: Rc<dyn TaskPanelDelegate> = self.recorder.clone();
         panel.set_delegate(Some(Rc::downgrade(&recorder) as Weak<dyn TaskPanelDelegate>));
