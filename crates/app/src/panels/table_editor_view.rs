@@ -290,7 +290,8 @@ impl TableEditorView {
         let status_label = label("", mtm);
         let table_view = {
             let table = PanelList::make_table_view("tableEditorSeed", mtm);
-            for column in table.tableColumns().iter() {
+            // Swift bridges `tableColumns` to an Array (a copy) first.
+            for column in table.tableColumns().to_vec() {
                 table.removeTableColumn(&column);
             }
             table
@@ -640,7 +641,7 @@ impl TableEditorView {
             ivars.title_label.setStringValue(&ns_string("Table"));
             ivars.status_label.setStringValue(&ns_string("No table under the caret"));
             ivars.source_button.setHidden(true);
-            for column in table_view.tableColumns().iter() {
+            for column in table_view.tableColumns().to_vec() {
                 table_view.removeTableColumn(&column);
             }
             table_view.reloadData();
@@ -683,7 +684,7 @@ impl TableEditorView {
     /// "select a column" feel like a guess.
     fn rebuild_columns(&self, count: isize) {
         let table_view = self.ivars().table_view.clone();
-        for column in table_view.tableColumns().iter() {
+        for column in table_view.tableColumns().to_vec() {
             table_view.removeTableColumn(&column);
         }
         let headers: Vec<String> = self.ivars().values.borrow().first().cloned().unwrap_or_default();
