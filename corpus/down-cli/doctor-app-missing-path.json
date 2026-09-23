@@ -1,0 +1,7 @@
+{
+ "argv": [
+  "doctor",
+  "--app",
+  "/nonexistent-upleft-root/Downright.app"
+ ]
+}

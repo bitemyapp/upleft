@@ -1,0 +1,16 @@
+{
+ "files": [
+  {
+   "path": "work/docs/ok.md",
+   "text": "# ok\n"
+  },
+  {
+   "path": "work/docs/broken.md",
+   "symlink": "missing-target.md"
+  }
+ ],
+ "argv": [
+  "check",
+  "docs"
+ ]
+}

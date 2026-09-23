@@ -1,0 +1,12 @@
+{
+ "files": [
+  {
+   "path": "home/notes/n.md",
+   "text": "[x](gone.md)\n"
+  }
+ ],
+ "argv": [
+  "check",
+  "~/notes"
+ ]
+}

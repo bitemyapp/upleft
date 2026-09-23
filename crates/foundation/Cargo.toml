@@ -10,7 +10,7 @@ publish.workspace = true
 upleft-swift-text.workspace = true
 objc2.workspace = true
 objc2-foundation = { workspace = true, features = [
-    "NSArray", "NSData", "NSDictionary", "NSEnumerator", "NSError", "NSFileManager", "NSJSONSerialization", "NSNull", "NSPathUtilities", "NSURL",
+    "NSArray", "NSData", "NSDate", "NSDictionary", "NSEnumerator", "NSError", "NSFileHandle", "NSFileManager", "NSJSONSerialization", "NSNull", "NSPathUtilities", "NSURL", "NSUUID",
     "NSObjCRuntime", "NSObject", "NSString", "NSValue",
 ] }
 objc2-core-foundation = { workspace = true, features = ["CFNumber"] }

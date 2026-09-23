@@ -1,0 +1,12 @@
+{
+ "files": [
+  {
+   "path": "work/.claude/settings.json",
+   "text": "{\"hooks\": {\"PostToolUse\": [{\"matcher\": \"Write|Edit|MultiEdit|NotebookEdit\", \"extra\": 1, \"hooks\": [{\"type\": \"command\", \"command\": \"echo keep\"}, {\"type\": \"command\", \"command\": \"\\\"$SANDBOX/bin/down\\\" notify\"}]}]}}"
+  }
+ ],
+ "argv": [
+  "hook",
+  "--install"
+ ]
+}

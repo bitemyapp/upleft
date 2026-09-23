@@ -1,0 +1,13 @@
+{
+ "files": [
+  {
+   "path": "home/notes.md",
+   "text": "home notes\n"
+  }
+ ],
+ "argv": [
+  "read",
+  "--json",
+  "~/notes.md"
+ ]
+}

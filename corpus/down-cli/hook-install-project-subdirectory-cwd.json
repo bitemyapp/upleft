@@ -1,0 +1,15 @@
+{
+ "cwd": "work/nested/deeper",
+ "files": [
+  {
+   "path": "work/nested/deeper",
+   "directory": true
+  }
+ ],
+ "argv": [
+  "hook",
+  "--install",
+  "--scope",
+  "project"
+ ]
+}

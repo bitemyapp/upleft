@@ -16,3 +16,4 @@ objc2-foundation = { workspace = true, features = [
     "NSString", "NSURL", "NSValue",
 ] }
 objc2-core-foundation = { workspace = true, features = ["CFArray", "CFBase", "CFDictionary", "CFString", "CFURL"] }
+objc2-core-services = { version = "0.3.2", default-features = false, features = ["std", "Metadata", "MDItem"] }

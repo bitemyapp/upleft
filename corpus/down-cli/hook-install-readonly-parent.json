@@ -1,0 +1,14 @@
+{
+ "files": [
+  {
+   "path": "work/ro",
+   "directory": true,
+   "mode": "555"
+  }
+ ],
+ "cwd": "work/ro",
+ "argv": [
+  "hook",
+  "--install"
+ ]
+}

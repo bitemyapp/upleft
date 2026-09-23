@@ -1,0 +1,12 @@
+{
+ "files": [
+  {
+   "path": "work/.claude/settings.json",
+   "text": "{\"permissions\": {\"allow\": []}, \"hooks\": {\"PreToolUse\": [{\"matcher\": \"Read\", \"hooks\": []}], \"PostToolUse\": [{\"matcher\": \"Bash\", \"hooks\": [{\"type\": \"command\", \"command\": \"'$SANDBOX/bin/down' notify\"}]}, {\"matcher\": \"Write|Edit|MultiEdit|NotebookEdit\", \"hooks\": [{\"type\": \"command\", \"command\": \"'$SANDBOX/bin/down' notify\"}, {\"type\": \"command\", \"command\": \"echo also\"}, {\"type\": \"other\"}]}, {\"matcher\": \"Write|Edit|MultiEdit|NotebookEdit\", \"timeout\": 5}]}}"
+  }
+ ],
+ "argv": [
+  "hook",
+  "--uninstall"
+ ]
+}

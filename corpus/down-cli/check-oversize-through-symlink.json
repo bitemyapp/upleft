@@ -1,0 +1,18 @@
+{
+ "files": [
+  {
+   "path": "work/big.txt",
+   "repeat": "a",
+   "count": 10485761
+  },
+  {
+   "path": "work/small.md",
+   "symlink": "big.txt"
+  }
+ ],
+ "argv": [
+  "check",
+  "--json",
+  "small.md"
+ ]
+}

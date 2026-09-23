@@ -1,0 +1,12 @@
+{
+ "files": [
+  {
+   "path": "work/empty.md",
+   "text": ""
+  }
+ ],
+ "argv": [
+  "export",
+  "empty.md"
+ ]
+}

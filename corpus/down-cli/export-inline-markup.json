@@ -1,0 +1,12 @@
+{
+ "files": [
+  {
+   "path": "work/inline.md",
+   "text": "`a` ``b`` ```c``` `unterminated\n**bold** ***both*** *em* **a*b** * spaced * \\*escaped\\*\n[label with **bold**](x.md) [](empty.md) [nested [brackets]](y.md) ![img](a.png)[link](b.md)\n&amp; &lt; <b>raw</b> \"quote\"\n"
+  }
+ ],
+ "argv": [
+  "export",
+  "inline.md"
+ ]
+}

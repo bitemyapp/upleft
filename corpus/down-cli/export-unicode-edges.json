@@ -1,0 +1,12 @@
+{
+ "files": [
+  {
+   "path": "work/u.md",
+   "text": "#́ not heading\n# ́combining after space\n```́not fence\n>́ not quote\n- item\n-́ not item\n&́ amp < ́\n٣. arabic digit item\n[l](a.md)́ after\nline separator paranext\u000bvt\fff\n---́\n﻿bom inside\n"
+  }
+ ],
+ "argv": [
+  "export",
+  "u.md"
+ ]
+}

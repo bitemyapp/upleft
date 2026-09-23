@@ -1,0 +1,17 @@
+{
+ "files": [
+  {
+   "path": "work/target.md",
+   "text": "target\n"
+  },
+  {
+   "path": "work/link.md",
+   "symlink": "target.md"
+  }
+ ],
+ "argv": [
+  "read",
+  "--json",
+  "link.md"
+ ]
+}

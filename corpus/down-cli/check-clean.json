@@ -1,0 +1,12 @@
+{
+ "files": [
+  {
+   "path": "work/clean.md",
+   "text": "# Clean\n\nNothing to see.\n"
+  }
+ ],
+ "argv": [
+  "check",
+  "clean.md"
+ ]
+}

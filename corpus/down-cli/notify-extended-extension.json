@@ -1,0 +1,19 @@
+{
+ "files": [
+  {
+   "path": "work/deep/Notes.MDX",
+   "text": "x\n"
+  },
+  {
+   "path": "work/q.Qmd",
+   "text": "q\n"
+  }
+ ],
+ "argv": [
+  "notify",
+  "--dry-run"
+ ],
+ "stdin": {
+  "text": "{\"tool_input\": {\"file_path\": \"$SANDBOX/work/deep/Notes.MDX\", \"filePath\": \"$SANDBOX/work/q.Qmd\"}}"
+ }
+}

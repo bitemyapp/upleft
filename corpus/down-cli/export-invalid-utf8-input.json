@@ -1,0 +1,12 @@
+{
+ "files": [
+  {
+   "path": "work/bad.md",
+   "hex": "ff"
+  }
+ ],
+ "argv": [
+  "export",
+  "bad.md"
+ ]
+}

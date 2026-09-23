@@ -1,0 +1,13 @@
+{
+ "files": [
+  {
+   "path": "work/secret.md",
+   "text": "secret\n",
+   "mode": "000"
+  }
+ ],
+ "argv": [
+  "read",
+  "secret.md"
+ ]
+}

@@ -1,0 +1,20 @@
+{
+ "files": [
+  {
+   "path": "work/a.md",
+   "text": "a\n"
+  }
+ ],
+ "argv": [
+  "open",
+  "-n",
+  "-b",
+  "-w",
+  "-e",
+  "--line",
+  "+3",
+  "--review",
+  "a.md",
+  "gone.md"
+ ]
+}
