@@ -15,6 +15,8 @@ pub mod mermaid;
 pub mod math;
 pub mod math_bench;
 pub mod parse;
+pub mod render;
+pub mod view_bench;
 pub mod style_sheet;
 pub mod unicode;
 
@@ -131,6 +133,11 @@ pub fn run(request: &Request) -> Result<(), Failure> {
         "mermaid-replay" => mermaid::replay_record(&request.input, &request.output),
         "elk" => elk::run(&request.input, &request.output),
         "probe" => crate::capture::run(request.capture(), Box::new(crate::capture::ProbeScene)),
+        "bench-view" => view_bench::run(request),
+        "render" => crate::capture::run(
+            request.capture(),
+            Box::new(render::MarkdownScene::new(&request.mode, &request.theme)),
+        ),
         _ => Err(Failure::NotPorted),
     }
 }

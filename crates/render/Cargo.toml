@@ -32,6 +32,17 @@ objc2-foundation = { workspace = true, features = [
     "NSURL",
     "NSUserDefaults",
     "NSValue",
+    "NSRunLoop",
+    "NSProcessInfo",
+    "NSObjCRuntime",
+    "NSAttributedString",
+    "NSNotification",
+    "NSUndoManager",
+    "NSCharacterSet",
+    "NSSet",
+    "NSPropertyList",
+    "NSOperation",
+    "NSURL",
 ] }
 objc2-app-kit = { workspace = true, features = [
     "NSAccessibility",
@@ -50,11 +61,67 @@ objc2-app-kit = { workspace = true, features = [
     "NSTextStorage",
     "NSImage",
     "NSWorkspace",
+    "NSAnimationContext",
+    "NSView",
+    "NSWindow",
+    "NSGraphics",
+    "NSGraphicsContext",
+    "NSBezierPath",
+    "NSImage",
+    "NSImageRep",
+    "NSBitmapImageRep",
+    "NSClipView",
+    "NSScrollView",
+    "NSScroller",
+    "NSScreen",
+    "NSControl",
+    "NSCell",
+    "NSTextAttachment",
+    "NSTextList",
+    "NSText",
+    "NSTextView",
+    "NSTextContainer",
+    "NSTextStorage",
+    "NSTextContentManager",
+    "NSTextLayoutManager",
+    "NSTextLayoutFragment",
+    "NSTextLineFragment",
+    "NSTextElement",
+    "NSTextRange",
+    "NSTextSelection",
+    "NSTextSelectionNavigation",
+    "NSTextViewportLayoutController",
+    "NSParagraphStyle",
+    "NSStringDrawing",
+    "NSTrackingArea",
+    "NSEvent",
+    "NSCursor",
+    "NSMenu",
+    "NSMenuItem",
+    "NSPasteboard",
+    "NSDragging",
+    "NSSound",
+    "NSUserInterfaceItemIdentification",
+    "NSAccessibilityElement",
+    "NSAccessibilityProtocols",
+    "NSAccessibilityConstants",
+    "NSAccessibilityCustomAction",
+    "NSLayoutConstraint",
+    "NSTextInputClient",
+    "NSTextCheckingClient",
+    "NSSpellProtocol",
+    "NSDraggingItem",
     "block2",
     "objc2-core-foundation",
+    "objc2-core-graphics",
+    "objc2-quartz-core",
+] }
+objc2-quartz-core = { version = "0.3.2", default-features = false, features = [
+    "std", "objc2-core-foundation", "CABase", "CAAnimation", "CADisplayLink", "CAMediaTiming",
+    "CAMediaTimingFunction", "CATransform3D", "CALayer",
 ] }
 objc2-core-foundation = { workspace = true, features = ["CFBase", "CFCGTypes", "CFPreferences", "CFPropertyList", "CFString"] }
-objc2-core-graphics = { workspace = true }
+objc2-core-graphics = { workspace = true, features = ["CGContext", "CGPath", "CGColor", "CGImage", "CGColorSpace"] }
 objc2-core-text = { workspace = true, features = ["CTFont", "CTFontDescriptor", "SFNTLayoutTypes", "objc2-core-graphics"] }
 
 [dev-dependencies]
@@ -63,4 +130,9 @@ objc2-app-kit = { workspace = true, features = ["NSImage"] }
 
 [[test]]
 name = "directory_watcher"
+harness = false
+
+[[test]]
+name = "view_tests"
+path = "tests/view_tests/main.rs"
 harness = false
