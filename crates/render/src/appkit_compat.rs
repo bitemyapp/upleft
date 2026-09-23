@@ -217,3 +217,111 @@ pub mod keys {
     key!(link, NSLinkAttributeName);
     key!(ligature, NSLigatureAttributeName);
 }
+
+/// A source range (Swift `Int` offsets) as Foundation's unsigned `NSRange`,
+/// for AppKit calls. Swift traps converting a negative `Int` at the same
+/// call, so callers only pass non-negative ranges.
+#[inline]
+pub fn ns(range: upleft_core::NSRange) -> NSRange {
+    NSRange::new(range.location as usize, range.length as usize)
+}
+
+/// A Foundation `NSRange` in signed source coordinates.
+#[inline]
+pub fn from_ns(range: NSRange) -> upleft_core::NSRange {
+    upleft_core::NSRange::new(range.location as isize, range.length as isize)
+}
+
+/// `attributes(at: index, effectiveRange: nil)`.
+pub fn attributes_at(
+    string: &NSAttributedString,
+    index: usize,
+) -> Retained<objc2_foundation::NSDictionary<NSString, AnyObject>> {
+    // SAFETY: a null range pointer is allowed; the caller keeps `index`
+    // inside the string.
+    unsafe { string.attributesAtIndex_effectiveRange(index, std::ptr::null_mut()) }
+}
+
+// MARK: - The main dispatch queue
+
+/// `DispatchQueue.main.async { … }` for a main-thread closure.
+///
+/// The closure never leaves the main thread: it is wrapped in
+/// `MainThreadBound` for the trip through libdispatch, which only ever runs
+/// it on the main queue.
+pub fn main_async(work: impl FnOnce() + 'static) {
+    let mtm = objc2::MainThreadMarker::new().expect("main_async is called on the main thread");
+    let bound = objc2::MainThreadBound::new(Box::new(work) as Box<dyn FnOnce()>, mtm);
+    dispatch2::DispatchQueue::main().exec_async(move || {
+        let mtm = objc2::MainThreadMarker::new().expect("the main queue runs on the main thread");
+        (bound.into_inner(mtm))()
+    });
+}
+
+/// `DispatchQueue.main.asyncAfter(deadline: .now() + delay) { … }`.
+pub fn main_after(delay: f64, work: impl FnOnce() + 'static) {
+    let mtm = objc2::MainThreadMarker::new().expect("main_after is called on the main thread");
+    let bound = objc2::MainThreadBound::new(Box::new(work) as Box<dyn FnOnce()>, mtm);
+    let when = dispatch2::DispatchTime::try_from(std::time::Duration::from_secs_f64(delay.max(0.0)))
+        .unwrap_or(dispatch2::DispatchTime::NOW);
+    let _ = dispatch2::DispatchQueue::main().after(when, move || {
+        let mtm = objc2::MainThreadMarker::new().expect("the main queue runs on the main thread");
+        (bound.into_inner(mtm))()
+    });
+}
+
+/// `DispatchWorkItem`: a closure that can be cancelled before it runs.
+#[derive(Clone)]
+pub struct WorkItem {
+    cancelled: std::rc::Rc<std::cell::Cell<bool>>,
+    work: std::rc::Rc<std::cell::RefCell<Option<Box<dyn FnOnce()>>>>,
+}
+
+impl WorkItem {
+    pub fn new(work: impl FnOnce() + 'static) -> WorkItem {
+        WorkItem {
+            cancelled: std::rc::Rc::new(std::cell::Cell::new(false)),
+            work: std::rc::Rc::new(std::cell::RefCell::new(Some(Box::new(work)))),
+        }
+    }
+
+    pub fn cancel(&self) {
+        self.cancelled.set(true);
+    }
+
+    pub fn is_cancelled(&self) -> bool {
+        self.cancelled.get()
+    }
+
+    /// Runs the work unless it was cancelled (or already ran).
+    pub fn perform(&self) {
+        if self.cancelled.get() {
+            return;
+        }
+        let work = self.work.borrow_mut().take();
+        if let Some(work) = work {
+            work();
+        }
+    }
+
+    /// `DispatchQueue.main.async(execute: item)`.
+    pub fn dispatch_main(&self) {
+        let item = self.clone();
+        main_async(move || item.perform());
+    }
+
+    /// `DispatchQueue.main.asyncAfter(deadline: .now() + delay, execute: item)`.
+    pub fn dispatch_main_after(&self, delay: f64) {
+        let item = self.clone();
+        main_after(delay, move || item.perform());
+    }
+}
+
+/// Swift's `NSRect.fill(using:)` with its default argument: the current
+/// context's compositing operation, else `.sourceOver`. (Not `NSRectFill`,
+/// which composites with `.copy`.)
+pub fn rect_fill(rect: CGRect) {
+    let operation = objc2_app_kit::NSGraphicsContext::currentContext()
+        .map_or(objc2_app_kit::NSCompositingOperation::SourceOver, |context| context.compositingOperation());
+    objc2_app_kit::NSRectFillUsingOperation(rect, operation);
+}

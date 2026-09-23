@@ -15,8 +15,11 @@
 //! [`swift_compat`] reproduces the Swift standard library and Foundation
 //! behaviours the port depends on.
 
+pub mod appkit_compat;
+pub mod clipboard_semantic_html;
 pub mod core_types;
 pub mod engine;
+pub mod fragments;
 pub mod motion;
 pub mod render_contracts;
 pub mod swift_compat;
