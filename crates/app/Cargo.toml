@@ -303,3 +303,24 @@ harness = false
 [[test]]
 name = "start_window_tests_window"
 harness = false
+
+# `DocumentWindowController` (`App/DocumentWindowController.swift` and its
+# +Support/+Trust/+Speech/+CommandLine/+ContinuityCamera extensions): the
+# `@MainActor` suites that build the controller, on the main thread
+# (tests/main_thread/mod.rs), in a sandboxed home
+# (tests/document_window_support/mod.rs); no window is ordered in.
+[[test]]
+name = "window_chrome_tests_document"
+harness = false
+
+[[test]]
+name = "document_chrome_layout_tests"
+harness = false
+
+[[test]]
+name = "autosave_lifecycle_tests_window"
+harness = false
+
+[[test]]
+name = "export_snapshot_tests"
+harness = false
