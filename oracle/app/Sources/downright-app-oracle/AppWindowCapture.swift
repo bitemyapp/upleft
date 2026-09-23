@@ -272,6 +272,13 @@ enum AppWindowGeometry {
         .array([.double(rect.origin.x), .double(rect.origin.y), .double(rect.size.width), .double(rect.size.height)])
     }
 
+    /// An identifier AppKit makes from an object's address
+    /// (`NSTabViewControllerToolbarUIProvider(0x…)`) differs per run.
+    static func withoutAddress(_ identifier: String) -> String {
+        guard let range = identifier.range(of: "(0x") else { return identifier }
+        return String(identifier[..<range.lowerBound]) + "(0x…)"
+    }
+
     static func view(_ view: NSView) -> JSON {
         var pairs: [(String, JSON)] = [
             ("class", .string(className(view))),
@@ -302,7 +309,7 @@ enum AppWindowGeometry {
         ]
         if let toolbar = window.toolbar {
             pairs.append(("toolbar", .object([
-                ("identifier", .string(toolbar.identifier)),
+                ("identifier", .string(withoutAddress(toolbar.identifier))),
                 ("items", .array(toolbar.items.map { item in
                     .object([
                         ("identifier", .string(item.itemIdentifier.rawValue)),

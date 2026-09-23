@@ -9,7 +9,7 @@
 //! (`OffScreenWindows`, `WindowServerCapture`).
 
 use std::cell::RefCell;
-use std::ffi::{CStr, c_void};
+use std::ffi::c_void;
 use std::path::{Path, PathBuf};
 use std::time::{Duration, Instant};
 
@@ -89,7 +89,7 @@ impl Scenario {
 /// Window kinds this oracle can build yet. Anything else is "not ported",
 /// reported before the application starts.
 fn is_ported(window: &str) -> bool {
-    matches!(window, "probe" | "setup")
+    matches!(window, "probe" | "setup" | "preferences")
 }
 
 // MARK: - Sandbox
@@ -321,6 +321,19 @@ impl Scene {
                 scene.show(mtm);
                 Ok(scene)
             }
+            "preferences" => {
+                use upleft_app::app::preferences_window_controller::{PreferencesWindowController, SettingsPane};
+                let controller = PreferencesWindowController::new(mtm);
+                if let Some(name) = &scenario.pane {
+                    let pane = SettingsPane::from_raw_value(name)
+                        .ok_or_else(|| Failure::Error(format!("unknown pane {name}")))?;
+                    controller.select(pane);
+                }
+                let window = controller.window().ok_or_else(|| Failure::Error("Settings has no window".into()))?;
+                let scene = Scene { window, pending_commands: None, _retained: Some(Retained::into_super(Retained::into_super(Retained::into_super(controller)))) };
+                scene.show(mtm);
+                Ok(scene)
+            }
             _ => Err(Failure::NotPorted),
         }
     }
@@ -361,66 +374,45 @@ mod geometry {
         fn dlsym(handle: *mut c_void, symbol: *const std::ffi::c_char) -> *mut c_void;
     }
 
-    type Demangle = unsafe extern "C" fn(*const std::ffi::c_char, usize, *mut std::ffi::c_char, *mut usize, u32) -> *mut std::ffi::c_char;
 
-    /// `String(describing: type(of:))`: Objective-C names as they are;
-    /// Swift runtime names (`_Tt…`) demangled with the module qualifiers
-    /// dropped, as Swift prints a type.
-    pub fn class_name(class: &AnyClass) -> String {
-        let raw = class.name().to_string_lossy().into_owned();
-        let mut name = raw.strip_prefix("NSKVONotifying_").map(str::to_owned).unwrap_or(raw);
-        if name.starts_with("_Tt") {
-            name = demangle(&name).map(|demangled| strip_modules(&demangled)).unwrap_or(name);
-        }
-        name
+    #[repr(C)]
+    struct TypeNamePair {
+        data: *const u8,
+        length: usize,
     }
 
-    fn demangle(mangled: &str) -> Option<String> {
-        // SAFETY: `swift_demangle` from the Swift runtime, with its C
-        // signature; the result is malloc'd.
+    type GetTypeName = unsafe extern "C" fn(*const c_void, bool) -> TypeNamePair;
+
+    /// `String(describing: type(of:))`: an Objective-C class's own name; for
+    /// a Swift class (a runtime name that is mangled, `_Tt…`, or
+    /// module-qualified), the Swift runtime's unqualified type name
+    /// (`swift_getTypeName(_, false)`, which `_typeName(_:qualified:)` calls).
+    pub fn class_name(class: &AnyClass) -> String {
+        let raw = class.name().to_string_lossy().into_owned();
+        let name = raw.strip_prefix("NSKVONotifying_").map(str::to_owned).unwrap_or(raw);
+        if !(name.starts_with("_Tt") || name.contains('.')) {
+            return name;
+        }
+        swift_type_name(class).unwrap_or(name)
+    }
+
+    fn swift_type_name(class: &AnyClass) -> Option<String> {
+        // SAFETY: `swift_getTypeName` from the Swift runtime, with its C
+        // signature; a Swift class object is its own type metadata.
         unsafe {
             let handle = libc::dlopen(c"/usr/lib/swift/libswiftCore.dylib".as_ptr(), libc::RTLD_NOW);
-            let symbol = dlsym(handle, c"swift_demangle".as_ptr());
+            let symbol = dlsym(handle, c"swift_getTypeName".as_ptr());
             if symbol.is_null() {
                 return None;
             }
-            let demangle = std::mem::transmute::<*mut c_void, Demangle>(symbol);
-            let input = std::ffi::CString::new(mangled).ok()?;
-            let output = demangle(input.as_ptr(), mangled.len(), std::ptr::null_mut(), std::ptr::null_mut(), 0);
-            if output.is_null() {
+            let get = std::mem::transmute::<*mut c_void, GetTypeName>(symbol);
+            let pair = get((class as *const AnyClass).cast(), false);
+            if pair.data.is_null() {
                 return None;
             }
-            let text = CStr::from_ptr(output).to_string_lossy().into_owned();
-            libc::free(output.cast());
-            Some(text)
+            let bytes = std::slice::from_raw_parts(pair.data, pair.length);
+            Some(String::from_utf8_lossy(bytes).into_owned())
         }
-    }
-
-    /// `SwiftUI._NSCoreHostingView<SwiftUI.RootView>` → `_NSCoreHostingView<RootView>`,
-    /// and a private type's `(PortalView in _EC3F…)` → `PortalView`.
-    fn strip_modules(name: &str) -> String {
-        let mut name = name.to_owned();
-        while let Some(start) = name.find('(') {
-            let Some(marker) = name[start..].find(" in _").map(|offset| start + offset) else { break };
-            let Some(end) = name[marker..].find(')').map(|offset| marker + offset) else { break };
-            name = format!("{}{}{}", &name[..start], &name[start + 1..marker], &name[end + 1..]);
-        }
-        let name = name.as_str();
-        let mut out = String::new();
-        let mut word = String::new();
-        for character in name.chars() {
-            if character.is_alphanumeric() || character == '_' {
-                word.push(character);
-            } else if character == '.' {
-                word.clear();
-            } else {
-                out.push_str(&word);
-                word.clear();
-                out.push(character);
-            }
-        }
-        out.push_str(&word);
-        out
     }
 
     pub fn rect(rect: NSRect) -> Value {
@@ -430,6 +422,15 @@ mod geometry {
             json::double(rect.size.width),
             json::double(rect.size.height),
         ])
+    }
+
+    /// An identifier AppKit makes from an object's address
+    /// (`NSTabViewControllerToolbarUIProvider(0x…)`) differs per run.
+    pub fn without_address(identifier: &str) -> String {
+        match identifier.find("(0x") {
+            Some(index) => format!("{}(0x…)", &identifier[..index]),
+            None => identifier.to_owned(),
+        }
     }
 
     pub fn view(view: &NSView) -> Value {
@@ -470,7 +471,7 @@ mod geometry {
                 .collect();
             object = object.with(
                 "toolbar",
-                Object::new().with("identifier", toolbar.identifier().to_string()).with("items", Value::Array(items)),
+                Object::new().with("identifier", without_address(&toolbar.identifier().to_string())).with("items", Value::Array(items)),
             );
         }
         let root = window.contentView().map(|content| unsafe { content.superview() }.unwrap_or(content));
