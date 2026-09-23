@@ -38,3 +38,9 @@ objc2-core-foundation = { workspace = true, features = ["CFArray", "CFBase", "CF
 
 [dev-dependencies]
 serde_json.workspace = true
+
+# AppKit objects that must be created on the main thread: the test binary's
+# own `main` runs there.
+[[test]]
+name = "main_thread_objects"
+harness = false
