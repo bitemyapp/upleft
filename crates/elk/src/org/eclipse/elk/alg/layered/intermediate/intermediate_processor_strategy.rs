@@ -84,7 +84,7 @@ impl ILayoutProcessor for NoOpProcessor {
     fn process(&mut self, _lg: &mut LGraphArena, _graph: LGraphId, _monitor: &mut dyn IElkProgressMonitor) {}
 
     fn name(&self) -> &'static str {
-        "_NoOpProcessor"
+        "NoOpProcessor"
     }
 }
 
