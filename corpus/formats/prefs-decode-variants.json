@@ -1,0 +1,148 @@
+{
+ "steps": [
+  {
+   "op": "prefs.decode",
+   "json": "{}"
+  },
+  {
+   "op": "prefs.decode",
+   "json": "{\"followsSystemAppearance\":false}"
+  },
+  {
+   "op": "prefs.decode",
+   "json": "{\"followsSystemAppearance\":false,\"appearancePreferenceVersion\":1}"
+  },
+  {
+   "op": "prefs.decode",
+   "json": "{\"followsSystemAppearance\":false,\"appearancePreferenceVersion\":0}"
+  },
+  {
+   "op": "prefs.decode",
+   "json": "{\"followsSystemAppearance\":false,\"appearancePreferenceVersion\":7}"
+  },
+  {
+   "op": "prefs.decode",
+   "json": "{\"followsSystemAppearance\":false,\"appearancePreferenceVersion\":\"1\"}"
+  },
+  {
+   "op": "prefs.decode",
+   "json": "{\"defaultMode\":\"read\"}"
+  },
+  {
+   "op": "prefs.decode",
+   "json": "{\"defaultMode\":\"source\"}"
+  },
+  {
+   "op": "prefs.decode",
+   "json": "{\"defaultMode\":\"presentation\"}"
+  },
+  {
+   "op": "prefs.decode",
+   "json": "{\"externalEditor\":\"cursor\",\"previewAppearance\":\"light\"}"
+  },
+  {
+   "op": "prefs.decode",
+   "json": "{\"externalEditor\":\"emacs\",\"previewAppearance\":\"sepia\"}"
+  },
+  {
+   "op": "prefs.decode",
+   "json": "{\"themeName\":5,\"darkThemeName\":null,\"showInvisibles\":1,\"vimKeys\":\"true\"}"
+  },
+  {
+   "op": "prefs.decode",
+   "json": "{\"codeBlockCollapseThreshold\":40.0,\"launchCount\":1e2,\"historyMaximumDays\":1.5,\"historyMaximumMegabytes\":9223372036854775808}"
+  },
+  {
+   "op": "prefs.decode",
+   "json": "{\"textSizeAdjustment\":20}"
+  },
+  {
+   "op": "prefs.decode",
+   "json": "{\"textSizeAdjustment\":-20}"
+  },
+  {
+   "op": "prefs.decode",
+   "json": "{\"textSizeAdjustment\":0.5,\"typography\":{\"preset\": \"working\", \"bodySize\": 27.75, \"scaleRatio\": 1.333, \"lineHeightMultiple\": 1.7, \"measureCharacters\": 72, \"monoFamily\": \"Menlo\", \"monoSizeAdjust\": 1, \"monoLigatures\": true, \"opticalMargins\": false, \"mathScale\": 1.2}}"
+  },
+  {
+   "op": "prefs.decode",
+   "json": "{\"typography\":{\"preset\":\"working\",\"bodySize\":20}}"
+  },
+  {
+   "op": "prefs.decode",
+   "json": "{\"typography\":{\"preset\": \"display\", \"bodySize\": 18, \"scaleRatio\": 1.333, \"lineHeightMultiple\": 1.7, \"measureCharacters\": 72, \"monoFamily\": \"Menlo\", \"monoSizeAdjust\": 1, \"monoLigatures\": true, \"opticalMargins\": false, \"mathScale\": 1.2}}"
+  },
+  {
+   "op": "prefs.decode",
+   "json": "{\"typography\":{\"preset\": \"working\", \"bodySize\": \"large\", \"scaleRatio\": 1.333, \"lineHeightMultiple\": 1.7, \"measureCharacters\": 72, \"monoFamily\": \"Menlo\", \"monoSizeAdjust\": 1, \"monoLigatures\": true, \"opticalMargins\": false, \"mathScale\": 1.2}}"
+  },
+  {
+   "op": "prefs.decode",
+   "json": "{\"siblingScanDirectories\":[]}"
+  },
+  {
+   "op": "prefs.decode",
+   "json": "{\"siblingScanDirectories\":[\"a\",1]}"
+  },
+  {
+   "op": "prefs.decode",
+   "json": "{\"siblingScanDirectories\":\"docs\"}"
+  },
+  {
+   "op": "prefs.decode",
+   "json": "{\"unknownKey\":true,\"nested\":{\"deep\":[1,2,3]}}"
+  },
+  {
+   "op": "prefs.decode",
+   "json": "{\"themeName\":\"First\",\"themeName\":\"Second\"}"
+  },
+  {
+   "op": "prefs.decode",
+   "json": "{\"themeName\":\"Trailing\",}"
+  },
+  {
+   "op": "prefs.decode",
+   "json": "{\"themeName\":\"Esc\\u00e9\\n\\\"q\\\" \\/ slash\",\"lastRegisteredBundlePath\":\"/a/b\"}"
+  },
+  {
+   "op": "prefs.decode",
+   "json": "﻿{\"themeName\":\"BOM\"}"
+  },
+  {
+   "op": "prefs.decode",
+   "json": "{\"largeFileThresholdMegabytes\":-3}"
+  },
+  {
+   "op": "prefs.decode",
+   "json": "[]"
+  },
+  {
+   "op": "prefs.decode",
+   "json": "null"
+  },
+  {
+   "op": "prefs.decode",
+   "json": "\"string\""
+  },
+  {
+   "op": "prefs.decode",
+   "json": ""
+  },
+  {
+   "op": "prefs.decode",
+   "json": "{"
+  },
+  {
+   "op": "prefs.decode",
+   "json": "{\"themeName\":\"x\"} trailing"
+  },
+  {
+   "op": "prefs.decode",
+   "json": "{\"textSizeAdjustment\":01}"
+  },
+  {
+   "op": "prefs.decode",
+   "json": "{\"launchCount\":01}"
+  }
+ ]
+}

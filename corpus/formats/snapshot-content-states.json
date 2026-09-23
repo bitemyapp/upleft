@@ -1,0 +1,127 @@
+{
+ "steps": [
+  {
+   "op": "snapshot.open",
+   "history": "support/history"
+  },
+  {
+   "op": "snapshot.record",
+   "doc": "a.md",
+   "text": "# Intact\n\nA body long enough to compress into several bytes of deflate output.\n",
+   "kind": "baseline"
+  },
+  {
+   "op": "snapshot.record",
+   "doc": "b.md",
+   "textHex": "efbbbf7374617274732077697468206120627974652d6f72646572206d61726b0a",
+   "kind": "baseline"
+  },
+  {
+   "op": "snapshot.record",
+   "doc": "c.md",
+   "text": "",
+   "kind": "baseline"
+  },
+  {
+   "op": "snapshot.record",
+   "doc": "d.md",
+   "text": "tail\n",
+   "kind": "baseline"
+  },
+  {
+   "op": "snapshot.record",
+   "doc": "e.md",
+   "text": "a\u0000b\r\nc\rd e 😀 é é\n",
+   "kind": "baseline"
+  },
+  {
+   "op": "snapshot.wait"
+  },
+  {
+   "op": "snapshot.content",
+   "text": "# Intact\n\nA body long enough to compress into several bytes of deflate output.\n"
+  },
+  {
+   "op": "snapshot.content",
+   "textHex": "efbbbf7374617274732077697468206120627974652d6f72646572206d61726b0a"
+  },
+  {
+   "op": "snapshot.record",
+   "doc": "b.md",
+   "textHex": "61ff62",
+   "kind": "external"
+  },
+  {
+   "op": "snapshot.wait"
+  },
+  {
+   "op": "snapshot.content",
+   "textHex": "61ff62"
+  },
+  {
+   "op": "snapshot.content",
+   "text": ""
+  },
+  {
+   "op": "snapshot.content",
+   "text": "a\u0000b\r\nc\rd e 😀 é é\n"
+  },
+  {
+   "op": "truncate",
+   "path": "support/history/objects/26/26ea0546c6748e613b20d9bb8ae4e63b3536825cde53b34d316ac501ae357ed1"
+  },
+  {
+   "op": "snapshot.content",
+   "text": "# Intact\n\nA body long enough to compress into several bytes of deflate output.\n"
+  },
+  {
+   "op": "write",
+   "path": "support/history/objects/96/969c132858bc94fa1c656ea6be1d71f3cd746219d5b1cffce3173753d307de22",
+   "text": "written before compression\n"
+  },
+  {
+   "op": "snapshot.content",
+   "text": "written before compression\n"
+  },
+  {
+   "op": "write",
+   "path": "support/history/objects/23/233d4809807d21d1b24ae54639eede42f519dcbe35ca71d51bd051bca59c6a68",
+   "hex": "00ff10ab"
+  },
+  {
+   "op": "snapshot.content",
+   "text": "garbage\n"
+  },
+  {
+   "op": "write",
+   "path": "support/history/objects/bc/bc2d901b7d0a8558810c4f24b4cf8ae94efb29e3e4d10f4349a3b1e63ef96e7d",
+   "text": "not the tail\n"
+  },
+  {
+   "op": "snapshot.content",
+   "text": "tail\n"
+  },
+  {
+   "op": "mkdir",
+   "path": "support/history/objects/b3/b3d6f68b368f6d9cd0266c4f1cb47c5ed0f203a545dcc2d7e335abc6f96a0d40"
+  },
+  {
+   "op": "snapshot.content",
+   "text": "a directory\n"
+  },
+  {
+   "op": "snapshot.content",
+   "hash": "ab"
+  },
+  {
+   "op": "snapshot.content",
+   "hash": "../../index"
+  },
+  {
+   "op": "snapshot.inventory"
+  },
+  {
+   "op": "snapshot.totalBytes"
+  }
+ ]
+}

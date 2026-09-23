@@ -64,6 +64,77 @@ impl ScrollAnchor {
     }
 }
 
+/// A Swift `Set<String>`: members are compared with Swift's `==`, which is
+/// canonical equivalence (`"é"` and `"e\u{301}"` are one member), and the
+/// first spelling inserted is the one kept. Iteration is in insertion order;
+/// encoding writes the members sorted by their UTF-8 bytes (Swift writes them
+/// in its per-process hash order).
+#[derive(Clone, Debug, Default)]
+pub struct StringSet {
+    members: Vec<String>,
+}
+
+impl StringSet {
+    pub fn new() -> StringSet {
+        StringSet::default()
+    }
+
+    /// `insert(_:)`: `false`, and no change, when an equal member exists.
+    pub fn insert(&mut self, member: impl Into<String>) -> bool {
+        let member = member.into();
+        if self.contains(&member) {
+            return false;
+        }
+        self.members.push(member);
+        true
+    }
+
+    pub fn contains(&self, member: &str) -> bool {
+        self.members.iter().any(|existing| upleft_swift_text::str_eq(existing, member))
+    }
+
+    /// `remove(_:)`.
+    pub fn remove(&mut self, member: &str) -> Option<String> {
+        let index = self.members.iter().position(|existing| upleft_swift_text::str_eq(existing, member))?;
+        Some(self.members.remove(index))
+    }
+
+    pub fn len(&self) -> usize {
+        self.members.len()
+    }
+
+    pub fn is_empty(&self) -> bool {
+        self.members.is_empty()
+    }
+
+    pub fn iter(&self) -> std::slice::Iter<'_, String> {
+        self.members.iter()
+    }
+
+    /// The members sorted by their UTF-8 bytes.
+    pub fn sorted(&self) -> Vec<&String> {
+        let mut sorted: Vec<&String> = self.members.iter().collect();
+        sorted.sort_by(|a, b| a.as_bytes().cmp(b.as_bytes()));
+        sorted
+    }
+}
+
+impl PartialEq for StringSet {
+    fn eq(&self, other: &Self) -> bool {
+        self.len() == other.len() && self.members.iter().all(|member| other.contains(member))
+    }
+}
+
+impl<S: Into<String>> FromIterator<S> for StringSet {
+    fn from_iter<I: IntoIterator<Item = S>>(iter: I) -> StringSet {
+        let mut set = StringSet::new();
+        for member in iter {
+            set.insert(member);
+        }
+        set
+    }
+}
+
 /// `RenderMode` as `Codable` sees it: its raw string.
 pub fn decode_render_mode(value: &Value) -> Result<RenderMode, DecodingError> {
     value.raw_string_enum(RenderMode::from_raw_value)
@@ -89,7 +160,7 @@ pub struct DocumentState {
     pub mode: RenderMode,
     pub zoom_level: ZoomLevel,
     /// Heading slugs whose sections are folded.
-    pub folded_headings: BTreeSet<String>,
+    pub folded_headings: StringSet,
     /// Source offsets of code blocks the user explicitly expanded or
     /// collapsed, overriding the auto-collapse rule (§5.1).
     pub expanded_code_blocks: BTreeSet<isize>,
@@ -112,7 +183,7 @@ impl DocumentState {
             anchor: ScrollAnchor::top(),
             mode: RenderMode::Live,
             zoom_level: ZoomLevel::Everything,
-            folded_headings: BTreeSet::new(),
+            folded_headings: StringSet::new(),
             expanded_code_blocks: BTreeSet::new(),
             collapsed_code_blocks: BTreeSet::new(),
             last_opened: Date::now(),
@@ -135,7 +206,7 @@ impl DocumentState {
             ("zoomLevel", JsonValue::Int(self.zoom_level.raw_value() as i64)),
             (
                 "foldedHeadings",
-                JsonValue::Array(self.folded_headings.iter().map(|slug| JsonValue::from(slug.as_str())).collect()),
+                JsonValue::Array(self.folded_headings.sorted().into_iter().map(|slug| JsonValue::from(slug.as_str())).collect()),
             ),
             (
                 "expandedCodeBlocks",

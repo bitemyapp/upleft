@@ -1,0 +1,192 @@
+{
+ "steps": [
+  {
+   "op": "tracker.new"
+  },
+  {
+   "op": "tracker.marks"
+  },
+  {
+   "op": "tracker.apply",
+   "old": "# Report\n\nAlpha paragraph.\n\nBravo paragraph.\n\nCharlie paragraph.\n",
+   "new": "# Report\n\nAlpha paragraph, revised.\n\nBravo paragraph.\n\nCharlie paragraph.\n"
+  },
+  {
+   "op": "tracker.apply",
+   "old": "# Report\n\nAlpha paragraph.\n\nBravo paragraph.\n\nCharlie paragraph.\n",
+   "new": "# Report\n\nAlpha paragraph, revised.\n\nCharlie paragraph.\n"
+  },
+  {
+   "op": "tracker.visit",
+   "index": 0
+  },
+  {
+   "op": "tracker.apply",
+   "old": "# Report\n\nAlpha paragraph.\n\nBravo paragraph.\n\nCharlie paragraph.\n",
+   "new": "# Report\n\nAlpha paragraph, revised.\n\nCharlie paragraph.\n\nA brand new paragraph the agent added.\n"
+  },
+  {
+   "op": "tracker.ranges"
+  },
+  {
+   "op": "tracker.next",
+   "offset": 0
+  },
+  {
+   "op": "tracker.next",
+   "offset": 30
+  },
+  {
+   "op": "tracker.next",
+   "offset": 10000
+  },
+  {
+   "op": "tracker.previous",
+   "offset": 40
+  },
+  {
+   "op": "tracker.previous",
+   "offset": 0
+  },
+  {
+   "op": "tracker.markAt",
+   "offset": 20
+  },
+  {
+   "op": "tracker.markAt",
+   "offset": 3
+  },
+  {
+   "op": "tracker.adjust",
+   "range": [
+    0,
+    0
+   ],
+   "delta": 5
+  },
+  {
+   "op": "tracker.adjust",
+   "range": [
+    30,
+    10
+   ],
+   "delta": -2
+  },
+  {
+   "op": "tracker.apply",
+   "hunks": [
+    {
+     "kind": "inserted",
+     "new": [
+      0,
+      5
+     ],
+     "old": [
+      0,
+      0
+     ],
+     "words": [
+      [
+       0,
+       5
+      ]
+     ]
+    }
+   ],
+   "replacing": false
+  },
+  {
+   "op": "tracker.apply",
+   "hunks": [
+    {
+     "kind": "deleted",
+     "new": [
+      3,
+      0
+     ],
+     "old": [
+      2,
+      4
+     ]
+    }
+   ],
+   "old": "abcdefgh",
+   "new": "abcd"
+  },
+  {
+   "op": "tracker.apply",
+   "hunks": [
+    {
+     "kind": "deleted",
+     "new": [
+      10,
+      0
+     ],
+     "old": [
+      2,
+      40
+     ]
+    }
+   ],
+   "old": "short",
+   "new": "ab"
+  },
+  {
+   "op": "tracker.apply",
+   "hunks": [
+    {
+     "kind": "modified",
+     "new": [
+      100,
+      20
+     ],
+     "old": [
+      100,
+      18
+     ]
+    },
+    {
+     "kind": "inserted",
+     "new": [
+      50,
+      10
+     ],
+     "old": [
+      50,
+      0
+     ]
+    }
+   ]
+  },
+  {
+   "op": "tracker.persisted"
+  },
+  {
+   "op": "tracker.reset"
+  },
+  {
+   "op": "tracker.reset"
+  },
+  {
+   "op": "tracker.apply",
+   "old": "a\ngone\nb\n",
+   "new": "a\nb\nnew\n"
+  },
+  {
+   "op": "tracker.clear"
+  },
+  {
+   "op": "tracker.clear"
+  },
+  {
+   "op": "tracker.apply",
+   "old": "😀 emoji é\nline two\n",
+   "new": "😀 emoji é\nline 2 changed\nextra 😀\n"
+  },
+  {
+   "op": "tracker.apply",
+   "old": "one\ntwo\n",
+   "new": ""
+  }
+ ]
+}

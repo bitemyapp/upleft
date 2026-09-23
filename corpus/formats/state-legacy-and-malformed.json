@@ -1,0 +1,150 @@
+{
+ "steps": [
+  {
+   "op": "state.decode",
+   "json": "{}"
+  },
+  {
+   "op": "state.decode",
+   "json": "{\"path\": \"/elsewhere/note.md\", \"lastSeenHash\": \"deadbeef\", \"anchor\": {\"headingSlug\": \"\", \"headingIndex\": 0, \"fractionThroughSection\": 0}, \"mode\": \"read\", \"zoomLevel\": 2, \"foldedHeadings\": [], \"expandedCodeBlocks\": [], \"collapsedCodeBlocks\": [], \"lastOpened\": \"2024-01-01T00:00:00Z\", \"sidebarVisible\": false, \"selectionLocation\": 0, \"selectionLength\": 0, \"splitViewEnabled\": false}"
+  },
+  {
+   "op": "state.decode",
+   "json": "{\"path\": \"/elsewhere/note.md\", \"lastSeenHash\": \"deadbeef\", \"anchor\": {\"headingSlug\": \"\", \"headingIndex\": 0, \"fractionThroughSection\": 0}, \"mode\": \"read\", \"zoomLevel\": 2, \"foldedHeadings\": [], \"expandedCodeBlocks\": [], \"collapsedCodeBlocks\": [], \"lastOpened\": \"2024-01-01T00:00:00Z\", \"sidebarVisible\": false, \"selectionLocation\": 0, \"selectionLength\": 0, \"splitViewEnabled\": false, \"reviewBaselineHash\": \"\"}"
+  },
+  {
+   "op": "state.decode",
+   "json": "{\"path\": \"/elsewhere/note.md\", \"lastSeenHash\": \"deadbeef\", \"anchor\": {\"headingSlug\": \"\", \"headingIndex\": 0, \"fractionThroughSection\": 0}, \"mode\": \"bogus\", \"zoomLevel\": 2, \"foldedHeadings\": [], \"expandedCodeBlocks\": [], \"collapsedCodeBlocks\": [], \"lastOpened\": \"2024-01-01T00:00:00Z\", \"sidebarVisible\": false, \"selectionLocation\": 0, \"selectionLength\": 0, \"splitViewEnabled\": false}"
+  },
+  {
+   "op": "state.decode",
+   "json": "{\"path\": \"/elsewhere/note.md\", \"lastSeenHash\": \"deadbeef\", \"anchor\": {\"headingSlug\": \"\", \"headingIndex\": 0, \"fractionThroughSection\": 0}, \"mode\": \"read\", \"zoomLevel\": 9, \"foldedHeadings\": [], \"expandedCodeBlocks\": [], \"collapsedCodeBlocks\": [], \"lastOpened\": \"2024-01-01T00:00:00Z\", \"sidebarVisible\": false, \"selectionLocation\": 0, \"selectionLength\": 0, \"splitViewEnabled\": false}"
+  },
+  {
+   "op": "state.decode",
+   "json": "{\"path\": \"/elsewhere/note.md\", \"lastSeenHash\": \"deadbeef\", \"anchor\": {\"headingSlug\": \"\", \"headingIndex\": 0, \"fractionThroughSection\": 0}, \"mode\": \"read\", \"zoomLevel\": 4.0, \"foldedHeadings\": [], \"expandedCodeBlocks\": [], \"collapsedCodeBlocks\": [], \"lastOpened\": \"2024-01-01T00:00:00Z\", \"sidebarVisible\": false, \"selectionLocation\": 0, \"selectionLength\": 0, \"splitViewEnabled\": false}"
+  },
+  {
+   "op": "state.decode",
+   "json": "{\"path\": \"/elsewhere/note.md\", \"lastSeenHash\": \"deadbeef\", \"anchor\": {\"headingSlug\": \"\", \"headingIndex\": 0, \"fractionThroughSection\": 0}, \"mode\": \"read\", \"zoomLevel\": \"5\", \"foldedHeadings\": [], \"expandedCodeBlocks\": [], \"collapsedCodeBlocks\": [], \"lastOpened\": \"2024-01-01T00:00:00Z\", \"sidebarVisible\": false, \"selectionLocation\": 0, \"selectionLength\": 0, \"splitViewEnabled\": false}"
+  },
+  {
+   "op": "state.decode",
+   "json": "{\"path\": \"/elsewhere/note.md\", \"lastSeenHash\": \"deadbeef\", \"anchor\": {\"headingSlug\": \"\", \"headingIndex\": 0, \"fractionThroughSection\": 0}, \"mode\": \"read\", \"zoomLevel\": 2, \"foldedHeadings\": [], \"expandedCodeBlocks\": [], \"collapsedCodeBlocks\": [], \"lastOpened\": \"2024-01-01T00:00:00Z\", \"sidebarVisible\": false, \"selectionLocation\": 0, \"selectionLength\": 0, \"splitViewEnabled\": false, \"marks\": [{\"id\": \"E621E1F8-C36C-495A-93FC-0C247A3E6E5F\", \"kind\": \"modified\", \"range\": {\"location\": 3, \"length\": 4}, \"wordRanges\": [{\"location\": 3, \"length\": 2}], \"deletedText\": \"\", \"created\": \"2030-01-01T00:00:00Z\", \"visited\": true}]}"
+  },
+  {
+   "op": "state.decode",
+   "json": "{\"path\": \"/elsewhere/note.md\", \"lastSeenHash\": \"deadbeef\", \"anchor\": {\"headingSlug\": \"\", \"headingIndex\": 0, \"fractionThroughSection\": 0}, \"mode\": \"read\", \"zoomLevel\": 2, \"foldedHeadings\": [], \"expandedCodeBlocks\": [], \"collapsedCodeBlocks\": [], \"lastOpened\": \"2024-01-01T00:00:00Z\", \"sidebarVisible\": false, \"selectionLocation\": 0, \"selectionLength\": 0, \"splitViewEnabled\": false, \"marks\": [{\"id\": \"not-a-uuid\", \"kind\": \"modified\", \"range\": {\"location\": 3, \"length\": 4}, \"wordRanges\": [{\"location\": 3, \"length\": 2}], \"deletedText\": \"\", \"created\": \"2030-01-01T00:00:00Z\", \"visited\": true}]}"
+  },
+  {
+   "op": "state.decode",
+   "json": "{\"path\": \"/elsewhere/note.md\", \"lastSeenHash\": \"deadbeef\", \"anchor\": {\"headingSlug\": \"\", \"headingIndex\": 0, \"fractionThroughSection\": 0}, \"mode\": \"read\", \"zoomLevel\": 2, \"foldedHeadings\": [], \"expandedCodeBlocks\": [], \"collapsedCodeBlocks\": [], \"lastOpened\": \"2024-01-01T00:00:00Z\", \"sidebarVisible\": false, \"selectionLocation\": 0, \"selectionLength\": 0, \"splitViewEnabled\": false, \"marks\": [{\"id\": \"E621E1F8-C36C-495A-93FC-0C247A3E6E5F\", \"kind\": \"modified\", \"range\": {\"location\": 3, \"length\": 4}, \"wordRanges\": [{\"location\": 3, \"length\": 2}], \"deletedText\": \"\", \"created\": \"2030-01-01T00:00:00Z\"}]}"
+  },
+  {
+   "op": "state.decode",
+   "json": "{\"path\": \"/elsewhere/note.md\", \"lastSeenHash\": \"deadbeef\", \"anchor\": {\"headingSlug\": \"\", \"headingIndex\": 0, \"fractionThroughSection\": 0}, \"mode\": \"read\", \"zoomLevel\": 2, \"foldedHeadings\": [], \"expandedCodeBlocks\": [], \"collapsedCodeBlocks\": [], \"lastOpened\": \"2024-01-01T00:00:00Z\", \"sidebarVisible\": false, \"selectionLocation\": 0, \"selectionLength\": 0, \"splitViewEnabled\": false, \"marks\": [{\"id\": \"E621E1F8-C36C-495A-93FC-0C247A3E6E5F\", \"kind\": \"renamed\", \"range\": {\"location\": 3, \"length\": 4}, \"wordRanges\": [{\"location\": 3, \"length\": 2}], \"deletedText\": \"\", \"created\": \"2030-01-01T00:00:00Z\", \"visited\": true}]}"
+  },
+  {
+   "op": "state.decode",
+   "json": "{\"path\": \"/elsewhere/note.md\", \"lastSeenHash\": \"deadbeef\", \"anchor\": {\"headingSlug\": \"\", \"headingIndex\": 0, \"fractionThroughSection\": 0}, \"mode\": \"read\", \"zoomLevel\": 2, \"foldedHeadings\": [], \"expandedCodeBlocks\": [], \"collapsedCodeBlocks\": [], \"lastOpened\": \"2024-01-01T00:00:00.75+02:00\", \"sidebarVisible\": false, \"selectionLocation\": 0, \"selectionLength\": 0, \"splitViewEnabled\": false}"
+  },
+  {
+   "op": "state.decode",
+   "json": "{\"path\": \"/elsewhere/note.md\", \"lastSeenHash\": \"deadbeef\", \"anchor\": {\"headingSlug\": \"\", \"headingIndex\": 0, \"fractionThroughSection\": 0}, \"mode\": \"read\", \"zoomLevel\": 2, \"foldedHeadings\": [], \"expandedCodeBlocks\": [], \"collapsedCodeBlocks\": [], \"lastOpened\": \"yesterday\", \"sidebarVisible\": false, \"selectionLocation\": 0, \"selectionLength\": 0, \"splitViewEnabled\": false}"
+  },
+  {
+   "op": "state.decode",
+   "json": "{\"path\": \"/elsewhere/note.md\", \"lastSeenHash\": \"deadbeef\", \"anchor\": {\"headingSlug\": \"\", \"headingIndex\": 0, \"fractionThroughSection\": 0}, \"mode\": \"read\", \"zoomLevel\": 2, \"foldedHeadings\": [], \"expandedCodeBlocks\": [], \"collapsedCodeBlocks\": [], \"lastOpened\": null, \"sidebarVisible\": null, \"selectionLocation\": null, \"selectionLength\": 0, \"splitViewEnabled\": false}"
+  },
+  {
+   "op": "state.decode",
+   "json": "{\"path\": \"/elsewhere/note.md\", \"lastSeenHash\": \"deadbeef\", \"anchor\": {\"headingSlug\": \"\", \"headingIndex\": 0, \"fractionThroughSection\": 0}, \"mode\": \"read\", \"zoomLevel\": 2, \"foldedHeadings\": [], \"expandedCodeBlocks\": [], \"collapsedCodeBlocks\": [], \"lastOpened\": \"2024-01-01T00:00:00Z\", \"sidebarVisible\": false, \"selectionLocation\": 1.5, \"selectionLength\": 0, \"splitViewEnabled\": false}"
+  },
+  {
+   "op": "state.decode",
+   "json": "{\"path\": \"/elsewhere/note.md\", \"lastSeenHash\": \"deadbeef\", \"anchor\": {\"headingSlug\": \"\", \"headingIndex\": 0, \"fractionThroughSection\": 0}, \"mode\": \"read\", \"zoomLevel\": 2, \"foldedHeadings\": [], \"expandedCodeBlocks\": [], \"collapsedCodeBlocks\": [], \"lastOpened\": \"2024-01-01T00:00:00Z\", \"sidebarVisible\": false, \"selectionLocation\": 12.0, \"selectionLength\": 100.0, \"splitViewEnabled\": false}"
+  },
+  {
+   "op": "state.decode",
+   "json": "{\"path\": \"/elsewhere/note.md\", \"lastSeenHash\": \"deadbeef\", \"anchor\": {\"headingSlug\": \"\", \"headingIndex\": 0, \"fractionThroughSection\": 0}, \"mode\": \"read\", \"zoomLevel\": 2, \"foldedHeadings\": [\"x\", \"x\", \"y\"], \"expandedCodeBlocks\": [], \"collapsedCodeBlocks\": [], \"lastOpened\": \"2024-01-01T00:00:00Z\", \"sidebarVisible\": false, \"selectionLocation\": 0, \"selectionLength\": 0, \"splitViewEnabled\": false}"
+  },
+  {
+   "op": "state.decode",
+   "json": "{\"path\": \"/elsewhere/note.md\", \"lastSeenHash\": \"deadbeef\", \"anchor\": {\"headingSlug\": \"\", \"headingIndex\": 0, \"fractionThroughSection\": 0}, \"mode\": \"read\", \"zoomLevel\": 2, \"foldedHeadings\": [], \"expandedCodeBlocks\": [\"1\"], \"collapsedCodeBlocks\": [], \"lastOpened\": \"2024-01-01T00:00:00Z\", \"sidebarVisible\": false, \"selectionLocation\": 0, \"selectionLength\": 0, \"splitViewEnabled\": false}"
+  },
+  {
+   "op": "state.decode",
+   "json": "{\"path\": \"/elsewhere/note.md\", \"lastSeenHash\": \"deadbeef\", \"anchor\": {\"headingSlug\": \"s\"}, \"mode\": \"read\", \"zoomLevel\": 2, \"foldedHeadings\": [], \"expandedCodeBlocks\": [], \"collapsedCodeBlocks\": [], \"lastOpened\": \"2024-01-01T00:00:00Z\", \"sidebarVisible\": false, \"selectionLocation\": 0, \"selectionLength\": 0, \"splitViewEnabled\": false}"
+  },
+  {
+   "op": "state.decode",
+   "json": "{\"path\": \"/elsewhere/note.md\", \"lastSeenHash\": \"deadbeef\", \"anchor\": null, \"mode\": \"read\", \"zoomLevel\": 2, \"foldedHeadings\": [], \"expandedCodeBlocks\": [], \"collapsedCodeBlocks\": [], \"lastOpened\": \"2024-01-01T00:00:00Z\", \"sidebarVisible\": false, \"selectionLocation\": 0, \"selectionLength\": 0, \"splitViewEnabled\": false}"
+  },
+  {
+   "op": "state.decode",
+   "json": "{\"path\": \"/elsewhere/note.md\", \"lastSeenHash\": \"deadbeef\", \"anchor\": {\"headingSlug\": \"\", \"headingIndex\": 0, \"fractionThroughSection\": 0}, \"mode\": \"read\", \"zoomLevel\": 2, \"foldedHeadings\": [], \"expandedCodeBlocks\": [], \"collapsedCodeBlocks\": [], \"lastOpened\": \"2024-01-01T00:00:00Z\", \"sidebarVisible\": false, \"selectionLocation\": 0, \"selectionLength\": 0, \"splitViewEnabled\": false, \"unknownKey\": {\"nested\": [1, 2]}}"
+  },
+  {
+   "op": "state.decode",
+   "json": "[]"
+  },
+  {
+   "op": "state.decode",
+   "json": "null"
+  },
+  {
+   "op": "state.decode",
+   "json": ""
+  },
+  {
+   "op": "state.decode",
+   "json": "{\"path\":\"a\",}"
+  },
+  {
+   "op": "state.decode",
+   "json": "{\"path\":\"a\",\"path\":\"b\"}"
+  },
+  {
+   "op": "state.decode",
+   "json": "﻿{\"lastSeenHash\":\"bom\"}"
+  },
+  {
+   "op": "state.open",
+   "support": "support"
+  },
+  {
+   "op": "state.writeFile",
+   "doc": "legacy.md",
+   "text": "{\"path\": \"/elsewhere/note.md\", \"lastSeenHash\": \"deadbeef\", \"anchor\": {\"headingSlug\": \"\", \"headingIndex\": 0, \"fractionThroughSection\": 0}, \"mode\": \"read\", \"zoomLevel\": 2, \"foldedHeadings\": [], \"expandedCodeBlocks\": [], \"collapsedCodeBlocks\": [], \"lastOpened\": \"2024-01-01T00:00:00Z\", \"sidebarVisible\": false, \"selectionLocation\": 0, \"selectionLength\": 0, \"splitViewEnabled\": false}"
+  },
+  {
+   "op": "state.get",
+   "doc": "legacy.md"
+  },
+  {
+   "op": "state.writeFile",
+   "doc": "broken.md",
+   "text": "{\"mode\":\"bogus\",\"selectionLocation\":9}"
+  },
+  {
+   "op": "state.get",
+   "doc": "broken.md"
+  },
+  {
+   "op": "state.save",
+   "doc": "broken.md",
+   "set": {
+    "lastOpened": "2002-02-02T02:02:02Z"
+   }
+  },
+  {
+   "op": "state.writeFile",
+   "doc": "garbage.md",
+   "text": "\u0000\u0001 not json"
+  },
+  {
+   "op": "state.get",
+   "doc": "garbage.md"
+  }
+ ]
+}

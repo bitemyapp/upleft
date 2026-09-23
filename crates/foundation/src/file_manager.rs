@@ -12,6 +12,11 @@ use objc2_foundation::{
 use crate::date::Date;
 use crate::url::FileUrl;
 
+/// `NSTemporaryDirectory()`.
+pub fn temporary_directory() -> String {
+    objc2_foundation::NSTemporaryDirectory().to_string()
+}
+
 /// `Data(contentsOf: url)`: the file's bytes, or `None` where Swift throws
 /// (missing, unreadable, a directory).
 pub fn data_contents_of(url: &FileUrl) -> Option<Vec<u8>> {

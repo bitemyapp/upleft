@@ -1,0 +1,21 @@
+{
+  "steps": [
+    {"op": "snapshot.open", "history": "support/history"},
+    {"op": "snapshot.record", "doc": "document.md", "text": "# One\n\nBody.\n", "kind": "baseline"},
+    {"op": "snapshot.record", "doc": "document.md", "text": "# One\n\nBody.\n", "kind": "external"},
+    {"op": "snapshot.record", "doc": "document.md", "text": "# One\n\nBody, revised.\n", "kind": "external"},
+    {"op": "snapshot.record", "doc": "document.md", "text": "# One\n\nBody, revised.\n", "kind": "local"},
+    {"op": "snapshot.record", "doc": "document.md", "text": "# One\n\nBody.\n", "kind": "local"},
+    {"op": "snapshot.wait"},
+    {"op": "snapshot.versions", "doc": "document.md"},
+    {"op": "snapshot.content", "doc": "document.md", "version": 0},
+    {"op": "snapshot.content", "doc": "document.md", "version": 1},
+    {"op": "snapshot.content", "doc": "document.md", "version": 2},
+    {"op": "snapshot.content", "hash": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"},
+    {"op": "snapshot.content", "hash": ""},
+    {"op": "snapshot.inventory"},
+    {"op": "snapshot.totalBytes"},
+    {"op": "snapshot.documentKey", "doc": "document.md"},
+    {"op": "snapshot.hash", "text": "abc"}
+  ]
+}

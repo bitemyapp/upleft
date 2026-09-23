@@ -1,0 +1,172 @@
+{
+ "steps": [
+  {
+   "op": "anchor.make",
+   "text": "Preamble line.\n\n# Title\n\nIntro.\n\n## Second section\n\nThe paragraph the reader is looking at.\n\n## Third section\n\nTrailing.\n",
+   "offset": 0
+  },
+  {
+   "op": "anchor.make",
+   "text": "Preamble line.\n\n# Title\n\nIntro.\n\n## Second section\n\nThe paragraph the reader is looking at.\n\n## Third section\n\nTrailing.\n",
+   "offset": 5
+  },
+  {
+   "op": "anchor.make",
+   "text": "Preamble line.\n\n# Title\n\nIntro.\n\n## Second section\n\nThe paragraph the reader is looking at.\n\n## Third section\n\nTrailing.\n",
+   "offset": 16
+  },
+  {
+   "op": "anchor.make",
+   "text": "Preamble line.\n\n# Title\n\nIntro.\n\n## Second section\n\nThe paragraph the reader is looking at.\n\n## Third section\n\nTrailing.\n",
+   "offset": 20
+  },
+  {
+   "op": "anchor.make",
+   "text": "Preamble line.\n\n# Title\n\nIntro.\n\n## Second section\n\nThe paragraph the reader is looking at.\n\n## Third section\n\nTrailing.\n",
+   "offset": 40
+  },
+  {
+   "op": "anchor.make",
+   "text": "Preamble line.\n\n# Title\n\nIntro.\n\n## Second section\n\nThe paragraph the reader is looking at.\n\n## Third section\n\nTrailing.\n",
+   "offset": 60
+  },
+  {
+   "op": "anchor.make",
+   "text": "Preamble line.\n\n# Title\n\nIntro.\n\n## Second section\n\nThe paragraph the reader is looking at.\n\n## Third section\n\nTrailing.\n",
+   "offset": 80
+  },
+  {
+   "op": "anchor.make",
+   "text": "Preamble line.\n\n# Title\n\nIntro.\n\n## Second section\n\nThe paragraph the reader is looking at.\n\n## Third section\n\nTrailing.\n",
+   "offset": 120
+  },
+  {
+   "op": "anchor.make",
+   "text": "Preamble line.\n\n# Title\n\nIntro.\n\n## Second section\n\nThe paragraph the reader is looking at.\n\n## Third section\n\nTrailing.\n",
+   "offset": 1000
+  },
+  {
+   "op": "anchor.offset",
+   "text": "Preamble line.\n\n# Title\n\nIntro.\n\n## Inserted\n\nNew paragraphs.\n\nMore.\n\n## Second section\n\nThe paragraph the reader is looking at.\n\n## Third section\n\nTrailing.\n",
+   "anchor": {
+    "headingSlug": "second-section",
+    "headingIndex": 2,
+    "fractionThroughSection": 0.5
+   }
+  },
+  {
+   "op": "anchor.offset",
+   "text": "Preamble line.\n\n# Title\n\nIntro.\n\n## Inserted\n\nNew paragraphs.\n\nMore.\n\n## Second section\n\nThe paragraph the reader is looking at.\n\n## Third section\n\nTrailing.\n",
+   "anchor": {
+    "headingSlug": "",
+    "headingIndex": 0,
+    "fractionThroughSection": 0.5
+   }
+  },
+  {
+   "op": "anchor.offset",
+   "text": "Preamble line.\n\n# Title\n\nIntro.\n\n## Inserted\n\nNew paragraphs.\n\nMore.\n\n## Second section\n\nThe paragraph the reader is looking at.\n\n## Third section\n\nTrailing.\n",
+   "anchor": {
+    "headingSlug": "long-gone",
+    "headingIndex": 1,
+    "fractionThroughSection": 0.25
+   }
+  },
+  {
+   "op": "anchor.offset",
+   "text": "Preamble line.\n\n# Title\n\nIntro.\n\n## Inserted\n\nNew paragraphs.\n\nMore.\n\n## Second section\n\nThe paragraph the reader is looking at.\n\n## Third section\n\nTrailing.\n",
+   "anchor": {
+    "headingSlug": "long-gone",
+    "headingIndex": 40,
+    "fractionThroughSection": 0.25
+   }
+  },
+  {
+   "op": "anchor.offset",
+   "text": "Preamble line.\n\n# Title\n\nIntro.\n\n## Inserted\n\nNew paragraphs.\n\nMore.\n\n## Second section\n\nThe paragraph the reader is looking at.\n\n## Third section\n\nTrailing.\n",
+   "anchor": {
+    "headingSlug": "third-section",
+    "headingIndex": 0,
+    "fractionThroughSection": 1.0
+   }
+  },
+  {
+   "op": "anchor.offset",
+   "text": "Preamble line.\n\n# Title\n\nIntro.\n\n## Inserted\n\nNew paragraphs.\n\nMore.\n\n## Second section\n\nThe paragraph the reader is looking at.\n\n## Third section\n\nTrailing.\n",
+   "anchor": {
+    "headingSlug": "title",
+    "headingIndex": 0,
+    "fractionThroughSection": 0.999
+   }
+  },
+  {
+   "op": "anchor.offset",
+   "text": "# Same\n\none\n\n# Same\n\ntwo\n\n# Same\n\nthree\n",
+   "anchor": {
+    "headingSlug": "same",
+    "headingIndex": 2,
+    "fractionThroughSection": 0.5
+   }
+  },
+  {
+   "op": "anchor.offset",
+   "text": "# Same\n\none\n\n# Same\n\ntwo\n\n# Same\n\nthree\n",
+   "anchor": {
+    "headingSlug": "same",
+    "headingIndex": 5,
+    "fractionThroughSection": 0.5
+   }
+  },
+  {
+   "op": "anchor.offset",
+   "text": "# Same\n\none\n\n# Same\n\ntwo\n\n# Same\n\nthree\n",
+   "anchor": {
+    "headingSlug": "same-1",
+    "headingIndex": 1,
+    "fractionThroughSection": 0.5
+   }
+  },
+  {
+   "op": "anchor.offset",
+   "text": "# Same\n\none\n\n# Same\n\ntwo\n\n# Same\n\nthree\n",
+   "anchor": {
+    "headingSlug": "same",
+    "headingIndex": -3,
+    "fractionThroughSection": 0.0
+   }
+  },
+  {
+   "op": "anchor.make",
+   "text": "no headings at all\n",
+   "offset": 7
+  },
+  {
+   "op": "anchor.offset",
+   "text": "no headings at all\n",
+   "anchor": {
+    "headingSlug": "x",
+    "headingIndex": 0,
+    "fractionThroughSection": 0.5
+   }
+  },
+  {
+   "op": "anchor.make",
+   "text": "",
+   "offset": 0
+  },
+  {
+   "op": "anchor.make",
+   "text": "# Only\n",
+   "offset": 0
+  },
+  {
+   "op": "anchor.offset",
+   "text": "# Only\n",
+   "anchor": {
+    "headingSlug": "only",
+    "headingIndex": 0,
+    "fractionThroughSection": 3.0
+   }
+  }
+ ]
+}
