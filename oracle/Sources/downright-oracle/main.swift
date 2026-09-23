@@ -12,6 +12,9 @@ import MarkdownRender
 //   downright-oracle stylesheet   <file.md> <out.json> [--theme NAME] [--dark]
 //   downright-oracle highlight    <file.md> <out.json>
 //   downright-oracle vscode-theme <theme.json> <out.json>
+//   downright-oracle math         <file.tex> <out.png>
+//   downright-oracle math-tree    <file.tex> <out.json>
+//   downright-oracle bench-math   <dir> <out.json>
 //
 // `upleft-oracle` (crates/conformance) takes identical arguments and writes
 // identical formats.
@@ -100,6 +103,15 @@ do {
         let storage = NSTextStorage(string: text)
         engine.decorate(storage, document: MarkdownParser.parse(text), dirty: .wholesale)
         try write(AttributeDump.storage(storage), to: output)
+
+    case "math":
+        try MathDump.image(input, to: output)
+
+    case "math-tree":
+        try MathDump.tree(input, to: output)
+
+    case "bench-math":
+        try MathBench.run(input, to: output)
 
     case "render", "probe":
         let request = RenderRequest(

@@ -194,6 +194,20 @@
       "variants": [
         []
       ]
+    },
+    {
+      "name": "math-image",
+      "command": "math",
+      "output": "png",
+      "input": "tex",
+      "variants": [[]]
+    },
+    {
+      "name": "math-tree",
+      "command": "math-tree",
+      "output": "json",
+      "input": "tex",
+      "variants": [[]]
     }
   ]
 }

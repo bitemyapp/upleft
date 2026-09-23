@@ -11,6 +11,7 @@ let package = Package(
     dependencies: [
         .package(name: "downright", path: "../vendor/downright"),
         .package(url: "https://github.com/apple/swift-markdown.git", revision: "27b7fc1a19068bcea3d2072db0ce86360d1400ed"),
+        .package(path: "../vendor/downright/Vendor/SwiftMath"),
     ],
     targets: [
         .executableTarget(
@@ -19,6 +20,7 @@ let package = Package(
                 .product(name: "MarkdownCore", package: "downright"),
                 .product(name: "MarkdownRender", package: "downright"),
                 .product(name: "Markdown", package: "swift-markdown"),
+                .product(name: "SwiftMath", package: "SwiftMath"),
             ],
             swiftSettings: [.swiftLanguageMode(.v5)]
         ),

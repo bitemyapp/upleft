@@ -5,6 +5,8 @@ pub mod attribute_dump;
 pub mod highlight;
 pub mod json;
 pub mod markup;
+pub mod math;
+pub mod math_bench;
 pub mod style_sheet;
 
 use std::path::PathBuf;
@@ -89,6 +91,9 @@ impl From<std::io::Error> for Failure {
 /// Dispatches a request. Ported layers add their command here.
 pub fn run(request: &Request) -> Result<(), Failure> {
     match request.command.as_str() {
+        "math" => math::image(&request.input, &request.output),
+        "math-tree" => math::tree(&request.input, &request.output),
+        "bench-math" => math_bench::run(&request.input, &request.output),
         "markup" => markup::run(&request.input, &request.output),
         "stylesheet" => {
             let value = style_sheet::dump(&request.theme, request.dark)?;
