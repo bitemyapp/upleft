@@ -703,6 +703,19 @@ dependencies = [
 ]
 
 [[package]]
+name = "upleft-quicklook"
+version = "0.1.0"
+dependencies = [
+ "libc",
+ "objc2",
+ "objc2-app-kit",
+ "objc2-foundation",
+ "upleft-core",
+ "upleft-render",
+ "upleft-swift-text",
+]
+
+[[package]]
 name = "upleft-render"
 version = "0.1.0"
 dependencies = [
