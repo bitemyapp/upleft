@@ -1,0 +1,265 @@
+{
+ "graph": {
+  "props": [
+   [
+    "org.eclipse.elk.spacing.labelNode",
+    "Double",
+    3.0
+   ]
+  ]
+ },
+ "nodes": [
+  {
+   "id": "M1",
+   "size": [
+    40,
+    40
+   ],
+   "props": [
+    [
+     "org.eclipse.elk.portLabels.placement",
+     "PortLabelPlacement",
+     1
+    ]
+   ],
+   "labels": [
+    {
+     "text": "m1l",
+     "size": [
+      10,
+      10
+     ],
+     "pos": [
+      -5,
+      -12
+     ]
+    }
+   ],
+   "ports": [
+    {
+     "id": "m1e",
+     "side": "EAST",
+     "size": [
+      4,
+      4
+     ],
+     "labels": [
+      {
+       "text": "m1el",
+       "size": [
+        6,
+        5
+       ],
+       "pos": [
+        5,
+        5
+       ]
+      }
+     ],
+     "pos": [
+      40,
+      10
+     ]
+    },
+    {
+     "id": "m1w",
+     "side": "WEST",
+     "size": [
+      4,
+      4
+     ],
+     "labels": [
+      {
+       "text": "m1wl",
+       "size": [
+        3,
+        3
+       ]
+      }
+     ],
+     "pos": [
+      -4,
+      10
+     ]
+    },
+    {
+     "id": "m1n",
+     "side": "NORTH",
+     "size": [
+      4,
+      4
+     ],
+     "pos": [
+      10,
+      -4
+     ]
+    },
+    {
+     "id": "m1s",
+     "side": "SOUTH",
+     "size": [
+      4,
+      4
+     ],
+     "labels": [
+      {
+       "text": "m1sl",
+       "size": [
+        8,
+        2
+       ]
+      }
+     ],
+     "pos": [
+      10,
+      40
+     ]
+    }
+   ],
+   "pos": [
+    100,
+    50
+   ]
+  },
+  {
+   "id": "M2",
+   "size": [
+    10,
+    10
+   ],
+   "ports": [
+    {
+     "id": "m2w",
+     "side": "WEST",
+     "size": [
+      2,
+      2
+     ],
+     "pos": [
+      -2,
+      4
+     ]
+    }
+   ],
+   "pos": [
+    300,
+    50
+   ]
+  }
+ ],
+ "edges": [
+  {
+   "id": "x1",
+   "source": "m1e",
+   "target": "m2w",
+   "labels": [
+    {
+     "text": "xt",
+     "size": [
+      9,
+      4
+     ],
+     "props": [
+      [
+       "org.eclipse.elk.edgeLabels.placement",
+       "EdgeLabelPlacement",
+       "TAIL"
+      ]
+     ]
+    },
+    {
+     "text": "xh",
+     "size": [
+      5,
+      5
+     ],
+     "props": [
+      [
+       "org.eclipse.elk.edgeLabels.placement",
+       "EdgeLabelPlacement",
+       "HEAD"
+      ]
+     ]
+    }
+   ]
+  },
+  {
+   "id": "x2",
+   "source": "m2w",
+   "target": "m1w",
+   "labels": [
+    {
+     "text": "yh",
+     "size": [
+      7,
+      6
+     ],
+     "props": [
+      [
+       "org.eclipse.elk.edgeLabels.placement",
+       "EdgeLabelPlacement",
+       "HEAD"
+      ]
+     ]
+    }
+   ]
+  },
+  {
+   "id": "x3",
+   "source": "m2w",
+   "target": "m1n",
+   "labels": [
+    {
+     "text": "zh",
+     "size": [
+      4,
+      9
+     ],
+     "props": [
+      [
+       "org.eclipse.elk.edgeLabels.placement",
+       "EdgeLabelPlacement",
+       "HEAD"
+      ]
+     ]
+    }
+   ]
+  },
+  {
+   "id": "x4",
+   "source": "m1s",
+   "target": "m2w",
+   "labels": [
+    {
+     "text": "wt",
+     "size": [
+      6,
+      7
+     ],
+     "props": [
+      [
+       "org.eclipse.elk.edgeLabels.placement",
+       "EdgeLabelPlacement",
+       "TAIL"
+      ]
+     ]
+    }
+   ]
+  }
+ ],
+ "layers": [
+  [
+   "M1"
+  ],
+  [
+   "M2"
+  ]
+ ],
+ "run": [
+  "MarginCalcNode:M1",
+  "MarginCalcNode:M2",
+  "Dump:margins",
+  "InnermostNodeMarginCalculator",
+  "Dump:innermost"
+ ]
+}

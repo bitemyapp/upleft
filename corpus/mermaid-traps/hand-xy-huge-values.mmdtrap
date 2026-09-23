@@ -1,0 +1,4 @@
+xychart-beta
+    x-axis [a, b, c]
+    y-axis "v" 0 --> 1e300
+    bar [1e300, 2e299, 3e298]

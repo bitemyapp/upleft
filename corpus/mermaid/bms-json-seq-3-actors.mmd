@@ -1,0 +1,8 @@
+sequenceDiagram
+  actor U as User
+  participant S as System
+  participant DB as Database
+  U->>S: Click button
+  S->>DB: Query
+  DB-->>S: Results
+  S-->>U: Display

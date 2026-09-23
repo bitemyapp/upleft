@@ -1,0 +1,78 @@
+[package]
+name = "upleft-mermaid"
+description = "beautiful-mermaid-swift (as Downright drives it) and Downright's Mermaid bridge, ported to Rust"
+version.workspace = true
+edition.workspace = true
+license = "MIT"
+publish.workspace = true
+
+[dependencies]
+objc2.workspace = true
+serde_json.workspace = true
+upleft-render.workspace = true
+upleft-swift-text.workspace = true
+upleft-elk = { workspace = true, optional = true }
+objc2-foundation = { workspace = true, features = [
+    "NSArray",
+    "NSAttributedString",
+    "NSDictionary",
+    "NSEnumerator",
+    "NSError",
+    "NSGeometry",
+    "NSObjCRuntime",
+    "NSObject",
+    "NSRange",
+    "NSRegularExpression",
+    "NSScanner",
+    "NSString",
+    "NSTextCheckingResult",
+    "NSValue",
+] }
+objc2-app-kit = { workspace = true, features = [
+    "objc2-core-foundation",
+    "objc2-core-graphics",
+    "NSAttributedString",
+    "NSBezierPath",
+    "NSBitmapImageRep",
+    "NSColor",
+    "NSColorSpace",
+    "NSFont",
+    "NSFontDescriptor",
+    "NSFontManager",
+    "NSGraphics",
+    "NSGraphicsContext",
+    "NSImage",
+    "NSImageRep",
+    "NSScreen",
+    "NSStringDrawing",
+    "NSText",
+] }
+objc2-core-foundation = { workspace = true, features = [
+    "CFAttributedString",
+    "CFCGTypes",
+    "CFString",
+] }
+objc2-core-graphics = { workspace = true, features = [
+    "CGAffineTransform",
+    "CGBitmapContext",
+    "CGColor",
+    "CGColorSpace",
+    "CGContext",
+    "CGGeometry",
+    "CGImage",
+    "CGPath",
+] }
+objc2-core-text = { workspace = true, features = [
+    "objc2-core-graphics",
+    "CTLine",
+] }
+
+[features]
+default = ["elk"]
+# Link the ELK engine (`upleft-elk`) for flowchart, state, class and ER
+# layouts. Without it those layouts fail (or, in tests and the conformance
+# oracle, replay Swift's recorded ELK answers).
+elk = ["dep:upleft-elk"]
+
+[dev-dependencies]
+objc2-app-kit = { workspace = true, features = ["NSAppearance", "NSBitmapImageRep", "NSImage", "NSImageRep"] }

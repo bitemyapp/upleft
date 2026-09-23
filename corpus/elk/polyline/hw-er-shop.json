@@ -1,0 +1,105 @@
+{
+ "children": [
+  {
+   "height": 78.0,
+   "id": "CUSTOMER",
+   "width": 140.2
+  },
+  {
+   "height": 78.0,
+   "id": "ORDER",
+   "width": 140.0
+  },
+  {
+   "height": 56.0,
+   "id": "LINE-ITEM",
+   "width": 140.0
+  },
+  {
+   "height": 56.0,
+   "id": "DELIVERY-ADDRESS",
+   "width": 161.10699999999994
+  },
+  {
+   "height": 56.0,
+   "id": "PRODUCT",
+   "width": 140.0
+  }
+ ],
+ "edges": [
+  {
+   "id": "e0",
+   "labels": [
+    {
+     "height": 20.3,
+     "text": "places",
+     "width": 41.726000000000006
+    }
+   ],
+   "sources": [
+    "CUSTOMER"
+   ],
+   "targets": [
+    "ORDER"
+   ]
+  },
+  {
+   "id": "e1",
+   "labels": [
+    {
+     "height": 20.3,
+     "text": "contains",
+     "width": 50.04200000000001
+    }
+   ],
+   "sources": [
+    "ORDER"
+   ],
+   "targets": [
+    "LINE-ITEM"
+   ]
+  },
+  {
+   "id": "e2",
+   "labels": [
+    {
+     "height": 20.3,
+     "text": "uses",
+     "width": 33.41
+    }
+   ],
+   "sources": [
+    "CUSTOMER"
+   ],
+   "targets": [
+    "DELIVERY-ADDRESS"
+   ]
+  },
+  {
+   "id": "e3",
+   "labels": [
+    {
+     "height": 20.3,
+     "text": "ordered in",
+     "width": 58.952000000000005
+    }
+   ],
+   "sources": [
+    "PRODUCT"
+   ],
+   "targets": [
+    "LINE-ITEM"
+   ]
+  }
+ ],
+ "id": "root",
+ "layoutOptions": {
+  "elk.algorithm": "layered",
+  "elk.direction": "RIGHT",
+  "elk.edgeLabels.placement": "CENTER",
+  "elk.edgeRouting": "POLYLINE",
+  "elk.layered.spacing.nodeNodeBetweenLayers": "90.0",
+  "elk.padding": "[top=40.0,left=40.0,bottom=40.0,right=40.0]",
+  "elk.spacing.nodeNode": "70.0"
+ }
+}

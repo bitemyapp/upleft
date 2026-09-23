@@ -1,0 +1,13 @@
+//! Port of `core/options/SizeOptions.swift`.
+
+crate::option_set!(SizeOptions {
+    DEFAULT_MINIMUM_SIZE = 0,
+    MINIMUM_SIZE_ACCOUNTS_FOR_PADDING = 1,
+    COMPUTE_PADDING = 2,
+    OUTSIDE_NODE_LABELS_OVERHANG = 3,
+    PORTS_OVERHANG = 4,
+    UNIFORM_PORT_SPACING = 5,
+    SPACE_EFFICIENT_PORT_LABELS = 6,
+    FORCE_TABULAR_NODE_LABELS = 7,
+    ASYMMETRICAL = 8,
+});

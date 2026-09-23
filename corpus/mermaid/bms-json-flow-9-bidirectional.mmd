@@ -1,0 +1,4 @@
+graph LR
+  A[Client] <-->|sync| B[Server]
+  B <-.->|heartbeat| C[Monitor]
+  C <==>|data| D[Storage]

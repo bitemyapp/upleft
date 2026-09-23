@@ -132,8 +132,16 @@
       "command": "displaymap",
       "output": "json",
       "variants": [
-        ["--mode", "live"]
+        ["--mode", "live"],
+        ["--mode", "read"],
+        ["--mode", "source"]
       ]
+    },
+    {
+      "name": "clipboard",
+      "command": "clipboard",
+      "output": "json",
+      "variants": [[]]
     },
     {
       "name": "render",
@@ -237,12 +245,62 @@
       ]
     },
     {
+      "name": "mermaid-replay",
+      "command": "mermaid-replay",
+      "output": "json",
+      "input": "elkrec",
+      "variants": [[]]
+    },
+    {
+      "name": "mermaid-parse",
+      "command": "mermaid-parse",
+      "output": "json",
+      "input": "mmd",
+      "variants": [[]]
+    },
+    {
+      "name": "mermaid-layout",
+      "command": "mermaid-layout",
+      "output": "json",
+      "input": "mmd",
+      "variants": [
+        [],
+        ["--dark"],
+        ["--theme", "Nord"],
+        ["--theme", "High Contrast"]
+      ]
+    },
+    {
+      "name": "mermaid",
+      "command": "mermaid",
+      "output": "png",
+      "input": "mmd",
+      "variants": [
+        [],
+        ["--dark"],
+        ["--theme", "Nord"],
+        ["--theme", "High Contrast"]
+      ]
+    },
+    {
       "name": "vscode-theme",
       "command": "vscode-theme",
       "output": "json",
       "input": "jsonc",
       "only": [
         "corpus/themes/"
+      ],
+      "variants": [
+        []
+      ]
+    },
+    {
+      "name": "elk",
+      "command": "elk",
+      "output": "json",
+      "input": "json",
+      "only": [
+        "corpus/elk/"
       ],
       "variants": [
         []

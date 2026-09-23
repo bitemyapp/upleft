@@ -13,6 +13,8 @@ upleft-markup.workspace = true
 upleft-core.workspace = true
 upleft-swift-text.workspace = true
 upleft-render.workspace = true
+upleft-mermaid.workspace = true
+upleft-elk.workspace = true
 upleft-math.workspace = true
 objc2.workspace = true
 objc2-foundation = { workspace = true, features = [
@@ -23,7 +25,7 @@ objc2-foundation = { workspace = true, features = [
 objc2-app-kit = { workspace = true, features = [
     "NSAppearance", "NSApplication", "NSBitmapImageRep", "NSClipView", "NSColor", "NSColorList", "NSColorSpace",
     "NSFont", "NSFontDescriptor", "NSGraphics", "NSGraphicsContext", "NSImage", "NSImageRep", "NSResponder",
-    "NSRunningApplication", "NSScrollView", "NSText", "NSTextView", "NSView", "NSWindow", "NSLayoutConstraint",
+    "NSRunningApplication", "NSScreen", "NSScrollView", "NSText", "NSTextView", "NSView", "NSWindow", "NSLayoutConstraint",
     "NSTextStorage", "NSTextContentManager", "NSTextLayoutManager", "NSTextLayoutFragment", "NSTextLineFragment",
     "NSTextRange", "NSTextContainer", "NSTextSelectionNavigation",
     "objc2-core-graphics",

@@ -15,6 +15,8 @@ upleft-markup = { path = "crates/markup" }
 upleft-swift-text = { path = "crates/swift-text" }
 upleft-core = { path = "crates/core" }
 upleft-render = { path = "crates/render" }
+upleft-mermaid = { path = "crates/mermaid" }
+upleft-elk = { path = "crates/elk" }
 upleft-math = { path = "crates/math" }
 block2 = "0.6"
 objc2 = "0.6.4"

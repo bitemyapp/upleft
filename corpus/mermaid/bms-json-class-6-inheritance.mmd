@@ -1,0 +1,15 @@
+classDiagram
+  class Animal {
+    +String name
+    +eat() void
+  }
+  class Dog {
+    +String breed
+    +bark() void
+  }
+  class Cat {
+    +bool isIndoor
+    +meow() void
+  }
+  Animal <|-- Dog
+  Animal <|-- Cat

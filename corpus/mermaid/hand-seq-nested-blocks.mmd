@@ -1,0 +1,12 @@
+sequenceDiagram
+    participant A
+    participant B
+    loop retry
+        alt success
+            A->>B: done
+        else failure
+            opt log
+                A->>A: record error
+            end
+        end
+    end

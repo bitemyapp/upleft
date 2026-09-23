@@ -1,0 +1,11 @@
+sequenceDiagram
+  participant C as Client
+  participant S as Server
+  C->>S: Login
+  alt Valid credentials
+    S-->>C: 200 OK
+  else Invalid
+    S-->>C: 401 Unauthorized
+  else Account locked
+    S-->>C: 403 Forbidden
+  end

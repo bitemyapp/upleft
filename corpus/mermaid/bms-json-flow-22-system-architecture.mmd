@@ -1,0 +1,16 @@
+graph LR
+  subgraph clients [Client Layer]
+    A([Web App]) --> B[API Gateway]
+    C([Mobile App]) --> B
+  end
+  subgraph services [Service Layer]
+    B --> D[Auth Service]
+    B --> E[User Service]
+    B --> F[Order Service]
+  end
+  subgraph data [Data Layer]
+    D --> G[(Auth DB)]
+    E --> H[(User DB)]
+    F --> I[(Order DB)]
+    F --> J([Message Queue])
+  end

@@ -1,0 +1,4 @@
+sequenceDiagram
+    Agent->>Disk: write temp file
+    Agent->>Disk: rename() over target
+    Disk->>Downright: FSEvents on parent directory

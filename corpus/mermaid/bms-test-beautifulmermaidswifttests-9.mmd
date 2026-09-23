@@ -1,0 +1,11 @@
+graph TD
+  subgraph Cloud
+    subgraph us-east [US East Region]
+      A[Web Server] --> B[App Server]
+    end
+    subgraph us-west [US West Region]
+      C[Web Server] --> D[App Server]
+    end
+  end
+  E[Load Balancer] --> A
+  E --> C

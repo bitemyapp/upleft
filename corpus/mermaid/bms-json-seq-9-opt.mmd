@@ -1,0 +1,11 @@
+sequenceDiagram
+  participant A as App
+  participant C as Cache
+  participant DB as Database
+  A->>C: Get data
+  C-->>A: Cache miss
+  opt Cache miss
+    A->>DB: Query
+    DB-->>A: Results
+    A->>C: Store in cache
+  end

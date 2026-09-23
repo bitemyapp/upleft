@@ -1,0 +1,16 @@
+sequenceDiagram
+  participant C as Client
+  participant S as Server
+  participant DB as Database
+  C->>S: POST /transfer
+  S->>DB: BEGIN
+  S->>DB: Debit account A
+  alt Success
+    S->>DB: Credit account B
+    S->>DB: INSERT audit_log
+    S->>DB: COMMIT
+    S-->>C: 200 OK
+  else Insufficient funds
+    S->>DB: ROLLBACK
+    S-->>C: 400 Bad Request
+  end

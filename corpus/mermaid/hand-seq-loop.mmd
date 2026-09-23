@@ -1,0 +1,7 @@
+sequenceDiagram
+    participant A
+    participant B
+    loop every 5 seconds
+        A->>B: poll
+        B-->>A: ack
+    end

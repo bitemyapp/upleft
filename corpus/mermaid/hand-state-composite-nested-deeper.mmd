@@ -1,0 +1,10 @@
+stateDiagram-v2
+    state Outer {
+        state Inner {
+            [*] --> Working
+            Working --> [*]
+        }
+        [*] --> Inner
+        Inner --> [*]
+    }
+    [*] --> Outer

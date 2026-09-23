@@ -1,0 +1,14 @@
+{
+  "pins" : [
+    {
+      "identity" : "elk-swift",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/lukilabs/elk-swift",
+      "state" : {
+        "revision" : "32f8042e3509a4819f00ff9cd46e829ec2b26da0",
+        "version" : "1.0.2"
+      }
+    }
+  ],
+  "version" : 2
+}

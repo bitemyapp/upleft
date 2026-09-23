@@ -1,0 +1,15 @@
+sequenceDiagram
+  actor U as User
+  participant App as Client App
+  participant Auth as Auth Server
+  participant API as Resource API
+  U->>App: Click Login
+  App->>Auth: Authorization request
+  Auth->>U: Login page
+  U->>Auth: Credentials
+  Auth-->>App: Authorization code
+  App->>Auth: Exchange code for token
+  Auth-->>App: Access token
+  App->>API: Request + token
+  API-->>App: Protected resource
+  App-->>U: Display data

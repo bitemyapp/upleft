@@ -1,0 +1,22 @@
+classDiagram
+  class Model {
+    -data Map
+    +getData() Map
+    +setData(key, val) void
+    +notify() void
+  }
+  class View {
+    -model Model
+    +render() void
+    +update() void
+  }
+  class Controller {
+    -model Model
+    -view View
+    +handleInput(event) void
+    +updateModel(data) void
+  }
+  Controller --> Model : updates
+  Controller --> View : refreshes
+  View --> Model : reads
+  Model ..> View : notifies

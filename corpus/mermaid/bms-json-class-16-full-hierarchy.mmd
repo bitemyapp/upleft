@@ -1,0 +1,33 @@
+classDiagram
+  class Animal {
+    <<abstract>>
+    +String name
+    +int age
+    +eat() void
+    +sleep() void
+  }
+  class Mammal {
+    +bool warmBlooded
+    +nurse() void
+  }
+  class Bird {
+    +bool canFly
+    +layEggs() void
+  }
+  class Dog {
+    +String breed
+    +bark() void
+  }
+  class Cat {
+    +bool isIndoor
+    +purr() void
+  }
+  class Parrot {
+    +String vocabulary
+    +speak() void
+  }
+  Animal <|-- Mammal
+  Animal <|-- Bird
+  Mammal <|-- Dog
+  Mammal <|-- Cat
+  Bird <|-- Parrot

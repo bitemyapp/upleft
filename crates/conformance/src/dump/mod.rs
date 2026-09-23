@@ -1,14 +1,17 @@
 //! Rust counterparts of the Swift oracle's dumps (`oracle/Sources/downright-oracle`).
 //! Each submodule mirrors one Swift file and must emit the same JSON shape.
 
+pub mod clipboard;
 pub mod core_text;
 pub mod attribute_dump;
 pub mod decorate;
 pub mod display_map;
+pub mod elk;
 pub mod highlight;
 pub mod incremental;
 pub mod json;
 pub mod markup;
+pub mod mermaid;
 pub mod math;
 pub mod math_bench;
 pub mod parse;
@@ -110,6 +113,7 @@ pub fn run(request: &Request) -> Result<(), Failure> {
         "decorate" => decorate::run(request),
         "incremental" => incremental::run(request),
         "displaymap" => display_map::run(request),
+        "clipboard" => clipboard::run(request),
         "stylesheet" => {
             let value = style_sheet::dump(&request.theme, request.dark)?;
             Ok(json::write(&value, &request.output)?)
@@ -122,6 +126,12 @@ pub fn run(request: &Request) -> Result<(), Failure> {
             let data = std::fs::read(&request.input)?;
             Ok(json::write(&highlight::vscode_theme(&data, &request.input), &request.output)?)
         }
+        "mermaid-parse" => mermaid::parse(&request.input, &request.output),
+        "mermaid-layout" => mermaid::layout(&request.input, &request.output, &request.theme, request.dark),
+        "mermaid" => mermaid::image(&request.input, &request.output, &request.theme, request.dark),
+        "mermaid-bench" => mermaid::bench(&request.input, &request.output),
+        "mermaid-replay" => mermaid::replay_record(&request.input, &request.output),
+        "elk" => elk::run(&request.input, &request.output),
         "probe" => crate::capture::run(request.capture(), Box::new(crate::capture::ProbeScene)),
         "bench-view" => view_bench::run(request),
         "render" => crate::capture::run(

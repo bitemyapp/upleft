@@ -1,0 +1,24 @@
+classDiagram
+    class Order {
+        +int orderId
+        +Date orderDate
+        +calculateTotal()
+    }
+
+    class Customer {
+        +String name
+        +String email
+    }
+
+    class Product {
+        +String name
+        +float price
+    }
+
+    class LineItem {
+        +int quantity
+    }
+
+    Customer "1" --> "*" Order : places
+    Order "1" --> "*" LineItem : contains
+    LineItem "*" --> "1" Product : refers to

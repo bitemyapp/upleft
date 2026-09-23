@@ -1,0 +1,27 @@
+classDiagram
+  class Subject {
+    <<interface>>
+    +attach(Observer) void
+    +detach(Observer) void
+    +notify() void
+  }
+  class Observer {
+    <<interface>>
+    +update() void
+  }
+  class EventEmitter {
+    -List~Observer~ observers
+    +attach(Observer) void
+    +detach(Observer) void
+    +notify() void
+  }
+  class Logger {
+    +update() void
+  }
+  class Alerter {
+    +update() void
+  }
+  Subject <|.. EventEmitter
+  Observer <|.. Logger
+  Observer <|.. Alerter
+  EventEmitter --> Observer

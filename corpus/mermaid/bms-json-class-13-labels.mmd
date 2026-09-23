@@ -1,0 +1,12 @@
+classDiagram
+  class Teacher {
+    +String name
+  }
+  class Student {
+    +String name
+  }
+  class Course {
+    +String title
+  }
+  Teacher --> Course : teaches
+  Student --> Course : enrolled in
