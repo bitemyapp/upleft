@@ -537,12 +537,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "unicode-segmentation"
-version = "1.13.3"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c6f5d3c3b1bf09027a88a6bc961fc00497d651009560b5463668dc81b0fa87a8"
-
-[[package]]
 name = "upleft-cmark-gfm-sys"
 version = "0.1.0"
 dependencies = [
@@ -568,6 +562,7 @@ dependencies = [
  "upleft-markup",
  "upleft-math",
  "upleft-render",
+ "upleft-swift-text",
 ]
 
 [[package]]
@@ -577,12 +572,11 @@ dependencies = [
  "block2",
  "libc",
  "objc2",
- "objc2-core-foundation",
  "objc2-foundation",
  "objc2-natural-language",
  "sha2",
- "unicode-normalization",
  "upleft-markup",
+ "upleft-swift-text",
  "uuid",
 ]
 
@@ -590,9 +584,8 @@ dependencies = [
 name = "upleft-markup"
 version = "0.1.0"
 dependencies = [
- "unicode-normalization",
- "unicode-segmentation",
  "upleft-cmark-gfm-sys",
+ "upleft-swift-text",
 ]
 
 [[package]]
@@ -606,8 +599,7 @@ dependencies = [
  "objc2-core-graphics",
  "objc2-core-text",
  "objc2-foundation",
- "unicode-normalization",
- "unicode-segmentation",
+ "upleft-swift-text",
 ]
 
 [[package]]
@@ -625,10 +617,19 @@ dependencies = [
  "objc2-foundation",
  "objc2-quartz-core",
  "serde_json",
- "unicode-normalization",
- "unicode-segmentation",
  "upleft-core",
  "upleft-math",
+ "upleft-swift-text",
+]
+
+[[package]]
+name = "upleft-swift-text"
+version = "0.1.0"
+dependencies = [
+ "objc2",
+ "objc2-core-foundation",
+ "objc2-foundation",
+ "unicode-normalization",
 ]
 
 [[package]]

@@ -73,5 +73,4 @@ objc2-core-text = { workspace = true, features = [
     "CTRun",
     "CTStringAttributes",
 ] }
-unicode-normalization = "0.1.24"
-unicode-segmentation = "1.12"
+upleft-swift-text.workspace = true

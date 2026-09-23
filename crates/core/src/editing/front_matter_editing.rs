@@ -6,7 +6,6 @@
 
 use std::collections::HashSet;
 
-use unicode_normalization::UnicodeNormalization;
 
 use crate::contracts::TextEdit;
 use crate::model::{FrontMatter, FrontMatterField, ParsedDocument};
@@ -416,7 +415,7 @@ fn after_character(s: &str, at: usize) -> &str {
 /// A Swift `String` set/dictionary key: canonical equivalence is equality of
 /// the NFC forms.
 fn swift_key(s: &str) -> String {
-    if s.is_ascii() { s.to_owned() } else { s.nfc().collect() }
+    swift_text::string_key(s)
 }
 
 /// `Double(text) != nil` (Swift 6.4's `LosslessStringConvertible` parse):

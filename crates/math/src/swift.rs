@@ -4,34 +4,36 @@
 //! compares characters with `<`/`==` (canonical equivalence, ordered by the
 //! NFC-normalised scalars), and sums a character's scalars into a
 //! `UTF32Char`. These helpers reproduce each of those on `&str` slices that
-//! hold exactly one grapheme cluster.
+//! hold exactly one grapheme cluster; the String and Character semantics come
+//! from `upleft-swift-text`, whose tables are generated from the Swift
+//! runtime and re-checked by the `unicode` suite.
 
 use std::cmp::Ordering;
 
-use unicode_normalization::UnicodeNormalization;
-use unicode_segmentation::UnicodeSegmentation;
+use upleft_swift_text as swift_text;
 
 /// The characters (extended grapheme clusters) of `s`, as Swift iterates them.
+#[inline]
 pub fn characters(s: &str) -> impl DoubleEndedIterator<Item = &str> {
-    s.graphemes(true)
+    swift_text::graphemes(s)
 }
 
 /// `String.count`.
+#[inline]
 pub fn count(s: &str) -> usize {
-    if s.is_ascii() && !s.contains('\r') {
-        return s.len();
-    }
-    s.graphemes(true).count()
+    swift_text::count(s)
 }
 
 /// The first character of `s` (`s[s.startIndex]`).
+#[inline]
 pub fn first_character(s: &str) -> Option<&str> {
-    s.graphemes(true).next()
+    swift_text::first(s)
 }
 
 /// The last character of `s` (`s[s.index(before: s.endIndex)]`).
+#[inline]
 pub fn last_character(s: &str) -> Option<&str> {
-    s.graphemes(true).next_back()
+    swift_text::last(s)
 }
 
 /// SwiftMath's `Character.utf32Char`: the *sum* of the character's scalars.
@@ -40,28 +42,23 @@ pub fn utf32_char(ch: &str) -> u32 {
 }
 
 /// `Character ==`: canonical equivalence.
+#[inline]
 pub fn equal(a: &str, b: &str) -> bool {
-    if a == b {
-        return true;
-    }
-    if a.is_ascii() && b.is_ascii() {
-        return false;
-    }
-    a.nfc().eq(b.nfc())
+    swift_text::str_eq(a, b)
 }
 
 /// `Character <` / `String <`: lexicographic order of the NFC-normalised
 /// Unicode scalars.
+#[inline]
 pub fn compare(a: &str, b: &str) -> Ordering {
-    if a.is_ascii() && b.is_ascii() {
-        return a.as_bytes().cmp(b.as_bytes());
-    }
-    a.nfc().cmp(b.nfc())
+    swift_text::str_cmp(a, b)
 }
 
 /// `lower...upper ~= ch` for a `ClosedRange<String>` or `ClosedRange<Character>`.
 pub fn in_closed_range(ch: &str, lower: &str, upper: &str) -> bool {
-    compare(lower, ch) != Ordering::Greater && compare(ch, upper) != Ordering::Greater
+    // `ClosedRange.contains`: `lower <= ch && ch <= upper`, where `x <= y` is
+    // `!(y < x)`.
+    !swift_text::str_less(ch, lower) && !swift_text::str_less(upper, ch)
 }
 
 /// NFC form, for looking a character up in a table keyed by `Character`.
@@ -69,68 +66,32 @@ pub fn nfc(ch: &str) -> std::borrow::Cow<'_, str> {
     if ch.is_ascii() {
         std::borrow::Cow::Borrowed(ch)
     } else {
-        std::borrow::Cow::Owned(ch.nfc().collect())
+        std::borrow::Cow::Owned(swift_text::nfc(ch))
     }
-}
-
-fn single_scalar(ch: &str) -> Option<char> {
-    let mut chars = ch.chars();
-    let first = chars.next()?;
-    chars.next().is_none().then_some(first)
-}
-
-fn first_scalar(ch: &str) -> char {
-    ch.chars().next().unwrap_or('\0')
-}
-
-/// Unicode `Lt` (titlecase letter): the part of `Cased` that is neither
-/// `Lowercase` nor `Uppercase`.
-fn is_titlecase(c: char) -> bool {
-    matches!(
-        c as u32,
-        0x01C5 | 0x01C8 | 0x01CB | 0x01F2 | 0x1F88..=0x1F8F | 0x1F98..=0x1F9F | 0x1FA8..=0x1FAF | 0x1FBC | 0x1FCC | 0x1FFC
-    )
-}
-
-fn is_cased_scalar(c: char) -> bool {
-    c.is_lowercase() || c.is_uppercase() || is_titlecase(c)
-}
-
-fn is_uppercased(ch: &str) -> bool {
-    ch.to_uppercase() == ch
-}
-
-fn is_lowercased(ch: &str) -> bool {
-    ch.to_lowercase() == ch
 }
 
 /// `Character.isCased`.
+#[inline]
 pub fn is_cased(ch: &str) -> bool {
-    if single_scalar(ch).is_some_and(is_cased_scalar) {
-        return true;
-    }
-    !is_uppercased(ch) || !is_lowercased(ch)
+    swift_text::is_cased(ch)
 }
 
 /// `Character.isLowercase`.
+#[inline]
 pub fn is_lowercase(ch: &str) -> bool {
-    if single_scalar(ch).is_some_and(char::is_lowercase) {
-        return true;
-    }
-    is_lowercased(ch) && is_cased(ch)
+    swift_text::is_lowercase(ch)
 }
 
 /// `Character.isUppercase`.
+#[inline]
 pub fn is_uppercase(ch: &str) -> bool {
-    if single_scalar(ch).is_some_and(char::is_uppercase) {
-        return true;
-    }
-    is_uppercased(ch) && is_cased(ch)
+    swift_text::is_uppercase(ch)
 }
 
 /// `Character.isLetter`: the first scalar's `Alphabetic` property.
+#[inline]
 pub fn is_letter(ch: &str) -> bool {
-    first_scalar(ch).is_alphabetic()
+    swift_text::is_letter(ch)
 }
 
 /// A string's characters as byte ranges, so a parser can hold an index and
@@ -144,8 +105,13 @@ impl CharacterIndex {
         let bounds = if s.is_ascii() && !s.contains('\r') {
             (0..s.len()).map(|i| (i, i + 1)).collect()
         } else {
-            s.grapheme_indices(true)
-                .map(|(start, g)| (start, start + g.len()))
+            let mut start = 0;
+            swift_text::graphemes(s)
+                .map(|g| {
+                    let bound = (start, start + g.len());
+                    start += g.len();
+                    bound
+                })
                 .collect()
         };
         CharacterIndex { bounds }

@@ -10,6 +10,7 @@
 //! dispatches on the atom's *type* and `finalized` on its *class*.
 
 use std::cell::RefCell;
+use std::collections::HashMap;
 use std::fmt;
 use std::rc::Rc;
 
@@ -1265,6 +1266,121 @@ pub fn is_not_binary_operator(prev_node: Option<&MTMathAtomRef>) -> bool {
     match prev_node {
         None => true,
         Some(prev) => prev.borrow().type_.is_not_binary_operator(),
+    }
+}
+
+// MARK: - Detached copies
+
+/// A structural copy of an atom graph with fresh cells throughout: nothing in
+/// the result is shared with the source, while sharing *inside* the source
+/// (one style atom in every matrix cell, fused atoms) is kept.
+#[derive(Default)]
+pub(crate) struct Detacher {
+    atoms: HashMap<*const RefCell<MTMathAtom>, MTMathAtomRef>,
+    lists: HashMap<*const RefCell<MTMathList>, MTMathListRef>,
+}
+
+impl Detacher {
+    pub(crate) fn atom(&mut self, source: &MTMathAtomRef) -> MTMathAtomRef {
+        let key = Rc::as_ptr(source);
+        if let Some(done) = self.atoms.get(&key) {
+            return done.clone();
+        }
+        let copy = MTMathAtom::new();
+        self.atoms.insert(key, copy.clone());
+        let source = source.borrow();
+        let value = MTMathAtom {
+            type_: source.type_,
+            sub_script: source.sub_script.as_ref().map(|list| self.list(list)),
+            super_script: source.super_script.as_ref().map(|list| self.list(list)),
+            nucleus: source.nucleus.clone(),
+            index_range: source.index_range,
+            font_style: source.font_style,
+            fused_atoms: source
+                .fused_atoms
+                .iter()
+                .map(|atom| self.atom(atom))
+                .collect(),
+            kind: self.kind(&source.kind),
+        };
+        *copy.borrow_mut() = value;
+        copy
+    }
+
+    fn list(&mut self, source: &MTMathListRef) -> MTMathListRef {
+        let key = Rc::as_ptr(source);
+        if let Some(done) = self.lists.get(&key) {
+            return done.clone();
+        }
+        let copy = MTMathList::new();
+        self.lists.insert(key, copy.clone());
+        let atoms = source
+            .borrow()
+            .atoms
+            .iter()
+            .map(|atom| self.atom(atom))
+            .collect();
+        copy.borrow_mut().atoms = atoms;
+        copy
+    }
+
+    fn optional_list(&mut self, source: &Option<MTMathListRef>) -> Option<MTMathListRef> {
+        source.as_ref().map(|list| self.list(list))
+    }
+
+    fn kind(&mut self, kind: &AtomKind) -> AtomKind {
+        match kind {
+            AtomKind::Atom => AtomKind::Atom,
+            AtomKind::Fraction(fraction) => AtomKind::Fraction(MTFraction {
+                has_rule: fraction.has_rule,
+                left_delimiter: fraction.left_delimiter.clone(),
+                right_delimiter: fraction.right_delimiter.clone(),
+                numerator: self.optional_list(&fraction.numerator),
+                denominator: self.optional_list(&fraction.denominator),
+            }),
+            AtomKind::Radical(radical) => AtomKind::Radical(MTRadical {
+                radicand: self.optional_list(&radical.radicand),
+                degree: self.optional_list(&radical.degree),
+            }),
+            AtomKind::LargeOperator(op) => AtomKind::LargeOperator(op.clone()),
+            AtomKind::Inner(inner) => AtomKind::Inner(MTInner {
+                inner_list: self.optional_list(&inner.inner_list),
+                left_boundary: inner.left_boundary.as_ref().map(|atom| self.atom(atom)),
+                right_boundary: inner.right_boundary.as_ref().map(|atom| self.atom(atom)),
+            }),
+            AtomKind::OverLine(atom) => AtomKind::OverLine(MTInnerListAtom {
+                inner_list: self.optional_list(&atom.inner_list),
+            }),
+            AtomKind::UnderLine(atom) => AtomKind::UnderLine(MTInnerListAtom {
+                inner_list: self.optional_list(&atom.inner_list),
+            }),
+            AtomKind::Accent(atom) => AtomKind::Accent(MTInnerListAtom {
+                inner_list: self.optional_list(&atom.inner_list),
+            }),
+            AtomKind::Space(space) => AtomKind::Space(space.clone()),
+            AtomKind::Style(style) => AtomKind::Style(style.clone()),
+            AtomKind::Color(color) => AtomKind::Color(self.color(color)),
+            AtomKind::TextColor(color) => AtomKind::TextColor(self.color(color)),
+            AtomKind::Colorbox(color) => AtomKind::Colorbox(self.color(color)),
+            AtomKind::Table(table) => AtomKind::Table(MTMathTable {
+                alignments: table.alignments.clone(),
+                cells: table
+                    .cells
+                    .iter()
+                    .map(|row| row.iter().map(|cell| self.list(cell)).collect())
+                    .collect(),
+                environment: table.environment.clone(),
+                inter_column_spacing: table.inter_column_spacing,
+                inter_row_additional_spacing: table.inter_row_additional_spacing,
+            }),
+        }
+    }
+
+    fn color(&mut self, color: &MTColorAtom) -> MTColorAtom {
+        MTColorAtom {
+            color_string: color.color_string.clone(),
+            inner_list: self.optional_list(&color.inner_list),
+        }
     }
 }
 

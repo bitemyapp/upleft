@@ -4,7 +4,8 @@
 //! declarations are `pub` here, because the conformance oracle and the tests
 //! reach them the way Downright's `@testable` tests do.
 //!
-//! Support modules with no Swift counterpart:
+//! Re-exported support with no MarkdownCore counterpart, from the
+//! `upleft-swift-text` crate (shared with the other ports):
 //!
 //! * [`ns_range`] — Foundation's `NSRange` (signed, like Swift's `Int`).
 //! * [`swift_text`] — Swift `String`/`Character`, `CharacterSet` and
@@ -14,8 +15,8 @@
 //! [`parser`] and [`inlines`] drive `upleft-markup`, the port of the
 //! swift-markdown converter Downright parses with.
 
-pub mod ns_range;
-pub mod swift_text;
+pub use upleft_swift_text as swift_text;
+pub use upleft_swift_text::ns_range;
 
 pub mod ast_diff;
 pub mod contracts;

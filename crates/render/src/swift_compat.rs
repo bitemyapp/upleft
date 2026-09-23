@@ -1,53 +1,44 @@
 //! The Swift standard library and Foundation behaviours the ported code relies
 //! on, reproduced exactly (each one was probed against the macOS 26 runtime).
 //!
-//! - `CharacterSet.whitespaces` / `.whitespacesAndNewlines` are CoreFoundation's
-//!   predefined sets, which include U+200B ZERO WIDTH SPACE.
-//! - `String.lowercased()` maps each scalar through its full lowercase mapping
-//!   with no final-sigma context ("ΣΑΣ" → "σασ").
+//! - String, Character and CharacterSet behaviour comes from
+//!   `upleft-swift-text` (tables generated from the Swift runtime, re-checked
+//!   by the `unicode` suite); the wrappers below keep this crate's call sites.
 //! - `FixedWidthInteger(_:radix:)` accepts one leading `+` or `-`; `-0` parses
 //!   as zero for an unsigned type.
 //! - `Swift.min` / `Swift.max` are `y < x ? y : x` and `y >= x ? y : x`, which
 //!   differ from `f64::min`/`max` for NaN and signed zeros.
-//! - `String.count`, `split(separator:)`, `hasPrefix` on non-ASCII strings walk
-//!   extended grapheme clusters.
 
-use unicode_normalization::UnicodeNormalization;
-use unicode_segmentation::UnicodeSegmentation;
+use upleft_swift_text::{self as swift_text, CharSet};
 
-/// `CharacterSet.whitespaces` (probed: Zs, tab, and U+200B).
+/// `CharacterSet.whitespaces` (Zs, tab and U+200B).
+#[inline]
 pub fn is_whitespace(c: char) -> bool {
-    matches!(
-        c as u32,
-        0x0009 | 0x0020 | 0x00A0 | 0x1680 | 0x2000..=0x200B | 0x202F | 0x205F | 0x3000
-    )
+    CharSet::Whitespaces.contains(c)
 }
 
 /// `CharacterSet.whitespacesAndNewlines`.
+#[inline]
 pub fn is_whitespace_or_newline(c: char) -> bool {
-    is_whitespace(c) || matches!(c as u32, 0x000A..=0x000D | 0x0085 | 0x2028 | 0x2029)
+    CharSet::WhitespacesAndNewlines.contains(c)
 }
 
 /// `trimmingCharacters(in: .whitespaces)`.
+#[inline]
 pub fn trim_whitespaces(s: &str) -> &str {
-    s.trim_matches(is_whitespace)
+    swift_text::trim_whitespaces(s)
 }
 
 /// `trimmingCharacters(in: .whitespacesAndNewlines)`.
+#[inline]
 pub fn trim_whitespaces_and_newlines(s: &str) -> &str {
-    s.trim_matches(is_whitespace_or_newline)
+    swift_text::trim_whitespaces_and_newlines(s)
 }
 
 /// `String.lowercased()`: per-scalar full lowercase mapping, no context.
+#[inline]
 pub fn lowercased(s: &str) -> String {
-    if s.is_ascii() {
-        return s.to_ascii_lowercase();
-    }
-    let mut out = String::with_capacity(s.len());
-    for c in s.chars() {
-        out.extend(c.to_lowercase());
-    }
-    out
+    swift_text::lowercased(s)
 }
 
 /// `UInt64(text, radix: 16)`.
@@ -98,123 +89,61 @@ pub fn pow(x: f64, y: f64) -> f64 {
 }
 
 /// `String.count`: extended grapheme clusters.
+#[inline]
 pub fn character_count(s: &str) -> usize {
-    if s.is_ascii() && !s.contains('\r') {
-        return s.len();
-    }
-    s.graphemes(true).count()
+    swift_text::count(s)
 }
 
-/// `String.hasPrefix(_:)` for an ASCII `prefix`. ASCII strings compare
-/// bytes (Swift's NFC fast path); others compare `Character`s, so the prefix
-/// only matches when it ends on a grapheme boundary of `s`.
+/// `String.hasPrefix(_:)` for an ASCII `prefix`: `Character` by `Character`
+/// under canonical equivalence (so `"\u{212A}x"` has the prefix `"K"`).
+#[inline]
 pub fn has_ascii_prefix(s: &str, prefix: &str) -> bool {
     debug_assert!(prefix.is_ascii());
-    if !s.as_bytes().starts_with(prefix.as_bytes()) {
-        return false;
-    }
-    if s.is_ascii() || prefix.is_empty() {
-        return true;
-    }
-    // Character-wise: the first `n` graphemes of `s` must equal the prefix's.
-    let mut rest = prefix;
-    for grapheme in s.graphemes(true) {
-        if rest.is_empty() {
-            return true;
-        }
-        let Some(tail) = rest.strip_prefix(grapheme) else {
-            return false;
-        };
-        // A grapheme spanning past the prefix's end does not match.
-        rest = tail;
-    }
-    rest.is_empty()
+    swift_text::has_prefix(s, prefix)
 }
 
-/// `String.hasPrefix(_:)` for any prefix: bytes when both are ASCII (Swift's
-/// NFC fast path), otherwise `Character` by `Character` under canonical
-/// equivalence.
+/// `String.hasPrefix(_:)`.
+#[inline]
 pub fn has_prefix(s: &str, prefix: &str) -> bool {
-    if prefix.is_ascii() {
-        return has_ascii_prefix(s, prefix);
-    }
-    let mut graphemes = s.graphemes(true);
-    for expected in prefix.graphemes(true) {
-        match graphemes.next() {
-            Some(actual) if string_eq(actual, expected) => {}
-            _ => return false,
-        }
-    }
-    true
+    swift_text::has_prefix(s, prefix)
 }
 
-/// `s.split(separator: character)` with `omittingEmptySubsequences: true`,
-/// where `separator` is a single ASCII character compared as a `Character`.
+/// `s.split(separator: character)` with `omittingEmptySubsequences: true`.
+#[inline]
 pub fn split_on_character(s: &str, separator: char) -> Vec<&str> {
-    debug_assert!(separator.is_ascii());
-    let mut pieces = Vec::new();
-    if s.is_ascii() && !(separator == '\r' || separator == '\n') {
-        for piece in s.split(separator) {
-            if !piece.is_empty() {
-                pieces.push(piece);
-            }
-        }
-        return pieces;
-    }
-    let mut start = 0;
-    let mut buffer = [0u8; 4];
-    let separator: &str = separator.encode_utf8(&mut buffer);
-    for (offset, grapheme) in s.grapheme_indices(true) {
-        if grapheme == separator {
-            if offset > start {
-                pieces.push(&s[start..offset]);
-            }
-            start = offset + grapheme.len();
-        }
-    }
-    if s.len() > start {
-        pieces.push(&s[start..]);
-    }
-    pieces
+    swift_text::split_default(s, separator)
 }
 
 /// Swift `String ==`: Unicode canonical equivalence.
+#[inline]
 pub fn string_eq(a: &str, b: &str) -> bool {
-    if a == b {
-        return true;
-    }
-    if a.is_ascii() && b.is_ascii() {
-        return false;
-    }
-    a.nfc().eq(b.nfc())
+    swift_text::str_eq(a, b)
 }
 
 /// A key under which canonically equivalent strings collide, for maps that
 /// stand in for a Swift `Dictionary<String, _>` or `Set<String>`.
+#[inline]
 pub fn string_key(s: &str) -> String {
-    if s.is_ascii() {
-        s.to_owned()
-    } else {
-        s.nfc().collect()
-    }
+    swift_text::string_key(s)
 }
 
 /// Swift `String <`: the NFC-normalised scalars, lexicographically.
+#[inline]
 pub fn string_cmp(a: &str, b: &str) -> std::cmp::Ordering {
-    if a.is_ascii() && b.is_ascii() {
-        return a.cmp(b);
-    }
-    a.nfc().cmp(b.nfc())
+    swift_text::str_cmp(a, b)
 }
 
 /// `Character.isLetter`: the first scalar's `Alphabetic` property.
+#[inline]
 pub fn is_letter(c: char) -> bool {
-    c.is_alphabetic()
+    swift_text::scalar_is_alphabetic(c)
 }
 
-/// `Character.isNumber`: the first scalar has a numeric type.
+/// `Character.isNumber`: the first scalar has a numeric type (including the
+/// Unihan numerics such as 一, which `char::is_numeric` misses).
+#[inline]
 pub fn is_number(c: char) -> bool {
-    c.is_numeric()
+    swift_text::scalar_is_numeric(c)
 }
 
 /// Swift `(x).rounded()` on a floating-point value: schoolbook rounding.

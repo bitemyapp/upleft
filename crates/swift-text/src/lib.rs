@@ -1,19 +1,23 @@
-//! Swift `String` / `Character` and Foundation `CharacterSet` semantics.
+//! `upleft-swift-text`: Swift `String` / `Character`, Foundation
+//! `CharacterSet` and `NSString` semantics, shared by every Upleft crate that
+//! ports Swift text handling.
 //!
-//! MarkdownCore mixes three levels of text:
+//! Downright's code mixes three levels of text:
 //!
 //! * **Characters** — `String.count`, `hasPrefix`, `contains`, `split`,
-//!   `firstIndex(of:)`, `==` walk extended grapheme clusters and compare them
-//!   up to canonical equivalence (`"\u{212A}" == "K"`, and `"a\r\nb"` does
-//!   not contain `"\n"`).
+//!   `firstIndex(of:)`, `==`, `<` walk extended grapheme clusters and compare
+//!   them up to canonical equivalence (`"\u{212A}" == "K"`, and `"a\r\nb"`
+//!   does not contain `"\n"`).
 //! * **Unicode scalars** — `trimmingCharacters(in:)`, `lowercased()`,
-//!   `unicodeScalars`.
-//! * **UTF-16 code units** — everything done through `NSString` (see [`ns`]).
+//!   `uppercased()`, `unicodeScalars`.
+//! * **UTF-16 code units** — everything done through `NSString` (see [`ns`]),
+//!   with Foundation's `NSRange` in [`ns_range`].
 //!
 //! Each function here names the Swift API it reproduces. The property tables
-//! in [`tables`] are generated from the Swift runtime itself
-//! (`scripts/gen-unicode-tables.swift`), so `Character.isLetter` and friends
-//! agree with Downright by construction.
+//! in [`tables`] and [`grapheme_tables`] are generated from the Swift runtime
+//! itself (`crates/swift-text/scripts/`), so `Character.isLetter` and friends
+//! agree with Downright by construction, and the `unicode` conformance suite
+//! re-checks every scalar against the runtime through both oracles.
 //!
 //! Grapheme segmentation ([`graphemes`]) reimplements the stdlib's breaking
 //! state machine over break classes recovered from the Swift runtime. Stock
@@ -21,13 +25,21 @@
 //! viramas (U+094D, U+09CD, U+0ACD, U+0B4D, U+0C4D, U+0D4D) as linkers, and
 //! it does not give the Kirat Rai vowel signs (U+16D63, U+16D67–U+16D6A)
 //! Grapheme_Cluster_Break=V.
+//!
+//! Canonical equivalence runs the stdlib's own NFC algorithm
+//! ([`normalization`]) over `unicode-normalization`'s Unicode 17 data; the
+//! `unicode` suite checks Swift's `==` and `<` against it for every
+//! decomposable scalar and 20,000 adversarial pairs.
 
 pub mod grapheme_tables;
 pub mod graphemes;
 pub mod ns;
+pub mod normalization;
+pub mod ns_range;
 pub mod tables;
 
-use unicode_normalization::UnicodeNormalization;
+pub use normalization::{swift_nfc, swift_nfd};
+pub use ns_range::{NS_NOT_FOUND, NSRange};
 
 // MARK: - Property tables
 
@@ -79,9 +91,54 @@ pub fn scalar_is_grapheme_extend(c: char) -> bool {
     !c.is_ascii() && in_table(tables::GRAPHEME_EXTEND, c as u32)
 }
 
+/// General category P* (`Character.isPunctuation` tests the first scalar).
+#[inline]
+pub fn scalar_is_punctuation(c: char) -> bool {
+    if c.is_ascii() {
+        return c.is_ascii_punctuation() && !matches!(c, '$' | '+' | '<' | '=' | '>' | '^' | '`' | '|' | '~');
+    }
+    in_table(tables::PUNCTUATION, c as u32)
+}
+
+/// General category S* (`Character.isSymbol` tests the first scalar).
+#[inline]
+pub fn scalar_is_symbol(c: char) -> bool {
+    if c.is_ascii() {
+        return matches!(c, '$' | '+' | '<' | '=' | '>' | '^' | '`' | '|' | '~');
+    }
+    in_table(tables::SYMBOL, c as u32)
+}
+
+/// `Unicode.Scalar.Properties.isUppercase` (the Uppercase property).
+#[inline]
+pub fn scalar_is_uppercase(c: char) -> bool {
+    if c.is_ascii() {
+        return c.is_ascii_uppercase();
+    }
+    in_table(tables::UPPERCASE, c as u32)
+}
+
+/// `Unicode.Scalar.Properties.isLowercase` (the Lowercase property).
+#[inline]
+pub fn scalar_is_lowercase(c: char) -> bool {
+    if c.is_ascii() {
+        return c.is_ascii_lowercase();
+    }
+    in_table(tables::LOWERCASE, c as u32)
+}
+
+/// `Unicode.Scalar.Properties.isCased`.
+#[inline]
+pub fn scalar_is_cased(c: char) -> bool {
+    if c.is_ascii() {
+        return c.is_ascii_alphabetic();
+    }
+    in_table(tables::CASED, c as u32)
+}
+
 // MARK: - CharacterSet
 
-/// The `CharacterSet`s MarkdownCore uses.
+/// The `CharacterSet`s Downright uses.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum CharSet {
     /// `.whitespaces`: Zs, U+0009 and U+200B.
@@ -90,6 +147,8 @@ pub enum CharSet {
     WhitespacesAndNewlines,
     /// `.newlines`.
     Newlines,
+    /// `.alphanumerics`: L*, M* and N*.
+    Alphanumerics,
     /// `CharacterSet(charactersIn:)`.
     Chars(&'static str),
 }
@@ -117,6 +176,13 @@ impl CharSet {
                     matches!(c, '\n' | '\u{0B}' | '\u{0C}' | '\r')
                 } else {
                     in_table(tables::CS_NEWLINES, c as u32)
+                }
+            }
+            CharSet::Alphanumerics => {
+                if c.is_ascii() {
+                    c.is_ascii_alphanumeric()
+                } else {
+                    in_table(tables::CS_ALPHANUMERICS, c as u32)
                 }
             }
             CharSet::Chars(chars) => chars.contains(c),
@@ -164,8 +230,27 @@ pub fn lowercased(s: &str) -> String {
         if c.is_ascii() {
             out.push(c.to_ascii_lowercase());
         } else {
-            match tables::LOWERCASE.binary_search_by_key(&(c as u32), |&(k, _)| k) {
-                Ok(index) => out.push_str(tables::LOWERCASE[index].1),
+            match tables::LOWERCASE_MAPPING.binary_search_by_key(&(c as u32), |&(k, _)| k) {
+                Ok(index) => out.push_str(tables::LOWERCASE_MAPPING[index].1),
+                Err(_) => out.push(c),
+            }
+        }
+    }
+    out
+}
+
+/// `String.uppercased()`: each scalar's full `uppercaseMapping` (`ß` → `SS`).
+pub fn uppercased(s: &str) -> String {
+    if s.is_ascii() {
+        return s.to_ascii_uppercase();
+    }
+    let mut out = String::with_capacity(s.len());
+    for c in s.chars() {
+        if c.is_ascii() {
+            out.push(c.to_ascii_uppercase());
+        } else {
+            match tables::UPPERCASE_MAPPING.binary_search_by_key(&(c as u32), |&(k, _)| k) {
+                Ok(index) => out.push_str(tables::UPPERCASE_MAPPING[index].1),
                 Err(_) => out.push(c),
             }
         }
@@ -175,10 +260,14 @@ pub fn lowercased(s: &str) -> String {
 
 /// `Unicode.Scalar.Properties.lowercaseMapping`.
 pub fn scalar_lowercase_mapping(c: char) -> String {
-    let mut out = String::new();
     let mut buffer = [0u8; 4];
-    out.push_str(&lowercased(c.encode_utf8(&mut buffer)));
-    out
+    lowercased(c.encode_utf8(&mut buffer))
+}
+
+/// `Unicode.Scalar.Properties.uppercaseMapping`.
+pub fn scalar_uppercase_mapping(c: char) -> String {
+    let mut buffer = [0u8; 4];
+    uppercased(c.encode_utf8(&mut buffer))
 }
 
 // MARK: - Grapheme clusters
@@ -411,6 +500,61 @@ pub fn is_newline(g: &str) -> bool {
     matches!(first_scalar(g) as u32, 0x0A..=0x0D | 0x85 | 0x2028 | 0x2029)
 }
 
+/// `Character.isPunctuation`.
+#[inline]
+pub fn is_punctuation(g: &str) -> bool {
+    scalar_is_punctuation(first_scalar(g))
+}
+
+/// `Character.isSymbol`.
+#[inline]
+pub fn is_symbol(g: &str) -> bool {
+    scalar_is_symbol(first_scalar(g))
+}
+
+#[inline]
+fn single_scalar(g: &str) -> Option<char> {
+    let mut chars = g.chars();
+    match (chars.next(), chars.next()) {
+        (Some(c), None) => Some(c),
+        _ => None,
+    }
+}
+
+/// `Character._isUppercased`: `String(self) == self.uppercased()`.
+fn is_uppercased(g: &str) -> bool {
+    str_eq(g, &uppercased(g))
+}
+
+/// `Character._isLowercased`: `String(self) == self.lowercased()`.
+fn is_lowercased(g: &str) -> bool {
+    str_eq(g, &lowercased(g))
+}
+
+/// `Character.isCased`.
+pub fn is_cased(g: &str) -> bool {
+    if single_scalar(g).is_some_and(scalar_is_cased) {
+        return true;
+    }
+    !is_uppercased(g) || !is_lowercased(g)
+}
+
+/// `Character.isUppercase`.
+pub fn is_uppercase(g: &str) -> bool {
+    if single_scalar(g).is_some_and(scalar_is_uppercase) {
+        return true;
+    }
+    is_uppercased(g) && is_cased(g)
+}
+
+/// `Character.isLowercase`.
+pub fn is_lowercase(g: &str) -> bool {
+    if single_scalar(g).is_some_and(scalar_is_lowercase) {
+        return true;
+    }
+    is_lowercased(g) && is_cased(g)
+}
+
 /// `Character.isASCII` / `asciiValue != nil`: a single ASCII scalar, or CR LF.
 #[inline]
 pub fn is_ascii_character(g: &str) -> bool {
@@ -430,12 +574,17 @@ pub fn ascii_value(g: &str) -> Option<u8> {
 
 /// `Character == Character` (and `String == String`): canonical equivalence.
 pub fn str_eq(a: &str, b: &str) -> bool {
-    if a == b {
+    // The same storage is equal without reading it, as Swift's `==` answers
+    // for two references to one string buffer.
+    if std::ptr::eq(a, b) || a == b {
         return true;
     }
     let (x, y) = (a.as_bytes(), b.as_bytes());
     let limit = x.len().min(y.len());
     let mut first_difference = 0;
+    while first_difference + 16 <= limit && x[first_difference..first_difference + 16] == y[first_difference..first_difference + 16] {
+        first_difference += 16;
+    }
     while first_difference < limit && x[first_difference] == y[first_difference] {
         first_difference += 1;
     }
@@ -447,7 +596,7 @@ pub fn str_eq(a: &str, b: &str) -> bool {
     if a.is_ascii() && b.is_ascii() {
         return false;
     }
-    a.nfc().eq(b.nfc())
+    swift_nfc(a).eq(swift_nfc(b))
 }
 
 /// `Character == Character`.
@@ -593,7 +742,9 @@ pub fn bridges_substrings(document: &[u16]) -> bool {
 
 /// `String.contains(_: String)` — a Character-wise substring search.
 pub fn contains(s: &str, needle: &str) -> bool {
-    find(s, needle).is_some()
+    // Swift 6.4: `"abc".contains("")` and `"".contains("")` are false, though
+    // `firstRange(of: "")` is an empty range at the start.
+    !needle.is_empty() && find(s, needle).is_some()
 }
 
 /// `String.contains(_: Character)`.
@@ -965,10 +1116,153 @@ pub fn dict_get<'a, V>(map: &'a std::collections::HashMap<String, V>, key: &str)
     map.iter().find(|(existing, _)| str_eq(existing, key)).map(|(_, value)| value)
 }
 
-/// Swift's `String < String`: Unicode scalar order of the NFC forms.
-pub fn str_cmp(a: &str, b: &str) -> std::cmp::Ordering {
-    if a.is_ascii() && b.is_ascii() {
-        return a.cmp(b);
+/// Swift's `String < String`, as `StringComparison.swift` computes it for
+/// native strings. Mostly the order of the NFC scalars, but with the
+/// stdlib's shortcuts, which are observable:
+///
+/// * when one string is a byte prefix of the other, the shorter is less,
+///   without normalizing (`"\u{F71}"` < `"\u{F71}\u{308}\u{323}\u{93C}"`
+///   although the latter's NFC starts with U+093C);
+/// * when the NFC scalars of one are a proper prefix of the other's, the one
+///   with fewer UTF-8 bytes is less (`"\u{AC00}\u{11A8}\u{2B0}"` <
+///   `"\u{1100}\u{1161}\u{11A8}"`, and `"a\u{301}"` and `"\u{E1}b"` are
+///   each not less than the other, nor equal).
+///
+/// So `<` is not a strict weak order on non-NFC input; [`str_cmp`] folds it
+/// into an `Ordering` the way a `<`-driven sort observes it.
+pub fn str_less(a: &str, b: &str) -> bool {
+    let (x, y) = (a.as_bytes(), b.as_bytes());
+    if x == y {
+        return false;
     }
-    a.nfc().cmp(b.nfc())
+    if a.is_ascii() && b.is_ascii() {
+        return x < y;
+    }
+    // `_findDiffIdx`: a byte prefix compares by length.
+    let limit = x.len().min(y.len());
+    let mut diff = 0;
+    while diff < limit && x[diff] == y[diff] {
+        diff += 1;
+    }
+    if diff == limit {
+        return x.len() < y.len();
+    }
+    // `_scalarAlign`: the bytes before `diff` agree, so the scalar starts at
+    // the same offset in both.
+    let mut start = diff;
+    while !a.is_char_boundary(start) {
+        start -= 1;
+    }
+    let left = a[start..].chars().next().expect("scalar");
+    let right = b[start..].chars().next().expect("scalar");
+    if is_nfc_starter(left)
+        && is_nfc_starter(right)
+        && has_normalization_boundary(a, start + left.len_utf8())
+        && has_normalization_boundary(b, start + right.len_utf8())
+    {
+        return left < right;
+    }
+    // Back up to the nearest normalization boundary; compare NFC scalars.
+    let boundary = find_boundary(a, diff).min(find_boundary(b, diff));
+    let (a, b) = (&a[boundary..], &b[boundary..]);
+    let mut left = swift_nfc(a);
+    let mut right = swift_nfc(b);
+    loop {
+        match (left.next(), right.next()) {
+            (Some(l), Some(r)) if l == r => continue,
+            (Some(l), Some(r)) => return l < r,
+            (None, None) => return false,
+            // One ran out of scalars: the one with fewer bytes is less.
+            _ => return a.len() < b.len(),
+        }
+    }
+}
+
+/// `Unicode.Scalar._isNFCStarter`: canonical combining class 0 and
+/// NFC_Quick_Check=Yes (every scalar below U+0300 is one).
+#[inline]
+pub fn is_nfc_starter(c: char) -> bool {
+    if (c as u32) < 0x300 {
+        return true;
+    }
+    canonical_combining_class(c) == 0 && nfc_quick_check_yes(c)
+}
+
+/// NFC_Quick_Check=Yes.
+#[inline]
+pub fn nfc_quick_check_yes(c: char) -> bool {
+    unicode_normalization::is_nfc_quick(std::iter::once(c)) == unicode_normalization::IsNormalized::Yes
+}
+
+/// `UnsafeBufferPointer<UInt8>.hasNormalizationBoundary(before:)`.
+fn has_normalization_boundary(s: &str, offset: usize) -> bool {
+    if offset == 0 || offset == s.len() {
+        return true;
+    }
+    if s.as_bytes()[offset] < 0xCC {
+        return true;
+    }
+    is_nfc_starter(s[offset..].chars().next().expect("scalar"))
+}
+
+/// `_findBoundary(_:before:)`: the nearest NFC starter at or before `before`.
+fn find_boundary(s: &str, before: usize) -> usize {
+    if before >= s.len() {
+        return s.len();
+    }
+    let mut index = before;
+    while !s.is_char_boundary(index) {
+        index -= 1;
+    }
+    loop {
+        if index == 0 {
+            return 0;
+        }
+        if is_nfc_starter(s[index..].chars().next().expect("scalar")) {
+            return index;
+        }
+        index -= s[..index].chars().next_back().expect("scalar").len_utf8();
+    }
+}
+
+/// Swift's `String` comparison folded into an `Ordering`: `Less` when
+/// `a < b`, `Greater` when `b < a`, otherwise `Equal` (which, for the
+/// non-NFC cases [`str_less`] describes, need not mean `==`).
+pub fn str_cmp(a: &str, b: &str) -> std::cmp::Ordering {
+    if str_less(a, b) {
+        std::cmp::Ordering::Less
+    } else if str_less(b, a) {
+        std::cmp::Ordering::Greater
+    } else {
+        std::cmp::Ordering::Equal
+    }
+}
+
+// MARK: - Normalization
+
+/// Swift's NFC of `s`: the representative its `==`, `<` and `hashValue`
+/// work from.
+pub fn nfc(s: &str) -> String {
+    if s.is_ascii() {
+        return s.to_owned();
+    }
+    swift_nfc(s).collect()
+}
+
+/// Swift's NFC scalars of `s`, lazily.
+pub fn nfc_scalars(s: &str) -> impl Iterator<Item = char> + '_ {
+    swift_nfc(s)
+}
+
+/// A key under which canonically equivalent strings collide, for maps that
+/// stand in for a Swift `Dictionary<String, _>` or `Set<String>`.
+#[inline]
+pub fn string_key(s: &str) -> String {
+    nfc(s)
+}
+
+/// `Unicode.Scalar.Properties.canonicalCombiningClass`.
+#[inline]
+pub fn canonical_combining_class(c: char) -> u8 {
+    unicode_normalization::char::canonical_combining_class(c)
 }

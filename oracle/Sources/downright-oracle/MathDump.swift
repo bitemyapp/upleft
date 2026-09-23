@@ -5,12 +5,13 @@ import CoreText
 
 /// The math layer: SwiftMath as Downright drives it.
 ///
-///   downright-oracle math      <file.tex> <out.png>
-///   downright-oracle math-tree <file.tex> <out.json>
+///   downright-oracle math      <file.tex> <out.png>  [--theme NAME] [--dark]
+///   downright-oracle math-tree <file.tex> <out.json> [--theme NAME] [--dark]
 ///
 /// A `.tex` input's first line is `inline` or `display`; everything after the
-/// first newline is the LaTeX, verbatim. Both commands use the Paper Light
-/// style sheet in the light appearance, the way the reader shows math:
+/// first newline is the LaTeX, verbatim. Both commands build the style sheet
+/// for the theme and appearance (Paper Light, light by default) as `decorate`
+/// does, and take its text colour and `mathPointSize` the way the reader does:
 ///
 /// - `inline` is `InlineMathDisplay`'s call: `mathPointSize`, no padding.
 /// - `display` is `MathFragment`'s call: `mathPointSize * 1.12`, 8pt padding.
@@ -39,26 +40,31 @@ enum MathDump {
         }
     }
 
-    /// Paper Light, light appearance — the style sheet's math point size and
-    /// text colour, which are what `MathFragment` and `InlineMathDisplay` pass.
-    static func parameters() throws -> (pointSize: CGFloat, color: NSColor) {
-        guard let theme = ThemeStore.shared.themes.first(where: { $0.name == "Paper Light" }) else {
-            throw OracleError.unknownTheme("Paper Light", ThemeStore.shared.themes.map(\.name))
+    /// The style sheet's math point size and text colour for a theme and
+    /// appearance, which are what `MathFragment` and `InlineMathDisplay` pass.
+    static func parameters(theme themeName: String = "Paper Light", dark: Bool = false) throws
+        -> (pointSize: CGFloat, color: NSColor)
+    {
+        guard let theme = ThemeStore.shared.themes.first(where: { $0.name == themeName }) else {
+            throw OracleError.unknownTheme(themeName, ThemeStore.shared.themes.map(\.name))
         }
-        let style = StyleSheet(theme: theme, appearance: NSAppearance(named: .aqua)!, reduceMotionOverride: true)
+        let appearance = NSAppearance(named: dark ? .darkAqua : .aqua)!
+        let style = StyleSheet(theme: theme, appearance: appearance, reduceMotionOverride: true)
         return (style.mathPointSize, style.text)
     }
 
-    static func request(_ input: Input) throws -> (pointSize: CGFloat, color: NSColor, padding: CGFloat) {
-        let (base, color) = try parameters()
+    static func request(_ input: Input, theme: String, dark: Bool) throws
+        -> (pointSize: CGFloat, color: NSColor, padding: CGFloat)
+    {
+        let (base, color) = try parameters(theme: theme, dark: dark)
         return input.display ? (base * 1.12, color, 8) : (base, color, 0)
     }
 
     // MARK: - Image
 
-    static func image(_ url: URL, to output: String) throws {
+    static func image(_ url: URL, to output: String, theme: String, dark: Bool) throws {
         let input = try read(url)
-        let (pointSize, color, padding) = try request(input)
+        let (pointSize, color, padding) = try request(input, theme: theme, dark: dark)
         let image = MathRenderer.image(
             latex: input.latex, display: input.display, pointSize: pointSize, color: color, padding: padding)
         let png = try image.map(rasterize) ?? sentinel()
@@ -105,9 +111,9 @@ enum MathDump {
 
     // MARK: - Display tree
 
-    static func tree(_ url: URL, to output: String) throws {
+    static func tree(_ url: URL, to output: String, theme: String, dark: Bool) throws {
         let input = try read(url)
-        let (pointSize, color, padding) = try request(input)
+        let (pointSize, color, padding) = try request(input, theme: theme, dark: dark)
         try write(treeJSON(input, pointSize: pointSize, color: color, padding: padding), to: output)
     }
 
