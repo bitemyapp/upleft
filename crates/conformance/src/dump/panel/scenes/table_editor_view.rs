@@ -10,7 +10,11 @@ use objc2::MainThreadMarker;
 use objc2::rc::Retained;
 use objc2::runtime::{AnyObject, Sel};
 use objc2::{ClassType, Message, msg_send};
-use objc2_app_kit::{NSApplication, NSPopUpButton, NSTableView, NSView};
+use objc2_app_kit::{
+    NSApplication, NSControlTextDidBeginEditingNotification, NSControlTextDidEndEditingNotification, NSEvent,
+    NSEventModifierFlags, NSEventType, NSPopUpButton, NSTableView, NSTextField, NSView,
+};
+use objc2_foundation::{NSNotificationCenter, NSPoint, NSRect, NSSize, NSString};
 use serde_json::{Map, Value};
 use upleft_app::panels::appkit_support::downcast;
 use upleft_app::panels::table_editor_view::{TableEditorDelegate, TableEditorView};
@@ -112,6 +116,61 @@ pub fn descendants<T: ClassType + Message>(view: &NSView) -> Vec<Retained<T>> {
     found
 }
 
+fn int_of(value: Option<&Value>) -> isize {
+    value.and_then(|value| value.as_i64().or_else(|| value.as_f64().map(|f| f as i64))).unwrap_or(0) as isize
+}
+
+/// `TableEditorViewScene.cellInteractions(_:_:)`: `beginEditing`,
+/// `endEditing` and `keys`, with the editor laid out at the scenario size.
+fn cell_interactions(editor: &TableEditorView, scenario: &PanelScenario) {
+    let begin: Vec<Vec<Value>> = scenario.array("beginEditing").into_iter().filter_map(|v| v.as_array().cloned()).collect();
+    let end: Vec<Map<String, Value>> = scenario.array("endEditing").into_iter().filter_map(|v| v.as_object().cloned()).collect();
+    let keys: Vec<Map<String, Value>> = scenario.array("keys").into_iter().filter_map(|v| v.as_object().cloned()).collect();
+    if begin.is_empty() && end.is_empty() && keys.is_empty() {
+        return;
+    }
+    editor.setFrame(NSRect::new(NSPoint::new(0.0, 0.0), NSSize::new(scenario.width, scenario.height)));
+    editor.layoutSubtreeIfNeeded();
+    let Some(table) = descendants::<NSTableView>(editor).into_iter().next() else { return };
+    let cell = |row: isize, column: isize| -> Option<Retained<NSTextField>> {
+        if !(row >= 0 && row < table.numberOfRows() && column >= 0 && column < table.numberOfColumns()) {
+            return None;
+        }
+        let view = table.viewAtColumn_row_makeIfNecessary(column, row, true)?;
+        downcast::<NSTextField>(&view)
+    };
+    let center = NSNotificationCenter::defaultCenter();
+    for pair in begin.iter().filter(|pair| pair.len() == 2) {
+        let Some(field) = cell(int_of(pair.first()), int_of(pair.get(1))) else { continue };
+        unsafe { center.postNotificationName_object(NSControlTextDidBeginEditingNotification, Some(&field)) };
+    }
+    for edit in &end {
+        let Some(field) = cell(int_of(edit.get("row")), int_of(edit.get("column"))) else { continue };
+        field.setStringValue(&NSString::from_str(edit.get("text").and_then(Value::as_str).unwrap_or("")));
+        unsafe { center.postNotificationName_object(NSControlTextDidEndEditingNotification, Some(&field)) };
+    }
+    for key in &keys {
+        let Some(field) = cell(int_of(key.get("row")), int_of(key.get("column"))) else { continue };
+        let code = int_of(key.get("keyCode")) as u16;
+        let characters = NSString::from_str(if code == 48 { "\t" } else { "\r" });
+        let shift = key.get("shift").and_then(Value::as_bool).unwrap_or(false);
+        let event = NSEvent::keyEventWithType_location_modifierFlags_timestamp_windowNumber_context_characters_charactersIgnoringModifiers_isARepeat_keyCode(
+            NSEventType::KeyDown,
+            NSPoint::new(0.0, 0.0),
+            if shift { NSEventModifierFlags::Shift } else { NSEventModifierFlags::empty() },
+            0.0,
+            0,
+            None,
+            &characters,
+            &characters,
+            false,
+            code,
+        );
+        let Some(event) = event else { continue };
+        field.keyDown(&event);
+    }
+}
+
 pub fn range_json(range: NSRange) -> Value {
     Value::Array(vec![Value::from(range.location as i64), Value::from(range.length as i64)])
 }
@@ -173,6 +232,7 @@ impl PanelScene for TableEditorViewScene {
         if scenario.bool("reload") {
             editor.reload();
         }
+        cell_interactions(&editor, scenario);
         self.editor = Some(editor.clone());
         Ok(Retained::into_super(editor))
     }

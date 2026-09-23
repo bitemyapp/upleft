@@ -95,8 +95,51 @@ final class TableEditorViewScene: PanelScene {
             editor.update(document: MarkdownParser.parse(update))
         }
         if scenario.bool("reload") { editor.reload() }
+        cellInteractions(editor, scenario)
         self.editor = editor
         return editor
+    }
+
+    /// With the editor laid out at the scenario size: `beginEditing`
+    /// (`[row, column]`) and `endEditing` (`{"row", "column", "text"}`) post
+    /// the control's text notifications for a cell (its delegate, the
+    /// editor, observes them); `keys` (`{"row", "column", "keyCode",
+    /// "shift"}`) send a Tab (48) or Return (36, 76) key-down to a cell.
+    private func cellInteractions(_ editor: TableEditorView, _ scenario: PanelScenario) {
+        let begin = scenario.array("beginEditing").compactMap { $0 as? [Any] }
+        let end = scenario.array("endEditing").compactMap { $0 as? [String: Any] }
+        let keys = scenario.array("keys").compactMap { $0 as? [String: Any] }
+        guard !begin.isEmpty || !end.isEmpty || !keys.isEmpty else { return }
+        editor.frame = NSRect(x: 0, y: 0, width: scenario.width, height: scenario.height)
+        editor.layoutSubtreeIfNeeded()
+        guard let table = Self.descendants(of: editor, as: NSTableView.self).first else { return }
+        func cell(_ row: Int, _ column: Int) -> NSTextField? {
+            guard row >= 0, row < table.numberOfRows, column >= 0, column < table.numberOfColumns else { return nil }
+            return table.view(atColumn: column, row: row, makeIfNecessary: true) as? NSTextField
+        }
+        func int(_ value: Any?) -> Int { (value as? NSNumber)?.intValue ?? 0 }
+        for pair in begin where pair.count == 2 {
+            guard let field = cell(int(pair[0]), int(pair[1])) else { continue }
+            NotificationCenter.default.post(name: NSControl.textDidBeginEditingNotification, object: field)
+        }
+        for edit in end {
+            guard let field = cell(int(edit["row"]), int(edit["column"])) else { continue }
+            field.stringValue = edit["text"] as? String ?? ""
+            NotificationCenter.default.post(name: NSControl.textDidEndEditingNotification, object: field)
+        }
+        for key in keys {
+            guard let field = cell(int(key["row"]), int(key["column"])) else { continue }
+            let code = UInt16(int(key["keyCode"]))
+            let characters = code == 48 ? "\t" : "\r"
+            guard let event = NSEvent.keyEvent(
+                with: .keyDown, location: .zero,
+                modifierFlags: (key["shift"] as? Bool ?? false) ? [.shift] : [],
+                timestamp: 0, windowNumber: 0, context: nil,
+                characters: characters, charactersIgnoringModifiers: characters,
+                isARepeat: false, keyCode: code
+            ) else { continue }
+            field.keyDown(with: event)
+        }
     }
 
     func model() -> JSON {

@@ -1,0 +1,1 @@
+{"panel": "TableEditorView", "theme": "Solarized Light", "dark": true, "width": 520, "height": 360, "state": {"text": "| Name | Count |\n| :--- | ---: |\n| Ada | 3 |\n| Grace | 4 |\n", "host": true, "keys": [{"row": 2, "column": 1, "keyCode": 48}]}}
