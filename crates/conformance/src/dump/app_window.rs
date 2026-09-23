@@ -34,22 +34,22 @@ use super::json::{self, Object};
 use super::{Failure, Request};
 
 /// `AppWindowScenario`.
-struct Scenario {
-    window: String,
-    document: Option<String>,
-    mode: String,
-    dark: bool,
-    size: Option<NSSize>,
-    preferences: Option<Vec<u8>>,
-    keybindings: Option<Vec<u8>>,
-    pane: Option<String>,
-    guide: String,
-    commands: Vec<String>,
-    settle_timeout: Duration,
+pub(crate) struct Scenario {
+    pub(crate) window: String,
+    pub(crate) document: Option<String>,
+    pub(crate) mode: String,
+    pub(crate) dark: bool,
+    pub(crate) size: Option<NSSize>,
+    pub(crate) preferences: Option<Vec<u8>>,
+    pub(crate) keybindings: Option<Vec<u8>>,
+    pub(crate) pane: Option<String>,
+    pub(crate) guide: String,
+    pub(crate) commands: Vec<String>,
+    pub(crate) settle_timeout: Duration,
 }
 
 impl Scenario {
-    fn load(path: &Path) -> Result<Scenario, Failure> {
+    pub(crate) fn load(path: &Path) -> Result<Scenario, Failure> {
         let text = std::fs::read_to_string(path)?;
         let object: Value = serde_json::from_str(&text).map_err(|error| Failure::Error(error.to_string()))?;
         if !object.is_object() {
@@ -101,7 +101,7 @@ fn is_ported(window: &str) -> bool {
 // MARK: - Sandbox
 
 /// `AppWindowSandbox`.
-mod sandbox {
+pub(crate) mod sandbox {
     use super::*;
 
     pub fn prepare(scenario: &Scenario) -> Result<PathBuf, Failure> {
@@ -240,7 +240,7 @@ pub(crate) mod window_server {
 }
 
 /// The machine-wide window-capture lock (see `capture.rs`). Held until exit.
-fn acquire_window_capture_lock() {
+pub(crate) fn acquire_window_capture_lock() {
     let file = std::fs::OpenOptions::new()
         .create(true)
         .truncate(false)
@@ -264,7 +264,7 @@ fn appearance(dark: bool) -> Retained<NSAppearance> {
 /// `applyScenarioAppearance`: `AppDelegate.applySelectedTheme`, with the
 /// system appearance taken from the scenario, and the bundle's icon as the
 /// application icon.
-fn apply_scenario_appearance(scenario: &Scenario, root: &Path, mtm: MainThreadMarker) {
+pub(crate) fn apply_scenario_appearance(scenario: &Scenario, root: &Path, mtm: MainThreadMarker) {
     let icon_path = NSString::from_str(&root.join("vendor/downright/Resources/AppIcon.icns").to_string_lossy());
     let icon = objc2_app_kit::NSImage::initWithContentsOfFile(objc2_app_kit::NSImage::alloc(), &icon_path);
     unsafe { NSApplication::sharedApplication(mtm).setApplicationIconImage(icon.as_deref()) };
@@ -616,7 +616,7 @@ fn check_settled() {
     }
 }
 
-fn repository_root() -> PathBuf {
+pub(crate) fn repository_root() -> PathBuf {
     Path::new(env!("CARGO_MANIFEST_DIR")).join("../..").canonicalize().expect("repository root")
 }
 
@@ -657,12 +657,6 @@ pub fn run(request: &Request) -> Result<(), Failure> {
     std::process::exit(0)
 }
 
-/// `bench-app-window`: not measurable until the document window is ported.
-pub fn bench(request: &Request) -> Result<(), Failure> {
-    let scenario = Scenario::load(&request.input)?;
-    let _ = scenario;
-    Err(Failure::NotPorted)
-}
 
 // MARK: - The main menu
 
