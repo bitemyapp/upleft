@@ -27,6 +27,18 @@ stamp binary:
 elklab:
     crates/elk/tools/elklab.sh
 
+# Build Downright's own benchmark (drbench) from the submodule, stamped like
+# every other reference binary.
+drbench:
+    cd vendor/downright && swift build -c release --scratch-path ../../target/drbench --product drbench
+    just stamp {{scratch}}/drbench/release/drbench
+
+# Compare drbench (Swift) with upleft-bench (Rust) stage by stage; fails on any
+# stage slower than Swift beyond run-to-run noise.
+bench *args: drbench
+    cargo build --release -p upleft-bench
+    python3 scripts/bench-compare.py {{args}}
+
 # Build the original Downright.app from the submodule (for window-level conformance).
 downright-app:
     cd vendor/downright && SCRATCH=../../target/downright-app Scripts/bundle-app.sh
