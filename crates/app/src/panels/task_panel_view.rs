@@ -129,6 +129,8 @@ enum DropTarget {
 }
 
 type Handler = RefCell<Option<Rc<dyn Fn()>>>;
+type TaskToggle = Rc<dyn Fn(&TaskItem)>;
+type TextCommit = Rc<dyn Fn(&str)>;
 
 pub struct TaskPanelViewIvars {
     delegate: RefCell<Option<Weak<dyn TaskPanelDelegate>>>,
@@ -1849,108 +1851,277 @@ impl TaskPanelView {
 
 // MARK: - Swift's `difference(from:)`
 
-/// `new.difference(from: old)` for an `Equatable` element: the standard
-/// library's `_myers(from:to:using:)` (Myers' O(ND) descent over a trace of
-/// `_V` rows, then the backtrack that forms the changes).  Returns the
-/// removal offsets (into `old`) and the insertion offsets (into `new`), which
-/// is all `rebuildRows` reads.
+/// `new.difference(from: old)` for an `Equatable` element, as the standard
+/// library computes it (`Diffing.swift`, `_linearSpaceMyers`): the linear-space
+/// Myers of the paper's section 4b, run over an explicit stack of edit-graph
+/// boxes, each shrunk by its common leading and trailing runs before it is
+/// searched.  Returns the removal offsets (into `old`) and the insertion
+/// offsets (into `new`), which is all `rebuildRows` reads; the offsets decide
+/// which rows fade and slide.  Checked against the Swift runtime
+/// (`tests::collection_difference_matches_swift`).
 fn collection_difference<T: PartialEq>(old: &[T], new: &[T]) -> (Vec<usize>, Vec<usize>) {
-    /// `_V`: the rows of the triangular matrix, negative indexes interleaved
-    /// with positive ones.
-    struct V {
-        a: Vec<isize>,
-    }
-
-    impl V {
-        fn new(max_index: isize) -> V {
-            V { a: vec![0; (max_index + 1) as usize] }
-        }
-
-        fn transform(index: isize) -> usize {
-            (if index <= 0 { -index } else { index - 1 }) as usize
-        }
-
-        fn get(&self, index: isize) -> isize {
-            self.a[Self::transform(index)]
-        }
-
-        fn set(&mut self, index: isize, value: isize) {
-            self.a[Self::transform(index)] = value;
-        }
-    }
-
-    let n = old.len() as isize;
-    let m = new.len() as isize;
-    let max = n + m;
-
-    // _descent
-    let mut trace: Vec<V> = Vec::new();
-    let mut v = V::new(1);
-    v.set(1, 0);
-    let mut x: isize = 0;
-    let mut y: isize = 0;
-    'iterator: for d in 0..=max {
-        trace.push(std::mem::replace(&mut v, V::new(d)));
-        let prev_v = trace.last().expect("pushed");
-        let mut k = -d;
-        while k <= d {
-            if k == -d {
-                x = prev_v.get(k + 1);
-            } else {
-                let km = prev_v.get(k - 1);
-                if k != d {
-                    let kp = prev_v.get(k + 1);
-                    x = if km < kp { kp } else { km + 1 };
-                } else {
-                    x = km + 1;
-                }
-            }
-            y = x - k;
-            while x < n && y < m {
-                if old[x as usize] != new[y as usize] {
-                    break;
-                }
-                x += 1;
-                y += 1;
-            }
-            v.set(k, x);
-            if x >= n && y >= m {
-                break 'iterator;
-            }
-            k += 2;
-        }
-        if x >= n && y >= m {
-            break;
-        }
-    }
-
-    // _formChanges
+    let initial = EditGraphRect { left: 0, top: 0, right: old.len() as isize, bottom: new.len() as isize }
+        .shrunk(old, new);
+    let mut myers = LinearMyers { k_vector: DoubleKVector::new(initial.size()) };
     let mut removals = Vec::new();
     let mut insertions = Vec::new();
-    let mut x = n;
-    let mut y = m;
-    let mut d = trace.len() as isize - 1;
-    while d > 0 {
-        let v = &trace[d as usize];
-        let k = x - y;
-        let prev_k = if k == -d || (k != d && v.get(k - 1) < v.get(k + 1)) { k + 1 } else { k - 1 };
-        let prev_x = v.get(prev_k);
-        let prev_y = prev_x - prev_k;
-        while x > prev_x && y > prev_y {
-            // No change at this position.
-            x -= 1;
-            y -= 1;
+    let mut stack: Vec<EditGraphRect> = Vec::new();
+    let mut current = initial;
+    loop {
+        let (edit, snake_box) = myers.middle_snake(current, old, new);
+        match edit {
+            Some(Edit::Insert(offset)) => insertions.push(offset as usize),
+            Some(Edit::Remove(offset)) => removals.push(offset as usize),
+            None => {}
         }
-        if y != prev_y {
-            insertions.push(prev_y as usize);
-        } else {
-            removals.push(prev_x as usize);
-        }
-        x = prev_x;
-        y = prev_y;
-        d -= 1;
+        let Some(snake_box) = snake_box else {
+            let Some(next) = stack.pop() else { break };
+            current = next;
+            continue;
+        };
+        let head_box = current.cropped_to_top_left_of(snake_box).shrunk(old, new);
+        let tail_box = current.cropped_to_bottom_right_of(snake_box).shrunk(old, new);
+        current = head_box;
+        stack.push(tail_box);
     }
     (removals, insertions)
+}
+
+/// A `CollectionDifference.Change`, by offset.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+enum Edit {
+    Insert(isize),
+    Remove(isize),
+}
+
+/// `EditGraphRect`: columns index `old`, rows index `new`.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+struct EditGraphRect {
+    left: isize,
+    top: isize,
+    right: isize,
+    bottom: isize,
+}
+
+impl EditGraphRect {
+    fn width(&self) -> isize {
+        self.right - self.left
+    }
+
+    fn height(&self) -> isize {
+        self.bottom - self.top
+    }
+
+    fn size(&self) -> isize {
+        self.width() + self.height()
+    }
+
+    fn delta(&self) -> isize {
+        self.width() - self.height()
+    }
+
+    fn is_even(&self) -> bool {
+        self.delta() % 2 == 0
+    }
+
+    fn is_odd(&self) -> bool {
+        self.delta() % 2 != 0
+    }
+
+    fn max(&self) -> isize {
+        (self.size() + 1) / 2
+    }
+
+    fn shrunk<T: PartialEq>(self, old: &[T], new: &[T]) -> EditGraphRect {
+        let mut r = self;
+        while r.left < r.right && r.top < r.bottom && old[r.left as usize] == new[r.top as usize] {
+            r.left += 1;
+            r.top += 1;
+        }
+        while r.right > r.left && r.bottom > r.top && old[r.right as usize - 1] == new[r.bottom as usize - 1] {
+            r.right -= 1;
+            r.bottom -= 1;
+        }
+        r
+    }
+
+    fn cropped_to_top_left_of(&self, limit: EditGraphRect) -> EditGraphRect {
+        EditGraphRect { left: self.left, top: self.top, right: limit.left, bottom: limit.top }
+    }
+
+    fn cropped_to_bottom_right_of(&self, limit: EditGraphRect) -> EditGraphRect {
+        EditGraphRect { left: limit.right, top: limit.bottom, right: self.right, bottom: self.bottom }
+    }
+}
+
+/// `DoubleKVector`: the forward and backward k-vectors in one buffer.
+struct DoubleKVector {
+    buffer: Vec<isize>,
+    forward_offset: isize,
+    backward_offset: isize,
+}
+
+impl DoubleKVector {
+    fn new(size: isize) -> DoubleKVector {
+        let range = size * 2 + 1;
+        DoubleKVector { buffer: vec![0; (range * 2) as usize], forward_offset: size, backward_offset: range + size }
+    }
+
+    fn forward(&self, index: isize) -> isize {
+        self.buffer[(self.forward_offset + index) as usize]
+    }
+
+    fn set_forward(&mut self, index: isize, value: isize) {
+        self.buffer[(self.forward_offset + index) as usize] = value;
+    }
+
+    fn backward(&self, index: isize) -> isize {
+        self.buffer[(self.backward_offset + index) as usize]
+    }
+
+    fn set_backward(&mut self, index: isize, value: isize) {
+        self.buffer[(self.backward_offset + index) as usize] = value;
+    }
+}
+
+/// `LinearMyers`.
+struct LinearMyers {
+    k_vector: DoubleKVector,
+}
+
+type SnakeResult = (Option<Edit>, Option<EditGraphRect>);
+
+impl LinearMyers {
+    fn middle_snake<T: PartialEq>(&mut self, bx: EditGraphRect, old: &[T], new: &[T]) -> SnakeResult {
+        if !(bx.size() > 1) {
+            // One rightward or downward move represents a removal or
+            // insertion.
+            return if bx.size() == 0 {
+                (None, None)
+            } else if bx.width() == 1 {
+                (Some(Edit::Remove(bx.left)), None)
+            } else {
+                (Some(Edit::Insert(bx.top)), None)
+            };
+        }
+        // Reset for depth == 0.
+        self.k_vector.set_forward(1, bx.left);
+        self.k_vector.set_backward(1, bx.bottom);
+        for depth in 0..=bx.max() {
+            if bx.is_odd() {
+                if let Some((edit, snake)) = self.forward_search(bx, depth, old, new) {
+                    return (Some(edit), Some(snake));
+                }
+                let _ = self.backward_search(bx, depth, old, new);
+            } else {
+                let _ = self.forward_search(bx, depth, old, new);
+                if let Some((edit, snake)) = self.backward_search(bx, depth, old, new) {
+                    return (Some(edit), Some(snake));
+                }
+            }
+        }
+        unreachable!("Unreachable");
+    }
+
+    // Swift's `c >= -(depth - 1) && c <= depth - 1`, kept as written.
+    #[allow(clippy::int_plus_one)]
+    fn forward_search<T: PartialEq>(
+        &mut self,
+        bx: EditGraphRect,
+        depth: isize,
+        old: &[T],
+        new: &[T],
+    ) -> Option<(Edit, EditGraphRect)> {
+        let mut k = depth;
+        while k >= -depth {
+            // Choose whether this is an insertion or a deletion, then set up
+            // bounds of candidate middle snake.
+            let (mut new_right, mut new_bottom, new_left, is_insertion, edit_index);
+            if k == -depth || (k != depth && self.k_vector.forward(k - 1) < self.k_vector.forward(k + 1)) {
+                new_right = self.k_vector.forward(k + 1);
+                new_left = new_right;
+                new_bottom = bx.top + (new_right - bx.left) - k;
+                is_insertion = true;
+                edit_index = new_bottom - 1;
+            } else {
+                new_left = self.k_vector.forward(k - 1);
+                new_right = new_left + 1;
+                new_bottom = bx.top + (new_right - bx.left) - k;
+                is_insertion = false;
+                edit_index = new_left;
+            }
+            let new_top = if depth == 0 || new_right != new_left { new_bottom } else { new_bottom - 1 };
+            // Follow any diagonal after the movement.
+            while new_right < bx.right
+                && new_bottom < bx.bottom
+                && old[new_right as usize] == new[new_bottom as usize]
+            {
+                new_right += 1;
+                new_bottom += 1;
+            }
+            self.k_vector.set_forward(k, new_right);
+            // Only check for overlap in odd-sized boxes when moving forward.
+            if bx.is_odd() {
+                let c = k - bx.delta();
+                if (c >= -(depth - 1) && c <= depth - 1) && new_bottom >= self.k_vector.backward(c) {
+                    let edit = if is_insertion { Edit::Insert(edit_index) } else { Edit::Remove(edit_index) };
+                    return Some((
+                        edit,
+                        EditGraphRect { left: new_left, top: new_top, right: new_right, bottom: new_bottom },
+                    ));
+                }
+            }
+            k -= 2;
+        }
+        None
+    }
+
+    fn backward_search<T: PartialEq>(
+        &mut self,
+        bx: EditGraphRect,
+        depth: isize,
+        old: &[T],
+        new: &[T],
+    ) -> Option<(Edit, EditGraphRect)> {
+        let mut c = depth;
+        while c >= -depth {
+            let k = c + bx.delta();
+            // Choose whether this is an insertion or a deletion, then set up
+            // bounds of candidate middle snake.
+            let (mut new_left, mut new_top, new_bottom, is_insertion, edit_index);
+            if c == -depth || (c != depth && self.k_vector.backward(c - 1) > self.k_vector.backward(c + 1)) {
+                new_top = self.k_vector.backward(c + 1);
+                new_bottom = new_top;
+                new_left = bx.left + (new_top - bx.top) + k;
+                is_insertion = false;
+                edit_index = new_left;
+            } else {
+                new_bottom = self.k_vector.backward(c - 1);
+                new_top = new_bottom - 1;
+                new_left = bx.left + (new_top - bx.top) + k;
+                is_insertion = true;
+                edit_index = new_top;
+            }
+            let new_right = if depth == 0 || new_top != new_bottom { new_left } else { new_left + 1 };
+            // Follow any diagonal after the movement.
+            while new_left > bx.left && new_top > bx.top && old[new_left as usize - 1] == new[new_top as usize - 1] {
+                new_left -= 1;
+                new_top -= 1;
+            }
+            self.k_vector.set_backward(c, new_top);
+            // Only check for overlap in even-sized boxes when moving
+            // backward.
+            if bx.is_even() && (k >= -depth && k <= depth) && new_left <= self.k_vector.forward(k) {
+                let edit = if is_insertion { Edit::Insert(edit_index) } else { Edit::Remove(edit_index) };
+                return Some((
+                    edit,
+                    EditGraphRect { left: new_left, top: new_top, right: new_right, bottom: new_bottom },
+                ));
+            }
+            c -= 2;
+        }
+        None
+    }
 }
 
 // MARK: - Row geometry
@@ -2185,7 +2356,7 @@ impl RowStyleSheet {
 // MARK: - Task row
 
 pub struct TaskRowViewIvars {
-    on_toggle: RefCell<Option<Rc<dyn Fn(&TaskItem)>>>,
+    on_toggle: RefCell<Option<TaskToggle>>,
     checkbox: Retained<PanelCheckbox>,
     label: Retained<NSTextField>,
     jump_glyph: Retained<NSImageView>,
@@ -2350,7 +2521,7 @@ impl TaskRowView {
         this
     }
 
-    fn set_on_toggle(&self, handler: Option<Rc<dyn Fn(&TaskItem)>>) {
+    fn set_on_toggle(&self, handler: Option<TaskToggle>) {
         *self.ivars().on_toggle.borrow_mut() = handler;
     }
 
@@ -2888,7 +3059,7 @@ impl TaskPileRowView {
 
 pub struct TaskAddRowViewIvars {
     on_begin_edit: Handler,
-    on_commit: RefCell<Option<Rc<dyn Fn(&str)>>>,
+    on_commit: RefCell<Option<TextCommit>>,
     on_cancel: Handler,
     plus_glyph: Retained<NSImageView>,
     hint_label: Retained<NSTextField>,
@@ -3030,7 +3201,7 @@ impl TaskAddRowView {
         *self.ivars().on_begin_edit.borrow_mut() = handler;
     }
 
-    fn set_on_commit(&self, handler: Option<Rc<dyn Fn(&str)>>) {
+    fn set_on_commit(&self, handler: Option<TextCommit>) {
         *self.ivars().on_commit.borrow_mut() = handler;
     }
 
@@ -3526,5 +3697,141 @@ impl TaskUndoPillView {
         }
         ivars.label.setTextColor(Some(&style_sheet.text));
         ivars.undo_button.setContentTintColor(Some(&style_sheet.accent));
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::collection_difference;
+
+    type Case<'a> = (&'a [i32], &'a [i32], &'a [usize], &'a [usize]);
+
+    /// Swift's `new.difference(from: old)` on 60 deterministic vectors
+    /// (generated by compiling and running a Swift program against the
+    /// standard library): the removal and insertion offsets, sorted.
+    #[test]
+    fn collection_difference_matches_swift() {
+        let cases: &[Case] = &[
+        (&[1, 0, 1, 0, 0, 0, 1, 1], &[0, 0, 1], &[0, 2, 4, 5, 6], &[]),
+        (&[0, 3, 3, 3], &[], &[0, 1, 2, 3], &[]),
+        (&[3, 3, 1, 2, 0, 1], &[], &[0, 1, 2, 3, 4, 5], &[]),
+        (&[1, 1, 1, 0, 1, 1], &[1, 0, 0], &[1, 2, 4, 5], &[2]),
+        (&[0, 1, 0], &[1, 0, 1, 1], &[0], &[2, 3]),
+        (&[0, 0], &[0, 0], &[], &[]),
+        (&[2, 0], &[1, 0, 2, 1, 1], &[0], &[0, 2, 3, 4]),
+        (&[0, 0, 2, 0, 2, 1, 1], &[1, 1, 2], &[0, 1, 2, 3, 4], &[2]),
+        (&[], &[0, 1, 1, 0, 1, 0, 1, 0], &[], &[0, 1, 2, 3, 4, 5, 6, 7]),
+        (&[1, 0, 1, 0], &[2], &[0, 1, 2, 3], &[0]),
+        (&[0, 0, 0], &[0, 0, 2], &[2], &[2]),
+        (&[1], &[0], &[0], &[0]),
+        (&[2, 1], &[2], &[1], &[]),
+        (&[1, 1, 0, 1], &[1, 0, 1, 1, 0], &[1], &[3, 4]),
+        (&[0, 1, 1, 3, 3, 3, 0], &[0], &[1, 2, 3, 4, 5, 6], &[]),
+        (&[0], &[0, 2, 0, 0, 2, 0], &[], &[1, 2, 3, 4, 5]),
+        (&[0], &[0], &[], &[]),
+        (&[3, 0, 1, 0, 2], &[3, 0, 2], &[2, 3], &[]),
+        (&[2, 1, 2, 2, 0], &[0, 2, 1, 0, 0], &[2, 3], &[0, 3]),
+        (&[0, 1, 2, 2, 1], &[2, 2, 1, 0, 2], &[0, 1], &[3, 4]),
+        (&[1, 0, 0, 1], &[], &[0, 1, 2, 3], &[]),
+        (&[2, 1], &[1, 2, 2, 0, 1, 0], &[], &[0, 1, 3, 5]),
+        (&[1, 0, 1, 2, 0, 1, 0, 1], &[2, 0, 1, 0], &[0, 1, 2, 7], &[]),
+        (&[0, 2, 0], &[1], &[0, 1, 2], &[0]),
+        (&[0, 0, 0, 0], &[0], &[1, 2, 3], &[]),
+        (&[0, 1, 2, 2], &[1, 1, 1, 2, 1], &[0, 2], &[1, 2, 4]),
+        (&[0, 0, 0, 0, 0], &[0, 0, 0, 0, 0, 0, 0, 0], &[], &[5, 6, 7]),
+        (&[0, 2, 1, 1, 0, 0], &[2, 0, 0], &[0, 2, 3], &[]),
+        (&[1, 1, 1], &[1, 0, 1], &[1], &[1]),
+        (&[0, 1, 2, 1], &[1, 0, 3, 2, 0, 3], &[0, 3], &[1, 2, 4, 5]),
+        (&[2, 3, 2, 3, 3, 3, 1, 2], &[3, 2], &[0, 1, 2, 3, 5, 6], &[]),
+        (&[0, 0], &[0, 0, 0, 0, 0, 0], &[], &[2, 3, 4, 5]),
+        (&[], &[1, 1, 1, 1], &[], &[0, 1, 2, 3]),
+        (&[0, 1, 0], &[1], &[0, 2], &[]),
+        (&[1, 1, 2, 1, 1, 2, 1], &[1, 2, 1, 2, 1, 1, 2], &[6], &[1]),
+        (&[1, 0, 1], &[0, 1, 1, 0], &[0], &[2, 3]),
+        (&[1, 1, 0, 2, 0, 2, 0, 3], &[3, 3, 2, 1], &[0, 1, 2, 3, 4, 5, 6], &[0, 2, 3]),
+        (&[], &[0, 0, 0, 1, 0, 1, 1], &[], &[0, 1, 2, 3, 4, 5, 6]),
+        (&[0, 2, 2], &[1, 1, 0, 2], &[1], &[0, 1]),
+        (&[0, 1, 0, 1, 0, 1, 0], &[0, 0, 0, 0, 1], &[1, 3, 6], &[2]),
+        (&[0, 1, 2, 0, 2, 2, 0, 2], &[0, 1, 2, 2, 1, 2], &[3, 4, 6], &[4]),
+        (&[1, 2, 0], &[1, 1, 2, 1, 1, 1, 0], &[], &[1, 3, 4, 5]),
+        (&[0, 1, 2, 1, 3], &[2], &[0, 1, 3, 4], &[]),
+        (&[0, 2, 1, 2, 1, 1, 2], &[], &[0, 1, 2, 3, 4, 5, 6], &[]),
+        (&[], &[2, 2], &[], &[0, 1]),
+        (&[0, 1, 0, 0, 0, 1], &[2, 0, 1, 1, 0], &[2, 3, 4], &[0, 4]),
+        (&[1, 2, 2, 0], &[0, 0, 2, 0, 2, 1, 2], &[0, 2], &[0, 1, 4, 5, 6]),
+        (&[0, 0, 0], &[0, 0, 0, 0, 0, 0], &[], &[3, 4, 5]),
+        (&[0, 0], &[], &[0, 1], &[]),
+        (&[1], &[1, 1, 1], &[], &[1, 2]),
+        (&[1, 2], &[1, 1, 0, 1], &[1], &[1, 2, 3]),
+        (&[0, 1, 1, 1, 1, 0, 2, 2], &[2, 1, 1, 1], &[0, 1, 5, 6, 7], &[0]),
+        (&[0, 1, 0, 1], &[1, 0, 1, 0], &[0], &[3]),
+        (&[3], &[3, 0, 1, 2, 3, 2, 0], &[], &[1, 2, 3, 4, 5, 6]),
+        (&[3, 0, 2, 3, 3], &[3, 2, 3, 1, 3, 3, 3, 0], &[1], &[3, 5, 6, 7]),
+        (&[0, 0, 0, 0, 0, 0, 0], &[0, 0, 0, 0, 0, 0, 0], &[], &[]),
+        (&[0, 0], &[0, 0, 0], &[], &[2]),
+        (&[1, 2], &[], &[0, 1], &[]),
+        (&[1, 1, 0, 1, 0, 1, 0, 1], &[0, 0, 1], &[0, 1, 3, 4, 5], &[]),
+        (&[2, 1, 2, 0, 3, 2, 3], &[3, 3, 3, 1, 1, 1, 2, 2], &[0, 3, 4, 6], &[0, 1, 2, 4, 5]),
+        ];
+        for (old, new, removals, insertions) in cases {
+            let (mut removed, mut inserted) = collection_difference(old, new);
+            removed.sort_unstable();
+            inserted.sort_unstable();
+            assert_eq!((&removed[..], &inserted[..]), (*removals, *insertions), "old {old:?} new {new:?}");
+        }
+    }
+
+    /// 40 longer vectors (up to 40 elements over up to 6 values), from the
+    /// same generator with larger bounds.
+    #[test]
+    fn collection_difference_matches_swift_on_longer_lists() {
+        let cases: &[Case] = &[
+        (&[1, 0, 1, 0, 0, 0, 1, 1, 0, 0, 1, 1, 1, 1, 0, 1, 1, 1, 0, 0, 1, 1, 1, 1], &[0, 0, 1, 0, 1, 1, 1, 1, 1, 0, 1, 1, 1, 0, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0], &[0, 4, 20, 21], &[0, 4, 5, 6, 7, 8, 12, 16, 18, 20, 28, 29, 30, 31, 32, 33, 34, 37]),
+        (&[1, 0, 0, 4, 4, 2, 3, 4, 4, 0, 1, 2, 1, 4, 4, 1, 3, 1, 0, 2, 2, 0, 0, 2, 2, 2, 1, 2, 4, 0, 4, 4, 0, 0, 2, 1, 4, 4, 1], &[2, 2, 0, 3], &[0, 1, 2, 3, 4, 6, 7, 8, 9, 10, 12, 13, 14, 15, 16, 17, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38], &[3]),
+        (&[0, 5, 1, 0, 2, 1, 2, 1, 2, 3, 5, 5, 2, 3, 3, 0, 3], &[3, 4, 4, 1, 1, 0, 3, 3, 5, 5, 1, 4, 0, 1, 3, 3, 0, 0, 0, 0, 4, 2, 4, 1, 4, 0, 3, 0, 5, 3, 3, 3, 2, 3, 4, 2, 3], &[4, 8, 10, 12, 15], &[0, 1, 2, 3, 4, 6, 7, 9, 11, 14, 15, 16, 17, 18, 19, 20, 22, 24, 25, 27, 31, 32, 33, 34, 35]),
+        (&[2, 0, 1, 1, 2, 2, 2, 0, 1, 2, 1, 2, 2, 2, 1, 0], &[1, 2, 2, 1, 2, 2, 1, 0, 2, 1, 0, 0, 0, 0, 2, 2, 2, 0, 2, 2, 1, 1, 2, 2, 0, 1], &[0, 1, 2, 7], &[3, 5, 7, 10, 11, 12, 13, 14, 15, 17, 20, 22, 23, 25]),
+        (&[0, 3], &[], &[0, 1], &[]),
+        (&[0, 1, 0, 1, 2, 0, 1, 0, 0, 1, 2, 0, 2, 0, 1, 1, 1, 0, 0, 1, 0, 0, 2, 1, 2, 0, 0, 1, 2, 2, 1, 1, 1, 2, 1, 2, 2, 1, 1], &[0, 2, 1, 1, 2, 2, 1, 0], &[1, 2, 3, 5, 7, 8, 11, 13, 15, 16, 17, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38], &[]),
+        (&[4, 3, 3, 0, 3, 0, 1, 0, 4, 0, 2, 0, 3, 3, 0, 3, 0, 2, 1, 4, 4, 3, 4, 0, 3, 3, 2, 2, 1, 3, 2, 1, 0, 2], &[2, 2, 3, 4, 1, 1, 2, 0, 0, 4, 1, 2, 4, 1, 4, 2, 2, 3, 3, 1, 2, 0], &[0, 1, 2, 3, 5, 6, 7, 9, 11, 12, 13, 15, 17, 20, 21, 23, 24, 25, 28, 30, 32], &[0, 1, 4, 5, 9, 11, 13, 18, 21]),
+        (&[1, 0, 1, 4, 3, 2, 1, 1, 0, 3, 3, 1], &[2, 2, 3, 0, 1, 0, 3, 4, 4, 4, 2], &[0, 1, 2, 3, 4, 6, 10, 11], &[1, 2, 3, 7, 8, 9, 10]),
+        (&[1, 2, 1, 1, 2, 0, 1, 1, 1, 0], &[], &[0, 1, 2, 3, 4, 5, 6, 7, 8, 9], &[]),
+        (&[3, 2, 2, 0, 3, 1, 1, 0, 2, 0, 2, 0, 3], &[], &[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12], &[]),
+        (&[2, 0, 1, 1, 0, 2, 1, 0, 2, 1, 1, 0, 1, 0, 0, 2, 2, 1, 1, 0, 2, 1, 2, 1, 2, 1, 1], &[2, 2, 1, 1, 2, 2, 0, 0, 2, 2, 0, 1, 0, 1, 2, 0, 2, 2, 0, 2, 0, 1, 2, 2, 1, 2, 0], &[1, 4, 6, 9, 10, 17, 18, 25, 26], &[1, 5, 7, 9, 13, 14, 20, 22, 26]),
+        (&[0, 4, 3, 3, 2, 0, 2, 3, 4, 1, 4, 1, 1, 2, 4, 2, 2, 4, 4, 0, 0, 0, 2, 2, 0, 4, 0, 1, 1, 0, 2, 4, 3, 1, 4], &[4, 4, 1, 4, 2, 1, 4, 2, 4, 3, 1, 3, 3, 0, 2, 2, 3, 1, 2, 4, 2, 4, 0, 1, 2, 1, 4, 0, 3, 3, 0, 2, 1, 0, 1, 2, 0, 2], &[0, 2, 3, 4, 5, 6, 7, 12, 19, 20, 22, 24, 31, 32, 33, 34], &[4, 6, 9, 10, 11, 12, 13, 16, 17, 18, 20, 23, 25, 28, 29, 30, 31, 33, 35]),
+        (&[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], &[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], &[], &[30, 31, 32, 33, 34, 35, 36]),
+        (&[0, 3, 0, 0, 2, 3, 0, 1, 0, 1, 0, 1, 0, 3, 2, 2, 3, 2, 2], &[2, 0, 0, 0, 3, 0, 3, 0, 1, 2, 2, 0, 2, 3, 1, 1, 1, 2, 3, 0, 1, 0, 3, 0, 0, 1, 2, 0, 3, 2, 1, 2, 0, 3, 2], &[6, 17], &[0, 1, 2, 3, 4, 8, 9, 10, 14, 15, 17, 18, 21, 22, 24, 26, 30, 32]),
+        (&[3, 1, 1, 1, 2, 2, 1, 0, 3, 2, 0, 3, 2, 0, 3, 1, 3, 3, 3], &[2, 2, 3, 3, 1, 2, 1, 3, 1, 3, 2, 0, 3, 0, 3, 1, 3, 2, 2], &[1, 2, 5, 7, 12, 16, 17], &[0, 1, 3, 7, 8, 17, 18]),
+        (&[4, 5, 2, 3, 4, 1, 1, 0, 5, 1, 4, 0, 4, 4], &[5, 5, 5, 2, 1, 3, 2, 1], &[0, 3, 4, 6, 7, 8, 10, 11, 12, 13], &[0, 1, 5, 6]),
+        (&[0, 2, 2, 1, 2, 0, 2, 1, 0, 1, 0, 1, 2, 0, 0, 1, 2, 0, 2, 2, 0], &[1, 2, 0, 2, 2, 0, 1, 0, 0, 2, 1, 0, 0, 2, 2, 1, 1, 1, 2, 1, 0, 1, 0, 2, 1, 0, 2, 1, 2, 2, 2, 1, 0, 2, 0, 2], &[4, 10, 13], &[0, 1, 5, 7, 11, 13, 14, 15, 19, 22, 24, 26, 27, 28, 31, 32, 33, 35]),
+        (&[0, 0, 1, 3, 1, 4, 2, 4, 4, 2, 3, 4, 2, 3, 1, 0, 3, 1, 4, 3, 1, 0, 2, 2, 1, 4, 4, 3, 2, 3, 0, 1, 3, 2, 0], &[0, 0, 0, 2, 0, 3, 4, 2, 2, 1], &[2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 13, 14, 17, 19, 20, 21, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34], &[2]),
+        (&[4, 2, 0, 3, 0, 0, 2, 5, 1, 3, 5, 3, 1, 5, 4, 5, 0, 3, 2, 4, 3, 1, 2, 2], &[5, 0, 0, 1], &[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 14, 15, 17, 18, 19, 20, 22, 23], &[2]),
+        (&[0, 5, 4, 4, 2, 2, 4, 5, 1, 5, 4, 3, 1, 5, 5, 4, 1, 5, 2, 2, 5, 4, 3, 1, 4, 5, 0, 2], &[0, 5, 0, 4, 5, 1, 4, 1, 4, 1, 1, 0, 1, 1, 3, 2, 2, 0, 4, 0, 4, 4, 5, 3, 0, 0, 5], &[2, 3, 4, 5, 9, 11, 13, 14, 17, 20, 22, 23, 27], &[2, 10, 11, 12, 13, 14, 17, 19, 21, 23, 25, 26]),
+        (&[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], &[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], &[], &[28, 29, 30, 31]),
+        (&[1, 1, 2, 1, 2, 0, 1, 0, 1, 1, 0, 2], &[2, 0, 2, 2, 0, 1, 0, 2, 2, 1, 1, 1, 1, 0, 1, 0, 1, 2, 2, 1, 2, 1, 1, 0, 1, 2], &[0, 1], &[0, 1, 3, 4, 6, 7, 9, 10, 11, 12, 16, 17, 18, 20, 22, 24]),
+        (&[4, 0, 5, 1, 0, 3, 1, 2, 5, 3, 2, 5, 3, 2, 5, 3, 4, 3, 4, 1, 4], &[1, 3, 3, 2, 0, 5, 3, 2, 4, 4, 2, 3, 0, 0, 2, 1, 4, 5], &[0, 1, 2, 4, 6, 7, 8, 14, 15, 17], &[4, 10, 11, 12, 13, 14, 17]),
+        (&[0, 0, 3, 3, 2, 1, 1, 0, 3, 3, 2, 1, 3], &[2, 3, 3, 0, 3], &[0, 1, 2, 3, 5, 6, 7, 10, 11], &[3]),
+        (&[1, 1, 1], &[0, 0, 1, 1, 0, 1, 0, 1, 0, 1, 0, 0, 1, 1, 0, 0, 0], &[], &[0, 1, 2, 3, 4, 5, 6, 7, 8, 10, 11, 14, 15, 16]),
+        (&[], &[3, 5, 2, 4], &[], &[0, 1, 2, 3]),
+        (&[3, 3, 2, 0, 4, 1, 1], &[3, 3, 4, 3, 1, 3, 4, 2, 0, 0, 2, 2, 2, 4, 2, 2, 4, 0, 2, 1], &[5], &[2, 3, 4, 5, 6, 9, 10, 11, 12, 14, 15, 16, 17, 18]),
+        (&[1, 3, 3, 2, 4, 0, 0, 0, 2, 0, 2, 0], &[5, 2, 2, 2, 3, 0, 4, 5, 0, 1, 5, 0, 3, 3, 4, 1, 2, 4, 0, 2, 0, 2, 4, 0, 3, 0, 1, 0, 5, 1, 0, 1, 4, 1], &[5, 7], &[0, 1, 2, 3, 4, 5, 6, 7, 8, 10, 11, 14, 15, 22, 23, 24, 25, 26, 27, 28, 29, 31, 32, 33]),
+        (&[1, 1, 1, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 1, 1, 1, 0, 1, 0], &[0], &[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18], &[]),
+        (&[0, 1, 2, 2, 0, 1, 2, 0, 1, 2, 1, 1, 2, 1, 1, 1, 0, 2, 0, 1, 2, 1, 2, 0, 1, 1, 0, 0, 0, 1, 2, 2], &[1, 1, 1, 1, 2, 1, 2, 0, 2, 1, 0, 1, 0, 2, 0], &[0, 2, 3, 4, 6, 7, 8, 9, 13, 15, 16, 19, 22, 24, 27, 28, 29, 30], &[14]),
+        (&[0, 3, 3, 0, 1], &[3, 2, 3, 3, 3, 2, 2, 1, 2, 2, 1, 0], &[0, 3], &[1, 3, 4, 5, 6, 8, 9, 10, 11]),
+        (&[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], &[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], &[], &[20, 21, 22, 23, 24, 25, 26, 27, 28, 29]),
+        (&[], &[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], &[], &[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13]),
+        (&[0, 0, 0, 0, 0, 0, 2], &[0, 0, 2, 0, 1, 0, 2, 0, 0, 0, 1, 2, 0], &[], &[2, 3, 4, 6, 10, 12]),
+        (&[2, 1, 2, 2, 2, 0, 1, 2, 1, 1, 1, 2, 2, 1, 2, 1, 1, 0, 2, 1, 2, 2, 1, 1, 0, 1, 0, 1, 1], &[0, 1, 0, 0, 2, 2, 2, 0, 1, 2, 0, 2], &[0, 1, 2, 3, 4, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 19, 22, 23, 27, 28], &[3, 9, 11]),
+        (&[1, 1, 0, 0, 0, 0, 1, 1, 1, 0], &[0, 1, 0, 1, 0, 1, 1, 0, 0, 0, 0, 1, 1, 1, 1, 1, 0, 0, 0, 1, 0, 0, 0, 0], &[], &[0, 2, 5, 6, 10, 11, 12, 13, 16, 17, 18, 20, 21, 22]),
+        (&[0, 0, 1, 0, 1, 0, 1, 1, 0, 0, 1, 0, 1, 0, 1], &[1, 1, 0, 0, 0, 0, 1, 1, 0, 1, 1, 1, 0, 1, 1, 0, 0, 1, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 1, 1], &[], &[0, 1, 2, 3, 6, 10, 11, 17, 20, 21, 22, 24, 25, 26, 28, 29, 30]),
+        (&[2, 1, 1, 3, 3, 1], &[1, 2, 1, 2, 1, 3, 1, 1, 1, 3, 1, 0, 2], &[], &[0, 3, 6, 7, 8, 11, 12]),
+        (&[5, 3, 1, 4, 4, 1, 5, 4, 4, 1, 3, 2, 3, 2, 3, 3, 1, 3, 5, 5, 4, 0, 3, 1, 5, 4, 3, 2, 3, 2, 4, 3, 0, 5, 1, 4, 2, 2, 1], &[0, 0, 4, 0, 3, 3, 1, 2, 0, 5, 1], &[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 22, 23, 24, 27, 30, 31, 34, 35, 36, 37], &[1, 3, 6]),
+        (&[3, 4, 4, 0, 4, 1, 4, 4, 1, 4, 4, 0, 4, 0, 3, 1, 4, 3, 2, 3, 1, 1, 2, 4, 2, 1, 4], &[0, 4, 4, 1, 4, 3, 1, 3, 0, 4, 4], &[0, 1, 2, 5, 7, 10, 11, 12, 13, 16, 18, 19, 20, 21, 22, 24, 25], &[8]),
+        ];
+        for (old, new, removals, insertions) in cases {
+            let (mut removed, mut inserted) = collection_difference(old, new);
+            removed.sort_unstable();
+            inserted.sort_unstable();
+            assert_eq!((&removed[..], &inserted[..]), (*removals, *insertions), "old {old:?} new {new:?}");
+        }
     }
 }
