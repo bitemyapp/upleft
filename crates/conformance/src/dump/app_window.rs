@@ -44,6 +44,8 @@ pub(crate) struct Scenario {
     pub(crate) keybindings: Option<Vec<u8>>,
     pub(crate) pane: Option<String>,
     pub(crate) guide: String,
+    /// Recent documents seeded into the sandbox (`sandbox::seed_recents`).
+    pub(crate) recents: Vec<Value>,
     pub(crate) commands: Vec<String>,
     pub(crate) settle_timeout: Duration,
 }
@@ -83,6 +85,7 @@ impl Scenario {
             preferences,
             pane: object["pane"].as_str().map(str::to_owned),
             guide: object["guide"].as_str().unwrap_or("unavailable").to_owned(),
+            recents: object["recents"].as_array().cloned().unwrap_or_default(),
             commands: object["commands"]
                 .as_array()
                 .map(|commands| commands.iter().filter_map(|command| command.as_str().map(str::to_owned)).collect())
@@ -95,7 +98,7 @@ impl Scenario {
 /// Window kinds this oracle can build yet. Anything else is "not ported",
 /// reported before the application starts.
 fn is_ported(window: &str) -> bool {
-    matches!(window, "probe" | "setup" | "preferences")
+    matches!(window, "probe" | "start" | "setup" | "preferences")
 }
 
 // MARK: - Sandbox
@@ -124,8 +127,41 @@ pub(crate) mod sandbox {
         if let Some(keybindings) = &scenario.keybindings {
             std::fs::write(support.join("keybindings.json"), keybindings)?;
         }
+        seed_recents(&scenario.recents, &root, &support)?;
         clear_own_defaults();
         Ok(root)
+    }
+
+    /// `AppWindowSandbox.seedRecents`: each recent's file under
+    /// `<root>/recents/` and `recents.json` in the support folder, in the
+    /// scenario's order.
+    fn seed_recents(recents: &[Value], root: &Path, support: &Path) -> Result<(), Failure> {
+        if recents.is_empty() {
+            return Ok(());
+        }
+        let folder = root.join("recents");
+        let mut entries = Vec::new();
+        for recent in recents {
+            let (Some(relative), Some(opened)) = (recent["path"].as_str(), recent["opened"].as_str()) else {
+                return Err(Failure::Error("a recent needs \"path\" and \"opened\"".into()));
+            };
+            let heading = recent["heading"].as_str().unwrap_or("");
+            let file = folder.join(relative);
+            if let Some(parent) = file.parent() {
+                std::fs::create_dir_all(parent)?;
+            }
+            std::fs::write(&file, format!("# {heading}\n"))?;
+            entries.push(serde_json::json!({
+                "path": file.to_string_lossy(),
+                "displayName": file.file_stem().map(|stem| stem.to_string_lossy().into_owned()).unwrap_or_default(),
+                "firstHeading": heading,
+                "lastOpened": opened,
+                "wordCount": recent["words"].as_i64().unwrap_or(0),
+            }));
+        }
+        let data = serde_json::to_vec(&Value::Array(entries)).map_err(|error| Failure::Error(error.to_string()))?;
+        std::fs::write(support.join("recents.json"), data)?;
+        Ok(())
     }
 
     /// This process's own defaults domain, never the user's app domain.
@@ -317,6 +353,21 @@ impl Scene {
                 content.addSubview(&label);
                 content.addSubview(&button);
                 let scene = Scene { window: probe, pending_commands: None, _retained: None };
+                scene.show(mtm);
+                Ok(scene)
+            }
+            "start" => {
+                use upleft_app::ai::document_state_store::DocumentStateStore;
+                use upleft_app::app::start_window_controller::{StartGuideOffer, StartWindowController};
+                let guide = match scenario.guide.as_str() {
+                    "primary" => StartGuideOffer::Primary,
+                    "secondary" => StartGuideOffer::Secondary,
+                    _ => StartGuideOffer::Unavailable,
+                };
+                let recents = DocumentStateStore::shared().recents(StartWindowController::RECENT_DISPLAY_LIMIT);
+                let controller = StartWindowController::new(recents, guide, mtm);
+                let window = controller.window().ok_or_else(|| Failure::Error("start controller has no window".into()))?;
+                let scene = Scene { window, pending_commands: None, _retained: Some(Retained::into_super(Retained::into_super(Retained::into_super(controller)))) };
                 scene.show(mtm);
                 Ok(scene)
             }
