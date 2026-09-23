@@ -4,8 +4,6 @@
 use std::cell::RefCell;
 use std::collections::HashMap;
 
-use unicode_segmentation::UnicodeSegmentation;
-
 use crate::swift::{self, Text};
 
 const NARROW_CHARS: &str = "iltfjI1!|.,:;'";
@@ -131,7 +129,7 @@ pub fn measure_text_width(text: &str, font_size: f64, font_weight: i64) -> f64 {
             total_width += get_char_width(s);
         }
     } else {
-        for grapheme in text.graphemes(true) {
+        for grapheme in upleft_swift_text::graphemes(text) {
             total_width += get_char_width(grapheme);
         }
     }

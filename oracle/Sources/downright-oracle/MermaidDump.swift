@@ -1,5 +1,6 @@
 import AppKit
 import BeautifulMermaid
+import ElkSwift
 @testable import MarkdownRender
 
 /// Mermaid as Downright draws it: beautiful-mermaid-swift driven through
@@ -172,15 +173,34 @@ enum MermaidBench {
         let files = try FileManager.default.contentsOfDirectory(at: directory, includingPropertiesForKeys: nil)
             .filter { $0.pathExtension == "mmd" }
             .sorted { $0.path < $1.path }
-        let sources = try files.map { try String(contentsOf: $0, encoding: .utf8) }
-            .filter { !$0.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty }
         let rounds = Int(ProcessInfo.processInfo.environment["MERMAID_BENCH_ROUNDS"] ?? "") ?? 5
+        // With MERMAID_BENCH_ELKREC=<dir>, also time elk-swift alone on the
+        // graphs each diagram hands it (from `<dir>/<stem>.elkrec`), so the
+        // work around ELK can be compared with a port whose ELK is replayed.
+        let recordDir = ProcessInfo.processInfo.environment["MERMAID_BENCH_ELKREC"].map { URL(fileURLWithPath: $0) }
+        var cases: [(source: String, elkInputs: [[String: Any]])] = []
+        for file in files {
+            let source = try String(contentsOf: file, encoding: .utf8)
+            guard !source.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else { continue }
+            var inputs: [[String: Any]] = []
+            if let recordDir {
+                let url = recordDir.appendingPathComponent(file.deletingPathExtension().lastPathComponent + ".elkrec")
+                if let data = try? Data(contentsOf: url),
+                   let record = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
+                   let calls = record["calls"] as? [[String: Any]] {
+                    inputs = calls.compactMap { $0["input"] as? [String: Any] }
+                }
+            }
+            cases.append((source, inputs))
+        }
+        let elk = ELK()
 
-        func once() -> (prepare: Double, bridge: Double, images: Int) {
+        func once() -> (prepare: Double, bridge: Double, elk: Double, images: Int) {
             var prepareTime = 0.0
             var bridgeTime = 0.0
+            var elkTime = 0.0
             var images = 0
-            for source in sources {
+            for (source, inputs) in cases {
                 let trimmed = source.trimmingCharacters(in: .whitespacesAndNewlines)
                 var start = DispatchTime.now().uptimeNanoseconds
                 let renderer = MermaidImageRenderer(theme: theme, config: LayoutConfig())
@@ -195,24 +215,31 @@ enum MermaidBench {
                 }
                 end = DispatchTime.now().uptimeNanoseconds
                 bridgeTime += Double(end - start) / 1e6
+
+                start = DispatchTime.now().uptimeNanoseconds
+                for input in inputs { _ = try? elk.layout(graph: input) }
+                end = DispatchTime.now().uptimeNanoseconds
+                elkTime += Double(end - start) / 1e6
             }
-            return (prepareTime, bridgeTime, images)
+            return (prepareTime, bridgeTime, elkTime, images)
         }
 
         _ = once()
-        var best = (prepare: Double.infinity, bridge: Double.infinity, images: 0)
+        var best = (prepare: Double.infinity, bridge: Double.infinity, elk: Double.infinity, images: 0)
         for _ in 0..<rounds {
             let r = once()
             best.prepare = min(best.prepare, r.prepare)
             best.bridge = min(best.bridge, r.bridge)
+            best.elk = min(best.elk, r.elk)
             best.images = r.images
         }
         try write(.object([
-            ("diagrams", .int(sources.count)),
+            ("diagrams", .int(cases.count)),
             ("images", .int(best.images)),
             ("rounds", .int(rounds)),
             ("prepareMs", .double(best.prepare)),
             ("bridgeMs", .double(best.bridge)),
+            ("elkMs", .double(best.elk)),
         ]), to: output)
     }
 }

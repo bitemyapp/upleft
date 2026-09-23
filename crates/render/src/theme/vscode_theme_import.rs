@@ -473,9 +473,7 @@ impl Rgba {
         let mut count = swift_compat::character_count(&text);
         // `#rgb` and `#rgba` shorthands expand by doubling each Character.
         if count == 3 || count == 4 {
-            use unicode_segmentation::UnicodeSegmentation;
-            text = text
-                .graphemes(true)
+            text = upleft_swift_text::graphemes(&text)
                 .map(|grapheme| format!("{grapheme}{grapheme}"))
                 .collect();
             count = swift_compat::character_count(&text);

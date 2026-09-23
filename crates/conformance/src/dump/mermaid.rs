@@ -1010,11 +1010,26 @@ pub fn bench(directory: &Path, output: &Path) -> Result<(), Failure> {
         .filter(|p| p.extension().is_some_and(|e| e == "mmd"))
         .collect();
     files.sort();
+    // With UPLEFT_MERMAID_ELK_REPLAY set and no engine linked, ELK-backed
+    // diagrams take ELK's answers from Swift's records (a clone per call).
+    let replay_dir = std::env::var("UPLEFT_MERMAID_ELK_REPLAY").ok().filter(|_| !elk_available());
     let mut sources = Vec::new();
     for f in &files {
         let text = read_text(f)?;
         if !trimmed(&text).is_empty() {
-            sources.push(text);
+            let outputs = match &replay_dir {
+                Some(dir) => {
+                    let path = Path::new(dir).join(f.file_stem().unwrap()).with_extension("elkrec");
+                    match std::fs::read_to_string(&path) {
+                        Ok(record) => Some(recorded_outputs(
+                            &serde_json::from_str(&record).map_err(|e| Failure::Error(format!("{}: {e}", path.display())))?,
+                        )),
+                        Err(_) => None,
+                    }
+                }
+                None => None,
+            };
+            sources.push((text, outputs));
         }
     }
     let rounds: usize = std::env::var("MERMAID_BENCH_ROUNDS").ok().and_then(|v| v.parse().ok()).unwrap_or(5);
@@ -1023,19 +1038,27 @@ pub fn bench(directory: &Path, output: &Path) -> Result<(), Failure> {
     // uncached `MermaidRendererBridge.image` path, `NSImage` included.
     let once = || {
         let (mut prepare, mut whole, mut images) = (0.0f64, 0.0f64, 0usize);
-        for source in &sources {
+        for (source, outputs) in &sources {
             let start = Instant::now();
+            if let Some(outputs) = outputs {
+                replay::install(outputs.clone());
+            }
             let renderer = upleft_mermaid::MermaidImageRenderer::new(theme.clone(), LayoutConfig::default());
             let _ = renderer.prepare(&trimmed(source));
+            replay::finish();
             prepare += start.elapsed().as_secs_f64() * 1e3;
 
             let start = Instant::now();
+            if let Some(outputs) = outputs {
+                replay::install(outputs.clone());
+            }
             objc2::rc::autoreleasepool(|_| {
                 if let Some(image) = bridge::image(source, &sheet) {
                     let _ = image.ns_image();
                     images += 1;
                 }
             });
+            replay::finish();
             whole += start.elapsed().as_secs_f64() * 1e3;
         }
         (prepare, whole, images)

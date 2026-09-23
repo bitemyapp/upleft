@@ -5,8 +5,10 @@
 //! Not ported: the SVG assertions (`testFlowSvgContainsNodes` and the SVG
 //! halves of the others: `renderMermaidSVG` is not on Downright's path), the
 //! ASCII renderer test, and the image-export "tests" that only write files.
-//! Tests whose diagrams need ELK are ignored until `upleft-elk` is linked
-//! (feature `elk`).
+//! Tests whose diagrams need ELK run on the engine with the `elk` feature,
+//! and otherwise on Swift's recorded ELK answers (see `common`).
+
+mod common;
 
 use upleft_mermaid::mermaid::src_sequence_layout::layout_sequence_diagram;
 use upleft_mermaid::mermaid::src_sequence_parser::parse_sequence_diagram;
@@ -132,36 +134,37 @@ fn overflowing_coordinates_trap_like_swift() {
 // MARK: - BeautifulMermaidSwiftTests (ELK-backed)
 
 #[test]
-#[cfg_attr(not(feature = "elk"), ignore = "needs upleft-elk")]
 fn render_image_for_simple_flow_is_non_nil() {
-    assert!(render("graph TD\n  A[Start] --> B[End]").is_some());
+    let source = "graph TD\n  A[Start] --> B[End]";
+    assert!(common::with_elk(source, 1, || render(source)).is_some());
 }
 
 #[test]
-#[cfg_attr(not(feature = "elk"), ignore = "needs upleft-elk")]
 fn flow15_subgraph_direction_lays_out() {
     let source = "graph TD\n  subgraph pipeline [Processing Pipeline]\n    direction LR\n    A[Input] --> B[Parse] --> C[Transform] --> D[Output]\n  end\n  E[Source] --> A\n  D --> F[Sink]";
-    assert!(render(source).is_some());
+    assert!(common::with_elk(source, 1, || render(source)).is_some());
 }
 
 #[test]
-#[cfg_attr(not(feature = "elk"), ignore = "needs upleft-elk")]
 fn state2_composite_lays_out() {
     let source = "stateDiagram-v2\n  [*] --> Idle\n  Idle --> Processing : submit\n  state Processing {\n    parse --> validate\n    validate --> execute\n  }\n  Processing --> Complete : done\n  Processing --> Error : fail\n  Error --> Idle : retry\n  Complete --> [*]";
-    assert!(render(source).is_some());
+    assert!(common::with_elk(source, 1, || render(source)).is_some());
 }
 
 #[test]
-#[cfg_attr(not(feature = "elk"), ignore = "needs upleft-elk")]
 fn flow6_edge_styles_and_flow8_bidirectional_labels() {
-    assert!(render("graph TD\n  A[Source] -->|solid| B[Target 1]\n  A -.->|dotted| C[Target 2]\n  A ==>|thick| D[Target 3]").is_some());
-    assert!(render("graph LR\n  A[Client] <-->|sync| B[Server]\n  B <-.->|heartbeat| C[Monitor]\n  C <==>|data| D[Storage]").is_some());
+    for source in [
+        "graph TD\n  A[Source] -->|solid| B[Target 1]\n  A -.->|dotted| C[Target 2]\n  A ==>|thick| D[Target 3]",
+        "graph LR\n  A[Client] <-->|sync| B[Server]\n  B <-.->|heartbeat| C[Monitor]\n  C <==>|data| D[Storage]",
+    ] {
+        assert!(common::with_elk(source, 1, || render(source)).is_some());
+    }
 }
 
 #[test]
-#[cfg_attr(not(feature = "elk"), ignore = "needs upleft-elk")]
 fn simple_td_node_order() {
-    let pos = layout("graph TD\n  A[Start] --> B[End]");
+    let source = "graph TD\n  A[Start] --> B[End]";
+    let pos = common::with_elk(source, 1, || layout(source));
     let (nodes, _, _) = pos.flowchart().unwrap();
     let a = nodes.iter().find(|n| n.id == "A").unwrap();
     let b = nodes.iter().find(|n| n.id == "B").unwrap();
@@ -169,9 +172,9 @@ fn simple_td_node_order() {
 }
 
 #[test]
-#[cfg_attr(not(feature = "elk"), ignore = "needs upleft-elk")]
 fn simple_bt_node_order() {
-    let pos = layout("graph BT\n  A[Foundation] --> B[Layer 2] --> C[Top]");
+    let source = "graph BT\n  A[Foundation] --> B[Layer 2] --> C[Top]";
+    let pos = common::with_elk(source, 1, || layout(source));
     let (nodes, _, _) = pos.flowchart().unwrap();
     let a = nodes.iter().find(|n| n.id == "A").unwrap();
     let c = nodes.iter().find(|n| n.id == "C").unwrap();
@@ -179,10 +182,9 @@ fn simple_bt_node_order() {
 }
 
 #[test]
-#[cfg_attr(not(feature = "elk"), ignore = "needs upleft-elk")]
 fn flow14_nested_subgraphs_lay_out() {
     let source = "graph TD\n  subgraph Cloud\n    subgraph us-east [US East Region]\n      A[Web Server] --> B[App Server]\n    end\n    subgraph us-west [US West Region]\n      C[Web Server] --> D[App Server]\n    end\n  end\n  E[Load Balancer] --> A\n  E --> C";
-    let pos = layout(source);
+    let pos = common::with_elk(source, 1, || layout(source));
     let (nodes, edges, groups) = pos.flowchart().unwrap();
     assert_eq!(nodes.len(), 5);
     assert_eq!(edges.len(), 4);

@@ -44,6 +44,41 @@
       ]
     },
     {
+      "name": "core-text",
+      "command": "core-text",
+      "output": "json",
+      "variants": [[]]
+    },
+    {
+      "name": "core-io",
+      "command": "core-text",
+      "output": "json",
+      "variants": [[]],
+      "input": "txt",
+      "only": ["corpus/core-io/"]
+    },
+    {
+      "name": "unicode",
+      "command": "unicode",
+      "output": "json",
+      "variants": [[]],
+      "input": "txt",
+      "only": ["corpus/unicode/"]
+    },
+    {
+      "name": "parse-io",
+      "command": "parse",
+      "output": "json",
+      "variants": [[]],
+      "input": "txt",
+      "only": [
+        "core-io/adversarial.txt", "core-io/adversarial-crlf.txt", "core-io/utf8.txt", "core-io/utf8-bom.txt",
+        "core-io/utf8-double-bom.txt", "core-io/crlf.txt", "core-io/cr.txt", "core-io/mixed.txt",
+        "core-io/crlf-no-trailing.txt", "core-io/trailing-cr.txt", "core-io/only-newlines.txt", "core-io/one-byte.txt",
+        "core-io/nul-bytes.txt", "core-io/mostly-nul.txt"
+      ]
+    },
+    {
       "name": "decorate",
       "command": "decorate",
       "output": "json",
@@ -231,6 +266,46 @@
       ],
       "variants": [
         []
+      ]
+    },
+    {
+      "name": "math-image",
+      "command": "math",
+      "output": "png",
+      "input": "tex",
+      "variants": [
+        ["--theme", "Paper Light"],
+        ["--theme", "Paper Light", "--dark"],
+        ["--theme", "Nord"],
+        ["--theme", "Nord", "--dark"],
+        ["--theme", "Warm Dark"],
+        ["--theme", "Warm Dark", "--dark"],
+        ["--theme", "High Contrast"],
+        ["--theme", "High Contrast", "--dark"],
+        ["--theme", "Solarized Light"],
+        ["--theme", "Solarized Light", "--dark"],
+        ["--theme", "System"],
+        ["--theme", "System", "--dark"]
+      ]
+    },
+    {
+      "name": "math-tree",
+      "command": "math-tree",
+      "output": "json",
+      "input": "tex",
+      "variants": [
+        ["--theme", "Paper Light"],
+        ["--theme", "Paper Light", "--dark"],
+        ["--theme", "Nord"],
+        ["--theme", "Nord", "--dark"],
+        ["--theme", "Warm Dark"],
+        ["--theme", "Warm Dark", "--dark"],
+        ["--theme", "High Contrast"],
+        ["--theme", "High Contrast", "--dark"],
+        ["--theme", "Solarized Light"],
+        ["--theme", "Solarized Light", "--dark"],
+        ["--theme", "System"],
+        ["--theme", "System", "--dark"]
       ]
     }
   ]

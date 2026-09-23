@@ -20,13 +20,7 @@ use objc2_foundation::{
     NSMatchingOptions, NSRange, NSRegularExpression, NSRegularExpressionOptions, NSString,
     NSTextCheckingResult,
 };
-use unicode_normalization::UnicodeNormalization;
-use unicode_segmentation::UnicodeSegmentation;
-
-pub use upleft_render::swift_compat::{
-    character_count, lowercased, smax, smin, string_eq, string_key, trim_whitespaces,
-    trim_whitespaces_and_newlines,
-};
+pub use upleft_render::swift_compat::{smax, smin};
 
 // MARK: - Numbers
 
@@ -236,6 +230,36 @@ pub fn double_description(value: f64) -> String {
 }
 
 // MARK: - Strings
+//
+// Character-level operations delegate to `upleft-swift-text`, whose grapheme
+// breaking and canonical equivalence come from the Swift runtime's tables.
+
+pub use upleft_swift_text::{str_eq as string_eq, string_key};
+
+/// `String.count`.
+pub fn character_count(text: &str) -> usize {
+    upleft_swift_text::count(text)
+}
+
+/// `trimmingCharacters(in: .whitespaces)`.
+pub fn trim_whitespaces(text: &str) -> &str {
+    upleft_swift_text::trim_whitespaces(text)
+}
+
+/// `trimmingCharacters(in: .whitespacesAndNewlines)`.
+pub fn trim_whitespaces_and_newlines(text: &str) -> &str {
+    upleft_swift_text::trim_whitespaces_and_newlines(text)
+}
+
+/// `String.lowercased()`.
+pub fn lowercased(text: &str) -> String {
+    upleft_swift_text::lowercased(text)
+}
+
+/// `String.uppercased()`.
+pub fn uppercased(text: &str) -> String {
+    upleft_swift_text::uppercased(text)
+}
 
 /// `text.components(separatedBy: CharacterSet(charactersIn: chars))`: split
 /// on every scalar in the set, keeping empty pieces.
@@ -248,144 +272,79 @@ pub fn is_newline(c: char) -> bool {
     matches!(c as u32, 0x000A..=0x000D | 0x0085 | 0x2028 | 0x2029)
 }
 
-/// `text.components(separatedBy: "\n")`.
+/// `text.components(separatedBy: "\n")`: NSString's search, which splits
+/// `\r\n` (probed); no other scalar is canonically equivalent to `\n`.
 pub fn components_separated_by_newline(text: &str) -> Vec<&str> {
     text.split('\n').collect()
 }
 
-/// `String.dropFirst(n)`: drops `n` extended grapheme clusters.
+/// `String.dropFirst(n)`: drops `n` Characters.
 pub fn drop_first(text: &str, n: usize) -> &str {
-    if n == 0 {
-        return text;
-    }
-    if text.is_ascii() && !text.contains('\r') {
-        return &text[n.min(text.len())..];
-    }
-    match text.grapheme_indices(true).nth(n) {
-        Some((offset, _)) => &text[offset..],
-        None => "",
-    }
+    upleft_swift_text::drop_first(text, n)
 }
 
 /// `String.dropLast(n)`.
 pub fn drop_last(text: &str, n: usize) -> &str {
-    if n == 0 {
-        return text;
-    }
-    if text.is_ascii() && !text.contains('\r') {
-        return &text[..text.len().saturating_sub(n)];
-    }
-    match text.grapheme_indices(true).rev().nth(n - 1) {
-        Some((offset, _)) => &text[..offset],
-        None => "",
-    }
+    upleft_swift_text::drop_last(text, n)
 }
 
 /// `String.hasPrefix(_:)`.
 pub fn has_prefix(text: &str, prefix: &str) -> bool {
-    upleft_render::swift_compat::has_prefix(text, prefix)
+    upleft_swift_text::has_prefix(text, prefix)
 }
 
-/// `String.hasSuffix(_:)`: `Character` by `Character` from the end, under
-/// canonical equivalence.
+/// `String.hasSuffix(_:)`.
 pub fn has_suffix(text: &str, suffix: &str) -> bool {
-    if text.is_ascii() && suffix.is_ascii() {
-        return text.as_bytes().ends_with(suffix.as_bytes()) && !(suffix.starts_with('\n') && text.len() > suffix.len() && text.as_bytes()[text.len() - suffix.len() - 1] == b'\r');
-    }
-    let mut graphemes = text.graphemes(true).rev();
-    for expected in suffix.graphemes(true).rev() {
-        match graphemes.next() {
-            Some(actual) if string_eq(actual, expected) => {}
-            _ => return false,
-        }
-    }
-    true
+    upleft_swift_text::has_suffix(text, suffix)
 }
 
-/// `String.first == c` / `Character` equality against a one-scalar ASCII
-/// character.
+/// `Character == c` for an ASCII `c`.
 pub fn grapheme_is(grapheme: &str, c: char) -> bool {
-    let mut buffer = [0u8; 4];
-    let expected: &str = c.encode_utf8(&mut buffer);
-    grapheme == expected || (!grapheme.is_ascii() && string_eq(grapheme, expected))
+    upleft_swift_text::char_is(grapheme, c)
 }
 
 /// `String.first`.
 pub fn first_grapheme(text: &str) -> Option<&str> {
-    text.graphemes(true).next()
+    upleft_swift_text::first(text)
 }
 
-/// `text.split(separator: c)` (omitting empty pieces), `c` an ASCII
-/// `Character`.
+/// `text.split(separator: c)` (omitting empty pieces).
 pub fn split_character(text: &str, separator: char) -> Vec<&str> {
-    upleft_render::swift_compat::split_on_character(text, separator)
+    upleft_swift_text::split_default(text, separator)
 }
 
 /// `text.split(separator: c, omittingEmptySubsequences: false)`.
 pub fn split_character_keeping_empty(text: &str, separator: char) -> Vec<&str> {
-    if text.is_ascii() && !matches!(separator, '\r' | '\n') {
-        return text.split(separator).collect();
-    }
-    let mut pieces = Vec::new();
-    let mut start = 0;
-    for (offset, grapheme) in text.grapheme_indices(true) {
-        if grapheme_is(grapheme, separator) {
-            pieces.push(&text[start..offset]);
-            start = offset + grapheme.len();
-        }
-    }
-    pieces.push(&text[start..]);
-    pieces
+    upleft_swift_text::split(text, separator, usize::MAX, false)
 }
 
-/// `text.firstIndex(of: c)` as a byte offset, `c` an ASCII `Character`.
+/// `text.firstIndex(of: c)` as a byte offset.
 pub fn first_index_of(text: &str, c: char) -> Option<usize> {
-    if text.is_ascii() {
-        return text.find(c);
-    }
-    text.grapheme_indices(true).find(|(_, g)| grapheme_is(g, c)).map(|(i, _)| i)
+    upleft_swift_text::first_index_of(text, c)
 }
 
 /// `text.lastIndex(of: c)` as a byte offset.
 pub fn last_index_of(text: &str, c: char) -> Option<usize> {
-    if text.is_ascii() {
-        return text.rfind(c);
-    }
-    text.grapheme_indices(true).rev().find(|(_, g)| grapheme_is(g, c)).map(|(i, _)| i)
+    upleft_swift_text::last_index_of(text, c)
 }
 
-/// The byte offset just past the grapheme starting at `offset`
+/// The byte offset just past the Character starting at `offset`
 /// (`index(after:)`).
 pub fn index_after(text: &str, offset: usize) -> usize {
-    if text.is_ascii() {
-        return offset + 1;
-    }
-    let rest = &text[offset..];
-    offset + rest.graphemes(true).next().map_or(0, str::len)
+    upleft_swift_text::graphemes::next_boundary(text, offset)
 }
 
-/// `String.uppercased()`: per-scalar full uppercase mapping.
-pub fn uppercased(text: &str) -> String {
-    if text.is_ascii() {
-        return text.to_ascii_uppercase();
-    }
-    let mut out = String::with_capacity(text.len());
-    for c in text.chars() {
-        out.extend(c.to_uppercase());
-    }
-    out
-}
-
-/// `Character.isWhitespace`: the first scalar's `White_Space` property.
+/// `Character.isWhitespace`.
 pub fn character_is_whitespace(grapheme: &str) -> bool {
-    grapheme.chars().next().is_some_and(char::is_whitespace)
+    upleft_swift_text::is_whitespace(grapheme)
 }
 
 /// `text.split(whereSeparator: \.isWhitespace)`.
 pub fn split_whitespace_characters(text: &str) -> Vec<&str> {
     let mut pieces = Vec::new();
     let mut start: Option<usize> = None;
-    for (offset, grapheme) in text.grapheme_indices(true) {
+    let mut offset = 0;
+    for grapheme in upleft_swift_text::graphemes(text) {
         if character_is_whitespace(grapheme) {
             if let Some(s) = start.take() {
                 pieces.push(&text[s..offset]);
@@ -393,6 +352,7 @@ pub fn split_whitespace_characters(text: &str) -> Vec<&str> {
         } else if start.is_none() {
             start = Some(offset);
         }
+        offset += grapheme.len();
     }
     if let Some(s) = start {
         pieces.push(&text[s..]);
@@ -401,62 +361,24 @@ pub fn split_whitespace_characters(text: &str) -> Vec<&str> {
 }
 
 /// `text.replacingOccurrences(of: target, with: replacement)`: Foundation's
-/// NSString search, which compares composed character sequences (a match
-/// cannot end before a combining mark) but, unlike `Character`, does not
-/// join CR LF. ASCII text has no composed sequences and is replaced bytewise.
+/// search (it will not split a composed sequence, but matches `\n` inside
+/// `\r\n`).
 pub fn replacing_occurrences(text: &str, target: &str, replacement: &str) -> String {
-    if !text.contains(target) {
-        return text.to_owned();
-    }
-    if text.is_ascii() {
-        return text.replace(target, replacement);
-    }
-    let ns = NSString::from_str(text);
-    ns.stringByReplacingOccurrencesOfString_withString(&NSString::from_str(target), &NSString::from_str(replacement))
-        .to_string()
+    upleft_swift_text::replacing_occurrences(text, target, replacement)
 }
 
-/// `text.contains(needle)` (the standard library's `Character`-wise
-/// search): the needle's characters must equal consecutive characters of
-/// the text, so `"\r\n"` does not contain `"\n"` and `"$\u{301}"` does not
-/// contain `"$"`.
+/// `String.contains(_: String)` on a native Swift string: Character-wise,
+/// so `"a\r\nb"` does not contain `"\n"`.
 pub fn contains(text: &str, needle: &str) -> bool {
-    if needle.is_empty() {
-        return true;
-    }
-    if !text.contains(needle) && text.is_ascii() {
-        return false;
-    }
-    if text.is_ascii() && !text.contains('\r') && needle.is_ascii() {
-        return true;
-    }
-    let hay: Vec<&str> = text.graphemes(true).collect();
-    let pins: Vec<&str> = needle.graphemes(true).collect();
-    if pins.len() > hay.len() {
-        return false;
-    }
-    hay.windows(pins.len()).any(|w| w.iter().zip(&pins).all(|(a, b)| string_eq(a, b)))
+    upleft_swift_text::contains(text, needle)
 }
 
-/// NFC form of a grapheme, for canonical-equivalence comparisons.
-pub fn nfc(text: &str) -> String {
-    text.nfc().collect()
-}
-
-/// `Set<Character>(chars).contains(grapheme)`.
+/// `Set<Character>(chars).contains(grapheme)`, `chars` ASCII.
 pub fn character_in(grapheme: &str, chars: &str) -> bool {
     if grapheme.len() == 1 {
         return chars.as_bytes().contains(&grapheme.as_bytes()[0]);
     }
-    if grapheme.is_ascii() {
-        return false;
-    }
-    let normalized = nfc(grapheme);
-    let mut it = normalized.chars();
-    match (it.next(), it.next()) {
-        (Some(c), None) if c.is_ascii() => chars.contains(c),
-        _ => false,
-    }
+    chars.chars().any(|c| upleft_swift_text::char_is(grapheme, c))
 }
 
 // MARK: - Sorting

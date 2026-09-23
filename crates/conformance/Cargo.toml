@@ -10,18 +10,25 @@ publish.workspace = true
 serde_json.workspace = true
 png = "0.18"
 upleft-markup.workspace = true
+upleft-core.workspace = true
+upleft-swift-text.workspace = true
 upleft-render.workspace = true
 upleft-mermaid.workspace = true
+upleft-math.workspace = true
 objc2.workspace = true
-objc2-foundation = { workspace = true, features = ["NSArray", "NSData", "NSDictionary", "NSEnumerator", "NSError", "NSGeometry", "NSNotification", "NSString", "NSValue"] }
+objc2-foundation = { workspace = true, features = [
+    "NSArray", "NSAttributedString", "NSData", "NSDictionary", "NSEnumerator", "NSError", "NSGeometry",
+    "NSNotification", "NSRange", "NSString", "NSValue",
+] }
 objc2-app-kit = { workspace = true, features = [
     "NSAppearance", "NSApplication", "NSBitmapImageRep", "NSClipView", "NSColor", "NSColorList", "NSColorSpace",
-    "NSFont", "NSFontDescriptor", "NSGraphics", "NSImageRep", "NSResponder", "NSRunningApplication", "NSScrollView",
-    "NSText", "NSTextView", "NSView", "NSWindow", "NSLayoutConstraint", "objc2-core-graphics",
-    "NSImage", "NSScreen",
+    "NSFont", "NSFontDescriptor", "NSGraphics", "NSGraphicsContext", "NSImage", "NSImageRep", "NSResponder",
+    "NSRunningApplication", "NSScreen", "NSScrollView", "NSText", "NSTextView", "NSView", "NSWindow", "NSLayoutConstraint",
+    "objc2-core-graphics",
 ] }
-objc2-core-foundation = { workspace = true, features = ["CFCGTypes"] }
-objc2-core-graphics = { workspace = true, features = ["CGImage", "CGBitmapContext", "CGColor", "CGColorSpace", "CGContext"] }
+objc2-core-foundation = { workspace = true, features = ["CFArray", "CFCGTypes", "CFDictionary", "CFString"] }
+objc2-core-graphics = { workspace = true, features = ["CGBitmapContext", "CGColor", "CGColorSpace", "CGContext", "CGImage"] }
+objc2-core-text = { workspace = true, features = ["objc2-core-graphics", "CTFont", "CTFontDescriptor", "CTLine", "CTRun", "CTStringAttributes"] }
 objc2-screen-capture-kit = { version = "0.3.2", default-features = false, features = [
     "std", "block2", "objc2-core-foundation", "objc2-core-graphics", "SCShareableContent", "SCStream", "SCScreenshotManager",
 ] }

@@ -24,7 +24,6 @@ use objc2_foundation::{
     NSSearchPathDomainMask, NSString, NSURL, NSURLFileSizeKey, NSURLIsRegularFileKey,
     NSUserDefaults,
 };
-use unicode_segmentation::UnicodeSegmentation;
 
 use super::vscode_theme_import::VSCodeThemeImporter;
 use crate::render_contracts::{
@@ -453,8 +452,7 @@ impl ThemeStore {
     /// runs of dashes collapsed.
     pub fn slug(name: &str) -> String {
         let lowered = swift_compat::lowercased(name);
-        let allowed: String = lowered
-            .graphemes(true)
+        let allowed: String = upleft_swift_text::graphemes(&lowered)
             .map(|grapheme| {
                 let first = grapheme.chars().next().unwrap_or('-');
                 if swift_compat::is_letter(first) || swift_compat::is_number(first) {

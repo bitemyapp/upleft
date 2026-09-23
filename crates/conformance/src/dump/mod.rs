@@ -1,12 +1,17 @@
 //! Rust counterparts of the Swift oracle's dumps (`oracle/Sources/downright-oracle`).
 //! Each submodule mirrors one Swift file and must emit the same JSON shape.
 
+pub mod core_text;
 pub mod attribute_dump;
 pub mod highlight;
 pub mod json;
 pub mod markup;
 pub mod mermaid;
+pub mod math;
+pub mod math_bench;
+pub mod parse;
 pub mod style_sheet;
+pub mod unicode;
 
 use std::path::PathBuf;
 
@@ -90,7 +95,14 @@ impl From<std::io::Error> for Failure {
 /// Dispatches a request. Ported layers add their command here.
 pub fn run(request: &Request) -> Result<(), Failure> {
     match request.command.as_str() {
+        "math" => math::image(&request.input, &request.output, &request.theme, request.dark),
+        "math-tree" => math::tree(&request.input, &request.output, &request.theme, request.dark),
+        "bench-math" => math_bench::run(&request.input, &request.output),
         "markup" => markup::run(&request.input, &request.output),
+        "parse" => parse::run(&request.input, &request.output),
+        "core-text" => core_text::run(&request.input, &request.output),
+        "unicode" => unicode::run(&request.input, &request.output),
+        "bench-core-text" => core_text::bench(&request.input, &request.output),
         "stylesheet" => {
             let value = style_sheet::dump(&request.theme, request.dark)?;
             Ok(json::write(&value, &request.output)?)

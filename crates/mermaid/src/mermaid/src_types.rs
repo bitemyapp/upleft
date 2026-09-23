@@ -231,7 +231,7 @@ impl<V> SDict<V> {
     /// Keys sorted by Swift's `String <`.
     pub fn sorted_keys(&self) -> Vec<&str> {
         let mut keys: Vec<&str> = self.map.values().map(|(k, _)| k.as_str()).collect();
-        keys.sort_by(|a, b| upleft_render::swift_compat::string_cmp(a, b));
+        keys.sort_by(|a, b| upleft_swift_text::str_cmp(a, b));
         keys
     }
 }

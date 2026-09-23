@@ -2,6 +2,8 @@
 //! the bridge's bitmap must match the library's known-good (`MermaidLayer`)
 //! render, read upright, and be cropped to its own ink.
 
+mod common;
+
 use objc2::rc::Retained;
 use objc2_app_kit::{NSAppearance, NSAppearanceNameAqua, NSBitmapImageRep, NSImage};
 use objc2_core_graphics::CGImage;
@@ -104,12 +106,11 @@ fn crossbar_fraction(rep: &Bitmap) -> f64 {
 const FLOW: &str = "flowchart LR\n    A[\"Start\"] --> B[\"Process\"]\n    B --> C{\"Decision\"}\n    C -->|yes| D[\"Done\"]";
 
 #[test]
-#[cfg_attr(not(feature = "elk"), ignore = "needs upleft-elk")]
 fn mermaid_bridge_matches_known_good_path() {
     let sheet = sheet();
     let layer = MermaidLayer { source: FLOW.into(), theme: bridge::theme(&sheet), layout_config: LayoutConfig::default() };
-    let known_good = layer.render_image(2.0).expect("known-good render");
-    let ours = bridge::image(FLOW, &sheet).expect("bridge render").ns_image();
+    let known_good = common::with_elk(FLOW, 1, || layer.render_image(2.0)).expect("known-good render");
+    let ours = common::with_elk(FLOW, 1, || bridge::image(FLOW, &sheet)).expect("bridge render").ns_image();
 
     let a = bitmap_rep(&ours).unwrap();
     let b = bitmap_rep(&known_good).unwrap();
@@ -154,10 +155,9 @@ fn mermaid_bridge_trims_to_its_own_ink() {
 
 /// The bridge bitmap reads upright: a "T" crossbar sits in the upper half.
 #[test]
-#[cfg_attr(not(feature = "elk"), ignore = "needs upleft-elk")]
 fn mermaid_bridge_bitmap_is_upright() {
     let sheet = sheet();
-    let image = bridge::image(FLOW, &sheet).expect("bridge produced a bitmap");
+    let image = common::with_elk(FLOW, 1, || bridge::image(FLOW, &sheet)).expect("bridge produced a bitmap");
     let rep = bitmap_rep(&image.ns_image()).unwrap();
     assert!(crossbar_fraction(&rep) <= 0.5, "bridge bitmap has upside-down labels");
 }

@@ -15,7 +15,6 @@ use std::collections::HashMap;
 use std::hash::{DefaultHasher, Hash, Hasher};
 use std::sync::{Arc, Mutex};
 
-use unicode_normalization::UnicodeNormalization;
 
 use crate::syntax::syntax_contracts::{SyntaxHighlighter, SyntaxRun};
 
@@ -53,10 +52,10 @@ fn needs_normalization(code: &[u16]) -> bool {
 }
 
 fn nfc(code: &[u16]) -> Vec<char> {
-    char::decode_utf16(code.iter().copied())
+    let string: String = char::decode_utf16(code.iter().copied())
         .map(|scalar| scalar.unwrap_or(char::REPLACEMENT_CHARACTER))
-        .nfc()
-        .collect()
+        .collect();
+    upleft_swift_text::nfc_scalars(&string).collect()
 }
 
 fn content_hash(code: &[u16]) -> u64 {
