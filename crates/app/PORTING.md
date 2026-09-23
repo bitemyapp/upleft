@@ -167,3 +167,25 @@ The external-write path (`handle_external_write` → absorb) reads and diffs off
 
 - Test binaries whose Swift originals run on the main actor, or whose code delivers to the main queue, are `harness = false` (`tests/main_thread/mod.rs`). They run on the main thread and pump the main run loop wherever the Swift test awaits.
 - The document tests never touch the real home (`tests/document_support/mod.rs`). They point Downright's own `DOWNRIGHT_SUPPORT_DIRECTORY` override at a temporary folder before any store is created, so `SnapshotStore.shared` and `DocumentStateStore.shared` keep their process-wide semantics inside the sandbox. Documents get a `Preferences::for_testing` instance, because loading `Preferences.shared` publishes the Quick Look appearance to the real user defaults.
+
+## UI port (`port/app-shell`): conventions
+
+The app shell (`App/`, `Assets/`, `Debugging/`, `Lens/`) and the panels (`Panels/`, branch `port/panels`) are ported to the same rules as the view layer (`crates/render/src/view/PORTING.md`). Every module in `src/app/`, `src/assets/`, `src/debugging/` and `src/lens/` exists, as a stub, until its Swift file is ported.
+
+**Classes.** A Swift class that AppKit sees (`NSWindowController`, `NSView`, `NSWindow`, `NSObject` targets and delegates) is a `define_class!` type whose Objective-C name is the Swift class's unqualified name (`#[name = "StartWindowController"]`), private classes included (`FloatingOverlayHostView`). Stored properties are ivars in `Cell`/`RefCell`, each borrowed only for the statement that uses it, because AppKit re-enters the class from inside its own calls. The designated initialiser is forwarded with `msg_send![super(this), init…]` after `set_ivars`. `@objc` methods and overrides are `#[unsafe(method(…))]` methods; everything else is an inherent Rust method with the Swift name in snake_case. A Swift `struct` or `enum` is a Rust `struct`/`enum`.
+
+**Properties with observers.** `var x { didSet { … } }` is `set_x(&self, value)` running the same body; the getter is `x(&self)`.
+
+**Closures and delegates.** `var onOpen: ((URL) -> Void)?` is `RefCell<Option<Rc<dyn Fn(…)>>>` with `set_on_open`; clone the `Rc` out of the cell before calling it, so the callee may replace or clear it. `weak var delegate: XDelegate?` is `RefCell<Option<std::rc::Weak<dyn XDelegate>>>`, and the protocol is a Rust trait with the Swift protocol extension's defaults (see `MarkdownTextViewDelegate`). A window controller that is the delegate of several views implements the traits on a small proxy (`Rc<…Delegates>`) holding an `objc2::rc::Weak` to the controller, which owns the proxy.
+
+**Target/action.** An `NSMenuItem`/`NSButton` target is either the owning `define_class!` object (Swift `#selector(foo(_:))` → `sel!(foo:)` on a method of that class) or, where Swift passes a closure, a small `NSObject` subclass holding the closure (as `HeadingMenuAction` in `gutter_rail_view.rs`). Keep the Swift selector names: menus and validation dispatch by selector.
+
+**Main queue and timing.** `DispatchQueue.main.async` is `upleft_render::appkit_compat::main_async`, `asyncAfter` is `main_after`, `DispatchWorkItem` is `WorkItem`. `Task { @MainActor … }` from main-thread code is `main_async`. `NSAnimationContext`, `CATransaction`, `CABasicAnimation` and friends are called through objc2 with the same values in the same order; `Motion` is `upleft_render::motion`.
+
+**Shared state.** `Preferences.shared` is `Preferences::shared()`, `ThemeStore.shared` is `ThemeStore::shared()`, `StyleSheet` is `Rc<StyleSheet>` (a Swift value type; `StyleSheet.current` is `StyleSheet::current(mtm)`, in `upleft_render::view::style_sheet_defaults`), `KeybindingStore.shared` is `KeybindingStore::shared()`, `UpdateCoordinator.shared` is `UpdateCoordinator::shared(mtm)`, `DocumentStateStore.shared` is `DocumentStateStore::shared()`.
+
+**Panels.** Panel types come from `crate::panels::<snake_case_file>` (branch `port/panels`, merged into `port/app-shell` as it lands). Never edit `src/panels/`.
+
+**Tests.** Window-level Swift tests become Rust tests in `crates/app/tests/<swift_test_file_snake>.rs`, run on the main thread (`harness = false`, `tests/main_thread/mod.rs`). Any window a test creates is moved to `(-30000, -30000)` before it is ordered in; tests never activate the app and never put a window on a screen. Keep each test's name and assertions; list skipped tests with the reason.
+
+**Never block the main thread** beyond what Swift does to paint the same frames (`AGENTS.md`).

@@ -17,6 +17,9 @@ import AppKit
 //   bench-export    <file.md>     HTMLExporter timings (AppBench.swift)
 //   bench-workspace <folder>      WorkspaceIndex, graph and search timings (AppBench.swift)
 //   bench-find      <file.md>     FindEngine and FindSession timings (AppBench.swift)
+//   app-window       <scenario.json> <out.png> [--layout out.json]
+//                                 a real app window, captured off-screen (AppWindowCapture.swift)
+//   bench-app-window <scenario.json> document open and mode-switch timings (AppWindowCapture.swift)
 //   panel        <scenario.json>  a panel built off-screen and captured (Panels/PanelHarness.swift)
 //   panel-model  <scenario.json>  panels built windowless, laid out and dumped (Panels/PanelHarness.swift)
 //   bench-panel  <scenario.json>  panel build and layout timings (Panels/PanelBench.swift)
@@ -75,6 +78,14 @@ do {
     case "bench-export": try write(AppBench.export(input: input), to: output)
     case "bench-workspace": try write(MainActor.assumeIsolated { try AppBench.workspace(folder: input) }, to: output)
     case "bench-find": try write(AppBench.find(input: input), to: output)
+    case "app-window":
+        try MainActor.assumeIsolated {
+            try AppWindowSession.run(input: input, output: output, flags: flags, repositoryRoot: repositoryRoot)
+        }
+    case "bench-app-window":
+        try MainActor.assumeIsolated {
+            try AppWindowBench.run(input: input, output: output, repositoryRoot: repositoryRoot)
+        }
     case "panel": try MainActor.assumeIsolated { try PanelCaptureSession.run(input: input, output: output, flags: flags) }
     case "panel-model": try write(MainActor.assumeIsolated { try PanelModelDump.run(input: input, flags: flags) }, to: output)
     default: usage()
