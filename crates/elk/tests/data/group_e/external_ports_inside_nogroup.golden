@@ -1,0 +1,25 @@
+== sized
+graph size=(0.0,0.0)
+L0 node XN externalport id=0 pos=(0.0,0.0) size=(10.0,10.0) margin=(0.0,0.0,0.0,0.0) padding=(0.0,0.0,0.0,0.0)
+  port XNp south id=0 pos=(4.0,4.0) size=(2.0,2.0) anchor=(1.0,2.0) met=-
+    label XNl1 pos=(-5.0,4.0) size=(12.0,5.0) side=- edge=-
+    label XNl2 pos=(-5.0,11.0) size=(8.0,7.0) side=- edge=-
+L0 node XS externalport id=0 pos=(0.0,0.0) size=(10.0,10.0) margin=(0.0,0.0,0.0,0.0) padding=(0.0,0.0,0.0,0.0)
+  port XSp north id=0 pos=(4.0,4.0) size=(2.0,2.0) anchor=(1.0,0.0) met=-
+    label XSl1 pos=(-5.0,-18.0) size=(12.0,5.0) side=- edge=-
+    label XSl2 pos=(-5.0,-11.0) size=(8.0,7.0) side=- edge=-
+L0 node XE externalport id=0 pos=(0.0,0.0) size=(10.0,10.0) margin=(0.0,0.0,0.0,0.0) padding=(0.0,0.0,0.0,0.0)
+  port XEp west id=0 pos=(4.0,4.0) size=(2.0,2.0) anchor=(0.0,1.0) met=-
+    label XEl1 pos=(-15.0,10.0) size=(12.0,5.0) side=- edge=-
+    label XEl2 pos=(-15.0,17.0) size=(8.0,7.0) side=- edge=-
+L0 node XW externalport id=0 pos=(0.0,0.0) size=(10.0,10.0) margin=(0.0,0.0,0.0,0.0) padding=(0.0,0.0,0.0,0.0)
+  port XWp east id=0 pos=(4.0,4.0) size=(2.0,2.0) anchor=(2.0,1.0) met=-
+    label XWl1 pos=(3.0,-1.5) size=(12.0,5.0) side=- edge=-
+L0 node XE2 externalport id=0 pos=(0.0,0.0) size=(10.0,10.0) margin=(0.0,0.0,0.0,0.0) padding=(0.0,0.0,0.0,0.0)
+  port XE2p west id=0 pos=(4.0,4.0) size=(2.0,2.0) anchor=(0.0,1.0) met=-
+    label XE2l1 pos=(-15.0,-1.5) size=(12.0,5.0) side=- edge=-
+    label XE2l2 pos=(-15.0,5.5) size=(8.0,7.0) side=- edge=-
+L1 node Y normal id=0 pos=(0.0,0.0) size=(20.0,20.0) margin=(0.0,0.0,0.0,0.0) padding=(0.0,0.0,0.0,0.0)
+  port yw west id=0 pos=(-2.0,9.0) size=(2.0,2.0) anchor=(0.0,1.0) met=-
+  port ye east id=1 pos=(20.0,9.0) size=(2.0,2.0) anchor=(2.0,1.0) met=-
+edge x1

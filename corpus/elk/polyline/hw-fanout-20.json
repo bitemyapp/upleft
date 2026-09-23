@@ -1,0 +1,418 @@
+{
+ "children": [
+  {
+   "height": 36.900000000000006,
+   "id": "root",
+   "labels": [
+    {
+     "text": "root"
+    }
+   ],
+   "width": 65.66199999999999
+  },
+  {
+   "height": 36.900000000000006,
+   "id": "c0",
+   "labels": [
+    {
+     "text": "Child 0"
+    }
+   ],
+   "width": 81.22299999999998
+  },
+  {
+   "height": 36.900000000000006,
+   "id": "c1",
+   "labels": [
+    {
+     "text": "Child 1"
+    }
+   ],
+   "width": 76.777
+  },
+  {
+   "height": 36.900000000000006,
+   "id": "c2",
+   "labels": [
+    {
+     "text": "Child 2"
+    }
+   ],
+   "width": 81.22299999999998
+  },
+  {
+   "height": 36.900000000000006,
+   "id": "c3",
+   "labels": [
+    {
+     "text": "Child 3"
+    }
+   ],
+   "width": 81.22299999999998
+  },
+  {
+   "height": 36.900000000000006,
+   "id": "c4",
+   "labels": [
+    {
+     "text": "Child 4"
+    }
+   ],
+   "width": 81.22299999999998
+  },
+  {
+   "height": 36.900000000000006,
+   "id": "c5",
+   "labels": [
+    {
+     "text": "Child 5"
+    }
+   ],
+   "width": 81.22299999999998
+  },
+  {
+   "height": 36.900000000000006,
+   "id": "c6",
+   "labels": [
+    {
+     "text": "Child 6"
+    }
+   ],
+   "width": 81.22299999999998
+  },
+  {
+   "height": 36.900000000000006,
+   "id": "c7",
+   "labels": [
+    {
+     "text": "Child 7"
+    }
+   ],
+   "width": 81.22299999999998
+  },
+  {
+   "height": 36.900000000000006,
+   "id": "c8",
+   "labels": [
+    {
+     "text": "Child 8"
+    }
+   ],
+   "width": 81.22299999999998
+  },
+  {
+   "height": 36.900000000000006,
+   "id": "c9",
+   "labels": [
+    {
+     "text": "Child 9"
+    }
+   ],
+   "width": 81.22299999999998
+  },
+  {
+   "height": 36.900000000000006,
+   "id": "c10",
+   "labels": [
+    {
+     "text": "Child 10"
+    }
+   ],
+   "width": 84.18700000000001
+  },
+  {
+   "height": 36.900000000000006,
+   "id": "c11",
+   "labels": [
+    {
+     "text": "Child 11"
+    }
+   ],
+   "width": 79.74100000000001
+  },
+  {
+   "height": 36.900000000000006,
+   "id": "c12",
+   "labels": [
+    {
+     "text": "Child 12"
+    }
+   ],
+   "width": 84.18700000000001
+  },
+  {
+   "height": 36.900000000000006,
+   "id": "c13",
+   "labels": [
+    {
+     "text": "Child 13"
+    }
+   ],
+   "width": 84.18700000000001
+  },
+  {
+   "height": 36.900000000000006,
+   "id": "c14",
+   "labels": [
+    {
+     "text": "Child 14"
+    }
+   ],
+   "width": 84.18700000000001
+  },
+  {
+   "height": 36.900000000000006,
+   "id": "c15",
+   "labels": [
+    {
+     "text": "Child 15"
+    }
+   ],
+   "width": 84.18700000000001
+  },
+  {
+   "height": 36.900000000000006,
+   "id": "c16",
+   "labels": [
+    {
+     "text": "Child 16"
+    }
+   ],
+   "width": 84.18700000000001
+  },
+  {
+   "height": 36.900000000000006,
+   "id": "c17",
+   "labels": [
+    {
+     "text": "Child 17"
+    }
+   ],
+   "width": 84.18700000000001
+  },
+  {
+   "height": 36.900000000000006,
+   "id": "c18",
+   "labels": [
+    {
+     "text": "Child 18"
+    }
+   ],
+   "width": 84.18700000000001
+  },
+  {
+   "height": 36.900000000000006,
+   "id": "c19",
+   "labels": [
+    {
+     "text": "Child 19"
+    }
+   ],
+   "width": 84.18700000000001
+  }
+ ],
+ "edges": [
+  {
+   "id": "e0",
+   "sources": [
+    "root"
+   ],
+   "targets": [
+    "c0"
+   ]
+  },
+  {
+   "id": "e1",
+   "sources": [
+    "root"
+   ],
+   "targets": [
+    "c1"
+   ]
+  },
+  {
+   "id": "e2",
+   "sources": [
+    "root"
+   ],
+   "targets": [
+    "c2"
+   ]
+  },
+  {
+   "id": "e3",
+   "sources": [
+    "root"
+   ],
+   "targets": [
+    "c3"
+   ]
+  },
+  {
+   "id": "e4",
+   "sources": [
+    "root"
+   ],
+   "targets": [
+    "c4"
+   ]
+  },
+  {
+   "id": "e5",
+   "sources": [
+    "root"
+   ],
+   "targets": [
+    "c5"
+   ]
+  },
+  {
+   "id": "e6",
+   "sources": [
+    "root"
+   ],
+   "targets": [
+    "c6"
+   ]
+  },
+  {
+   "id": "e7",
+   "sources": [
+    "root"
+   ],
+   "targets": [
+    "c7"
+   ]
+  },
+  {
+   "id": "e8",
+   "sources": [
+    "root"
+   ],
+   "targets": [
+    "c8"
+   ]
+  },
+  {
+   "id": "e9",
+   "sources": [
+    "root"
+   ],
+   "targets": [
+    "c9"
+   ]
+  },
+  {
+   "id": "e10",
+   "sources": [
+    "root"
+   ],
+   "targets": [
+    "c10"
+   ]
+  },
+  {
+   "id": "e11",
+   "sources": [
+    "root"
+   ],
+   "targets": [
+    "c11"
+   ]
+  },
+  {
+   "id": "e12",
+   "sources": [
+    "root"
+   ],
+   "targets": [
+    "c12"
+   ]
+  },
+  {
+   "id": "e13",
+   "sources": [
+    "root"
+   ],
+   "targets": [
+    "c13"
+   ]
+  },
+  {
+   "id": "e14",
+   "sources": [
+    "root"
+   ],
+   "targets": [
+    "c14"
+   ]
+  },
+  {
+   "id": "e15",
+   "sources": [
+    "root"
+   ],
+   "targets": [
+    "c15"
+   ]
+  },
+  {
+   "id": "e16",
+   "sources": [
+    "root"
+   ],
+   "targets": [
+    "c16"
+   ]
+  },
+  {
+   "id": "e17",
+   "sources": [
+    "root"
+   ],
+   "targets": [
+    "c17"
+   ]
+  },
+  {
+   "id": "e18",
+   "sources": [
+    "root"
+   ],
+   "targets": [
+    "c18"
+   ]
+  },
+  {
+   "id": "e19",
+   "sources": [
+    "root"
+   ],
+   "targets": [
+    "c19"
+   ]
+  }
+ ],
+ "id": "root",
+ "layoutOptions": {
+  "elk.algorithm": "layered",
+  "elk.contentAlignment": "H_CENTER V_CENTER",
+  "elk.direction": "DOWN",
+  "elk.edgeRouting": "POLYLINE",
+  "elk.hierarchyHandling": "INCLUDE_CHILDREN",
+  "elk.layered.compaction.postCompaction.strategy": "LEFT_RIGHT_CONSTRAINT_LOCKING",
+  "elk.layered.considerModelOrder.strategy": "NODES_AND_EDGES",
+  "elk.layered.highDegreeNodes.threshold": "8",
+  "elk.layered.highDegreeNodes.treatment": "true",
+  "elk.layered.nodePlacement.bk.fixedAlignment": "BALANCED",
+  "elk.layered.spacing.edgeEdgeBetweenLayers": "12",
+  "elk.layered.spacing.edgeNodeBetweenLayers": "12",
+  "elk.layered.spacing.nodeNodeBetweenLayers": "48",
+  "elk.layered.thoroughness": "3",
+  "elk.layered.wrapping.strategy": "OFF",
+  "elk.padding": "[top=40,left=40,bottom=40,right=40]",
+  "elk.spacing.componentComponent": "20",
+  "elk.spacing.edgeEdge": "12",
+  "elk.spacing.nodeNode": "28"
+ }
+}

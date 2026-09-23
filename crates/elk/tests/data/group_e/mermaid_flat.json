@@ -1,0 +1,217 @@
+{
+ "graph": {
+  "props": [
+   [
+    "org.eclipse.elk.direction",
+    "Direction",
+    "RIGHT"
+   ],
+   [
+    "org.eclipse.elk.spacing.portPort",
+    "Double",
+    10.0
+   ]
+  ]
+ },
+ "nodes": [
+  {
+   "id": "A",
+   "size": [
+    87.5,
+    36
+   ],
+   "labels": [
+    {
+     "text": "Start",
+     "size": [
+      0,
+      0
+     ]
+    }
+   ],
+   "ports": [
+    {
+     "id": "pa1",
+     "side": "EAST",
+     "size": [
+      0,
+      0
+     ]
+    },
+    {
+     "id": "pa2",
+     "side": "EAST",
+     "size": [
+      0,
+      0
+     ]
+    },
+    {
+     "id": "pa3",
+     "side": "EAST",
+     "size": [
+      0,
+      0
+     ]
+    }
+   ]
+  },
+  {
+   "id": "B",
+   "size": [
+    60,
+    36
+   ],
+   "labels": [
+    {
+     "text": "Middle",
+     "size": [
+      0,
+      0
+     ]
+    }
+   ],
+   "ports": [
+    {
+     "id": "pb1",
+     "side": "WEST",
+     "size": [
+      0,
+      0
+     ]
+    },
+    {
+     "id": "pb2",
+     "side": "EAST",
+     "size": [
+      0,
+      0
+     ]
+    }
+   ]
+  },
+  {
+   "id": "C",
+   "size": [
+    104.25,
+    44
+   ],
+   "labels": [
+    {
+     "text": "End one",
+     "size": [
+      0,
+      0
+     ]
+    }
+   ],
+   "ports": [
+    {
+     "id": "pc1",
+     "side": "WEST",
+     "size": [
+      0,
+      0
+     ]
+    },
+    {
+     "id": "pc2",
+     "side": "WEST",
+     "size": [
+      0,
+      0
+     ]
+    }
+   ]
+  },
+  {
+   "id": "D",
+   "size": [
+    60,
+    36.5
+   ],
+   "props": [
+    [
+     "org.eclipse.elk.portConstraints",
+     "PortConstraints",
+     "FIXED_ORDER"
+    ]
+   ],
+   "labels": [
+    {
+     "text": "End two",
+     "size": [
+      0,
+      0
+     ]
+    }
+   ],
+   "ports": [
+    {
+     "id": "pd1",
+     "side": "WEST",
+     "size": [
+      4,
+      4
+     ]
+    },
+    {
+     "id": "pd2",
+     "side": "NORTH",
+     "size": [
+      2,
+      3
+     ]
+    },
+    {
+     "id": "pd3",
+     "side": "SOUTH",
+     "size": [
+      0,
+      0
+     ]
+    }
+   ]
+  }
+ ],
+ "edges": [
+  {
+   "id": "e1",
+   "source": "pa1",
+   "target": "pb1"
+  },
+  {
+   "id": "e2",
+   "source": "pa2",
+   "target": "pc1"
+  },
+  {
+   "id": "e3",
+   "source": "pa3",
+   "target": "pd1"
+  },
+  {
+   "id": "e4",
+   "source": "pb2",
+   "target": "pc2"
+  }
+ ],
+ "layers": [
+  [
+   "A"
+  ],
+  [
+   "B"
+  ],
+  [
+   "C",
+   "D"
+  ]
+ ],
+ "run": [
+  "LabelAndNodeSizeProcessor",
+  "Dump:sized",
+  "InnermostNodeMarginCalculator",
+  "Dump:margins"
+ ]
+}

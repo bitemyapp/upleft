@@ -3,6 +3,7 @@
 
 pub mod core_text;
 pub mod attribute_dump;
+pub mod elk;
 pub mod highlight;
 pub mod json;
 pub mod markup;
@@ -114,6 +115,7 @@ pub fn run(request: &Request) -> Result<(), Failure> {
             let data = std::fs::read(&request.input)?;
             Ok(json::write(&highlight::vscode_theme(&data, &request.input), &request.output)?)
         }
+        "elk" => elk::run(&request.input, &request.output),
         "probe" => crate::capture::run(request.capture(), Box::new(crate::capture::ProbeScene)),
         _ => Err(Failure::NotPorted),
     }

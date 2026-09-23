@@ -1,0 +1,237 @@
+{
+ "children": [
+  {
+   "id": "E",
+   "labels": [
+    {
+     "text": "Deploy Staging"
+    }
+   ],
+   "width": 130.129,
+   "height": 36.9
+  },
+  {
+   "id": "F",
+   "labels": [
+    {
+     "text": "QA Approved?"
+    }
+   ],
+   "width": 152.647,
+   "height": 152.647
+  },
+  {
+   "id": "G",
+   "labels": [
+    {
+     "text": "Production"
+    }
+   ],
+   "width": 122.0,
+   "height": 122.0
+  },
+  {
+   "children": [
+    {
+     "id": "A",
+     "labels": [
+      {
+       "text": "Push Code"
+      }
+     ],
+     "width": 106.417,
+     "height": 36.9
+    },
+    {
+     "id": "B",
+     "labels": [
+      {
+       "text": "Tests Pass?"
+      }
+     ],
+     "width": 140.791,
+     "height": 140.791
+    },
+    {
+     "id": "C",
+     "labels": [
+      {
+       "text": "Build Image"
+      }
+     ],
+     "width": 107.899,
+     "height": 36.9
+    },
+    {
+     "id": "D",
+     "labels": [
+      {
+       "text": "Fix & Retry"
+      }
+     ],
+     "width": 105.676,
+     "height": 36.9
+    }
+   ],
+   "edges": [
+    {
+     "id": "e0",
+     "sources": [
+      "A"
+     ],
+     "targets": [
+      "B"
+     ]
+    },
+    {
+     "id": "e1",
+     "labels": [
+      {
+       "layoutOptions": {
+        "elk.edgeLabels.inline": "true",
+        "elk.edgeLabels.placement": "CENTER"
+       },
+       "text": "Yes",
+       "width": 28.658,
+       "height": 20.3
+      }
+     ],
+     "sources": [
+      "B"
+     ],
+     "targets": [
+      "C"
+     ]
+    },
+    {
+     "id": "e2",
+     "labels": [
+      {
+       "layoutOptions": {
+        "elk.edgeLabels.inline": "true",
+        "elk.edgeLabels.placement": "CENTER"
+       },
+       "text": "No",
+       "width": 22.718,
+       "height": 20.3
+      }
+     ],
+     "sources": [
+      "B"
+     ],
+     "targets": [
+      "D"
+     ]
+    },
+    {
+     "id": "e3",
+     "sources": [
+      "D"
+     ],
+     "targets": [
+      "A"
+     ]
+    }
+   ],
+   "id": "ci",
+   "labels": [
+    {
+     "text": "CI Pipeline"
+    }
+   ],
+   "layoutOptions": {
+    "elk.algorithm": "layered",
+    "elk.contentAlignment": "H_CENTER V_CENTER",
+    "elk.edgeRouting": "ORTHOGONAL",
+    "elk.layered.nodePlacement.bk.fixedAlignment": "BALANCED",
+    "elk.layered.spacing.edgeEdgeBetweenLayers": "12",
+    "elk.layered.spacing.edgeNodeBetweenLayers": "12",
+    "elk.layered.spacing.nodeNodeBetweenLayers": "48",
+    "elk.padding": "[top=44,left=16,bottom=16,right=16]",
+    "elk.spacing.edgeEdge": "12",
+    "elk.spacing.nodeNode": "28"
+   }
+  }
+ ],
+ "edges": [
+  {
+   "id": "e4",
+   "sources": [
+    "C"
+   ],
+   "targets": [
+    "E"
+   ]
+  },
+  {
+   "id": "e5",
+   "sources": [
+    "E"
+   ],
+   "targets": [
+    "F"
+   ]
+  },
+  {
+   "id": "e6",
+   "labels": [
+    {
+     "layoutOptions": {
+      "elk.edgeLabels.inline": "true",
+      "elk.edgeLabels.placement": "CENTER"
+     },
+     "text": "Yes",
+     "width": 28.658,
+     "height": 20.3
+    }
+   ],
+   "sources": [
+    "F"
+   ],
+   "targets": [
+    "G"
+   ]
+  },
+  {
+   "id": "e7",
+   "labels": [
+    {
+     "layoutOptions": {
+      "elk.edgeLabels.inline": "true",
+      "elk.edgeLabels.placement": "CENTER"
+     },
+     "text": "No",
+     "width": 22.718,
+     "height": 20.3
+    }
+   ],
+   "sources": [
+    "F"
+   ],
+   "targets": [
+    "D"
+   ]
+  }
+ ],
+ "id": "root",
+ "layoutOptions": {
+  "elk.algorithm": "layered",
+  "elk.contentAlignment": "H_CENTER V_CENTER",
+  "elk.direction": "DOWN",
+  "elk.edgeRouting": "ORTHOGONAL",
+  "elk.hierarchyHandling": "INCLUDE_CHILDREN",
+  "elk.layered.compaction.postCompaction.strategy": "LEFT_RIGHT_CONSTRAINT_LOCKING",
+  "elk.layered.considerModelOrder.strategy": "NODES_AND_EDGES",
+  "elk.layered.highDegreeNodes.threshold": "8",
+  "elk.layered.highDegreeNodes.treatment": "true",
+  "elk.layered.nodePlacement.bk.fixedAlignment": "BALANCED",
+  "elk.layered.spacing.edgeEdgeBetweenLayers": "12",
+  "elk.layered.spacing.edgeNodeBetweenLayers": "12",
+  "elk.layered.spacing.nodeNodeBetweenLayers": "48",
+  "elk.layered.thoroughness": "3",
+  "elk.layered.wrapping.strategy": "OFF",
+  "elk.padding": "[top=40,left=40,bottom=40,right=40]",
+  "elk.spacing.edgeEdge": "12",
+  "elk.spacing.nodeNode": "28"
+ }
+}

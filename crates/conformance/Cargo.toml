@@ -13,6 +13,7 @@ upleft-markup.workspace = true
 upleft-core.workspace = true
 upleft-swift-text.workspace = true
 upleft-render.workspace = true
+upleft-elk.workspace = true
 upleft-math.workspace = true
 objc2.workspace = true
 objc2-foundation = { workspace = true, features = [

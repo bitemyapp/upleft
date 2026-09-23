@@ -1,0 +1,199 @@
+{
+ "graph": {
+  "props": [
+   [
+    "org.eclipse.elk.spacing.labelNode",
+    "Int",
+    3
+   ],
+   [
+    "org.eclipse.elk.direction",
+    "String",
+    "DOWN"
+   ]
+  ]
+ },
+ "nodes": [
+  {
+   "id": "W1",
+   "size": [
+    5,
+    5
+   ],
+   "props": [
+    [
+     "org.eclipse.elk.nodeSize.constraints",
+     "SizeConstraint",
+     8
+    ],
+    [
+     "org.eclipse.elk.nodeSize.options",
+     "String",
+     "DEFAULT_MINIMUM_SIZE"
+    ]
+   ]
+  },
+  {
+   "id": "W2",
+   "size": [
+    5,
+    5
+   ],
+   "props": [
+    [
+     "org.eclipse.elk.nodeSize.constraints",
+     "SizeConstraint",
+     8
+    ]
+   ]
+  },
+  {
+   "id": "W3",
+   "size": [
+    40,
+    40
+   ],
+   "props": [
+    [
+     "org.eclipse.elk.portLabels.placement",
+     "String",
+     "OUTSIDE"
+    ],
+    [
+     "org.eclipse.elk.portConstraints",
+     "String",
+     "FIXED_POS"
+    ],
+    [
+     "org.eclipse.elk.nodeSize.constraints",
+     "SizeConstraint",
+     1
+    ]
+   ],
+   "ports": [
+    {
+     "id": "w3e",
+     "side": "EAST",
+     "size": [
+      4,
+      4
+     ],
+     "labels": [
+      {
+       "text": "w3el",
+       "size": [
+        6,
+        5
+       ]
+      }
+     ],
+     "pos": [
+      40,
+      10
+     ]
+    },
+    {
+     "id": "w3w",
+     "side": "WEST",
+     "size": [
+      4,
+      4
+     ],
+     "pos": [
+      -4,
+      10
+     ]
+    }
+   ],
+   "pos": [
+    0,
+    0
+   ]
+  },
+  {
+   "id": "W4",
+   "size": [
+    10,
+    10
+   ],
+   "ports": [
+    {
+     "id": "w4w",
+     "side": "WEST",
+     "size": [
+      2,
+      2
+     ],
+     "pos": [
+      -2,
+      4
+     ]
+    }
+   ],
+   "pos": [
+    100,
+    0
+   ]
+  }
+ ],
+ "edges": [
+  {
+   "id": "x1",
+   "source": "w3e",
+   "target": "w4w",
+   "labels": [
+    {
+     "text": "xt",
+     "size": [
+      9,
+      4
+     ],
+     "props": [
+      [
+       "org.eclipse.elk.edgeLabels.placement",
+       "EdgeLabelPlacement",
+       "TAIL"
+      ]
+     ]
+    }
+   ]
+  },
+  {
+   "id": "x2",
+   "source": "w4w",
+   "target": "w3w",
+   "labels": [
+    {
+     "text": "yh",
+     "size": [
+      7,
+      6
+     ],
+     "props": [
+      [
+       "org.eclipse.elk.edgeLabels.placement",
+       "EdgeLabelPlacement",
+       "HEAD"
+      ]
+     ]
+    }
+   ]
+  }
+ ],
+ "layers": [
+  [
+   "W1",
+   "W2"
+  ],
+  [
+   "W3",
+   "W4"
+  ]
+ ],
+ "run": [
+  "LabelAndNodeSizeProcessor",
+  "Dump:sized",
+  "MarginCalcNode:W3",
+  "Dump:margin"
+ ]
+}

@@ -1,0 +1,744 @@
+{
+ "graph": {
+  "props": [
+   [
+    "org.eclipse.elk.layered.edgeLabels.sideSelection",
+    "EdgeLabelSideSelection",
+    "ALWAYS_UP"
+   ],
+   [
+    "org.eclipse.elk.spacing.edgeLabel",
+    "Double",
+    2.0
+   ]
+  ]
+ },
+ "nodes": [
+  {
+   "id": "S1",
+   "size": [
+    30,
+    60
+   ],
+   "ports": [
+    {
+     "id": "s1a",
+     "side": "EAST",
+     "size": [
+      0,
+      0
+     ],
+     "pos": [
+      30,
+      10
+     ]
+    },
+    {
+     "id": "s1b",
+     "side": "EAST",
+     "size": [
+      0,
+      0
+     ],
+     "pos": [
+      30,
+      20
+     ]
+    },
+    {
+     "id": "s1c",
+     "side": "EAST",
+     "size": [
+      0,
+      0
+     ],
+     "pos": [
+      30,
+      30
+     ]
+    },
+    {
+     "id": "s1d",
+     "side": "EAST",
+     "size": [
+      0,
+      0
+     ],
+     "pos": [
+      30,
+      40
+     ]
+    },
+    {
+     "id": "s1n",
+     "side": "NORTH",
+     "size": [
+      0,
+      0
+     ],
+     "pos": [
+      10,
+      0
+     ]
+    },
+    {
+     "id": "s1m",
+     "side": "NORTH",
+     "size": [
+      0,
+      0
+     ],
+     "pos": [
+      20,
+      0
+     ]
+    }
+   ]
+  },
+  {
+   "id": "S0",
+   "size": [
+    30,
+    30
+   ],
+   "ports": [
+    {
+     "id": "s0a",
+     "side": "EAST",
+     "size": [
+      0,
+      0
+     ]
+    },
+    {
+     "id": "s0b",
+     "side": "EAST",
+     "size": [
+      0,
+      0
+     ]
+    }
+   ]
+  },
+  {
+   "id": "L1",
+   "size": [
+    30,
+    20
+   ],
+   "props": [
+    [
+     "origin",
+     "EdgeRef",
+     "o1"
+    ],
+    [
+     "representedLabels",
+     "LabelRefs",
+     [
+      "r1"
+     ]
+    ]
+   ],
+   "ports": [
+    {
+     "id": "l1in",
+     "side": "WEST",
+     "size": [
+      0,
+      0
+     ]
+    },
+    {
+     "id": "l1out",
+     "side": "EAST",
+     "size": [
+      0,
+      0
+     ]
+    }
+   ],
+   "type": "LABEL"
+  },
+  {
+   "id": "LE1",
+   "size": [
+    0,
+    0
+   ],
+   "props": [
+    [
+     "longEdgeSource",
+     "PortRef",
+     "s1b"
+    ],
+    [
+     "longEdgeTarget",
+     "PortRef",
+     "s3b"
+    ]
+   ],
+   "ports": [
+    {
+     "id": "le1in",
+     "side": "WEST",
+     "size": [
+      0,
+      0
+     ]
+    },
+    {
+     "id": "le1out",
+     "side": "EAST",
+     "size": [
+      0,
+      0
+     ]
+    }
+   ],
+   "type": "LONG_EDGE"
+  },
+  {
+   "id": "L2",
+   "size": [
+    40,
+    25
+   ],
+   "props": [
+    [
+     "origin",
+     "EdgeRef",
+     "o2"
+    ],
+    [
+     "representedLabels",
+     "LabelRefs",
+     [
+      "r2"
+     ]
+    ],
+    [
+     "longEdgeSource",
+     "PortRef",
+     "s1c"
+    ],
+    [
+     "longEdgeTarget",
+     "PortRef",
+     "s3c"
+    ]
+   ],
+   "ports": [
+    {
+     "id": "l2in",
+     "side": "WEST",
+     "size": [
+      0,
+      0
+     ]
+    },
+    {
+     "id": "l2out",
+     "side": "EAST",
+     "size": [
+      0,
+      0
+     ]
+    }
+   ],
+   "type": "LABEL"
+  },
+  {
+   "id": "L3",
+   "size": [
+    20,
+    16
+   ],
+   "props": [
+    [
+     "origin",
+     "EdgeRef",
+     "o3"
+    ],
+    [
+     "representedLabels",
+     "LabelRefs",
+     [
+      "r3"
+     ]
+    ],
+    [
+     "longEdgeSource",
+     "PortRef",
+     "s1c"
+    ],
+    [
+     "longEdgeTarget",
+     "PortRef",
+     "s3c"
+    ]
+   ],
+   "ports": [
+    {
+     "id": "l3in",
+     "side": "WEST",
+     "size": [
+      0,
+      0
+     ]
+    },
+    {
+     "id": "l3out",
+     "side": "EAST",
+     "size": [
+      0,
+      0
+     ]
+    }
+   ],
+   "type": "LABEL"
+  },
+  {
+   "id": "N2",
+   "size": [
+    20,
+    20
+   ],
+   "ports": [
+    {
+     "id": "n2w",
+     "side": "WEST",
+     "size": [
+      0,
+      0
+     ]
+    }
+   ]
+  },
+  {
+   "id": "L4",
+   "size": [
+    22,
+    18
+   ],
+   "props": [
+    [
+     "origin",
+     "EdgeRef",
+     "o1"
+    ],
+    [
+     "representedLabels",
+     "LabelRefs",
+     [
+      "r4"
+     ]
+    ]
+   ],
+   "ports": [
+    {
+     "id": "l4in",
+     "side": "WEST",
+     "size": [
+      0,
+      0
+     ]
+    },
+    {
+     "id": "l4out",
+     "side": "EAST",
+     "size": [
+      0,
+      0
+     ]
+    }
+   ],
+   "type": "LABEL"
+  },
+  {
+   "id": "S3",
+   "size": [
+    30,
+    60
+   ],
+   "ports": [
+    {
+     "id": "s3a",
+     "side": "WEST",
+     "size": [
+      0,
+      0
+     ]
+    },
+    {
+     "id": "s3b",
+     "side": "WEST",
+     "size": [
+      0,
+      0
+     ]
+    },
+    {
+     "id": "s3c",
+     "side": "WEST",
+     "size": [
+      0,
+      0
+     ]
+    },
+    {
+     "id": "s3d",
+     "side": "WEST",
+     "size": [
+      0,
+      0
+     ]
+    },
+    {
+     "id": "s3e",
+     "side": "WEST",
+     "size": [
+      0,
+      0
+     ]
+    },
+    {
+     "id": "s3n",
+     "side": "NORTH",
+     "size": [
+      0,
+      0
+     ]
+    },
+    {
+     "id": "s3s",
+     "side": "SOUTH",
+     "size": [
+      0,
+      0
+     ]
+    }
+   ]
+  },
+  {
+   "id": "L5",
+   "size": [
+    18,
+    18
+   ],
+   "props": [
+    [
+     "origin",
+     "EdgeRef",
+     "o2"
+    ]
+   ],
+   "ports": [
+    {
+     "id": "l5in",
+     "side": "WEST",
+     "size": [
+      0,
+      0
+     ]
+    },
+    {
+     "id": "l5out",
+     "side": "EAST",
+     "size": [
+      0,
+      0
+     ]
+    }
+   ],
+   "type": "LABEL"
+  }
+ ],
+ "edges": [
+  {
+   "id": "o1",
+   "source": "s1a",
+   "target": "l1in",
+   "props": [
+    [
+     "org.eclipse.elk.edge.thickness",
+     "Double",
+     3.0
+    ]
+   ],
+   "labels": [
+    {
+     "text": "r1",
+     "size": [
+      30,
+      10
+     ]
+    },
+    {
+     "text": "r4",
+     "size": [
+      5,
+      5
+     ]
+    }
+   ]
+  },
+  {
+   "id": "o1b",
+   "source": "l1out",
+   "target": "s3a",
+   "labels": [
+    {
+     "text": "t1",
+     "size": [
+      5,
+      5
+     ],
+     "props": [
+      [
+       "org.eclipse.elk.edgeLabels.placement",
+       "EdgeLabelPlacement",
+       "HEAD"
+      ]
+     ]
+    }
+   ]
+  },
+  {
+   "id": "o4",
+   "source": "s1b",
+   "target": "le1in",
+   "labels": [
+    {
+     "text": "t2",
+     "size": [
+      5,
+      5
+     ],
+     "props": [
+      [
+       "org.eclipse.elk.edgeLabels.placement",
+       "EdgeLabelPlacement",
+       "TAIL"
+      ]
+     ]
+    }
+   ]
+  },
+  {
+   "id": "o4b",
+   "source": "le1out",
+   "target": "s3b"
+  },
+  {
+   "id": "o2",
+   "source": "s1c",
+   "target": "l2in",
+   "props": [
+    [
+     "org.eclipse.elk.edge.thickness",
+     "Double",
+     2.0
+    ],
+    [
+     "reversed",
+     "Bool",
+     true
+    ]
+   ],
+   "labels": [
+    {
+     "text": "r2",
+     "size": [
+      40,
+      10
+     ],
+     "props": [
+      [
+       "org.eclipse.elk.edgeLabels.inline",
+       "Bool",
+       true
+      ]
+     ]
+    }
+   ]
+  },
+  {
+   "id": "o2b",
+   "source": "l2out",
+   "target": "s3c",
+   "props": [
+    [
+     "reversed",
+     "Bool",
+     true
+    ]
+   ]
+  },
+  {
+   "id": "o3",
+   "source": "s1d",
+   "target": "l3in",
+   "labels": [
+    {
+     "text": "r3",
+     "size": [
+      20,
+      6
+     ]
+    },
+    {
+     "text": "t3",
+     "size": [
+      4,
+      4
+     ],
+     "props": [
+      [
+       "org.eclipse.elk.edgeLabels.placement",
+       "EdgeLabelPlacement",
+       "TAIL"
+      ]
+     ]
+    }
+   ]
+  },
+  {
+   "id": "o3b",
+   "source": "l3out",
+   "target": "s3d",
+   "props": [
+    [
+     "reversed",
+     "Bool",
+     true
+    ]
+   ]
+  },
+  {
+   "id": "o5",
+   "source": "s0a",
+   "target": "n2w",
+   "labels": [
+    {
+     "text": "t5",
+     "size": [
+      3,
+      3
+     ],
+     "props": [
+      [
+       "org.eclipse.elk.edgeLabels.placement",
+       "EdgeLabelPlacement",
+       "TAIL"
+      ]
+     ]
+    }
+   ]
+  },
+  {
+   "id": "o6",
+   "source": "s0b",
+   "target": "l4in",
+   "props": [
+    [
+     "reversed",
+     "Bool",
+     true
+    ]
+   ]
+  },
+  {
+   "id": "o6b",
+   "source": "l4out",
+   "target": "s3e"
+  },
+  {
+   "id": "o7",
+   "source": "s1n",
+   "target": "l5in",
+   "labels": [
+    {
+     "text": "t7",
+     "size": [
+      4,
+      4
+     ],
+     "props": [
+      [
+       "org.eclipse.elk.edgeLabels.placement",
+       "EdgeLabelPlacement",
+       "TAIL"
+      ]
+     ]
+    }
+   ]
+  },
+  {
+   "id": "o7b",
+   "source": "l5out",
+   "target": "s3n",
+   "labels": [
+    {
+     "text": "t8",
+     "size": [
+      4,
+      4
+     ],
+     "props": [
+      [
+       "org.eclipse.elk.edgeLabels.placement",
+       "EdgeLabelPlacement",
+       "HEAD"
+      ]
+     ]
+    }
+   ]
+  },
+  {
+   "id": "o8",
+   "source": "s1m",
+   "target": "s3s",
+   "labels": [
+    {
+     "text": "t9",
+     "size": [
+      4,
+      4
+     ],
+     "props": [
+      [
+       "org.eclipse.elk.edgeLabels.placement",
+       "EdgeLabelPlacement",
+       "TAIL"
+      ]
+     ]
+    }
+   ]
+  }
+ ],
+ "layers": [
+  [
+   "S1",
+   "S0"
+  ],
+  [
+   "L1",
+   "LE1",
+   "L2",
+   "L3",
+   "N2",
+   "L4"
+  ],
+  [
+   "L5"
+  ],
+  [
+   "S3"
+  ]
+ ],
+ "run": [
+  "LabelSideSelector",
+  "Dump:sides"
+ ]
+}

@@ -1,0 +1,263 @@
+{
+ "graph": {
+  "props": [
+   [
+    "org.eclipse.elk.spacing.edgeLabel",
+    "Double",
+    3.0
+   ],
+   [
+    "org.eclipse.elk.spacing.labelLabel",
+    "Double",
+    2.0
+   ]
+  ]
+ },
+ "nodes": [
+  {
+   "id": "H1",
+   "size": [
+    40,
+    40
+   ],
+   "ports": [
+    {
+     "id": "h1e",
+     "side": "EAST",
+     "size": [
+      4,
+      4
+     ],
+     "props": [
+      [
+       "portDummy",
+       "NodeRef",
+       "PD"
+      ]
+     ],
+     "pos": [
+      40,
+      10
+     ]
+    },
+    {
+     "id": "h1w",
+     "side": "WEST",
+     "size": [
+      4,
+      4
+     ],
+     "pos": [
+      -4,
+      10
+     ]
+    }
+   ]
+  },
+  {
+   "id": "PD",
+   "size": [
+    1,
+    1
+   ],
+   "ports": [
+    {
+     "id": "pdp",
+     "side": "EAST",
+     "size": [
+      0,
+      0
+     ],
+     "props": [
+      [
+       "origin",
+       "PortRef",
+       "h1e"
+      ]
+     ]
+    },
+    {
+     "id": "pdq",
+     "side": "EAST",
+     "size": [
+      0,
+      0
+     ],
+     "props": [
+      [
+       "origin",
+       "PortRef",
+       "h1w"
+      ]
+     ]
+    },
+    {
+     "id": "pdr",
+     "side": "WEST",
+     "size": [
+      0,
+      0
+     ],
+     "props": [
+      [
+       "origin",
+       "PortRef",
+       "h1e"
+      ]
+     ]
+    }
+   ]
+  },
+  {
+   "id": "H2",
+   "size": [
+    20,
+    20
+   ],
+   "ports": [
+    {
+     "id": "h2w",
+     "side": "WEST",
+     "size": [
+      2,
+      2
+     ],
+     "pos": [
+      -2,
+      5
+     ]
+    }
+   ]
+  }
+ ],
+ "edges": [
+  {
+   "id": "q1",
+   "source": "pdp",
+   "target": "h2w",
+   "props": [
+    [
+     "org.eclipse.elk.edge.thickness",
+     "Double",
+     4.0
+    ]
+   ],
+   "labels": [
+    {
+     "text": "q1t",
+     "size": [
+      10,
+      4
+     ],
+     "props": [
+      [
+       "org.eclipse.elk.edgeLabels.placement",
+       "EdgeLabelPlacement",
+       "TAIL"
+      ]
+     ]
+    },
+    {
+     "text": "q1h",
+     "size": [
+      6,
+      6
+     ],
+     "props": [
+      [
+       "org.eclipse.elk.edgeLabels.placement",
+       "EdgeLabelPlacement",
+       "HEAD"
+      ]
+     ]
+    }
+   ]
+  },
+  {
+   "id": "q2",
+   "source": "h1e",
+   "target": "h2w",
+   "labels": [
+    {
+     "text": "q2t",
+     "size": [
+      7,
+      3
+     ],
+     "props": [
+      [
+       "org.eclipse.elk.edgeLabels.placement",
+       "EdgeLabelPlacement",
+       "TAIL"
+      ]
+     ]
+    }
+   ]
+  },
+  {
+   "id": "q3",
+   "source": "h2w",
+   "target": "pdr",
+   "props": [
+    [
+     "org.eclipse.elk.edge.thickness",
+     "Double",
+     0.5
+    ]
+   ],
+   "labels": [
+    {
+     "text": "q3h",
+     "size": [
+      5,
+      9
+     ],
+     "props": [
+      [
+       "org.eclipse.elk.edgeLabels.placement",
+       "EdgeLabelPlacement",
+       "HEAD"
+      ]
+     ]
+    }
+   ]
+  },
+  {
+   "id": "q4",
+   "source": "pdq",
+   "target": "h2w",
+   "labels": [
+    {
+     "text": "q4t",
+     "size": [
+      4,
+      4
+     ],
+     "props": [
+      [
+       "org.eclipse.elk.edgeLabels.placement",
+       "EdgeLabelPlacement",
+       "TAIL"
+      ]
+     ]
+    }
+   ]
+  }
+ ],
+ "layers": [
+  [
+   "H1"
+  ],
+  [
+   "H2"
+  ]
+ ],
+ "run": [
+  "EndLabelPreprocessor",
+  "Dump:pre",
+  "EndLabelSorter",
+  "SetPos:H1:5:6",
+  "EndLabelPostprocessor",
+  "Dump:post"
+ ]
+}

@@ -1,0 +1,192 @@
+== sized
+graph size=(0.0,0.0)
+L0 node F1 normal id=0 pos=(0.0,0.0) size=(50.0,48.333333333333336) margin=(0.0,0.0,0.0,0.0) padding=(0.0,0.0,0.0,0.0)
+  port f1n0 north id=0 pos=(12.5,-4.0) size=(6.0,4.0) anchor=(3.0,0.0) met=-
+    label f1n0l pos=(-1.5,5.0) size=(9.0,5.0) side=- edge=-
+  port f1n1 north id=1 pos=(37.5,-4.0) size=(6.0,4.0) anchor=(3.0,0.0) met=-
+    label f1n1l pos=(-1.5,5.0) size=(9.0,5.0) side=- edge=-
+  port f1e0 east id=2 pos=(50.0,14.5) size=(4.0,6.0) anchor=(4.0,3.0) met=-
+    label f1e0l pos=(-10.0,0.5) size=(9.0,5.0) side=- edge=-
+  port f1e1 east id=3 pos=(50.0,29.0) size=(4.0,6.0) anchor=(4.0,3.0) met=-
+  port f1s0 south id=4 pos=(25.0,48.333333333333336) size=(6.0,4.0) anchor=(3.0,4.0) met=-
+  port f1w0 west id=5 pos=(-4.0,4.833333333333334) size=(4.0,6.0) anchor=(0.0,3.0) met=-
+    label f1w0l pos=(5.0,1.5) size=(3.0,3.0) side=- edge=-
+L0 node F2 normal id=0 pos=(0.0,0.0) size=(54.0,51.0) margin=(0.0,0.0,0.0,0.0) padding=(0.0,0.0,0.0,0.0)
+  port f2n0 north id=0 pos=(30.0,-4.0) size=(6.0,4.0) anchor=(3.0,0.0) met=-
+  port f2e0 east id=1 pos=(54.0,40.0) size=(4.0,6.0) anchor=(4.0,3.0) met=-
+  port f2s0 south id=2 pos=(3.0,51.0) size=(6.0,4.0) anchor=(3.0,4.0) met=-
+  port f2w0 west id=3 pos=(-6.0,5.0) size=(4.0,6.0) anchor=(0.0,3.0) met=-
+L1 node F3 normal id=0 pos=(0.0,0.0) size=(30.0,30.0) margin=(0.0,0.0,0.0,0.0) padding=(0.0,0.0,0.0,0.0)
+  port f3n0 north id=0 pos=(11.0,-5.0) size=(5.0,5.0) anchor=(2.5,0.0) met=-
+  port f3n1 north id=1 pos=(13.5,-5.0) size=(5.0,5.0) anchor=(2.5,0.0) met=-
+  port f3n2 north id=2 pos=(16.0,-5.0) size=(5.0,5.0) anchor=(2.5,0.0) met=-
+  port f3e0 east id=3 pos=(30.0,5.0) size=(5.0,5.0) anchor=(5.0,2.5) met=-
+  port f3e1 east id=4 pos=(30.0,12.5) size=(5.0,5.0) anchor=(5.0,2.5) met=-
+  port f3e2 east id=5 pos=(30.0,20.0) size=(5.0,5.0) anchor=(5.0,2.5) met=-
+  port f3s0 south id=6 pos=(16.0,30.0) size=(5.0,5.0) anchor=(2.5,5.0) met=-
+  port f3s1 south id=7 pos=(13.5,30.0) size=(5.0,5.0) anchor=(2.5,5.0) met=-
+  port f3s2 south id=8 pos=(11.0,30.0) size=(5.0,5.0) anchor=(2.5,5.0) met=-
+  port f3w0 west id=9 pos=(-5.0,20.0) size=(5.0,5.0) anchor=(0.0,2.5) met=-
+  port f3w1 west id=10 pos=(-5.0,12.5) size=(5.0,5.0) anchor=(0.0,2.5) met=-
+  port f3w2 west id=11 pos=(-5.0,5.0) size=(5.0,5.0) anchor=(0.0,2.5) met=-
+L1 node F4 normal id=0 pos=(0.0,0.0) size=(30.0,30.0) margin=(0.0,0.0,0.0,0.0) padding=(0.0,0.0,0.0,0.0)
+  port f4n0 north id=0 pos=(-4.5,-5.0) size=(5.0,5.0) anchor=(2.5,0.0) met=-
+  port f4n1 north id=1 pos=(7.5,-5.0) size=(5.0,5.0) anchor=(2.5,0.0) met=-
+  port f4n2 north id=2 pos=(19.5,-5.0) size=(5.0,5.0) anchor=(2.5,0.0) met=-
+  port f4n3 north id=3 pos=(31.5,-5.0) size=(5.0,5.0) anchor=(2.5,0.0) met=-
+  port f4e0 east id=4 pos=(30.0,-5.5) size=(5.0,5.0) anchor=(5.0,2.5) met=-
+  port f4e1 east id=5 pos=(30.0,6.5) size=(5.0,5.0) anchor=(5.0,2.5) met=-
+  port f4e2 east id=6 pos=(30.0,18.5) size=(5.0,5.0) anchor=(5.0,2.5) met=-
+  port f4e3 east id=7 pos=(30.0,30.5) size=(5.0,5.0) anchor=(5.0,2.5) met=-
+  port f4s0 south id=8 pos=(31.5,30.0) size=(5.0,5.0) anchor=(2.5,5.0) met=-
+  port f4s1 south id=9 pos=(19.5,30.0) size=(5.0,5.0) anchor=(2.5,5.0) met=-
+  port f4s2 south id=10 pos=(7.5,30.0) size=(5.0,5.0) anchor=(2.5,5.0) met=-
+  port f4s3 south id=11 pos=(-4.5,30.0) size=(5.0,5.0) anchor=(2.5,5.0) met=-
+  port f4w0 west id=12 pos=(-5.0,30.5) size=(5.0,5.0) anchor=(0.0,2.5) met=-
+  port f4w1 west id=13 pos=(-5.0,18.5) size=(5.0,5.0) anchor=(0.0,2.5) met=-
+  port f4w2 west id=14 pos=(-5.0,6.5) size=(5.0,5.0) anchor=(0.0,2.5) met=-
+  port f4w3 west id=15 pos=(-5.0,-5.5) size=(5.0,5.0) anchor=(0.0,2.5) met=-
+L1 node F5 normal id=0 pos=(0.0,0.0) size=(100.0,100.0) margin=(0.0,0.0,0.0,0.0) padding=(0.0,0.0,0.0,0.0)
+  port f5n0 north id=0 pos=(48.5,-5.0) size=(5.0,5.0) anchor=(2.5,0.0) met=-
+  port f5s0 south id=1 pos=(48.5,100.0) size=(5.0,5.0) anchor=(2.5,5.0) met=-
+  port f5e0 east id=2 pos=(100.0,5.0) size=(5.0,5.0) anchor=(5.0,2.5) met=-
+  port f5w0 west id=3 pos=(-5.0,90.0) size=(5.0,5.0) anchor=(0.0,2.5) met=-
+  port f5w1 west id=4 pos=(-5.0,78.0) size=(5.0,5.0) anchor=(0.0,2.5) met=-
+  port f5e1 east id=5 pos=(100.0,90.0) size=(5.0,5.0) anchor=(5.0,2.5) met=-
+L1 node F6 normal id=0 pos=(0.0,0.0) size=(8.0,8.0) margin=(0.0,0.0,0.0,0.0) padding=(0.0,0.0,0.0,0.0)
+  port f6n0 north id=0 pos=(11.0,-5.0) size=(12.0,5.0) anchor=(6.0,0.0) met=-
+  port f6e0 east id=1 pos=(8.0,4.0) size=(5.0,12.0) anchor=(5.0,6.0) met=-
+  port f6e1 east id=2 pos=(8.0,-8.0) size=(5.0,12.0) anchor=(5.0,6.0) met=-
+  port f6s0 south id=3 pos=(-6.0,8.0) size=(5.0,5.0) anchor=(2.5,5.0) met=-
+  port f6s1 south id=4 pos=(11.0,8.0) size=(5.0,5.0) anchor=(2.5,5.0) met=-
+L1 node F7 normal id=0 pos=(0.0,0.0) size=(39.0,29.0) margin=(0.0,0.0,0.0,0.0) padding=(0.0,0.0,0.0,0.0)
+  port f7n0 north id=0 pos=(18.0,-5.0) size=(5.0,5.0) anchor=(2.5,0.0) met=-
+  port f7w0 west id=1 pos=(-5.0,12.0) size=(5.0,5.0) anchor=(0.0,2.5) met=-
+== margins
+graph size=(0.0,0.0)
+L0 node F1 normal id=0 pos=(0.0,0.0) size=(50.0,48.333333333333336) margin=(4.0,4.0,4.0,4.0) padding=(0.0,0.0,0.0,0.0)
+  port f1n0 north id=0 pos=(12.5,-4.0) size=(6.0,4.0) anchor=(3.0,0.0) met=-
+    label f1n0l pos=(-1.5,5.0) size=(9.0,5.0) side=- edge=-
+  port f1n1 north id=1 pos=(37.5,-4.0) size=(6.0,4.0) anchor=(3.0,0.0) met=-
+    label f1n1l pos=(-1.5,5.0) size=(9.0,5.0) side=- edge=-
+  port f1e0 east id=2 pos=(50.0,14.5) size=(4.0,6.0) anchor=(4.0,3.0) met=-
+    label f1e0l pos=(-10.0,0.5) size=(9.0,5.0) side=- edge=-
+  port f1e1 east id=3 pos=(50.0,29.0) size=(4.0,6.0) anchor=(4.0,3.0) met=-
+  port f1s0 south id=4 pos=(25.0,48.333333333333336) size=(6.0,4.0) anchor=(3.0,4.0) met=-
+  port f1w0 west id=5 pos=(-4.0,4.833333333333334) size=(4.0,6.0) anchor=(0.0,3.0) met=-
+    label f1w0l pos=(5.0,1.5) size=(3.0,3.0) side=- edge=-
+L0 node F2 normal id=0 pos=(0.0,0.0) size=(54.0,51.0) margin=(4.0,4.0,4.0,6.0) padding=(0.0,0.0,0.0,0.0)
+  port f2n0 north id=0 pos=(30.0,-4.0) size=(6.0,4.0) anchor=(3.0,0.0) met=-
+  port f2e0 east id=1 pos=(54.0,40.0) size=(4.0,6.0) anchor=(4.0,3.0) met=-
+  port f2s0 south id=2 pos=(3.0,51.0) size=(6.0,4.0) anchor=(3.0,4.0) met=-
+  port f2w0 west id=3 pos=(-6.0,5.0) size=(4.0,6.0) anchor=(0.0,3.0) met=-
+L1 node F3 normal id=0 pos=(0.0,0.0) size=(30.0,30.0) margin=(5.0,5.0,5.0,5.0) padding=(0.0,0.0,0.0,0.0)
+  port f3n0 north id=0 pos=(11.0,-5.0) size=(5.0,5.0) anchor=(2.5,0.0) met=-
+  port f3n1 north id=1 pos=(13.5,-5.0) size=(5.0,5.0) anchor=(2.5,0.0) met=-
+  port f3n2 north id=2 pos=(16.0,-5.0) size=(5.0,5.0) anchor=(2.5,0.0) met=-
+  port f3e0 east id=3 pos=(30.0,5.0) size=(5.0,5.0) anchor=(5.0,2.5) met=-
+  port f3e1 east id=4 pos=(30.0,12.5) size=(5.0,5.0) anchor=(5.0,2.5) met=-
+  port f3e2 east id=5 pos=(30.0,20.0) size=(5.0,5.0) anchor=(5.0,2.5) met=-
+  port f3s0 south id=6 pos=(16.0,30.0) size=(5.0,5.0) anchor=(2.5,5.0) met=-
+  port f3s1 south id=7 pos=(13.5,30.0) size=(5.0,5.0) anchor=(2.5,5.0) met=-
+  port f3s2 south id=8 pos=(11.0,30.0) size=(5.0,5.0) anchor=(2.5,5.0) met=-
+  port f3w0 west id=9 pos=(-5.0,20.0) size=(5.0,5.0) anchor=(0.0,2.5) met=-
+  port f3w1 west id=10 pos=(-5.0,12.5) size=(5.0,5.0) anchor=(0.0,2.5) met=-
+  port f3w2 west id=11 pos=(-5.0,5.0) size=(5.0,5.0) anchor=(0.0,2.5) met=-
+L1 node F4 normal id=0 pos=(0.0,0.0) size=(30.0,30.0) margin=(5.5,6.5,5.5,5.0) padding=(0.0,0.0,0.0,0.0)
+  port f4n0 north id=0 pos=(-4.5,-5.0) size=(5.0,5.0) anchor=(2.5,0.0) met=-
+  port f4n1 north id=1 pos=(7.5,-5.0) size=(5.0,5.0) anchor=(2.5,0.0) met=-
+  port f4n2 north id=2 pos=(19.5,-5.0) size=(5.0,5.0) anchor=(2.5,0.0) met=-
+  port f4n3 north id=3 pos=(31.5,-5.0) size=(5.0,5.0) anchor=(2.5,0.0) met=-
+  port f4e0 east id=4 pos=(30.0,-5.5) size=(5.0,5.0) anchor=(5.0,2.5) met=-
+  port f4e1 east id=5 pos=(30.0,6.5) size=(5.0,5.0) anchor=(5.0,2.5) met=-
+  port f4e2 east id=6 pos=(30.0,18.5) size=(5.0,5.0) anchor=(5.0,2.5) met=-
+  port f4e3 east id=7 pos=(30.0,30.5) size=(5.0,5.0) anchor=(5.0,2.5) met=-
+  port f4s0 south id=8 pos=(31.5,30.0) size=(5.0,5.0) anchor=(2.5,5.0) met=-
+  port f4s1 south id=9 pos=(19.5,30.0) size=(5.0,5.0) anchor=(2.5,5.0) met=-
+  port f4s2 south id=10 pos=(7.5,30.0) size=(5.0,5.0) anchor=(2.5,5.0) met=-
+  port f4s3 south id=11 pos=(-4.5,30.0) size=(5.0,5.0) anchor=(2.5,5.0) met=-
+  port f4w0 west id=12 pos=(-5.0,30.5) size=(5.0,5.0) anchor=(0.0,2.5) met=-
+  port f4w1 west id=13 pos=(-5.0,18.5) size=(5.0,5.0) anchor=(0.0,2.5) met=-
+  port f4w2 west id=14 pos=(-5.0,6.5) size=(5.0,5.0) anchor=(0.0,2.5) met=-
+  port f4w3 west id=15 pos=(-5.0,-5.5) size=(5.0,5.0) anchor=(0.0,2.5) met=-
+L1 node F5 normal id=0 pos=(0.0,0.0) size=(100.0,100.0) margin=(5.0,5.0,5.0,5.0) padding=(0.0,0.0,0.0,0.0)
+  port f5n0 north id=0 pos=(48.5,-5.0) size=(5.0,5.0) anchor=(2.5,0.0) met=-
+  port f5s0 south id=1 pos=(48.5,100.0) size=(5.0,5.0) anchor=(2.5,5.0) met=-
+  port f5e0 east id=2 pos=(100.0,5.0) size=(5.0,5.0) anchor=(5.0,2.5) met=-
+  port f5w0 west id=3 pos=(-5.0,90.0) size=(5.0,5.0) anchor=(0.0,2.5) met=-
+  port f5w1 west id=4 pos=(-5.0,78.0) size=(5.0,5.0) anchor=(0.0,2.5) met=-
+  port f5e1 east id=5 pos=(100.0,90.0) size=(5.0,5.0) anchor=(5.0,2.5) met=-
+L1 node F6 normal id=0 pos=(0.0,0.0) size=(8.0,8.0) margin=(8.0,15.0,8.0,6.0) padding=(0.0,0.0,0.0,0.0)
+  port f6n0 north id=0 pos=(11.0,-5.0) size=(12.0,5.0) anchor=(6.0,0.0) met=-
+  port f6e0 east id=1 pos=(8.0,4.0) size=(5.0,12.0) anchor=(5.0,6.0) met=-
+  port f6e1 east id=2 pos=(8.0,-8.0) size=(5.0,12.0) anchor=(5.0,6.0) met=-
+  port f6s0 south id=3 pos=(-6.0,8.0) size=(5.0,5.0) anchor=(2.5,5.0) met=-
+  port f6s1 south id=4 pos=(11.0,8.0) size=(5.0,5.0) anchor=(2.5,5.0) met=-
+L1 node F7 normal id=0 pos=(0.0,0.0) size=(39.0,29.0) margin=(5.0,0.0,0.0,5.0) padding=(0.0,0.0,0.0,0.0)
+  port f7n0 north id=0 pos=(18.0,-5.0) size=(5.0,5.0) anchor=(2.5,0.0) met=-
+  port f7w0 west id=1 pos=(-5.0,12.0) size=(5.0,5.0) anchor=(0.0,2.5) met=-
+== margincalc
+graph size=(0.0,0.0)
+L0 node F1 normal id=0 pos=(0.0,0.0) size=(50.0,48.333333333333336) margin=(4.0,4.0,4.0,4.0) padding=(0.0,0.0,0.0,0.0)
+  port f1n0 north id=0 pos=(12.5,-4.0) size=(6.0,4.0) anchor=(3.0,0.0) met=-
+    label f1n0l pos=(-1.5,5.0) size=(9.0,5.0) side=- edge=-
+  port f1n1 north id=1 pos=(37.5,-4.0) size=(6.0,4.0) anchor=(3.0,0.0) met=-
+    label f1n1l pos=(-1.5,5.0) size=(9.0,5.0) side=- edge=-
+  port f1e0 east id=2 pos=(50.0,14.5) size=(4.0,6.0) anchor=(4.0,3.0) met=-
+    label f1e0l pos=(-10.0,0.5) size=(9.0,5.0) side=- edge=-
+  port f1e1 east id=3 pos=(50.0,29.0) size=(4.0,6.0) anchor=(4.0,3.0) met=-
+  port f1s0 south id=4 pos=(25.0,48.333333333333336) size=(6.0,4.0) anchor=(3.0,4.0) met=-
+  port f1w0 west id=5 pos=(-4.0,4.833333333333334) size=(4.0,6.0) anchor=(0.0,3.0) met=-
+    label f1w0l pos=(5.0,1.5) size=(3.0,3.0) side=- edge=-
+L0 node F2 normal id=0 pos=(0.0,0.0) size=(54.0,51.0) margin=(4.0,4.0,4.0,6.0) padding=(0.0,0.0,0.0,0.0)
+  port f2n0 north id=0 pos=(30.0,-4.0) size=(6.0,4.0) anchor=(3.0,0.0) met=-
+  port f2e0 east id=1 pos=(54.0,40.0) size=(4.0,6.0) anchor=(4.0,3.0) met=-
+  port f2s0 south id=2 pos=(3.0,51.0) size=(6.0,4.0) anchor=(3.0,4.0) met=-
+  port f2w0 west id=3 pos=(-6.0,5.0) size=(4.0,6.0) anchor=(0.0,3.0) met=-
+L1 node F3 normal id=0 pos=(0.0,0.0) size=(30.0,30.0) margin=(5.0,5.0,5.0,5.0) padding=(0.0,0.0,0.0,0.0)
+  port f3n0 north id=0 pos=(11.0,-5.0) size=(5.0,5.0) anchor=(2.5,0.0) met=-
+  port f3n1 north id=1 pos=(13.5,-5.0) size=(5.0,5.0) anchor=(2.5,0.0) met=-
+  port f3n2 north id=2 pos=(16.0,-5.0) size=(5.0,5.0) anchor=(2.5,0.0) met=-
+  port f3e0 east id=3 pos=(30.0,5.0) size=(5.0,5.0) anchor=(5.0,2.5) met=-
+  port f3e1 east id=4 pos=(30.0,12.5) size=(5.0,5.0) anchor=(5.0,2.5) met=-
+  port f3e2 east id=5 pos=(30.0,20.0) size=(5.0,5.0) anchor=(5.0,2.5) met=-
+  port f3s0 south id=6 pos=(16.0,30.0) size=(5.0,5.0) anchor=(2.5,5.0) met=-
+  port f3s1 south id=7 pos=(13.5,30.0) size=(5.0,5.0) anchor=(2.5,5.0) met=-
+  port f3s2 south id=8 pos=(11.0,30.0) size=(5.0,5.0) anchor=(2.5,5.0) met=-
+  port f3w0 west id=9 pos=(-5.0,20.0) size=(5.0,5.0) anchor=(0.0,2.5) met=-
+  port f3w1 west id=10 pos=(-5.0,12.5) size=(5.0,5.0) anchor=(0.0,2.5) met=-
+  port f3w2 west id=11 pos=(-5.0,5.0) size=(5.0,5.0) anchor=(0.0,2.5) met=-
+L1 node F4 normal id=0 pos=(0.0,0.0) size=(30.0,30.0) margin=(5.5,6.5,5.5,5.0) padding=(0.0,0.0,0.0,0.0)
+  port f4n0 north id=0 pos=(-4.5,-5.0) size=(5.0,5.0) anchor=(2.5,0.0) met=-
+  port f4n1 north id=1 pos=(7.5,-5.0) size=(5.0,5.0) anchor=(2.5,0.0) met=-
+  port f4n2 north id=2 pos=(19.5,-5.0) size=(5.0,5.0) anchor=(2.5,0.0) met=-
+  port f4n3 north id=3 pos=(31.5,-5.0) size=(5.0,5.0) anchor=(2.5,0.0) met=-
+  port f4e0 east id=4 pos=(30.0,-5.5) size=(5.0,5.0) anchor=(5.0,2.5) met=-
+  port f4e1 east id=5 pos=(30.0,6.5) size=(5.0,5.0) anchor=(5.0,2.5) met=-
+  port f4e2 east id=6 pos=(30.0,18.5) size=(5.0,5.0) anchor=(5.0,2.5) met=-
+  port f4e3 east id=7 pos=(30.0,30.5) size=(5.0,5.0) anchor=(5.0,2.5) met=-
+  port f4s0 south id=8 pos=(31.5,30.0) size=(5.0,5.0) anchor=(2.5,5.0) met=-
+  port f4s1 south id=9 pos=(19.5,30.0) size=(5.0,5.0) anchor=(2.5,5.0) met=-
+  port f4s2 south id=10 pos=(7.5,30.0) size=(5.0,5.0) anchor=(2.5,5.0) met=-
+  port f4s3 south id=11 pos=(-4.5,30.0) size=(5.0,5.0) anchor=(2.5,5.0) met=-
+  port f4w0 west id=12 pos=(-5.0,30.5) size=(5.0,5.0) anchor=(0.0,2.5) met=-
+  port f4w1 west id=13 pos=(-5.0,18.5) size=(5.0,5.0) anchor=(0.0,2.5) met=-
+  port f4w2 west id=14 pos=(-5.0,6.5) size=(5.0,5.0) anchor=(0.0,2.5) met=-
+  port f4w3 west id=15 pos=(-5.0,-5.5) size=(5.0,5.0) anchor=(0.0,2.5) met=-
+L1 node F5 normal id=0 pos=(0.0,0.0) size=(100.0,100.0) margin=(5.0,5.0,5.0,5.0) padding=(0.0,0.0,0.0,0.0)
+  port f5n0 north id=0 pos=(48.5,-5.0) size=(5.0,5.0) anchor=(2.5,0.0) met=-
+  port f5s0 south id=1 pos=(48.5,100.0) size=(5.0,5.0) anchor=(2.5,5.0) met=-
+  port f5e0 east id=2 pos=(100.0,5.0) size=(5.0,5.0) anchor=(5.0,2.5) met=-
+  port f5w0 west id=3 pos=(-5.0,90.0) size=(5.0,5.0) anchor=(0.0,2.5) met=-
+  port f5w1 west id=4 pos=(-5.0,78.0) size=(5.0,5.0) anchor=(0.0,2.5) met=-
+  port f5e1 east id=5 pos=(100.0,90.0) size=(5.0,5.0) anchor=(5.0,2.5) met=-
+L1 node F6 normal id=0 pos=(0.0,0.0) size=(8.0,8.0) margin=(8.0,15.0,8.0,6.0) padding=(0.0,0.0,0.0,0.0)
+  port f6n0 north id=0 pos=(11.0,-5.0) size=(12.0,5.0) anchor=(6.0,0.0) met=-
+  port f6e0 east id=1 pos=(8.0,4.0) size=(5.0,12.0) anchor=(5.0,6.0) met=-
+  port f6e1 east id=2 pos=(8.0,-8.0) size=(5.0,12.0) anchor=(5.0,6.0) met=-
+  port f6s0 south id=3 pos=(-6.0,8.0) size=(5.0,5.0) anchor=(2.5,5.0) met=-
+  port f6s1 south id=4 pos=(11.0,8.0) size=(5.0,5.0) anchor=(2.5,5.0) met=-
+L1 node F7 normal id=0 pos=(0.0,0.0) size=(39.0,29.0) margin=(5.0,0.0,0.0,5.0) padding=(0.0,0.0,0.0,0.0)
+  port f7n0 north id=0 pos=(18.0,-5.0) size=(5.0,5.0) anchor=(2.5,0.0) met=-
+  port f7w0 west id=1 pos=(-5.0,12.0) size=(5.0,5.0) anchor=(0.0,2.5) met=-

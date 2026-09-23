@@ -1,0 +1,1034 @@
+{
+ "graph": {
+  "props": [
+   [
+    "org.eclipse.elk.direction",
+    "Direction",
+    "RIGHT"
+   ],
+   [
+    "org.eclipse.elk.spacing.labelPortHorizontal",
+    "Double",
+    1.0
+   ],
+   [
+    "org.eclipse.elk.spacing.labelPortVertical",
+    "Double",
+    2.0
+   ],
+   [
+    "org.eclipse.elk.spacing.portPort",
+    "Double",
+    5.0
+   ]
+  ]
+ },
+ "nodes": [
+  {
+   "id": "P1",
+   "size": [
+    30,
+    30
+   ],
+   "props": [
+    [
+     "org.eclipse.elk.nodeSize.constraints",
+     "SizeConstraint",
+     3
+    ],
+    [
+     "org.eclipse.elk.portLabels.placement",
+     "PortLabelPlacement",
+     1
+    ]
+   ],
+   "ports": [
+    {
+     "id": "p1n0",
+     "side": "NORTH",
+     "size": [
+      6,
+      6
+     ],
+     "labels": [
+      {
+       "text": "p1n0l",
+       "size": [
+        18,
+        7
+       ]
+      }
+     ]
+    },
+    {
+     "id": "p1n1",
+     "side": "NORTH",
+     "size": [
+      6,
+      6
+     ],
+     "labels": [
+      {
+       "text": "p1n1l",
+       "size": [
+        21,
+        7
+       ]
+      }
+     ]
+    },
+    {
+     "id": "p1n2",
+     "side": "NORTH",
+     "size": [
+      6,
+      6
+     ],
+     "labels": [
+      {
+       "text": "p1n2l",
+       "size": [
+        24,
+        7
+       ]
+      }
+     ]
+    },
+    {
+     "id": "p1e0",
+     "side": "EAST",
+     "size": [
+      6,
+      6
+     ],
+     "labels": [
+      {
+       "text": "p1e0l",
+       "size": [
+        14,
+        8
+       ]
+      }
+     ]
+    },
+    {
+     "id": "p1e1",
+     "side": "EAST",
+     "size": [
+      6,
+      6
+     ],
+     "labels": [
+      {
+       "text": "p1e1l",
+       "size": [
+        15,
+        8
+       ]
+      }
+     ]
+    },
+    {
+     "id": "p1s0",
+     "side": "SOUTH",
+     "size": [
+      6,
+      6
+     ],
+     "labels": [
+      {
+       "text": "p1s0l",
+       "size": [
+        18,
+        9
+       ]
+      }
+     ]
+    },
+    {
+     "id": "p1s1",
+     "side": "SOUTH",
+     "size": [
+      6,
+      6
+     ],
+     "labels": [
+      {
+       "text": "p1s1l",
+       "size": [
+        23,
+        9
+       ]
+      }
+     ]
+    },
+    {
+     "id": "p1w0",
+     "side": "WEST",
+     "size": [
+      6,
+      6
+     ],
+     "labels": [
+      {
+       "text": "p1w0l",
+       "size": [
+        10,
+        6
+       ]
+      }
+     ]
+    },
+    {
+     "id": "p1w1",
+     "side": "WEST",
+     "size": [
+      6,
+      6
+     ],
+     "labels": [
+      {
+       "text": "p1w1l",
+       "size": [
+        11,
+        6
+       ]
+      }
+     ]
+    },
+    {
+     "id": "p1e9",
+     "side": "EAST",
+     "size": [
+      6,
+      6
+     ],
+     "labels": [
+      {
+       "text": "p1e9a",
+       "size": [
+        10,
+        5
+       ]
+      },
+      {
+       "text": "p1e9b",
+       "size": [
+        12,
+        5
+       ]
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "P2",
+   "size": [
+    80,
+    30
+   ],
+   "props": [
+    [
+     "org.eclipse.elk.nodeSize.constraints",
+     "SizeConstraint",
+     1
+    ],
+    [
+     "org.eclipse.elk.portLabels.placement",
+     "PortLabelPlacement",
+     33
+    ]
+   ],
+   "ports": [
+    {
+     "id": "p2n0",
+     "side": "NORTH",
+     "size": [
+      6,
+      6
+     ],
+     "labels": [
+      {
+       "text": "p2n0l",
+       "size": [
+        25,
+        7
+       ]
+      }
+     ]
+    },
+    {
+     "id": "p2n1",
+     "side": "NORTH",
+     "size": [
+      6,
+      6
+     ],
+     "labels": [
+      {
+       "text": "p2n1l",
+       "size": [
+        28,
+        7
+       ]
+      }
+     ]
+    },
+    {
+     "id": "p2n2",
+     "side": "NORTH",
+     "size": [
+      6,
+      6
+     ],
+     "labels": [
+      {
+       "text": "p2n2l",
+       "size": [
+        31,
+        7
+       ]
+      }
+     ]
+    },
+    {
+     "id": "p2n3",
+     "side": "NORTH",
+     "size": [
+      6,
+      6
+     ],
+     "labels": [
+      {
+       "text": "p2n3l",
+       "size": [
+        34,
+        7
+       ]
+      }
+     ]
+    },
+    {
+     "id": "p2e0",
+     "side": "EAST",
+     "size": [
+      6,
+      6
+     ],
+     "labels": [
+      {
+       "text": "p2e0l",
+       "size": [
+        14,
+        8
+       ]
+      }
+     ]
+    },
+    {
+     "id": "p2s0",
+     "side": "SOUTH",
+     "size": [
+      6,
+      6
+     ],
+     "labels": [
+      {
+       "text": "p2s0l",
+       "size": [
+        25,
+        9
+       ]
+      }
+     ]
+    },
+    {
+     "id": "p2s1",
+     "side": "SOUTH",
+     "size": [
+      6,
+      6
+     ],
+     "labels": [
+      {
+       "text": "p2s1l",
+       "size": [
+        30,
+        9
+       ]
+      }
+     ]
+    },
+    {
+     "id": "p2s2",
+     "side": "SOUTH",
+     "size": [
+      6,
+      6
+     ],
+     "labels": [
+      {
+       "text": "p2s2l",
+       "size": [
+        35,
+        9
+       ]
+      }
+     ]
+    },
+    {
+     "id": "p2w0",
+     "side": "WEST",
+     "size": [
+      6,
+      6
+     ],
+     "labels": [
+      {
+       "text": "p2w0l",
+       "size": [
+        10,
+        6
+       ]
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "P3",
+   "size": [
+    30,
+    30
+   ],
+   "props": [
+    [
+     "org.eclipse.elk.nodeSize.constraints",
+     "SizeConstraint",
+     3
+    ],
+    [
+     "org.eclipse.elk.portLabels.placement",
+     "PortLabelPlacement",
+     17
+    ]
+   ],
+   "ports": [
+    {
+     "id": "p3n0",
+     "side": "NORTH",
+     "size": [
+      6,
+      6
+     ],
+     "labels": [
+      {
+       "text": "p3n0l",
+       "size": [
+        18,
+        7
+       ]
+      }
+     ]
+    },
+    {
+     "id": "p3n1",
+     "side": "NORTH",
+     "size": [
+      6,
+      6
+     ],
+     "labels": [
+      {
+       "text": "p3n1l",
+       "size": [
+        21,
+        7
+       ]
+      }
+     ]
+    },
+    {
+     "id": "p3e0",
+     "side": "EAST",
+     "size": [
+      6,
+      6
+     ],
+     "labels": [
+      {
+       "text": "p3e0l",
+       "size": [
+        14,
+        8
+       ]
+      }
+     ]
+    },
+    {
+     "id": "p3e1",
+     "side": "EAST",
+     "size": [
+      6,
+      6
+     ],
+     "labels": [
+      {
+       "text": "p3e1l",
+       "size": [
+        15,
+        8
+       ]
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "P4",
+   "size": [
+    30,
+    30
+   ],
+   "props": [
+    [
+     "org.eclipse.elk.nodeSize.constraints",
+     "SizeConstraint",
+     3
+    ],
+    [
+     "org.eclipse.elk.portLabels.placement",
+     "PortLabelPlacement",
+     9
+    ],
+    [
+     "org.eclipse.elk.nodeSize.options",
+     "SizeOptions",
+     33
+    ]
+   ],
+   "ports": [
+    {
+     "id": "p4n0",
+     "side": "NORTH",
+     "size": [
+      6,
+      6
+     ],
+     "labels": [
+      {
+       "text": "p4n0l",
+       "size": [
+        18,
+        7
+       ]
+      }
+     ]
+    },
+    {
+     "id": "p4n1",
+     "side": "NORTH",
+     "size": [
+      6,
+      6
+     ],
+     "labels": [
+      {
+       "text": "p4n1l",
+       "size": [
+        21,
+        7
+       ]
+      }
+     ]
+    },
+    {
+     "id": "p4e0",
+     "side": "EAST",
+     "size": [
+      6,
+      6
+     ],
+     "labels": [
+      {
+       "text": "p4e0l",
+       "size": [
+        14,
+        8
+       ]
+      }
+     ]
+    },
+    {
+     "id": "p4e1",
+     "side": "EAST",
+     "size": [
+      6,
+      6
+     ],
+     "labels": [
+      {
+       "text": "p4e1l",
+       "size": [
+        15,
+        8
+       ]
+      }
+     ]
+    },
+    {
+     "id": "p4s0",
+     "side": "SOUTH",
+     "size": [
+      6,
+      6
+     ],
+     "labels": [
+      {
+       "text": "p4s0l",
+       "size": [
+        18,
+        9
+       ]
+      }
+     ]
+    },
+    {
+     "id": "p4s1",
+     "side": "SOUTH",
+     "size": [
+      6,
+      6
+     ],
+     "labels": [
+      {
+       "text": "p4s1l",
+       "size": [
+        23,
+        9
+       ]
+      }
+     ]
+    },
+    {
+     "id": "p4w0",
+     "side": "WEST",
+     "size": [
+      6,
+      6
+     ],
+     "labels": [
+      {
+       "text": "p4w0l",
+       "size": [
+        10,
+        6
+       ]
+      }
+     ]
+    },
+    {
+     "id": "p4w1",
+     "side": "WEST",
+     "size": [
+      6,
+      6
+     ],
+     "labels": [
+      {
+       "text": "p4w1l",
+       "size": [
+        11,
+        6
+       ]
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "P5",
+   "size": [
+    30,
+    30
+   ],
+   "props": [
+    [
+     "org.eclipse.elk.nodeSize.constraints",
+     "SizeConstraint",
+     3
+    ],
+    [
+     "org.eclipse.elk.portLabels.placement",
+     "PortLabelPlacement",
+     37
+    ],
+    [
+     "org.eclipse.elk.nodeSize.options",
+     "SizeOptions",
+     32
+    ]
+   ],
+   "ports": [
+    {
+     "id": "p5n0",
+     "side": "NORTH",
+     "size": [
+      6,
+      6
+     ],
+     "labels": [
+      {
+       "text": "p5n0l",
+       "size": [
+        18,
+        7
+       ]
+      }
+     ]
+    },
+    {
+     "id": "p5n1",
+     "side": "NORTH",
+     "size": [
+      6,
+      6
+     ],
+     "labels": [
+      {
+       "text": "p5n1l",
+       "size": [
+        21,
+        7
+       ]
+      }
+     ]
+    },
+    {
+     "id": "p5e0",
+     "side": "EAST",
+     "size": [
+      6,
+      6
+     ],
+     "labels": [
+      {
+       "text": "p5e0l",
+       "size": [
+        14,
+        8
+       ]
+      }
+     ]
+    },
+    {
+     "id": "p5e1",
+     "side": "EAST",
+     "size": [
+      6,
+      6
+     ],
+     "labels": [
+      {
+       "text": "p5e1l",
+       "size": [
+        15,
+        8
+       ]
+      }
+     ]
+    },
+    {
+     "id": "p5s0",
+     "side": "SOUTH",
+     "size": [
+      6,
+      6
+     ],
+     "labels": [
+      {
+       "text": "p5s0l",
+       "size": [
+        18,
+        9
+       ]
+      }
+     ]
+    },
+    {
+     "id": "p5s1",
+     "side": "SOUTH",
+     "size": [
+      6,
+      6
+     ],
+     "labels": [
+      {
+       "text": "p5s1l",
+       "size": [
+        23,
+        9
+       ]
+      }
+     ]
+    },
+    {
+     "id": "p5w0",
+     "side": "WEST",
+     "size": [
+      6,
+      6
+     ],
+     "labels": [
+      {
+       "text": "p5w0l",
+       "size": [
+        10,
+        6
+       ]
+      }
+     ]
+    },
+    {
+     "id": "p5w1",
+     "side": "WEST",
+     "size": [
+      6,
+      6
+     ],
+     "labels": [
+      {
+       "text": "p5w1l",
+       "size": [
+        11,
+        6
+       ]
+      }
+     ]
+    },
+    {
+     "id": "p5w2",
+     "side": "WEST",
+     "size": [
+      6,
+      6
+     ],
+     "labels": [
+      {
+       "text": "p5w2l",
+       "size": [
+        12,
+        6
+       ]
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "P6",
+   "size": [
+    90,
+    30
+   ],
+   "props": [
+    [
+     "org.eclipse.elk.nodeSize.constraints",
+     "SizeConstraint",
+     0
+    ],
+    [
+     "org.eclipse.elk.portLabels.placement",
+     "PortLabelPlacement",
+     1
+    ]
+   ],
+   "ports": [
+    {
+     "id": "p6n0",
+     "side": "NORTH",
+     "size": [
+      6,
+      6
+     ],
+     "labels": [
+      {
+       "text": "p6n0l",
+       "size": [
+        35,
+        7
+       ]
+      }
+     ]
+    },
+    {
+     "id": "p6n1",
+     "side": "NORTH",
+     "size": [
+      6,
+      6
+     ],
+     "labels": [
+      {
+       "text": "p6n1l",
+       "size": [
+        38,
+        7
+       ]
+      }
+     ]
+    },
+    {
+     "id": "p6n2",
+     "side": "NORTH",
+     "size": [
+      6,
+      6
+     ],
+     "labels": [
+      {
+       "text": "p6n2l",
+       "size": [
+        41,
+        7
+       ]
+      }
+     ]
+    },
+    {
+     "id": "p6e0",
+     "side": "EAST",
+     "size": [
+      6,
+      6
+     ],
+     "labels": [
+      {
+       "text": "p6e0l",
+       "size": [
+        14,
+        8
+       ]
+      }
+     ]
+    },
+    {
+     "id": "p6s0",
+     "side": "SOUTH",
+     "size": [
+      6,
+      6
+     ],
+     "labels": [
+      {
+       "text": "p6s0l",
+       "size": [
+        35,
+        9
+       ]
+      }
+     ]
+    },
+    {
+     "id": "p6s1",
+     "side": "SOUTH",
+     "size": [
+      6,
+      6
+     ],
+     "labels": [
+      {
+       "text": "p6s1l",
+       "size": [
+        40,
+        9
+       ]
+      }
+     ]
+    },
+    {
+     "id": "p6s2",
+     "side": "SOUTH",
+     "size": [
+      6,
+      6
+     ],
+     "labels": [
+      {
+       "text": "p6s2l",
+       "size": [
+        45,
+        9
+       ]
+      }
+     ]
+    },
+    {
+     "id": "p6s3",
+     "side": "SOUTH",
+     "size": [
+      6,
+      6
+     ],
+     "labels": [
+      {
+       "text": "p6s3l",
+       "size": [
+        50,
+        9
+       ]
+      }
+     ]
+    },
+    {
+     "id": "p6w0",
+     "side": "WEST",
+     "size": [
+      6,
+      6
+     ],
+     "labels": [
+      {
+       "text": "p6w0l",
+       "size": [
+        10,
+        6
+       ]
+      }
+     ]
+    }
+   ]
+  }
+ ],
+ "edges": [
+  {
+   "id": "e1",
+   "source": "p1e0",
+   "target": "p2w0"
+  },
+  {
+   "id": "e2",
+   "source": "p1n0",
+   "target": "p5w0"
+  }
+ ],
+ "layers": [
+  [
+   "P1"
+  ],
+  [
+   "P2",
+   "P3",
+   "P4",
+   "P5",
+   "P6"
+  ]
+ ],
+ "run": [
+  "LabelAndNodeSizeProcessor",
+  "Dump:sized",
+  "InnermostNodeMarginCalculator",
+  "Dump:margins"
+ ]
+}
