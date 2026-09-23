@@ -84,6 +84,9 @@ struct PanelScenario {
 /// and the capture; the scene builds and configures the panel.
 @MainActor
 protocol PanelScene: AnyObject {
+    /// Computes the scene's inputs (parse a document, build a model) before
+    /// the panel is built; `bench-panel` does not time it.
+    func prepare(_ scenario: PanelScenario, styleSheet: StyleSheet) throws
     /// Builds the panel and applies the scenario's state.
     func build(_ scenario: PanelScenario, styleSheet: StyleSheet) throws -> NSView
     /// Puts the panel in the harness window (default: the window's content
@@ -102,6 +105,7 @@ protocol PanelScene: AnyObject {
 }
 
 extension PanelScene {
+    func prepare(_ scenario: PanelScenario, styleSheet: StyleSheet) throws {}
     func host(_ panel: NSView, in window: NSWindow, scenario: PanelScenario) {
         panel.frame = NSRect(x: 0, y: 0, width: scenario.width, height: scenario.height)
         window.contentView = panel
@@ -187,6 +191,7 @@ final class PanelCaptureSession: NSObject, NSApplicationDelegate {
         let (styleSheet, appearance) = try panelStyleSheet(scenario)
         NSApp.appearance = appearance
         scene = try PanelScenes.make(scenario.panel)
+        try scene.prepare(scenario, styleSheet: styleSheet)
         let panel = try scene.build(scenario, styleSheet: styleSheet)
         if let own = scene.ownWindow(panel) {
             window = own
@@ -288,6 +293,7 @@ enum PanelModelDump {
             let (styleSheet, appearance) = try panelStyleSheet(scenario)
             NSApp.appearance = appearance
             let scene = try PanelScenes.make(scenario.panel)
+            try scene.prepare(scenario, styleSheet: styleSheet)
             let panel = try scene.build(scenario, styleSheet: styleSheet)
             panel.frame = NSRect(x: 0, y: 0, width: scenario.width, height: scenario.height)
             panel.layoutSubtreeIfNeeded()
