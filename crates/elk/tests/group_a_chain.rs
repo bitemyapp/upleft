@@ -24,8 +24,10 @@ use upleft_elk::org::eclipse::elk::alg::layered::intermediate::{
     long_edge_splitter::LongEdgeSplitter, port_list_sorter::PortListSorter, reversed_edge_restorer::ReversedEdgeRestorer,
     sort_by_input_model_processor::SortByInputModelProcessor,
 };
+use upleft_elk::org::eclipse::elk::alg::layered::intermediate::preserveorder::model_order_node_comparator::ModelOrderNodeComparator;
 use upleft_elk::org::eclipse::elk::alg::layered::options::{
-    in_layer_constraint::InLayerConstraint, layer_constraint::LayerConstraint, ordering_strategy::OrderingStrategy,
+    group_order_strategy::GroupOrderStrategy, in_layer_constraint::InLayerConstraint, layer_constraint::LayerConstraint,
+    long_edge_ordering_strategy::LongEdgeOrderingStrategy, ordering_strategy::OrderingStrategy,
 };
 use upleft_elk::org::eclipse::elk::alg::layered::p1cycles::greedy_cycle_breaker::GreedyCycleBreaker;
 use upleft_elk::org::eclipse::elk::alg::layered::p2layers::network_simplex_layerer::NetworkSimplexLayerer;
@@ -97,6 +99,36 @@ fn dump(lg: &LGraphArena, g: LGraphId, title: &str) -> String {
                     pn(lg, tgt)
                 );
             }
+        }
+    }
+    s
+}
+
+/// Pairwise `ModelOrderNodeComparator` results per layer (the lab's `moc`
+/// stage): all pairs `(i, j)` with `i < j`, then neighbours in reverse, with
+/// one comparator per layer so the transitive caches are exercised.
+fn moc_dump(lg: &LGraphArena, graph: LGraphId) -> String {
+    let mut s = "== moc\n".to_string();
+    for strategy in [OrderingStrategy::NODES_AND_EDGES, OrderingStrategy::PREFER_EDGES] {
+        let layers: Vec<Vec<LNodeId>> = lg[graph].layers.iter().map(|&l| lg[l].nodes.clone()).collect();
+        let mut prev_idx: i64 = -1;
+        for layer in &layers {
+            let previous = if prev_idx == -1 { layers[0].clone() } else { layers[prev_idx as usize].clone() };
+            let mut comp = ModelOrderNodeComparator::new(graph, previous, strategy, LongEdgeOrderingStrategy::EQUAL, GroupOrderStrategy::ONLY_WITHIN_GROUP, false);
+            let mut line = String::new();
+            if layer.len() > 1 {
+                for i in 0..layer.len() - 1 {
+                    for j in i + 1..layer.len() {
+                        line += &format!("{} ", comp.compare(lg, layer[i], layer[j]));
+                    }
+                }
+                for i in (1..layer.len()).rev() {
+                    line += &format!("{} ", comp.compare(lg, layer[i], layer[i - 1]));
+                }
+            }
+            s += &line;
+            s += "\n";
+            prev_idx += 1;
         }
     }
     s
@@ -206,6 +238,9 @@ fn chain(seed: i64, n: i64, e: i64) -> Vec<(String, String)> {
     for mut step in steps {
         step.process(&mut lg, graph, &mut BasicProgressMonitor::new());
         out.push((step.name().to_string(), dump(&lg, graph, step.name())));
+        if step.name() == "SortByInputModelProcessor" {
+            out.push(("moc".to_string(), moc_dump(&lg, graph)));
+        }
     }
     out
 }
