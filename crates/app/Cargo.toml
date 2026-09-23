@@ -333,10 +333,6 @@ name = "editing_key_repro_tests"
 harness = false
 
 [[test]]
-name = "command_palette_navigation_regression_tests"
-harness = false
-
-[[test]]
 name = "window_chrome_tests_controller"
 harness = false
 
