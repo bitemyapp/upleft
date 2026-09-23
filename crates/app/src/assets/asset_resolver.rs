@@ -26,8 +26,10 @@
 //!   bridged from the document's `NSString` (a non-ASCII document) and
 //!   Character-wise when it is a native string (probed: `"a/\u{200D}b"`
 //!   contains `"/"` bridged, not native). A destination parsed at the use site
-//!   is a substring of the document; one taken from a link reference
-//!   definition, or an image's own source, is the parser's native string.
+//!   is a substring of the document; an image's own source is the parser's
+//!   native string; a link reference definition's destination is native
+//!   unless it is the definition's untrimmed body (see
+//!   `definition_destination_is_bridged`).
 
 use std::sync::Arc;
 
@@ -104,11 +106,14 @@ impl AssetMetadata {
     }
 }
 
+/// `AssetProbe.metadata`'s type (`@Sendable (URL) -> AssetMetadata?`).
+pub type AssetMetadataProvider = dyn Fn(&FileUrl) -> Option<AssetMetadata> + Send + Sync;
+
 /// `AssetProbe`: file access is injected. Asset analysis itself does not
 /// touch the disk.
 #[derive(Clone)]
 pub struct AssetProbe {
-    metadata: Arc<dyn Fn(&FileUrl) -> Option<AssetMetadata> + Send + Sync>,
+    metadata: Arc<AssetMetadataProvider>,
 }
 
 impl AssetProbe {
@@ -245,8 +250,28 @@ impl AssetReferenceParser {
             range: definition_range,
             title: definition.title.clone(),
             reference_identifier: Some(identifier.to_owned()),
-            bridged: false,
+            bridged: Self::definition_destination_is_bridged(definition, document.utf16.as_slice()),
         }
+    }
+
+    /// Whether MarkdownCore's `destinationAndTitle(_:)` handed back the
+    /// definition's body itself, a substring of the document's `NSString`
+    /// (bridged when the document is not ASCII). It does exactly when nothing
+    /// was trimmed and no title followed, that is when the destination is the
+    /// whole rest of the line after `]:`. Otherwise its `String(…)` and
+    /// trimming made a native string.
+    fn definition_destination_is_bridged(definition: &LinkReference, text: &[u16]) -> bool {
+        if !swift::bridges_substrings(text) {
+            return false;
+        }
+        let destination = swift::ns::utf16(&definition.destination);
+        let upper = definition.range.upper_bound();
+        let start = upper - destination.len() as isize;
+        start - 2 >= definition.range.location
+            && upper <= text.length()
+            && text[start as usize..upper as usize] == destination[..]
+            && text.character_at(start - 1) == 0x3A
+            && text.character_at(start - 2) == 0x5D
     }
 
     fn definition_destination_range(definition: &LinkReference, text: &[u16]) -> Option<NSRange> {
@@ -349,7 +374,6 @@ impl AssetReferenceParser {
             cursor += 1;
         }
         let destination_start = cursor;
-        let destination_end;
         if cursor < raw.length() && raw.character_at(cursor) == 0x3C {
             cursor += 1;
             let angle_destination_start = cursor;
@@ -368,30 +392,29 @@ impl AssetReferenceParser {
                 reference_identifier: None,
                 bridged,
             });
-        } else {
-            let mut nesting = 0;
-            while cursor < raw.length() {
-                let character = raw.character_at(cursor);
-                if character == 0x5C {
-                    cursor += 2;
-                    continue;
-                }
-                if character == 0x28 {
-                    nesting += 1;
-                }
-                if character == 0x29 {
-                    if nesting == 0 {
-                        break;
-                    }
-                    nesting -= 1;
-                }
-                if nesting == 0 && (character == 0x20 || character == 0x09) {
+        }
+        let mut nesting = 0;
+        while cursor < raw.length() {
+            let character = raw.character_at(cursor);
+            if character == 0x5C {
+                cursor += 2;
+                continue;
+            }
+            if character == 0x28 {
+                nesting += 1;
+            }
+            if character == 0x29 {
+                if nesting == 0 {
                     break;
                 }
-                cursor += 1;
+                nesting -= 1;
             }
-            destination_end = cursor;
+            if nesting == 0 && (character == 0x20 || character == 0x09) {
+                break;
+            }
+            cursor += 1;
         }
+        let destination_end = cursor;
         let source = raw.substring(NSRange::new(destination_start, destination_end - destination_start));
         if source.is_empty() {
             return None;
