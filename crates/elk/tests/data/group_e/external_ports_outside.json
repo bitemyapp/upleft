@@ -1,0 +1,366 @@
+{
+ "graph": {
+  "props": [
+   [
+    "graphProperties",
+    "GraphProperties",
+    [
+     "EXTERNAL_PORTS"
+    ]
+   ],
+   [
+    "org.eclipse.elk.portLabels.placement",
+    "PortLabelPlacement",
+    5
+   ],
+   [
+    "org.eclipse.elk.portLabels.treatAsGroup",
+    "Bool",
+    false
+   ]
+  ]
+ },
+ "nodes": [
+  {
+   "id": "XN",
+   "size": [
+    10,
+    10
+   ],
+   "props": [
+    [
+     "extPort.side",
+     "PortSide",
+     "NORTH"
+    ],
+    [
+     "org.eclipse.elk.spacing.labelLabel",
+     "Double",
+     2.0
+    ],
+    [
+     "org.eclipse.elk.spacing.labelPortHorizontal",
+     "Double",
+     3.0
+    ],
+    [
+     "org.eclipse.elk.spacing.labelPortVertical",
+     "Double",
+     4.0
+    ]
+   ],
+   "ports": [
+    {
+     "id": "XNp",
+     "side": "SOUTH",
+     "size": [
+      2,
+      2
+     ],
+     "labels": [
+      {
+       "text": "XNl1",
+       "size": [
+        12,
+        5
+       ]
+      },
+      {
+       "text": "XNl2",
+       "size": [
+        8,
+        7
+       ]
+      }
+     ],
+     "pos": [
+      4,
+      4
+     ]
+    }
+   ],
+   "type": "EXTERNAL_PORT"
+  },
+  {
+   "id": "XS",
+   "size": [
+    10,
+    10
+   ],
+   "props": [
+    [
+     "extPort.side",
+     "PortSide",
+     "SOUTH"
+    ],
+    [
+     "org.eclipse.elk.spacing.labelLabel",
+     "Double",
+     2.0
+    ],
+    [
+     "org.eclipse.elk.spacing.labelPortHorizontal",
+     "Double",
+     3.0
+    ],
+    [
+     "org.eclipse.elk.spacing.labelPortVertical",
+     "Double",
+     4.0
+    ]
+   ],
+   "ports": [
+    {
+     "id": "XSp",
+     "side": "NORTH",
+     "size": [
+      2,
+      2
+     ],
+     "labels": [
+      {
+       "text": "XSl1",
+       "size": [
+        12,
+        5
+       ]
+      },
+      {
+       "text": "XSl2",
+       "size": [
+        8,
+        7
+       ]
+      }
+     ],
+     "pos": [
+      4,
+      4
+     ]
+    }
+   ],
+   "type": "EXTERNAL_PORT"
+  },
+  {
+   "id": "XE",
+   "size": [
+    10,
+    10
+   ],
+   "props": [
+    [
+     "extPort.side",
+     "PortSide",
+     "EAST"
+    ],
+    [
+     "org.eclipse.elk.spacing.labelLabel",
+     "Double",
+     2.0
+    ],
+    [
+     "org.eclipse.elk.spacing.labelPortHorizontal",
+     "Double",
+     3.0
+    ],
+    [
+     "org.eclipse.elk.spacing.labelPortVertical",
+     "Double",
+     4.0
+    ]
+   ],
+   "ports": [
+    {
+     "id": "XEp",
+     "side": "WEST",
+     "size": [
+      2,
+      2
+     ],
+     "labels": [
+      {
+       "text": "XEl1",
+       "size": [
+        12,
+        5
+       ]
+      },
+      {
+       "text": "XEl2",
+       "size": [
+        8,
+        7
+       ]
+      }
+     ],
+     "pos": [
+      4,
+      4
+     ]
+    }
+   ],
+   "type": "EXTERNAL_PORT"
+  },
+  {
+   "id": "XW",
+   "size": [
+    10,
+    10
+   ],
+   "props": [
+    [
+     "extPort.side",
+     "PortSide",
+     "WEST"
+    ],
+    [
+     "org.eclipse.elk.spacing.labelLabel",
+     "Double",
+     2.0
+    ],
+    [
+     "org.eclipse.elk.spacing.labelPortHorizontal",
+     "Double",
+     3.0
+    ],
+    [
+     "org.eclipse.elk.spacing.labelPortVertical",
+     "Double",
+     4.0
+    ]
+   ],
+   "ports": [
+    {
+     "id": "XWp",
+     "side": "EAST",
+     "size": [
+      2,
+      2
+     ],
+     "labels": [
+      {
+       "text": "XWl1",
+       "size": [
+        12,
+        5
+       ]
+      }
+     ],
+     "pos": [
+      4,
+      4
+     ]
+    }
+   ],
+   "type": "EXTERNAL_PORT"
+  },
+  {
+   "id": "XE2",
+   "size": [
+    10,
+    10
+   ],
+   "props": [
+    [
+     "extPort.side",
+     "PortSide",
+     "EAST"
+    ],
+    [
+     "org.eclipse.elk.spacing.labelLabel",
+     "Double",
+     2.0
+    ],
+    [
+     "org.eclipse.elk.spacing.labelPortHorizontal",
+     "Double",
+     3.0
+    ],
+    [
+     "org.eclipse.elk.spacing.labelPortVertical",
+     "Double",
+     4.0
+    ]
+   ],
+   "ports": [
+    {
+     "id": "XE2p",
+     "side": "WEST",
+     "size": [
+      2,
+      2
+     ],
+     "labels": [
+      {
+       "text": "XE2l1",
+       "size": [
+        12,
+        5
+       ]
+      },
+      {
+       "text": "XE2l2",
+       "size": [
+        8,
+        7
+       ]
+      }
+     ],
+     "pos": [
+      4,
+      4
+     ]
+    }
+   ],
+   "type": "EXTERNAL_PORT"
+  },
+  {
+   "id": "Y",
+   "size": [
+    20,
+    20
+   ],
+   "ports": [
+    {
+     "id": "yw",
+     "side": "WEST",
+     "size": [
+      2,
+      2
+     ]
+    },
+    {
+     "id": "ye",
+     "side": "EAST",
+     "size": [
+      2,
+      2
+     ]
+    }
+   ]
+  }
+ ],
+ "edges": [
+  {
+   "id": "x1",
+   "source": "XEp",
+   "target": "yw"
+  }
+ ],
+ "layers": [
+  [
+   "XN",
+   "XS",
+   "XE",
+   "XW",
+   "XE2"
+  ],
+  [
+   "Y"
+  ]
+ ],
+ "run": [
+  "LabelAndNodeSizeProcessor",
+  "Dump:sized"
+ ]
+}

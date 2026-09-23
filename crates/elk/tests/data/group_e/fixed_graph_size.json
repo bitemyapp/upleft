@@ -1,0 +1,274 @@
+{
+ "graph": {
+  "props": [
+   [
+    "org.eclipse.elk.nodeSize.fixedGraphSize",
+    "Bool",
+    true
+   ],
+   [
+    "org.eclipse.elk.spacing.portPort",
+    "Double",
+    3.0
+   ]
+  ]
+ },
+ "nodes": [
+  {
+   "id": "G1",
+   "size": [
+    50,
+    10
+   ],
+   "props": [
+    [
+     "org.eclipse.elk.nodeSize.constraints",
+     "SizeConstraint",
+     3
+    ]
+   ],
+   "ports": [
+    {
+     "id": "g1n0",
+     "side": "NORTH",
+     "size": [
+      4,
+      4
+     ],
+     "labels": [
+      {
+       "text": "g1n0l",
+       "size": [
+        10,
+        6
+       ],
+       "pos": [
+        -8,
+        -7
+       ]
+      }
+     ],
+     "props": [
+      [
+       "org.eclipse.elk.port.borderOffset",
+       "Double",
+       -3.0
+      ]
+     ]
+    },
+    {
+     "id": "g1n1",
+     "side": "NORTH",
+     "size": [
+      4,
+      4
+     ],
+     "labels": [
+      {
+       "text": "g1n1l",
+       "size": [
+        6,
+        6
+       ],
+       "pos": [
+        2,
+        1
+       ]
+      }
+     ]
+    },
+    {
+     "id": "g1e0",
+     "side": "EAST",
+     "size": [
+      4,
+      4
+     ],
+     "labels": [
+      {
+       "text": "g1e0l",
+       "size": [
+        7,
+        5
+       ],
+       "pos": [
+        -9,
+        2
+       ]
+      },
+      {
+       "text": "g1e0m",
+       "size": [
+        3,
+        3
+       ],
+       "pos": [
+        5,
+        -4
+       ]
+      }
+     ],
+     "props": [
+      [
+       "org.eclipse.elk.port.borderOffset",
+       "Double",
+       1.0
+      ]
+     ]
+    },
+    {
+     "id": "g1s0",
+     "side": "SOUTH",
+     "size": [
+      4,
+      4
+     ],
+     "labels": [
+      {
+       "text": "g1s0l",
+       "size": [
+        5,
+        8
+       ],
+       "pos": [
+        1,
+        -6
+       ]
+      }
+     ]
+    },
+    {
+     "id": "g1w0",
+     "side": "WEST",
+     "size": [
+      4,
+      4
+     ],
+     "labels": [
+      {
+       "text": "g1w0l",
+       "size": [
+        8,
+        2
+       ],
+       "pos": [
+        3,
+        1
+       ]
+      }
+     ],
+     "props": [
+      [
+       "org.eclipse.elk.port.borderOffset",
+       "Double",
+       -2.5
+      ]
+     ]
+    }
+   ]
+  },
+  {
+   "id": "G2",
+   "size": [
+    10,
+    50
+   ],
+   "props": [
+    [
+     "org.eclipse.elk.nodeSize.constraints",
+     "SizeConstraint",
+     3
+    ],
+    [
+     "org.eclipse.elk.nodeSize.options",
+     "SizeOptions",
+     256
+    ]
+   ],
+   "ports": [
+    {
+     "id": "g2e0",
+     "side": "EAST",
+     "size": [
+      4,
+      4
+     ],
+     "labels": [
+      {
+       "text": "g2e0l",
+       "size": [
+        7,
+        5
+       ],
+       "pos": [
+        -9,
+        2
+       ]
+      }
+     ],
+     "props": [
+      [
+       "org.eclipse.elk.port.borderOffset",
+       "Double",
+       -4.0
+      ]
+     ]
+    },
+    {
+     "id": "g2w0",
+     "side": "WEST",
+     "size": [
+      4,
+      4
+     ],
+     "labels": [
+      {
+       "text": "g2w0l",
+       "size": [
+        8,
+        2
+       ],
+       "pos": [
+        3,
+        1
+       ]
+      }
+     ]
+    },
+    {
+     "id": "g2s0",
+     "side": "SOUTH",
+     "size": [
+      4,
+      4
+     ],
+     "labels": [
+      {
+       "text": "g2s0l",
+       "size": [
+        2,
+        9
+       ],
+       "pos": [
+        0,
+        -8
+       ]
+      }
+     ]
+    }
+   ]
+  }
+ ],
+ "layers": [
+  [
+   "G1",
+   "G2"
+  ]
+ ],
+ "run": [
+  "LabelAndNodeSizeProcessor",
+  "Dump:sized",
+  "InnermostNodeMarginCalculator",
+  "Dump:margins"
+ ]
+}
