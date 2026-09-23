@@ -33,7 +33,7 @@ use std::sync::Arc;
 use block2::RcBlock;
 use objc2::rc::{Retained, Weak as ObjcWeak};
 use objc2::runtime::{AnyObject, Bool, NSObjectProtocol, ProtocolObject};
-use objc2::{AllocAnyThread, DefinedClass, MainThreadMarker, MainThreadOnly, Message, define_class, msg_send};
+use objc2::{AllocAnyThread, DefinedClass, MainThreadMarker, MainThreadOnly, define_class, msg_send};
 use objc2_app_kit::{
     NSAccessibility, NSAccessibilityCustomAction, NSAccessibilityElement, NSAttributedStringNSStringDrawing, NSBezierPath,
     NSClipView, NSColor, NSDragOperation, NSDraggingInfo, NSEvent, NSEventPhase, NSFont,
@@ -47,7 +47,7 @@ use objc2_app_kit::{
 use objc2_core_foundation::{CGFloat, CGPoint, CGRect, CGSize};
 use objc2_core_graphics::CGContext;
 use objc2_foundation::{
-    NSArray, NSAttributedString, NSCharacterSet, NSDictionary, NSMutableAttributedString, NSNotification,
+    NSArray, NSAttributedString, NSDictionary, NSNotification,
     NSNotificationCenter, NSNumber, NSOperationQueue, NSPoint, NSRect, NSSize, NSString, NSValue,
 };
 use upleft_core::{BlockContent, DirtySet, NSRange, ParsedDocument, PathToken, TextEdit, ZoomLevel};
@@ -61,11 +61,9 @@ use crate::core_types::ChangeKind;
 use crate::engine::decoration_engine::DecorationEngine;
 use crate::engine::display_map::{DisplayMap, DisplaySubstitution, ParagraphIndex, RangeSet, SourceEditProjection};
 use crate::engine::elision_plan::ElisionPlan;
-use crate::engine::hard_wrap_reflow::{self, HardWrapReflow};
 use crate::engine::marker_policy::MarkerPolicy;
 use crate::engine::render_metrics;
 use crate::fragments::fragment_base::{CheckboxPulse, FragmentContext, cf_absolute_time_get_current};
-use crate::fragments::footnote_reference_display::FootnoteReferenceDisplay;
 use crate::fragments::inline_math_display::InlineMathDisplay;
 use crate::motion::{self, SpringDriver, SpringScalar};
 use crate::render_contracts::{
@@ -74,6 +72,7 @@ use crate::render_contracts::{
 };
 use crate::swift_compat::{smax, smin};
 use crate::theme::style_sheet::StyleSheet;
+use crate::view::base_display_map::{self, BaseDisplayMapInputs, WordJoinerRuns};
 use crate::view::fragment_provider::FragmentProvider;
 use crate::view::gutter_rail_view::GutterRailView;
 use crate::view::markdown_content_storage::MarkdownContentStorage;
@@ -296,7 +295,7 @@ pub struct MarkdownTextViewIvars {
     pub(crate) composing_paragraph: Cell<Option<NSRange>>,
     update_generation: Cell<isize>,
     gutter_rail: RefCell<ObjcWeak<GutterRailView>>,
-    word_joiner_runs: RefCell<HashMap<isize, Retained<NSString>>>,
+    word_joiner_runs: RefCell<WordJoinerRuns>,
 
     scroll_spring: Cell<SpringScalar>,
     scroll_spring_is_active: Cell<bool>,
@@ -740,7 +739,7 @@ impl MarkdownTextView {
             composing_paragraph: Cell::new(None),
             update_generation: Cell::new(0),
             gutter_rail: RefCell::new(ObjcWeak::default()),
-            word_joiner_runs: RefCell::new(HashMap::new()),
+            word_joiner_runs: RefCell::new(WordJoinerRuns::default()),
             scroll_spring: Cell::new(SpringScalar::with_duration(motion::SPRING_DELIBERATE)),
             scroll_spring_is_active: Cell::new(false),
             scroll_spring_clip: RefCell::new(ObjcWeak::default()),
@@ -905,13 +904,6 @@ impl MarkdownTextView {
         &self.ivars().fragment_context
     }
 
-    pub(crate) fn content_storage(&self) -> &MarkdownContentStorage {
-        &self.ivars().content_storage
-    }
-
-    pub(crate) fn markdown_layout_manager(&self) -> &NSTextLayoutManager {
-        &self.ivars().markdown_layout_manager
-    }
 
     pub fn paragraph_index(&self) -> ParagraphIndex {
         self.ivars().paragraph_index.borrow().clone()
@@ -1878,255 +1870,47 @@ impl MarkdownTextView {
         *self.ivars().base_layout_map.borrow_mut() = layout;
     }
 
+    /// `rebuildBaseDisplayMap(document:)`, through the shared producer in
+    /// `view::base_display_map`.
     fn rebuild_base_display_map(&self, document: &ParsedDocument) {
-        let policy = self.effective_policy();
-        let focus = self.source_focus().range();
-        let mut hidden = self.ivars().engine.borrow().hidden_ranges(document, None, &[]);
-        if let Some(focus) = focus {
-            hidden.retain(|range| !(upleft_core::ns_range::ns_intersection_range(*range, focus).length > 0));
-        }
-        let line_break_substitutions =
-            if policy.renders_fragments { Self::safe_html_line_break_substitutions(document, focus) } else { Vec::new() };
-        if !line_break_substitutions.is_empty() {
-            let exclusions: Vec<NSRange> = line_break_substitutions.iter().map(|sub| sub.source_range).collect();
-            hidden = Self::removing_overlaps(&hidden, &exclusions);
-        }
-
-        let math_ranges: Vec<NSRange> = if policy.renders_fragments {
-            InlineMathDisplay::ranges(document)
-                .into_iter()
-                .filter(|range| match focus {
-                    None => true,
-                    Some(focus) => upleft_core::ns_range::ns_intersection_range(*range, focus).length == 0,
-                })
-                .collect()
-        } else {
-            Vec::new()
-        };
-        hidden = Self::removing_overlaps(&hidden, &math_ranges);
+        let Some(storage) = self.text_storage() else { return };
+        let paragraph_index = self.paragraph_index();
         let style_sheet = self.style_sheet();
-        let math_substitutions = if policy.renders_fragments {
-            InlineMathDisplay::substitutions(document, &style_sheet, focus)
-        } else {
-            Vec::new()
+        let maps = {
+            let engine = self.ivars().engine.borrow();
+            let inputs = BaseDisplayMapInputs {
+                document,
+                engine: &engine,
+                effective_policy: self.effective_policy(),
+                source_focus: self.source_focus(),
+                reflow_hard_wrapped_paragraphs: self.ivars().configuration.borrow().reflow_hard_wrapped_paragraphs,
+                style_sheet: &style_sheet,
+                storage: &storage,
+                paragraph_index: &paragraph_index,
+            };
+            base_display_map::rebuild_base_display_map(&inputs, &mut self.ivars().word_joiner_runs.borrow_mut())
         };
-
-        let footnote_references: Vec<NSRange> = if policy.hides_inline_markers {
-            FootnoteReferenceDisplay::references(document)
-                .into_iter()
-                .filter(|reference| match focus {
-                    None => true,
-                    Some(focus) => upleft_core::ns_range::ns_intersection_range(reference.range, focus).length == 0,
-                })
-                .map(|reference| reference.range)
-                .collect()
-        } else {
-            Vec::new()
-        };
-        hidden = Self::removing_overlaps(&hidden, &footnote_references);
-        let footnote_substitutions = if policy.hides_inline_markers {
-            FootnoteReferenceDisplay::substitutions(document, &style_sheet, focus)
-        } else {
-            Vec::new()
-        };
-
-        *self.ivars().base_hidden_ranges.borrow_mut() = hidden.clone();
-        let source: Retained<NSString> = self.text_storage().map_or_else(|| NSString::from_str(""), |storage| storage.string());
-        let plan = if self.ivars().configuration.borrow().reflow_hard_wrapped_paragraphs
-            && Self::contains_hard_wrapped_paragraph(document, &source)
-        {
-            let units: Vec<u16> = (0..source.length()).map(|index| source.characterAtIndex(index)).collect();
-            HardWrapReflow::plan(document, &units, &hidden, &[], true)
-        } else {
-            hard_wrap_reflow::Plan { ranges: Vec::new(), substitutions: Vec::new() }
-        };
-        *self.ivars().hard_wrap_ranges.borrow_mut() = plan.ranges;
-        let hard_wrap_substitutions: Vec<DisplaySubstitution> =
-            plan.substitutions.into_iter().filter(|sub| sub.is_hard_wrap_reflow).collect();
-        *self.ivars().hard_wrap_substitutions.borrow_mut() = hard_wrap_substitutions.clone();
-        let mut substitutions: Vec<DisplaySubstitution> = hidden.iter().map(|range| DisplaySubstitution::hide(*range)).collect();
-        substitutions.extend(math_substitutions);
-        substitutions.extend(footnote_substitutions);
-        substitutions.extend(line_break_substitutions);
-        substitutions.extend(hard_wrap_substitutions);
-        let base_display_map = DisplayMap::new(self.paragraph_index(), substitutions);
-        let base_layout_map = self.layout_display_map(&base_display_map);
-        *self.ivars().base_display_map.borrow_mut() = base_display_map;
-        *self.ivars().base_layout_map.borrow_mut() = base_layout_map.clone();
-        *self.ivars().display_map.borrow_mut() = base_layout_map;
+        let ivars = self.ivars();
+        *ivars.base_hidden_ranges.borrow_mut() = maps.base_hidden_ranges;
+        *ivars.hard_wrap_ranges.borrow_mut() = maps.hard_wrap_ranges;
+        *ivars.hard_wrap_substitutions.borrow_mut() = maps.hard_wrap_substitutions;
+        *ivars.base_display_map.borrow_mut() = maps.base_display_map;
+        *ivars.base_layout_map.borrow_mut() = maps.base_layout_map.clone();
+        *ivars.display_map.borrow_mut() = maps.base_layout_map;
     }
 
-    /// Hard-wrap planning is only meaningful when a paragraph contains a
-    /// physical line break.
-    fn contains_hard_wrapped_paragraph(document: &ParsedDocument, text: &NSString) -> bool {
-        let mut found = false;
-        let newlines = NSCharacterSet::newlineCharacterSet();
-        document.root.walk(&mut |block| {
-            if found || !matches!(block.content, BlockContent::Paragraph) || !(block.range.length > 0) {
-                return;
-            }
-            found = text
-                .rangeOfCharacterFromSet_options_range(
-                    &newlines,
-                    objc2_foundation::NSStringCompareOptions(0),
-                    ns(block.range),
-                )
-                .location
-                != objc2_foundation::NSNotFound as usize;
-        });
-        found
-    }
-
-    /// Presents safe README structural tags with source-preserving display
-    /// replacements.
-    fn safe_html_line_break_substitutions(document: &ParsedDocument, excluded_range: Option<NSRange>) -> Vec<DisplaySubstitution> {
-        use upleft_core::safe_html::SafeHTMLKind as Kind;
-        let mut substitutions: Vec<DisplaySubstitution> = Vec::new();
-        document.root.walk(&mut |block| {
-            let Some(html) = block.safe_html.as_ref() else { return };
-            if !html.is_safe {
-                return;
-            }
-            for annotation in &html.annotations {
-                let (replacement_range, replacement_text) = match &annotation.kind {
-                    Kind::LineBreak => {
-                        if !(annotation.range.length > 0) {
-                            continue;
-                        }
-                        (annotation.range, "\n")
-                    }
-                    Kind::Details { open } => {
-                        let Some(opening) = annotation.tag_ranges.first().copied() else { continue };
-                        if !(opening.length > 0) {
-                            continue;
-                        }
-                        (opening, if *open { "▾" } else { "▸" })
-                    }
-                    Kind::TableRow => {
-                        let Some(closing) = annotation.tag_ranges.last().copied() else { continue };
-                        if !(closing.length > 0) {
-                            continue;
-                        }
-                        (closing, "\n")
-                    }
-                    _ => continue,
-                };
-                if let Some(excluded) = excluded_range
-                    && upleft_core::ns_range::ns_intersection_range(replacement_range, excluded).length > 0
-                {
-                    continue;
-                }
-                let text = format!(
-                    "{replacement_text}{}",
-                    "\u{200B}".repeat((replacement_range.length - 1).max(0) as usize)
-                );
-                let replacement = NSAttributedString::from_nsstring(&NSString::from_str(&text));
-                substitutions.push(DisplaySubstitution::new(
-                    replacement_range,
-                    replacement_range.length,
-                    Some(replacement),
-                    false,
-                    false,
-                    true,
-                ));
-            }
-        });
-        substitutions.sort_by(|a, b| a.source_range.location.cmp(&b.source_range.location));
-        substitutions
-    }
-
-    /// Removes ranges intersecting an ordered exclusion set in one merge pass.
-    fn removing_overlaps(ranges: &[NSRange], exclusions: &[NSRange]) -> Vec<NSRange> {
-        if ranges.is_empty() || exclusions.is_empty() {
-            return ranges.to_vec();
-        }
-        let mut ordered_ranges = ranges.to_vec();
-        ordered_ranges.sort_by(|a, b| a.location.cmp(&b.location));
-        let mut ordered_exclusions = exclusions.to_vec();
-        ordered_exclusions.sort_by(|a, b| a.location.cmp(&b.location));
-        let mut kept = Vec::with_capacity(ordered_ranges.len());
-        let mut exclusion_index = 0;
-        for range in ordered_ranges {
-            while exclusion_index < ordered_exclusions.len()
-                && ordered_exclusions[exclusion_index].upper_bound() <= range.location
-            {
-                exclusion_index += 1;
-            }
-            let overlaps = exclusion_index < ordered_exclusions.len()
-                && ordered_exclusions[exclusion_index].location < range.upper_bound()
-                && ordered_exclusions[exclusion_index].upper_bound() > range.location;
-            if !overlaps {
-                kept.push(range);
-            }
-        }
-        kept
-    }
-
-    /// Hidden runs become zero-width word joiners in layout space.
+    /// `layoutDisplayMap(from:)`.
     fn layout_display_map(&self, logical: &DisplayMap) -> DisplayMap {
-        let substitutions: Vec<DisplaySubstitution> =
-            logical.substitutions().iter().map(|sub| self.layout_substitution(sub)).collect();
-        DisplayMap::new(self.paragraph_index(), substitutions)
-    }
-
-    fn layout_substitution(&self, substitution: &DisplaySubstitution) -> DisplaySubstitution {
-        let object_replacement = (!substitution.is_hidden)
-            .then_some(())
-            .and(substitution.replacement.as_ref())
-            .filter(|replacement| {
-                (replacement.length() as isize) < substitution.source_range.length
-                    && attribute_value(replacement, keys::attachment(), 0).is_some()
-            });
-        let Some(replacement) = object_replacement else {
-            if !substitution.is_hidden {
-                return substitution.clone();
-            }
-            let length = substitution.source_range.length;
-            return DisplaySubstitution::new(
-                substitution.source_range,
-                length,
-                Some(self.layout_filler(length, substitution.source_range.location)),
-                true,
-                false,
-                true,
-            );
+        let storage: Retained<NSAttributedString> = match self.text_storage() {
+            Some(storage) => Retained::into_super(Retained::into_super(storage)),
+            None => NSAttributedString::new(),
         };
-        let filler_count = substitution.source_range.length - replacement.length() as isize;
-        let layout_replacement =
-            NSMutableAttributedString::initWithAttributedString(NSMutableAttributedString::alloc(), replacement);
-        layout_replacement.appendAttributedString(&self.layout_filler(filler_count, substitution.source_range.location));
-        DisplaySubstitution::new(
-            substitution.source_range,
-            substitution.source_range.length,
-            Some(Retained::into_super(layout_replacement)),
-            false,
-            false,
-            true,
+        base_display_map::layout_display_map(
+            logical,
+            &self.paragraph_index(),
+            &storage,
+            &mut self.ivars().word_joiner_runs.borrow_mut(),
         )
-    }
-
-    /// A run of `length` word joiners carrying the storage's own attributes
-    /// at `offset`.
-    fn layout_filler(&self, length: isize, offset: isize) -> Retained<NSAttributedString> {
-        let joiners = self.word_joiners(length);
-        let Some(storage) = self.text_storage().filter(|storage| offset >= 0 && offset < storage.length() as isize) else {
-            return NSAttributedString::from_nsstring(&joiners);
-        };
-        let styled = NSMutableAttributedString::initWithAttributedString(
-            NSMutableAttributedString::alloc(),
-            &storage.attributedSubstringFromRange(objc2_foundation::NSRange::new(offset as usize, 1)),
-        );
-        styled.replaceCharactersInRange_withString(objc2_foundation::NSRange::new(0, 1), &joiners);
-        Retained::into_super(styled)
-    }
-
-    fn word_joiners(&self, length: isize) -> Retained<NSString> {
-        if let Some(cached) = self.ivars().word_joiner_runs.borrow().get(&length) {
-            return cached.clone();
-        }
-        let run = NSString::from_str(&"\u{2060}".repeat(length.max(0) as usize));
-        self.ivars().word_joiner_runs.borrow_mut().insert(length, run.clone());
-        run
     }
 
     /// Source Focus changes typography and local material, never characters.
@@ -2222,7 +2006,7 @@ impl MarkdownTextView {
             style.setLineBreakMode(NSLineBreakMode::ByWordWrapping);
             style.setParagraphSpacingBefore(spacing.before);
             style.setParagraphSpacing(spacing.after);
-            unsafe { style.setTabStops(Some(&tab_stops)) };
+            style.setTabStops(Some(&tab_stops));
             style.setDefaultTabInterval(character_width * 4.0);
             let immutable: Retained<NSParagraphStyle> = unsafe { msg_send![&*style, copy] };
             style_cache.push((spacing, immutable.clone()));
@@ -3339,14 +3123,12 @@ impl MarkdownTextView {
                 Bool::NO
             },
         );
-        unsafe {
-            layout_manager.enumerateTextSegmentsInRange_type_options_usingBlock(
-                &range,
-                objc2_app_kit::NSTextLayoutManagerSegmentType::Standard,
-                objc2_app_kit::NSTextLayoutManagerSegmentOptions(0),
-                &block,
-            )
-        };
+        layout_manager.enumerateTextSegmentsInRange_type_options_usingBlock(
+            &range,
+            objc2_app_kit::NSTextLayoutManagerSegmentType::Standard,
+            objc2_app_kit::NSTextLayoutManagerSegmentOptions(0),
+            &block,
+        );
         let mut rect = found.get()?;
         let origin = self.textContainerOrigin();
         rect.origin.x += origin.x;
@@ -3654,14 +3436,12 @@ impl MarkdownTextView {
                 Bool::YES
             },
         );
-        unsafe {
-            layout_manager.enumerateTextSegmentsInRange_type_options_usingBlock(
-                &text_range,
-                objc2_app_kit::NSTextLayoutManagerSegmentType::Standard,
-                objc2_app_kit::NSTextLayoutManagerSegmentOptions(0),
-                &block,
-            )
-        };
+        layout_manager.enumerateTextSegmentsInRange_type_options_usingBlock(
+            &text_range,
+            objc2_app_kit::NSTextLayoutManagerSegmentType::Standard,
+            objc2_app_kit::NSTextLayoutManagerSegmentOptions(0),
+            &block,
+        );
         if !(path.elementCount() > 0) {
             return;
         }

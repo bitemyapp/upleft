@@ -27,7 +27,7 @@ pub fn from_ns_range(range: objc2_foundation::NSRange) -> NSRange {
 }
 
 /// AppKit's `NSAttributedString.Key` constants the engine writes.
-pub(crate) mod keys {
+pub mod keys {
     use objc2_app_kit as appkit;
     use objc2_foundation::NSString;
 
@@ -53,4 +53,5 @@ pub(crate) mod keys {
     key!(underline_color, NSUnderlineColorAttributeName);
     key!(link, NSLinkAttributeName);
     key!(baseline_offset, NSBaselineOffsetAttributeName);
+    key!(attachment, NSAttachmentAttributeName);
 }

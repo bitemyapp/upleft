@@ -537,6 +537,18 @@ dependencies = [
 ]
 
 [[package]]
+name = "upleft-bench"
+version = "0.1.0"
+dependencies = [
+ "objc2",
+ "objc2-app-kit",
+ "objc2-foundation",
+ "upleft-core",
+ "upleft-markup",
+ "upleft-render",
+]
+
+[[package]]
 name = "upleft-cmark-gfm-sys"
 version = "0.1.0"
 dependencies = [

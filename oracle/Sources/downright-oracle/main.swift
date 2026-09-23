@@ -8,6 +8,7 @@ import MarkdownRender
 //   downright-oracle markup   <file.md> <out.json>
 //   downright-oracle decorate <file.md> <out.json> [--mode M] [--theme NAME] [--dark]
 //   downright-oracle incremental <file.md> <out.json> [--mode M] [--theme NAME] [--dark]
+//   downright-oracle displaymap  <file.md> <out.json> [--mode M] [--theme NAME] [--dark]
 //   downright-oracle render   <file.md> <out.png> [--layout out.json] [--mode M]
 //                             [--theme NAME] [--dark] [--width W] [--height H]
 //   downright-oracle stylesheet   <file.md> <out.json> [--theme NAME] [--dark]
@@ -117,6 +118,10 @@ do {
     case "incremental":
         let text = try String(contentsOf: input, encoding: .utf8)
         try write(IncrementalDump.run(text: text, flags: flags), to: output)
+
+    case "displaymap":
+        let text = try String(contentsOf: input, encoding: .utf8)
+        try write(DisplayMapDump.run(text: text, flags: flags), to: output)
 
     case "math":
         try MathDump.image(input, to: output, theme: flags.theme, dark: flags.dark)

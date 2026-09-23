@@ -1,28 +1,33 @@
 //! Port of `ClipboardSemanticHTML.swift`: a deliberately small, safe
-//! Markdown-to-HTML projection for the system clipboard.
+//! Markdown-to-HTML projection for the system clipboard. Unsupported Markdown
+//! and raw HTML remain escaped text.
 //!
-//! Swift walks `Character`s (extended grapheme clusters); this port does the
-//! same through `upleft_core::swift_text`. `hasPrefix` and `range(of:)` are
-//! only ever asked about ASCII markers here, so a byte search agrees with
-//! Swift's canonical-equivalence comparison except where a marker is followed
-//! by a combining mark that joins its grapheme — then Swift's `Character`
-//! walk keeps the cluster whole and so does this one (unverified against the
-//! oracle; the clipboard is not a conformance output).
+//! Swift's `String` operations are reproduced with `upleft_core::swift_text`:
+//! prefix, drop and index arithmetic walk Characters, `trimmingCharacters`,
+//! `replacingOccurrences` and `components(separatedBy:)` are Foundation's.
+//! `Substring.range(of:)` is matched Character by Character, which agrees with
+//! Foundation's non-literal search for every ASCII needle this file searches
+//! for except next to a composed sequence that is not also one grapheme.
 
-use upleft_core::swift_text::{self, graphemes};
-
-pub struct ClipboardSemanticHTML;
+use objc2_foundation::{NSString, NSURL};
+use upleft_core::swift_text::{self, CharSet};
 
 struct ListEntry {
-    indent: usize,
+    indent: isize,
     kind: &'static str,
     text: String,
 }
 
+pub struct ClipboardSemanticHTML;
+
 impl ClipboardSemanticHTML {
     pub fn render(markdown: &str) -> String {
-        let normalized = markdown.replace("\r\n", "\n").replace('\r', "\n");
-        let lines: Vec<&str> = normalized.split('\n').collect();
+        let normalized = swift_text::replacing_occurrences(
+            &swift_text::replacing_occurrences(markdown, "\r\n", "\n"),
+            "\r",
+            "\n",
+        );
+        let lines = swift_text::components_separated_by(&normalized, "\n");
         let mut output: Vec<String> = Vec::new();
         let mut index = 0usize;
         let mut in_fence = false;
@@ -46,7 +51,7 @@ impl ClipboardSemanticHTML {
             output.push(list_html(entries));
             entries.clear();
         }
-        fn fence_html(language: &str, lines: &[String]) -> String {
+        fn fence(language: &str, lines: &[String]) -> String {
             let class = if language.is_empty() {
                 String::new()
             } else {
@@ -56,23 +61,23 @@ impl ClipboardSemanticHTML {
         }
 
         while index < lines.len() {
-            let line = lines[index];
+            let line = &lines[index];
             if in_fence {
                 let trimmed = swift_text::trim_whitespaces(line);
-                if trimmed.starts_with("```") || trimmed.starts_with("~~~") {
-                    output.push(fence_html(&fence_language, &fence_lines));
+                if swift_text::has_prefix(trimmed, "```") || swift_text::has_prefix(trimmed, "~~~") {
+                    output.push(fence(&fence_language, &fence_lines));
                     in_fence = false;
                     fence_language.clear();
                     fence_lines.clear();
                 } else {
-                    fence_lines.push(line.to_owned());
+                    fence_lines.push(line.clone());
                 }
                 index += 1;
                 continue;
             }
 
             let trimmed = swift_text::trim_whitespaces(line);
-            if trimmed.starts_with("```") || trimmed.starts_with("~~~") {
+            if swift_text::has_prefix(trimmed, "```") || swift_text::has_prefix(trimmed, "~~~") {
                 flush_paragraph(&mut paragraph, &mut output);
                 flush_list(&mut list_entries, &mut output);
                 in_fence = true;
@@ -96,15 +101,15 @@ impl ClipboardSemanticHTML {
             }
 
             if index + 1 < lines.len()
-                && is_table_delimiter(lines[index + 1])
+                && is_table_delimiter(&lines[index + 1])
                 && let Some(header) = table_cells(line)
             {
                 flush_paragraph(&mut paragraph, &mut output);
                 flush_list(&mut list_entries, &mut output);
-                let mut rows = vec![header];
+                let mut rows: Vec<Vec<String>> = vec![header];
                 index += 2;
                 while index < lines.len() {
-                    let Some(row) = table_cells(lines[index]) else { break };
+                    let Some(row) = table_cells(&lines[index]) else { break };
                     rows.push(row);
                     index += 1;
                 }
@@ -120,11 +125,11 @@ impl ClipboardSemanticHTML {
             }
 
             flush_list(&mut list_entries, &mut output);
-            paragraph.push(line.to_owned());
+            paragraph.push(line.clone());
             index += 1;
         }
         if in_fence {
-            output.push(fence_html(&fence_language, &fence_lines));
+            output.push(fence(&fence_language, &fence_lines));
         }
         flush_paragraph(&mut paragraph, &mut output);
         flush_list(&mut list_entries, &mut output);
@@ -133,7 +138,7 @@ impl ClipboardSemanticHTML {
 }
 
 fn heading_parts(line: &str) -> Option<(usize, String)> {
-    let hashes = graphemes(line).take_while(|g| *g == "#").count();
+    let hashes = swift_text::graphemes(line).take_while(|g| *g == "#").count();
     if !(1..=6).contains(&hashes) || swift_text::first(swift_text::drop_first(line, hashes)) != Some(" ") {
         return None;
     }
@@ -141,36 +146,43 @@ fn heading_parts(line: &str) -> Option<(usize, String)> {
 }
 
 fn list_part(line: &str) -> Option<ListEntry> {
-    let leading: Vec<&str> = graphemes(line).take_while(|g| *g == " " || *g == "\t").collect();
-    let indent = leading.iter().map(|g| if *g == "\t" { 4 } else { 1 }).sum();
-    let content = swift_text::drop_first(line, leading.len());
-    if ["- ", "* ", "+ "].iter().any(|marker| has_prefix(content, marker)) {
+    let mut indent = 0isize;
+    let mut consumed = 0usize;
+    for g in swift_text::graphemes(line) {
+        match g {
+            " " => indent += 1,
+            "\t" => indent += 4,
+            _ => break,
+        }
+        consumed += 1;
+    }
+    let content = swift_text::drop_first(line, consumed);
+    if ["- ", "* ", "+ "].iter().any(|marker| swift_text::has_prefix(content, marker)) {
         return Some(ListEntry { indent, kind: "ul", text: swift_text::drop_first(content, 2).to_owned() });
     }
-    let digits = graphemes(content).take_while(|g| swift_text::is_number(g)).count();
-    if digits == 0 || !has_prefix(swift_text::drop_first(content, digits), ". ") {
+    let mut digits = 0usize;
+    for g in swift_text::graphemes(content) {
+        if !swift_text::is_number(g) {
+            break;
+        }
+        digits += 1;
+    }
+    if digits == 0 || !swift_text::has_prefix(swift_text::drop_first(content, digits), ". ") {
         return None;
     }
     Some(ListEntry { indent, kind: "ol", text: swift_text::drop_first(content, digits + 2).to_owned() })
 }
 
-/// `String.hasPrefix` for an ASCII prefix: the prefix's graphemes must be the
-/// string's leading graphemes.
-fn has_prefix(s: &str, prefix: &str) -> bool {
-    let count = graphemes(prefix).count();
-    swift_text::prefix(s, count) == prefix
-}
-
 fn list_html(entries: &[ListEntry]) -> String {
-    fn render_level(entries: &[ListEntry], index: &mut usize, indent: usize) -> String {
+    fn render_level(entries: &[ListEntry], index: &mut usize, indent: isize) -> String {
         let mut html = String::new();
         while *index < entries.len() && entries[*index].indent == indent {
             let kind = entries[*index].kind;
             html += &format!("<{kind}>");
             while *index < entries.len() && entries[*index].indent == indent && entries[*index].kind == kind {
-                let text = inline(&entries[*index].text);
+                let entry = &entries[*index];
                 *index += 1;
-                html += &format!("<li>{text}");
+                html += &format!("<li>{}", inline(&entry.text));
                 if *index < entries.len() && entries[*index].indent > indent {
                     let deeper = entries[*index].indent;
                     html += &render_level(entries, index, deeper);
@@ -181,36 +193,26 @@ fn list_html(entries: &[ListEntry]) -> String {
         }
         html
     }
-    let mut index = 0;
+    let mut index = 0usize;
     render_level(entries, &mut index, entries.first().map_or(0, |entry| entry.indent))
 }
 
 fn table_cells(line: &str) -> Option<Vec<String>> {
-    if !line.contains('|') {
+    if !swift_text::contains_bridged(line, "|") {
         return None;
     }
-    let mut cells: Vec<String> = split_graphemes(line, "|").into_iter().map(|cell| swift_text::trim_whitespaces(&cell).to_owned()).collect();
+    let mut cells: Vec<String> = swift_text::split(line, '|', usize::MAX, false)
+        .into_iter()
+        .map(|cell| swift_text::trim_whitespaces(cell).to_owned())
+        .collect();
     let trimmed = swift_text::trim_whitespaces(line);
-    if has_prefix(trimmed, "|") && !cells.is_empty() {
+    if swift_text::has_prefix(trimmed, "|") && !cells.is_empty() {
         cells.remove(0);
     }
-    if swift_text::last(trimmed) == Some("|") && !cells.is_empty() {
+    if swift_text::has_suffix(trimmed, "|") && !cells.is_empty() {
         cells.pop();
     }
     if cells.len() > 1 { Some(cells) } else { None }
-}
-
-/// `split(separator:omittingEmptySubsequences: false)` on `Character`s.
-fn split_graphemes(line: &str, separator: &str) -> Vec<String> {
-    let mut parts = vec![String::new()];
-    for g in graphemes(line) {
-        if g == separator {
-            parts.push(String::new());
-        } else {
-            parts.last_mut().expect("at least one part").push_str(g);
-        }
-    }
-    parts
 }
 
 fn is_table_delimiter(line: &str) -> bool {
@@ -220,7 +222,7 @@ fn is_table_delimiter(line: &str) -> bool {
     }
     cells.iter().all(|cell| {
         let value = swift_text::trim_whitespaces(cell);
-        swift_text::count(value) >= 3 && graphemes(value).all(|g| g == "-" || g == ":")
+        swift_text::count(value) >= 3 && swift_text::graphemes(value).all(|g| g == "-" || g == ":")
     })
 }
 
@@ -232,88 +234,85 @@ fn table_html(rows: &[Vec<String>]) -> String {
         .map(|row| {
             let mut cells = row.clone();
             cells.extend(std::iter::repeat_n(String::new(), header.len().saturating_sub(row.len())));
-            let cells: String = cells.iter().take(header.len()).map(|cell| format!("<td>{}</td>", inline(cell))).collect();
+            let cells: String = cells[..header.len()]
+                .iter()
+                .map(|cell| format!("<td>{}</td>", inline(cell)))
+                .collect();
             format!("<tr>{cells}</tr>")
         })
         .collect();
-    let body = if body.is_empty() { String::new() } else { format!("<tbody>{body}</tbody>") };
-    format!("<table><thead><tr>{head}</tr></thead>{body}</table>")
+    format!(
+        "<table><thead><tr>{head}</tr></thead>{}</table>",
+        if body.is_empty() { String::new() } else { format!("<tbody>{body}</tbody>") }
+    )
 }
 
-/// Grapheme-indexed view of a string, standing in for `String.Index` walks.
-struct Clusters<'a> {
-    items: Vec<&'a str>,
+/// The first grapheme index at or after `from` where `needle` (a sequence of
+/// graphemes) starts, and the index just past it.
+fn find_graphemes(characters: &[&str], from: usize, needle: &[&str]) -> Option<(usize, usize)> {
+    if needle.is_empty() || from > characters.len() {
+        return None;
+    }
+    (from..characters.len().saturating_sub(needle.len() - 1))
+        .find(|&start| characters[start..start + needle.len()] == *needle)
+        .map(|start| (start, start + needle.len()))
 }
 
-impl<'a> Clusters<'a> {
-    fn new(s: &'a str) -> Clusters<'a> {
-        Clusters { items: graphemes(s).collect() }
-    }
-
-    fn has_prefix_at(&self, index: usize, prefix: &str) -> bool {
-        let wanted: Vec<&str> = graphemes(prefix).collect();
-        index + wanted.len() <= self.items.len() && self.items[index..index + wanted.len()] == wanted[..]
-    }
-
-    fn find(&self, from: usize, needle: &str) -> Option<usize> {
-        let wanted: Vec<&str> = graphemes(needle).collect();
-        (from..self.items.len()).find(|&start| {
-            start + wanted.len() <= self.items.len() && self.items[start..start + wanted.len()] == wanted[..]
-        })
-    }
-
-    fn slice(&self, start: usize, end: usize) -> String {
-        self.items[start..end].concat()
-    }
+fn has_prefix_at(characters: &[&str], index: usize, prefix: &[&str]) -> bool {
+    characters.len() >= index + prefix.len() && characters[index..index + prefix.len()] == *prefix
 }
 
 fn inline(input: &str) -> String {
-    let clusters = Clusters::new(input);
-    let count = clusters.items.len();
+    let characters: Vec<&str> = swift_text::graphemes(input).collect();
+    let end = characters.len();
     let mut output = String::new();
     let mut index = 0usize;
-    while index < count {
-        let current = clusters.items[index];
-        if current == "<" {
+    while index < end {
+        let character = characters[index];
+        if character == "<" {
+            // Raw HTML is source text from the document, not trusted markup.
             output += "&lt;";
             index += 1;
             continue;
         }
-        if current == "\\" && index + 1 < count {
-            output += &escape(clusters.items[index + 1]);
-            index += 2;
-            continue;
-        }
-        if clusters.has_prefix_at(index, "**") || clusters.has_prefix_at(index, "__") {
-            let marker = clusters.slice(index, index + 2);
-            if let Some(end) = clusters.find(index + 2, &marker) {
-                output += &format!("<strong>{}</strong>", inline(&clusters.slice(index + 2, end)));
-                index = end + 2;
+        if character == "\\" {
+            let next = index + 1;
+            if next < end {
+                output += &escape(characters[next]);
+                index = next + 1;
                 continue;
             }
         }
-        if clusters.has_prefix_at(index, "~~")
-            && let Some(end) = clusters.find(index + 2, "~~")
+        if has_prefix_at(&characters, index, &["*", "*"]) || has_prefix_at(&characters, index, &["_", "_"]) {
+            let marker = [characters[index], characters[index + 1]];
+            if let Some((found, after)) = find_graphemes(&characters, index + 2, &marker) {
+                output += &format!("<strong>{}</strong>", inline(&characters[index + 2..found].concat()));
+                index = after;
+                continue;
+            }
+        }
+        if has_prefix_at(&characters, index, &["~", "~"])
+            && let Some((found, after)) = find_graphemes(&characters, index + 2, &["~", "~"])
         {
-            output += &format!("<del>{}</del>", inline(&clusters.slice(index + 2, end)));
-            index = end + 2;
+            output += &format!("<del>{}</del>", inline(&characters[index + 2..found].concat()));
+            index = after;
             continue;
         }
-        if current == "`"
-            && let Some(end) = clusters.find(index + 1, "`")
+        if character == "`"
+            && let Some(close) = (index + 1..end).find(|&i| characters[i] == "`")
         {
-            output += &format!("<code>{}</code>", escape(&clusters.slice(index + 1, end)));
-            index = end + 1;
+            output += &format!("<code>{}</code>", escape(&characters[index + 1..close].concat()));
+            index = close + 1;
             continue;
         }
-        if clusters.has_prefix_at(index, "![")
-            && let Some(close) = clusters.find(index + 2, "]")
-            && clusters.has_prefix_at(close + 1, "(")
+        if has_prefix_at(&characters, index, &["!", "["])
+            && let Some(close) = (index + 2..end).find(|&i| characters[i] == "]")
+            && has_prefix_at(&characters, close + 1, &["("])
         {
             let destination_start = close + 1;
-            if let Some(destination_end) = clusters.find(destination_start, ")") {
-                let alt = clusters.slice(index + 2, close);
-                let destination = clusters.slice(destination_start + 1, destination_end);
+            if let Some(destination_end) = (destination_start..end).find(|&i| characters[i] == ")") {
+                let alt = characters[index + 2..close].concat();
+                let destination = characters[destination_start + 1..destination_end].concat();
                 let source = escape_attribute(&destination);
                 if !source.is_empty() {
                     output += &format!("<img src=\"{source}\" alt=\"{}\">", escape_attribute(&alt));
@@ -324,38 +323,44 @@ fn inline(input: &str) -> String {
                 continue;
             }
         }
-        if current == "["
-            && let Some(close) = clusters.find(index + 1, "]")
-            && clusters.has_prefix_at(close + 1, "(")
+        if character == "["
+            && let Some(close) = (index + 1..end).find(|&i| characters[i] == "]")
+            && has_prefix_at(&characters, close + 1, &["("])
         {
             let destination_start = close + 1;
-            if let Some(destination_end) = clusters.find(destination_start, ")") {
-                let label = clusters.slice(index + 1, close);
-                let destination = clusters.slice(destination_start + 1, destination_end);
+            if let Some(destination_end) = (destination_start..end).find(|&i| characters[i] == ")") {
+                let label = characters[index + 1..close].concat();
+                let destination = characters[destination_start + 1..destination_end].concat();
                 output += &format!("<a href=\"{}\">{}</a>", escape_attribute(&destination), inline(&label));
                 index = destination_end + 1;
                 continue;
             }
         }
-        output += &escape(current);
+        output += &escape(character);
         index += 1;
     }
-    output.replace("  \n", "<br>\n")
+    swift_text::replacing_occurrences(&output, "  \n", "<br>\n")
 }
 
 fn escape(value: &str) -> String {
-    value.replace('&', "&amp;").replace('<', "&lt;").replace('>', "&gt;").replace('"', "&quot;")
+    let value = swift_text::replacing_occurrences(value, "&", "&amp;");
+    let value = swift_text::replacing_occurrences(&value, "<", "&lt;");
+    let value = swift_text::replacing_occurrences(&value, ">", "&gt;");
+    swift_text::replacing_occurrences(&value, "\"", "&quot;")
 }
 
 fn escape_attribute(value: &str) -> String {
-    let trimmed = swift_text::trim_whitespaces_and_newlines(value);
-    let Some(url) = objc2_foundation::NSURL::URLWithString(&objc2_foundation::NSString::from_str(trimmed)) else {
+    let trimmed = swift_text::trimming(value, CharSet::WhitespacesAndNewlines);
+    // `URL(string:)`: nil for a string Foundation cannot make a URL of.
+    let Some(url) = NSURL::URLWithString(&NSString::from_str(trimmed)) else {
         return String::new();
     };
-    let scheme = url.scheme().map(|scheme| scheme.to_string());
-    let allowed = match &scheme {
+    let allowed = match url.scheme() {
         None => true,
-        Some(scheme) => ["http", "https", "mailto", "file"].contains(&swift_text::lowercased(scheme).as_str()),
+        Some(scheme) => {
+            let scheme = swift_text::lowercased(&scheme.to_string());
+            ["http", "https", "mailto", "file"].contains(&scheme.as_str())
+        }
     };
     if !allowed {
         return String::new();

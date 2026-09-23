@@ -5,6 +5,7 @@
 //! `MarkdownContainerView` recognises a `DensityGutterView` accessory by
 //! its Objective-C class name, as the Swift does by type.
 
+pub mod base_display_map;
 pub mod footnote_margin_view;
 pub mod fragment_provider;
 pub mod gutter_rail_view;

@@ -1483,8 +1483,8 @@ impl MarkdownTextView {
     }
 
     fn drop_for(&self, sender: &ProtocolObject<dyn NSDraggingInfo>) -> DocumentDrop {
-        let pasteboard = unsafe { sender.draggingPasteboard() };
-        let location = unsafe { sender.draggingLocation() };
+        let pasteboard = sender.draggingPasteboard();
+        let location = sender.draggingLocation();
         DocumentDrop::new(pasteboard, self.source_offset_at(self.convertPoint_fromView(location, None)))
     }
 
@@ -1665,6 +1665,6 @@ fn first_substring_range(string: &NSString, range: NSRange, options: NSStringEnu
             unsafe { stop.as_ptr().write(objc2::runtime::Bool::YES) };
         },
     );
-    unsafe { string.enumerateSubstringsInRange_options_usingBlock(ns(range), options, &block) };
+    string.enumerateSubstringsInRange_options_usingBlock(ns(range), options, &block);
     found.get()
 }

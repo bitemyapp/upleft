@@ -1,15 +1,12 @@
 //! Port of `Fragments/FootnoteReferenceDisplay.swift`: turns `[^12]` into one
 //! semantic superscript without touching source bytes.
-//!
-//! Ported with the view layer because `MarkdownTextView` builds its base
-//! display map from it and `FootnoteMarginView` draws from it.
 
 use objc2::runtime::AnyObject;
-use objc2_foundation::{NSNumber, NSString};
-use upleft_core::{InlineKind, NSRange, ParsedDocument};
+use objc2_foundation::{NSAttributedString, NSDictionary, NSNumber, NSString};
+use upleft_core::{InlineKind, NSRange, ParsedDocument, swift_text};
 
-use crate::appkit_compat::{attributed_string, keys};
 use crate::engine::display_map::DisplaySubstitution;
+use crate::engine::keys;
 use crate::render_contracts::attribute_keys;
 use crate::theme::style_sheet::StyleSheet;
 
@@ -33,9 +30,7 @@ impl FootnoteReferenceDisplay {
                 });
             }
         });
-        // Swift's `sorted(by:)` is not stable in general, but references come
-        // out of the walk already ascending, so equal keys never swap.
-        result.sort_by(|a, b| a.range.location.cmp(&b.range.location));
+        result.sort_by_key(|reference| reference.range.location);
         result
     }
 
@@ -44,7 +39,7 @@ impl FootnoteReferenceDisplay {
         style_sheet: &StyleSheet,
         excluded_range: Option<NSRange>,
     ) -> Vec<DisplaySubstitution> {
-        Self::references(document)
+        FootnoteReferenceDisplay::references(document)
             .into_iter()
             .filter_map(|reference| {
                 if let Some(excluded) = excluded_range
@@ -57,43 +52,50 @@ impl FootnoteReferenceDisplay {
                 let font = body.fontWithSize(body.pointSize() * 0.62);
                 let offset = NSNumber::new_f64(body.xHeight() * 0.42);
                 let identifier = NSString::from_str(&reference.identifier);
-                // SAFETY: AppKit exports the key as an immutable global.
-                let baseline = unsafe { objc2_app_kit::NSBaselineOffsetAttributeName };
-                let string = attributed_string(
-                    &value,
+                let attributes = NSDictionary::from_slices(
                     &[
-                        (keys::font(), &*font as &AnyObject),
-                        (keys::foreground_color(), &*style_sheet.accent),
-                        (baseline, &*offset),
-                        (attribute_keys::dr_reference(), &*identifier),
+                        keys::font(),
+                        keys::foreground_color(),
+                        keys::baseline_offset(),
+                        attribute_keys::dr_reference(),
+                    ],
+                    &[
+                        font.as_ref() as &AnyObject,
+                        style_sheet.accent.as_ref(),
+                        offset.as_ref(),
+                        identifier.as_ref(),
                     ],
                 );
+                // SAFETY: attribute keys to attribute values.
+                let string =
+                    unsafe { NSAttributedString::new_with_attributes(&NSString::from_str(&value), &attributes) };
                 Some(DisplaySubstitution::replace(reference.range, string))
             })
             .collect()
     }
 }
 
+/// Maps each Character through the superscript table; an empty identifier
+/// becomes a bullet.
 fn superscript(identifier: &str) -> String {
-    // Swift maps each `Character`; every mapped key is a single scalar, and
-    // any other character passes through unchanged.
-    let converted: String = identifier
-        .chars()
-        .map(|c| match c {
-            '0' => '⁰',
-            '1' => '¹',
-            '2' => '²',
-            '3' => '³',
-            '4' => '⁴',
-            '5' => '⁵',
-            '6' => '⁶',
-            '7' => '⁷',
-            '8' => '⁸',
-            '9' => '⁹',
-            '+' => '⁺',
-            '-' => '⁻',
+    let mut converted = String::with_capacity(identifier.len() * 2);
+    for character in swift_text::graphemes(identifier) {
+        let mapped = match character {
+            "0" => "⁰",
+            "1" => "¹",
+            "2" => "²",
+            "3" => "³",
+            "4" => "⁴",
+            "5" => "⁵",
+            "6" => "⁶",
+            "7" => "⁷",
+            "8" => "⁸",
+            "9" => "⁹",
+            "+" => "⁺",
+            "-" => "⁻",
             other => other,
-        })
-        .collect();
+        };
+        converted.push_str(mapped);
+    }
     if converted.is_empty() { "•".to_owned() } else { converted }
 }

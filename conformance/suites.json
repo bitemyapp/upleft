@@ -128,6 +128,14 @@
       ]
     },
     {
+      "name": "displaymap",
+      "command": "displaymap",
+      "output": "json",
+      "variants": [
+        ["--mode", "live"]
+      ]
+    },
+    {
       "name": "render",
       "command": "render",
       "output": "png",
