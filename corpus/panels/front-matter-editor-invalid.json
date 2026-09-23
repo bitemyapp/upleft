@@ -1,0 +1,1 @@
+{"panel": "FrontMatterEditorView", "theme": "Paper Light", "width": 336, "height": 480, "state": {"text": "---\ntitle: Demo\nauthor: Downright\ntags: one\nstatus: draft\n---\n\n# Body\n", "edits": [{"key": "tags", "value": "abc", "kind": 2}, {"key": "status", "value": "maybe", "kind": 1}]}}
