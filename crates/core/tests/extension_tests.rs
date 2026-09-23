@@ -16,7 +16,7 @@ mod front_matter_tests {
     use upleft_core::parser::MarkdownParser;
 
     #[test]
-    #[ignore = "needs parser (upleft-markup)"]
+
     fn parses_scalars_quotes_and_inline_lists() {
         let doc = MarkdownParser::parse("---\ntitle: Release Plan\nowner: \"Ada Lovelace\"\ntags: [alpha, beta]\ncount: 3\n---\n\n# Body");
         let front = doc.front_matter.as_ref();
@@ -32,7 +32,7 @@ mod front_matter_tests {
     }
 
     #[test]
-    #[ignore = "needs parser (upleft-markup)"]
+
     fn parses_block_sequences() {
         let doc = MarkdownParser::parse("---\ntags:\n  - one\n  - two\nx: y\n---\n\nBody\n");
         assert_eq!(doc.front_matter.as_ref().and_then(|f| f.get("tags")), Some("one, two"));
@@ -42,7 +42,7 @@ mod front_matter_tests {
     /// The reason front matter is stripped before cmark runs: left in place it
     /// parses as a thematic break plus a setext H2.
     #[test]
-    #[ignore = "needs parser (upleft-markup)"]
+
     fn body_after_front_matter_parses_with_correct_ranges() {
         let text = "---\ntitle: X\n---\n\n# Heading\n\nBody.\n";
         let doc = MarkdownParser::parse(text);
@@ -60,7 +60,7 @@ mod front_matter_tests {
     }
 
     #[test]
-    #[ignore = "needs parser (upleft-markup)"]
+
     fn only_matches_on_the_very_first_line() {
         assert!(MarkdownParser::parse("\n---\ntitle: X\n---\n").front_matter.is_none());
         assert!(MarkdownParser::parse("# H\n\n---\ntitle: X\n---\n").front_matter.is_none());
@@ -68,7 +68,7 @@ mod front_matter_tests {
     }
 
     #[test]
-    #[ignore = "needs parser (upleft-markup)"]
+
     fn ignores_what_it_cannot_parse_rather_than_failing() {
         let doc = MarkdownParser::parse("---\nnested:\n  deep:\n    value: 1\nok: yes\n---\n\nBody\n");
         assert!(doc.front_matter.is_some());
@@ -76,7 +76,7 @@ mod front_matter_tests {
     }
 
     #[test]
-    #[ignore = "needs parser (upleft-markup)"]
+
     fn parses_block_scalar_values() {
         let doc = MarkdownParser::parse(
             "---\nsummary: |\n  first line\n  second line\nabstract: >\n  folded one\n  folded two\nok: yes\n---\n\nBody",
@@ -88,7 +88,7 @@ mod front_matter_tests {
     }
 
     #[test]
-    #[ignore = "needs parser (upleft-markup)"]
+
     fn parses_inline_array_with_commas_inside_quotes() {
         let doc = MarkdownParser::parse("---\ntags: [\"alpha, beta\", \"gamma, delta\"]\ntitle: \"Hello, World\"\n---\n\nBody");
         assert_eq!(doc.front_matter.as_ref().and_then(|f| f.get("tags")), Some("alpha, beta, gamma, delta"));
@@ -118,7 +118,7 @@ mod math_tests {
     }
 
     #[test]
-    #[ignore = "needs parser (upleft-markup)"]
+
     fn matches_inline_and_escaped_delimiters() {
         assert_eq!(inline_math("Math $x^2$ here\n"), vec!["x^2"]);
         assert_eq!(inline_math("Math \\(a+b\\) here\n"), vec!["a+b"]);
@@ -128,7 +128,7 @@ mod math_tests {
     /// The cases §4.1 names explicitly. A false positive turns prose into a
     /// broken glyph, so these matter more than the positives.
     #[test]
-    #[ignore = "needs parser (upleft-markup)"]
+
     fn rejects_shell_and_currency() {
         assert!(inline_math("Run `echo $PATH` now\n").is_empty());
         assert!(inline_math("Run echo $PATH now\n").is_empty());
@@ -140,7 +140,7 @@ mod math_tests {
     }
 
     #[test]
-    #[ignore = "needs parser (upleft-markup)"]
+
     fn never_matches_inside_code() {
         assert!(inline_math("A `$x$` span\n").is_empty());
         let doc = MarkdownParser::parse("```bash\necho $x$ y\n```\n");
@@ -152,7 +152,7 @@ mod math_tests {
     }
 
     #[test]
-    #[ignore = "needs parser (upleft-markup)"]
+
     fn labelled_form_displays_only_its_label() {
         let source = "See [[Design Notes|the notes]] here\n";
         let document = MarkdownParser::parse(source);
@@ -164,7 +164,7 @@ mod math_tests {
     }
 
     #[test]
-    #[ignore = "needs parser (upleft-markup)"]
+
     fn whole_paragraph_display_math_becomes_a_block() {
         let doc = MarkdownParser::parse("Intro.\n\n$$\ne^{i\\pi} + 1 = 0\n$$\n\nOutro.\n");
         let mut found: Option<String> = None;
@@ -177,7 +177,7 @@ mod math_tests {
     }
 
     #[test]
-    #[ignore = "needs parser (upleft-markup)"]
+
     fn math_fences_become_math_blocks() {
         let doc = MarkdownParser::parse("```math\nx = 1\n```\n");
         let BlockContent::MathBlock { latex_range } = doc.root.children.first().unwrap().content else {
@@ -187,7 +187,7 @@ mod math_tests {
     }
 
     #[test]
-    #[ignore = "needs parser (upleft-markup)"]
+
     fn matrix_double_backslash_does_not_trigger_escaped_closer() {
         let text = "Formula \\( \\begin{pmatrix} 1 \\\\ ) 2 \\end{pmatrix} \\) works\n";
         let matches = inline_math(text);
@@ -203,7 +203,7 @@ mod callout_tests {
     use upleft_core::parser::MarkdownParser;
 
     #[test]
-    #[ignore = "needs parser (upleft-markup)"]
+
     fn recognises_kind_and_title() {
         let doc = MarkdownParser::parse("> [!WARNING] Be careful\n> The body.\n");
         let BlockContent::Callout { kind, title } = &doc.root.children.first().unwrap().content else {
@@ -215,7 +215,7 @@ mod callout_tests {
     }
 
     #[test]
-    #[ignore = "needs parser (upleft-markup)"]
+
     fn handles_multiple_spaces_and_tabs_after_quote_marker() {
         let multiple_spaces = MarkdownParser::parse(">  [!NOTE] Spaced\n> Body\n");
         let BlockContent::Callout { kind: kind1, title: title1 } = &multiple_spaces.root.children.first().unwrap().content else {
@@ -233,7 +233,7 @@ mod callout_tests {
     }
 
     #[test]
-    #[ignore = "needs parser (upleft-markup)"]
+
     fn is_case_insensitive_and_title_is_optional() {
         for token in ["[!note]", "[!Note]", "[!NOTE]"] {
             let doc = MarkdownParser::parse(&format!("> {token}\n> body\n"));
@@ -246,7 +246,7 @@ mod callout_tests {
     }
 
     #[test]
-    #[ignore = "needs parser (upleft-markup)"]
+
     fn marker_text_is_lifted_out_of_the_body() {
         let doc = MarkdownParser::parse("> [!TIP] Hint\n> Body text.\n");
         let callout = &doc.root.children[0];
@@ -255,7 +255,7 @@ mod callout_tests {
     }
 
     #[test]
-    #[ignore = "needs parser (upleft-markup)"]
+
     fn plain_quotes_stay_quotes() {
         let doc = MarkdownParser::parse("> just a quote\n");
         assert!(matches!(doc.root.children.first().unwrap().content, BlockContent::BlockQuote), "expected a blockquote");
@@ -289,14 +289,14 @@ mod wikilink_tests {
     }
 
     #[test]
-    #[ignore = "needs parser (upleft-markup)"]
+
     fn rejects_wikilinks_across_lone_cr() {
         let text = "[[Target\rLabel]]";
         assert!(wikilinks(text).is_empty());
     }
 
     #[test]
-    #[ignore = "needs parser (upleft-markup)"]
+
     fn matches_both_forms() {
         let plain = wikilinks("See [[Design Notes]] here\n");
         assert_eq!(plain.len(), 1);
@@ -310,7 +310,7 @@ mod wikilink_tests {
     }
 
     #[test]
-    #[ignore = "needs parser (upleft-markup)"]
+
     fn padded_targets_and_labels_trim_but_keep_geometry() {
         let padded = wikilinks("See [[ Design Notes | the notes ]] here\n");
         assert_eq!(padded.len(), 1);
@@ -337,13 +337,13 @@ mod wikilink_tests {
     }
 
     #[test]
-    #[ignore = "needs parser (upleft-markup)"]
+
     fn never_matches_inside_code() {
         assert!(wikilinks("A `[[Name]]` span\n").is_empty());
     }
 
     #[test]
-    #[ignore = "needs parser (upleft-markup)"]
+
     fn ignores_malformed_brackets() {
         assert!(wikilinks("A [[unclosed here\n").is_empty());
         assert!(wikilinks("A [[]] here\n").is_empty());
@@ -360,7 +360,7 @@ mod path_token_tests {
     }
 
     #[test]
-    #[ignore = "needs parser (upleft-markup)"]
+
     fn finds_paths_with_line_numbers() {
         let doc = MarkdownParser::parse("Edit src/auth/session.ts:42 next.\n");
         assert_eq!(doc.path_tokens.len(), 1);
@@ -371,7 +371,7 @@ mod path_token_tests {
     }
 
     #[test]
-    #[ignore = "needs parser (upleft-markup)"]
+
     fn finds_relative_and_extension_only_forms() {
         assert_eq!(paths("See ./x/y.md for details.\n"), vec!["./x/y.md"]);
         assert_eq!(paths("Open Package.swift now.\n"), vec!["Package.swift"]);
@@ -380,7 +380,7 @@ mod path_token_tests {
     }
 
     #[test]
-    #[ignore = "needs parser (upleft-markup)"]
+
     fn code_spans_relax_the_shape_rules() {
         let doc = MarkdownParser::parse("Run `docs/plans` for it.\n");
         assert_eq!(doc.path_tokens.len(), 1);
@@ -391,7 +391,7 @@ mod path_token_tests {
     /// §8.4 is a trust instrument: underlining `and/or` would train the user
     /// to ignore the signal, so prose needs a real path shape.
     #[test]
-    #[ignore = "needs parser (upleft-markup)"]
+
     fn rejects_prose_that_merely_contains_a_slash() {
         assert!(paths("Use and/or as needed.\n").is_empty());
         assert!(paths("A read/write lock here.\n").is_empty());
@@ -399,7 +399,7 @@ mod path_token_tests {
     }
 
     #[test]
-    #[ignore = "needs parser (upleft-markup)"]
+
     fn rejects_urls() {
         assert!(paths("Visit https://example.com/x.md today.\n").is_empty());
         assert!(paths("Mail mailto:a@b.com now.\n").is_empty());
@@ -407,14 +407,14 @@ mod path_token_tests {
     }
 
     #[test]
-    #[ignore = "needs parser (upleft-markup)"]
+
     fn trims_sentence_punctuation() {
         assert_eq!(paths("Look at src/foo.ts.\n"), vec!["src/foo.ts"]);
         assert_eq!(paths("Files: src/a.ts, src/b.ts.\n"), vec!["src/a.ts", "src/b.ts"]);
     }
 
     #[test]
-    #[ignore = "needs parser (upleft-markup)"]
+
     fn never_touches_the_filesystem() {
         // A path that certainly does not exist still produces a token; the app
         // resolves, not the parser.
@@ -424,7 +424,7 @@ mod path_token_tests {
     /// Regression: a non-ASCII character such as an emoji in a code span used
     /// to force-unwrap `UnicodeScalar` on a UTF-16 surrogate half and trap.
     #[test]
-    #[ignore = "needs parser (upleft-markup)"]
+
     fn emoji_in_code_span_does_not_crash() {
         assert!(paths("Run `config.🚀` next.\n").is_empty());
         // A real extension after the emoji still resolves.
@@ -434,7 +434,7 @@ mod path_token_tests {
     /// Regression: a one-character path before a `:digits` suffix (`3:16`,
     /// `9:30`) used to reach `isURL` with a one-unit range and trap.
     #[test]
-    #[ignore = "needs parser (upleft-markup)"]
+
     fn single_character_clock_and_ratio_tokens_do_not_crash() {
         assert!(paths("John 3:16 says so.\n").is_empty());
         assert!(paths("Meet at 9:30 sharp.\n").is_empty());
@@ -455,7 +455,7 @@ mod fence_language_tests {
     use upleft_core::parser::MarkdownParser;
 
     #[test]
-    #[ignore = "needs parser (upleft-markup)"]
+
     fn mermaid_becomes_a_diagram() {
         let doc = MarkdownParser::parse("```mermaid\ngraph TD;\nA-->B;\n```\n");
         let BlockContent::Mermaid { source_range } = doc.root.children.first().unwrap().content else {
@@ -465,7 +465,7 @@ mod fence_language_tests {
     }
 
     #[test]
-    #[ignore = "needs parser (upleft-markup)"]
+
     fn diff_keeps_its_language_and_stays_code() {
         let doc = MarkdownParser::parse("```diff\n- a\n+ b\n```\n");
         let BlockContent::CodeBlock { language, .. } = &doc.root.children.first().unwrap().content else {
@@ -687,7 +687,6 @@ mod direct_scanner_checks {
     /// NSString-backed, and its `contains("\n")` is Foundation's search, which
     /// finds the LF of a CR LF. Recorded from the Swift MathScanner.
     #[test]
-    #[ignore = "math_scanner.rs discrepancy: bridged-String contains (reported to the coordinator)"]
     fn math_body_with_crlf_in_a_non_ascii_document() {
         let text = utf16("é $a\r\nb$ z");
         assert_eq!(MathScanner::matches(&text, r(0, text.len() as isize)), vec![]);
