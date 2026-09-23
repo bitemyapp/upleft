@@ -48,10 +48,13 @@ use objc2_app_kit::{
     NSView, NSWindow, NSWindowStyleMask,
 };
 use objc2_foundation::{NSPoint, NSRect, NSSize};
+use upleft_app::ai::change_tracker::Mark;
 use upleft_app::panels::appkit_support::{accessibility_label, ns_string};
+use upleft_app::panels::change_summary_bar_view::{ChangeSummaryBarView, Summary};
 use upleft_app::panels::find_bar_view::{FindBarDelegate, FindBarDensity, FindBarView, Presentation};
 use upleft_app::support::find_engine::FindQuery;
 use upleft_core::NSRange;
+use upleft_core::contracts::ChangeKind;
 use upleft_render::appkit_compat::RectExt;
 use upleft_render::theme::style_sheet::StyleSheet;
 use upleft_render::theme::theme_store::ThemeStore;
@@ -323,6 +326,205 @@ fn find_bar_parks_its_match_actions_until_there_is_something_to_walk() {
     assert!(!replace_all.isEnabled());
 }
 
+// MARK: - ChangeSummaryBarView (ChangeReviewTests)
+
+fn mark(kind: ChangeKind, location: isize, length: isize) -> Mark {
+    Mark::new(kind, NSRange::new(location, length))
+}
+
+fn counts_by_kind() {
+    let summary = Summary::from_marks(
+        &[
+            mark(ChangeKind::Inserted, 0, 10),
+            mark(ChangeKind::Inserted, 20, 10),
+            mark(ChangeKind::Modified, 40, 10),
+            mark(ChangeKind::Deleted, 60, 10),
+        ],
+        100,
+    );
+    assert_eq!(summary.added, 2);
+    assert_eq!(summary.rewritten, 1);
+    assert_eq!(summary.removed, 1);
+    assert_eq!(summary.total(), 4);
+}
+
+fn empty_summary() {
+    let summary = Summary::from_marks(&[], 100);
+    assert_eq!(summary.total(), 0);
+    assert!(summary.positions.is_empty());
+    assert_eq!(summary.headline(), "Updated on disk");
+    assert_eq!(summary.distribution_description(), None);
+}
+
+fn headline_wording() {
+    let added = Summary::from_marks(&[mark(ChangeKind::Inserted, 0, 10)], 100);
+    assert_eq!(added.headline(), "1 change added");
+
+    let rewritten = Summary::from_marks(&[mark(ChangeKind::Modified, 0, 10), mark(ChangeKind::Modified, 10, 10)], 100);
+    assert_eq!(rewritten.headline(), "2 changes rewritten");
+
+    let mixed = Summary::from_marks(
+        &[mark(ChangeKind::Inserted, 0, 10), mark(ChangeKind::Modified, 10, 10), mark(ChangeKind::Deleted, 20, 10)],
+        100,
+    );
+    assert_eq!(mixed.headline(), "1 added · 1 rewritten · 1 removed");
+}
+
+fn headline_omits_empty_kinds() {
+    let summary = Summary::from_marks(&[mark(ChangeKind::Inserted, 0, 10), mark(ChangeKind::Deleted, 50, 10)], 100);
+    assert_eq!(summary.headline(), "1 added · 1 removed");
+    assert!(!summary.headline().contains("rewritten"));
+}
+
+fn positions_are_normalised_midpoints() {
+    let summary = Summary::from_marks(&[mark(ChangeKind::Inserted, 0, 20)], 100);
+    assert_eq!(summary.positions.len(), 1);
+    assert!((summary.positions[0].fraction - 0.1).abs() < 0.0001);
+    assert_eq!(summary.positions[0].kind, ChangeKind::Inserted);
+}
+
+fn positions_are_sorted() {
+    let summary = Summary::from_marks(
+        &[mark(ChangeKind::Inserted, 80, 10), mark(ChangeKind::Modified, 10, 10), mark(ChangeKind::Deleted, 45, 10)],
+        100,
+    );
+    let fractions: Vec<f64> = summary.positions.iter().map(|position| position.fraction).collect();
+    let mut sorted = fractions.clone();
+    sorted.sort_by(|a, b| a.partial_cmp(b).unwrap());
+    assert_eq!(fractions, sorted);
+}
+
+fn positions_clamp() {
+    let summary = Summary::from_marks(&[mark(ChangeKind::Modified, 500, 10)], 100);
+    assert_eq!(summary.positions[0].fraction, 1.0);
+}
+
+fn empty_document_has_no_positions() {
+    for length in [0, -1] {
+        let summary = Summary::from_marks(&[mark(ChangeKind::Modified, 0, 10)], length);
+        assert_eq!(summary.rewritten, 1);
+        assert!(summary.positions.is_empty());
+    }
+}
+
+fn describes_clusters() {
+    let start = Summary::from_marks(&[mark(ChangeKind::Modified, 0, 2), mark(ChangeKind::Modified, 8, 2)], 100);
+    assert_eq!(start.distribution_description().as_deref(), Some("Clustered near the start"));
+
+    let end = Summary::from_marks(&[mark(ChangeKind::Modified, 90, 2), mark(ChangeKind::Modified, 96, 2)], 100);
+    assert_eq!(end.distribution_description().as_deref(), Some("Clustered near the end"));
+
+    let middle = Summary::from_marks(&[mark(ChangeKind::Modified, 46, 2), mark(ChangeKind::Modified, 52, 2)], 100);
+    assert_eq!(middle.distribution_description().as_deref(), Some("Clustered in the middle"));
+}
+
+fn describes_spread() {
+    let summary = Summary::from_marks(&[mark(ChangeKind::Modified, 0, 2), mark(ChangeKind::Modified, 96, 2)], 100);
+    assert_eq!(summary.distribution_description().as_deref(), Some("Spread through the document"));
+}
+
+fn single_change_has_no_distribution() {
+    let summary = Summary::from_marks(&[mark(ChangeKind::Modified, 50, 10)], 100);
+    assert_eq!(summary.distribution_description(), None);
+}
+
+fn accessibility_description_carries_the_distribution() {
+    let summary = Summary::from_marks(&[mark(ChangeKind::Inserted, 90, 2), mark(ChangeKind::Inserted, 96, 2)], 100);
+    let spoken = summary.accessibility_description();
+    assert!(spoken.contains("2 changes added"));
+    assert!(spoken.contains("Clustered near the end"));
+}
+
+fn accessibility_description_when_empty() {
+    let summary = Summary::from_marks(&[], 100);
+    assert!(summary.accessibility_description().contains("No unread changes"));
+}
+
+fn bar_shows_breakdown() {
+    let bar = ChangeSummaryBarView::new_current(mtm());
+    bar.configure(
+        None,
+        Summary::from_marks(&[mark(ChangeKind::Inserted, 0, 10), mark(ChangeKind::Modified, 50, 10)], 100),
+    );
+    assert_eq!(bar.message(), "1 added · 1 rewritten");
+    assert_eq!(bar.intrinsicContentSize().height, ChangeSummaryBarView::TOAST_HEIGHT);
+}
+
+fn count_only_configuration_still_works() {
+    let bar = ChangeSummaryBarView::new_current(mtm());
+    bar.configure_count("Updated on disk", 4);
+    assert_eq!(bar.message(), "Updated on disk");
+    assert!(bar.position_status_for_testing().is_empty());
+    assert_eq!(bar.intrinsicContentSize().height, ChangeSummaryBarView::TOAST_HEIGHT);
+}
+
+fn bar_draws() {
+    let bar = ChangeSummaryBarView::new_current(mtm());
+    bar.setFrame(rect(0.0, 0.0, 320.0, ChangeSummaryBarView::TOAST_HEIGHT));
+    bar.configure(
+        None,
+        Summary::from_marks(
+            &[mark(ChangeKind::Inserted, 0, 10), mark(ChangeKind::Modified, 50, 10), mark(ChangeKind::Deleted, 99, 10)],
+            100,
+        ),
+    );
+    assert!(bar.bitmapImageRepForCachingDisplayInRect(bar.bounds()).is_some());
+    bar.displayIfNeeded();
+}
+
+fn positions_carry_mark_identity() {
+    let late = mark(ChangeKind::Inserted, 900, 0);
+    let early = mark(ChangeKind::Modified, 100, 0);
+    let summary = Summary::from_marks(&[late.clone(), early.clone()], 1000);
+    let ids: Vec<_> = summary.positions.iter().map(|position| position.id).collect();
+    assert_eq!(ids, [early.id, late.id]);
+}
+
+/// `buttons(in:)` in `ChangeReviewTests`: buttons under `view`, not
+/// descending into a button.
+fn buttons(view: &NSView) -> Vec<Retained<NSButton>> {
+    let mut out = Vec::new();
+    for subview in view.subviews().iter() {
+        match subview.clone().downcast::<NSButton>() {
+            Ok(button) => out.push(button),
+            Err(subview) => out.extend(buttons(&subview)),
+        }
+    }
+    out
+}
+
+fn action_tint_hierarchy() {
+    let bar = ChangeSummaryBarView::new_current(mtm());
+    let sheet = bar.style_sheet();
+    let tint = |label: &str| {
+        buttons(&bar)
+            .into_iter()
+            .find(|button| accessibility_label(&**button).unwrap_or_default() == label)
+            .and_then(|button| button.contentTintColor())
+    };
+    let is = |color: Option<Retained<objc2_app_kit::NSColor>>, expected: &objc2_app_kit::NSColor| {
+        color.is_some_and(|color| objc2::runtime::NSObjectProtocol::isEqual(&*color, Some(expected)))
+    };
+    assert!(is(tint("Previous change"), &sheet.text_secondary));
+    assert!(is(tint("Next change"), &sheet.text_secondary));
+    assert!(is(tint("Mark changes as reviewed"), &sheet.change_color(ChangeKind::Inserted)));
+    assert!(is(tint("Dismiss"), &sheet.text_faint));
+}
+
+/// `ChangeSummaryBarView`'s half of `reviewBarsNeverTakeTheKeyboard` (the
+/// conflict bar's half is the chrome tests').
+fn review_bars_never_take_the_keyboard() {
+    assert!(!ChangeSummaryBarView::new_current(mtm()).acceptsFirstResponder());
+}
+
+/// `WindowChromeTests.changeSummaryUsesCompactCountedNavigation`.
+fn change_summary_uses_compact_counted_navigation() {
+    let bar = ChangeSummaryBarView::new_current(mtm());
+    bar.configure_count("Updated on disk", 4);
+    assert_eq!(bar.intrinsicContentSize().height, ChangeSummaryBarView::TOAST_HEIGHT);
+    assert!(bar.position_status_for_testing().is_empty());
+}
+
 fn main() {
     let _ = NSApplication::sharedApplication(mtm());
     main_thread::run(&[
@@ -345,6 +547,27 @@ fn main() {
             "find_bar_parks_its_match_actions_until_there_is_something_to_walk",
             find_bar_parks_its_match_actions_until_there_is_something_to_walk,
         ),
+        ("change_summary_uses_compact_counted_navigation", change_summary_uses_compact_counted_navigation),
+        // ChangeReviewTests
+        ("counts_by_kind", counts_by_kind),
+        ("empty_summary", empty_summary),
+        ("headline_wording", headline_wording),
+        ("headline_omits_empty_kinds", headline_omits_empty_kinds),
+        ("positions_are_normalised_midpoints", positions_are_normalised_midpoints),
+        ("positions_are_sorted", positions_are_sorted),
+        ("positions_clamp", positions_clamp),
+        ("empty_document_has_no_positions", empty_document_has_no_positions),
+        ("describes_clusters", describes_clusters),
+        ("describes_spread", describes_spread),
+        ("single_change_has_no_distribution", single_change_has_no_distribution),
+        ("accessibility_description_carries_the_distribution", accessibility_description_carries_the_distribution),
+        ("accessibility_description_when_empty", accessibility_description_when_empty),
+        ("bar_shows_breakdown", bar_shows_breakdown),
+        ("count_only_configuration_still_works", count_only_configuration_still_works),
+        ("bar_draws", bar_draws),
+        ("positions_carry_mark_identity", positions_carry_mark_identity),
+        ("action_tint_hierarchy", action_tint_hierarchy),
+        ("review_bars_never_take_the_keyboard", review_bars_never_take_the_keyboard),
     ]);
 }
 
