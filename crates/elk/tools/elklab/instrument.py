@@ -3,10 +3,10 @@
 
 * ELKLAB_TRACE=1 prints the layered graph after every processor, in the same
   format as upleft-elk's UPLEFT_ELK_TRACE=1.
-* NetworkSimplex.treeEdges iterates in insertion order and
-  HyperEdgeCycleDetector breaks ties by taking the first candidate
-  (upleft-elk's choices); ELKLAB_HASHSET=1 restores Swift's hash order and
-  random tie-breaking.
+* NetworkSimplex.treeEdges and ComponentGroup.components iterate in
+  insertion order and HyperEdgeCycleDetector breaks ties by taking the first
+  candidate (upleft-elk's choices); ELKLAB_HASHSET=1 restores Swift's hash
+  order and random tie-breaking.
 
 Usage: instrument.py <copy of Sources/ElkSwift>"""
 import os, sys
@@ -112,4 +112,23 @@ hecd = os.path.join(root, "ELK/org/eclipse/elk/alg/layered/p5edges/orthogonal/or
 edit(hecd, [
     ("        return Int.random(in: 0..<bound)", "        return ProcessInfo.processInfo.environment[\"ELKLAB_HASHSET\"] != nil ? Int.random(in: 0..<bound) : 0"),
 ])
+# ComponentGroup.components: a [Set<PortSide>: [LGraph]] dictionary whose
+# order decides the order of component nodes in the combined graph.
+# upleft-elk keeps insertion order; ELKLAB_HASHSET=1 restores hash order.
+cg = os.path.join(layered, "components/org_eclipse_elk_alg_layered_components_ComponentGroup.swift")
+edit(cg, [
+    ("package var components: [Set<PortSide>: [LGraph]] = [:]", "package var components = _LabOrderedDict()"),
+], append='''
+package struct _LabOrderedDict {
+    var order: [Set<PortSide>] = []
+    var dict: [Set<PortSide>: [LGraph]] = [:]
+    package init() {}
+    package var keys: [Set<PortSide>] { ProcessInfo.processInfo.environment["ELKLAB_HASHSET"] != nil ? Array(dict.keys) : order }
+    package var values: [[LGraph]] { keys.map { dict[$0]! } }
+    package subscript(key: Set<PortSide>, default d: @autoclosure () -> [LGraph]) -> [LGraph] {
+        get { dict[key] ?? d() }
+        set { if dict[key] == nil { order.append(key) }; dict[key] = newValue }
+    }
+}
+''')
 print("instrumented", root)
