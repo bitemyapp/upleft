@@ -691,13 +691,13 @@ pub fn menu(request: &Request) -> Result<(), Failure> {
                 Err(other) => Value::String(format!("<{}>", geometry::class_name(other.class()))),
             },
         };
-        let target = unsafe { item.target() };
+        let target = item.target();
         Object::new()
             .with("title", item.title().to_string())
             .with("separator", item.isSeparatorItem())
             .with("keyEquivalent", item.keyEquivalent().to_string())
             .with("modifiers", item.keyEquivalentModifierMask().0 as i64)
-            .with("action", unsafe { item.action() }.map_or(Value::Null, |action| Value::String(action.name().to_string_lossy().into_owned())))
+            .with("action", item.action().map_or(Value::Null, |action| Value::String(action.name().to_string_lossy().into_owned())))
             .with("target", target.map_or(Value::Null, |target| Value::String(geometry::class_name(target.class()))))
             .with("tag", item.tag() as i64)
             .with("representedObject", represented)
