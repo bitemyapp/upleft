@@ -66,7 +66,7 @@ use upleft_core::metrics::Metrics;
 use upleft_core::parser::MarkdownParser;
 use upleft_core::structural_zoom::StructuralZoom;
 use upleft_core::{DirtySet, ParseOptions, ParsedDocument};
-use upleft_render::appkit_compat::{main_after, main_async, rect};
+use upleft_render::appkit_compat::{main_after, main_async, ns_string, rect};
 use upleft_render::render_contracts::{RenderMode, Theme, ThemeAppearance};
 use upleft_render::swift_compat::{smax, smin, string_eq};
 use upleft_render::theme::preview_appearance::{PreviewAppearance, PreviewAppearanceStore};
@@ -495,7 +495,7 @@ impl PreviewViewController {
         let mtm = MainThreadMarker::from(self);
         let ivars = self.ivars();
         let storage = &ivars.storage;
-        storage.replaceCharactersInRange_withString(NSRange::new(0, storage.length()), &ns(text));
+        storage.replaceCharactersInRange_withString(NSRange::new(0, storage.length()), &ns_string(text));
         *ivars.parsed_document.borrow_mut() = Some(document.clone());
         *ivars.source_url.borrow_mut() = Some(url.copy());
 

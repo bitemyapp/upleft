@@ -751,11 +751,15 @@ dependencies = [
 name = "upleft-quicklook"
 version = "0.1.0"
 dependencies = [
+ "block2",
+ "dispatch2",
  "libc",
  "objc2",
  "objc2-app-kit",
+ "objc2-core-foundation",
  "objc2-foundation",
  "upleft-core",
+ "upleft-mermaid",
  "upleft-render",
  "upleft-swift-text",
 ]
@@ -809,6 +813,22 @@ dependencies = [
  "objc2-core-foundation",
  "objc2-foundation",
  "unicode-normalization",
+]
+
+[[package]]
+name = "upleft-thumb"
+version = "0.1.0"
+dependencies = [
+ "block2",
+ "objc2",
+ "objc2-app-kit",
+ "objc2-core-foundation",
+ "objc2-core-graphics",
+ "objc2-foundation",
+ "upleft-core",
+ "upleft-foundation",
+ "upleft-render",
+ "upleft-swift-text",
 ]
 
 [[package]]

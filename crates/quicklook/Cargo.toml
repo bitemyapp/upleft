@@ -8,10 +8,13 @@ publish.workspace = true
 
 # The extension executable (Downright's generated `main.swift`): `main` calls
 # Foundation's `NSExtensionMain`. scripts/bundle-upleft-quicklook.sh copies it
-# into DownrightQL.appex as `DownrightQL`.
+# into DownrightQL.appex as `DownrightQL`. It is never run by `cargo test`
+# (`test = false`): outside an extension host NSExtensionMain aborts.
 [[bin]]
 name = "upleft-ql"
 path = "src/main.rs"
+test = false
+bench = false
 
 [dependencies]
 upleft-core.workspace = true
