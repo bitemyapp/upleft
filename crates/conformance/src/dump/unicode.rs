@@ -180,10 +180,11 @@ fn scalar_string(hexes: &str) -> String {
 }
 
 type Triple = (String, String, String);
+type Parsed = (Vec<String>, usize, Vec<Triple>, Vec<(String, String)>);
 
 /// `S <hex scalars>` strings and `N <scalar> : <NFD> : <NFC>` triples; the
 /// header comment names the pair-set size.
-fn parse_strings(input: &str) -> (Vec<String>, usize, Vec<Triple>, Vec<(String, String)>) {
+fn parse_strings(input: &str) -> Parsed {
     let mut strings = Vec::new();
     let mut triples = Vec::new();
     let mut comparisons = Vec::new();
