@@ -15,7 +15,10 @@ pub struct MarkupChildren<'a> {
 
 impl<'a> MarkupChildren<'a> {
     pub(crate) fn new(document: &'a Document, ids: &'a [NodeId]) -> MarkupChildren<'a> {
-        MarkupChildren { document, ids: ids.iter() }
+        MarkupChildren {
+            document,
+            ids: ids.iter(),
+        }
     }
 }
 
@@ -33,7 +36,9 @@ impl<'a> Iterator for MarkupChildren<'a> {
 
 impl DoubleEndedIterator for MarkupChildren<'_> {
     fn next_back(&mut self) -> Option<Self::Item> {
-        self.ids.next_back().map(|&id| Markup::new(self.document, id))
+        self.ids
+            .next_back()
+            .map(|&id| Markup::new(self.document, id))
     }
 }
 

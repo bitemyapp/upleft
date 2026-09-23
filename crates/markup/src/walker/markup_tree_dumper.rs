@@ -11,7 +11,11 @@ impl Markup<'_> {
     /// `debugDescription(options:)`, with `.printSourceLocations` when
     /// `print_source_locations` is set.
     pub fn debug_description(&self, print_source_locations: bool) -> String {
-        let mut dumper = MarkupTreeDumper { print_source_locations, result: String::new(), path: Vec::new() };
+        let mut dumper = MarkupTreeDumper {
+            print_source_locations,
+            result: String::new(),
+            path: Vec::new(),
+        };
         dumper.visit(*self);
         dumper.result
     }
@@ -113,7 +117,11 @@ impl<'a> MarkupTreeDumper<'a> {
             return;
         };
         let last_child_index = parent.child_count() - 1;
-        let tree_marker = if markup.index_in_parent() == last_child_index { "└─ " } else { "├─ " };
+        let tree_marker = if markup.index_in_parent() == last_child_index {
+            "└─ "
+        } else {
+            "├─ "
+        };
         self.result.push_str(tree_marker);
     }
 
@@ -131,12 +139,15 @@ impl<'a> MarkupTreeDumper<'a> {
             MarkupData::HtmlBlock { raw_html } => {
                 Some(format!("\n{}", self.indent_literal_block(raw_html, markup)))
             }
-            MarkupData::Link { destination, .. } => {
-                Some(destination.map(|destination| format!("destination: \"{destination}\"")).unwrap_or_default())
-            }
+            MarkupData::Link { destination, .. } => Some(
+                destination
+                    .map(|destination| format!("destination: \"{destination}\""))
+                    .unwrap_or_default(),
+            ),
             MarkupData::Image { source, title } => {
-                let mut description =
-                    source.map(|source| format!("source: \"{source}\"")).unwrap_or_default();
+                let mut description = source
+                    .map(|source| format!("source: \"{source}\""))
+                    .unwrap_or_default();
                 if let Some(title) = title {
                     description.push_str(&format!(" title: \"{title}\""));
                 }
@@ -184,10 +195,14 @@ impl<'a> MarkupTreeDumper<'a> {
                 if rowspan != 1 {
                     description.push_str(&format!(" rowspan: {rowspan}"));
                 }
-                let description = description.trim_matches(|c| c == ' ' || c == '\t').to_owned();
+                let description = description
+                    .trim_matches(|c| c == ' ' || c == '\t')
+                    .to_owned();
                 (!description.is_empty()).then_some(description)
             }
-            MarkupData::InlineAttributes { attributes } => Some(format!("attributes: `{attributes}`")),
+            MarkupData::InlineAttributes { attributes } => {
+                Some(format!("attributes: `{attributes}`"))
+            }
             _ => None,
         };
         self.dump(markup, description);

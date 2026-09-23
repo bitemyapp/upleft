@@ -5,7 +5,9 @@
 use std::path::Path;
 
 use serde_json::Value;
-use upleft_markup::{Checkbox, ColumnAlignment, Document, Markup, MarkupData, ParseOptions, SourceRange};
+use upleft_markup::{
+    Checkbox, ColumnAlignment, Document, Markup, MarkupData, ParseOptions, SourceRange,
+};
 
 use super::Failure;
 use super::json::{self, Object};
@@ -45,7 +47,9 @@ fn string(value: Option<&str>) -> Value {
 
 fn markup(markup: Markup<'_>) -> Value {
     let data = markup.data();
-    let mut object = Object::new().with("kind", data.type_name()).with("range", range(markup.range()));
+    let mut object = Object::new()
+        .with("kind", data.type_name())
+        .with("range", range(markup.range()));
     object = match data {
         MarkupData::CodeBlock { code, language } => {
             object.with("code", code).with("language", string(language))
@@ -82,13 +86,25 @@ fn markup(markup: Markup<'_>) -> Value {
                         .collect(),
                 ),
             )
-            .with("maxColumnCount", markup.max_column_count().expect("a table has a column count")),
-        MarkupData::TableCell { colspan, rowspan } => object.with("colspan", colspan).with("rowspan", rowspan),
+            .with(
+                "maxColumnCount",
+                markup
+                    .max_column_count()
+                    .expect("a table has a column count"),
+            ),
+        MarkupData::TableCell { colspan, rowspan } => {
+            object.with("colspan", colspan).with("rowspan", rowspan)
+        }
         MarkupData::Link { destination, title } => object
             .with("destination", string(destination))
             .with("title", string(title))
-            .with("isAutolink", markup.is_autolink().expect("a link has isAutolink")),
-        MarkupData::Image { source, title } => object.with("source", string(source)).with("title", string(title)),
+            .with(
+                "isAutolink",
+                markup.is_autolink().expect("a link has isAutolink"),
+            ),
+        MarkupData::Image { source, title } => object
+            .with("source", string(source))
+            .with("title", string(title)),
         MarkupData::InlineCode { code } => object.with("code", code),
         MarkupData::InlineHtml { raw_html } => object.with("rawHTML", raw_html),
         MarkupData::Text { string } => object.with("string", string),
@@ -102,6 +118,9 @@ fn markup(markup: Markup<'_>) -> Value {
     }
     object
         .with("indexInParent", markup.index_in_parent())
-        .with("children", Value::Array(markup.children().map(self::markup).collect()))
+        .with(
+            "children",
+            Value::Array(markup.children().map(self::markup).collect()),
+        )
         .build()
 }

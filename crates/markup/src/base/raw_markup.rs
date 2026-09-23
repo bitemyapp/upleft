@@ -44,38 +44,62 @@ pub(crate) struct AlignmentsRef {
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub(crate) enum RawMarkupData {
     BlockQuote,
-    CodeBlock { code: StrRef, language: Option<StrRef> },
+    CodeBlock {
+        code: StrRef,
+        language: Option<StrRef>,
+    },
     CustomBlock,
     Document,
-    Heading { level: i64 },
+    Heading {
+        level: i64,
+    },
     ThematicBreak,
     HtmlBlock(StrRef),
-    ListItem { checkbox: Option<Checkbox> },
-    OrderedList { start_index: u64 },
+    ListItem {
+        checkbox: Option<Checkbox>,
+    },
+    OrderedList {
+        start_index: u64,
+    },
     UnorderedList,
     Paragraph,
 
     InlineCode(StrRef),
     CustomInline(StrRef),
     Emphasis,
-    Image { source: Option<StrRef>, title: Option<StrRef> },
+    Image {
+        source: Option<StrRef>,
+        title: Option<StrRef>,
+    },
     InlineHtml(StrRef),
     LineBreak,
-    Link { destination: Option<StrRef>, title: Option<StrRef> },
+    Link {
+        destination: Option<StrRef>,
+        title: Option<StrRef>,
+    },
     SoftBreak,
     Strong,
     Text(StrRef),
-    SymbolLink { destination: Option<StrRef> },
-    InlineAttributes { attributes: StrRef },
+    SymbolLink {
+        destination: Option<StrRef>,
+    },
+    InlineAttributes {
+        attributes: StrRef,
+    },
 
     // Extensions
     Strikethrough,
 
-    Table { column_alignments: AlignmentsRef },
+    Table {
+        column_alignments: AlignmentsRef,
+    },
     TableHead,
     TableBody,
     TableRow,
-    TableCell { colspan: u64, rowspan: u64 },
+    TableCell {
+        colspan: u64,
+        rowspan: u64,
+    },
 }
 
 impl RawMarkupData {
@@ -97,35 +121,66 @@ impl RawMarkupData {
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum MarkupData<'a> {
     BlockQuote,
-    CodeBlock { code: &'a str, language: Option<&'a str> },
+    CodeBlock {
+        code: &'a str,
+        language: Option<&'a str>,
+    },
     CustomBlock,
     Document,
-    Heading { level: i64 },
+    Heading {
+        level: i64,
+    },
     ThematicBreak,
     /// `HTMLBlock.rawHTML`.
-    HtmlBlock { raw_html: &'a str },
-    ListItem { checkbox: Option<Checkbox> },
-    OrderedList { start_index: u64 },
+    HtmlBlock {
+        raw_html: &'a str,
+    },
+    ListItem {
+        checkbox: Option<Checkbox>,
+    },
+    OrderedList {
+        start_index: u64,
+    },
     UnorderedList,
     Paragraph,
 
-    InlineCode { code: &'a str },
-    CustomInline { text: &'a str },
+    InlineCode {
+        code: &'a str,
+    },
+    CustomInline {
+        text: &'a str,
+    },
     Emphasis,
-    Image { source: Option<&'a str>, title: Option<&'a str> },
+    Image {
+        source: Option<&'a str>,
+        title: Option<&'a str>,
+    },
     /// `InlineHTML.rawHTML`.
-    InlineHtml { raw_html: &'a str },
+    InlineHtml {
+        raw_html: &'a str,
+    },
     LineBreak,
-    Link { destination: Option<&'a str>, title: Option<&'a str> },
+    Link {
+        destination: Option<&'a str>,
+        title: Option<&'a str>,
+    },
     SoftBreak,
     Strong,
-    Text { string: &'a str },
-    SymbolLink { destination: Option<&'a str> },
-    InlineAttributes { attributes: &'a str },
+    Text {
+        string: &'a str,
+    },
+    SymbolLink {
+        destination: Option<&'a str>,
+    },
+    InlineAttributes {
+        attributes: &'a str,
+    },
 
     Strikethrough,
 
-    Table { column_alignments: &'a [Option<ColumnAlignment>] },
+    Table {
+        column_alignments: &'a [Option<ColumnAlignment>],
+    },
     /// `Table.Head`.
     TableHead,
     /// `Table.Body`.
@@ -133,7 +188,10 @@ pub enum MarkupData<'a> {
     /// `Table.Row`.
     TableRow,
     /// `Table.Cell`.
-    TableCell { colspan: u64, rowspan: u64 },
+    TableCell {
+        colspan: u64,
+        rowspan: u64,
+    },
 }
 
 impl MarkupData<'_> {
@@ -215,7 +273,10 @@ impl RawMarkupArena {
     pub(crate) fn push_str(&mut self, string: &str) -> StrRef {
         let start = to_u32(self.strings.len());
         self.strings.push_str(string);
-        StrRef { start, len: to_u32(string.len()) }
+        StrRef {
+            start,
+            len: to_u32(string.len()),
+        }
     }
 
     pub(crate) fn str(&self, reference: StrRef) -> &str {
@@ -249,14 +310,17 @@ impl RawMarkupArena {
         let string = |reference: StrRef| self.str(reference);
         match self.node(id).data {
             RawMarkupData::BlockQuote => MarkupData::BlockQuote,
-            RawMarkupData::CodeBlock { code, language } => {
-                MarkupData::CodeBlock { code: string(code), language: language.map(string) }
-            }
+            RawMarkupData::CodeBlock { code, language } => MarkupData::CodeBlock {
+                code: string(code),
+                language: language.map(string),
+            },
             RawMarkupData::CustomBlock => MarkupData::CustomBlock,
             RawMarkupData::Document => MarkupData::Document,
             RawMarkupData::Heading { level } => MarkupData::Heading { level },
             RawMarkupData::ThematicBreak => MarkupData::ThematicBreak,
-            RawMarkupData::HtmlBlock(html) => MarkupData::HtmlBlock { raw_html: string(html) },
+            RawMarkupData::HtmlBlock(html) => MarkupData::HtmlBlock {
+                raw_html: string(html),
+            },
             RawMarkupData::ListItem { checkbox } => MarkupData::ListItem { checkbox },
             RawMarkupData::OrderedList { start_index } => MarkupData::OrderedList { start_index },
             RawMarkupData::UnorderedList => MarkupData::UnorderedList,
@@ -264,10 +328,13 @@ impl RawMarkupArena {
             RawMarkupData::InlineCode(code) => MarkupData::InlineCode { code: string(code) },
             RawMarkupData::CustomInline(text) => MarkupData::CustomInline { text: string(text) },
             RawMarkupData::Emphasis => MarkupData::Emphasis,
-            RawMarkupData::Image { source, title } => {
-                MarkupData::Image { source: source.map(string), title: title.map(string) }
-            }
-            RawMarkupData::InlineHtml(html) => MarkupData::InlineHtml { raw_html: string(html) },
+            RawMarkupData::Image { source, title } => MarkupData::Image {
+                source: source.map(string),
+                title: title.map(string),
+            },
+            RawMarkupData::InlineHtml(html) => MarkupData::InlineHtml {
+                raw_html: string(html),
+            },
             RawMarkupData::LineBreak => MarkupData::LineBreak,
             RawMarkupData::Link { destination, title } => MarkupData::Link {
                 destination: destination.map(string),
@@ -275,21 +342,25 @@ impl RawMarkupArena {
             },
             RawMarkupData::SoftBreak => MarkupData::SoftBreak,
             RawMarkupData::Strong => MarkupData::Strong,
-            RawMarkupData::Text(text) => MarkupData::Text { string: string(text) },
-            RawMarkupData::SymbolLink { destination } => {
-                MarkupData::SymbolLink { destination: destination.map(string) }
-            }
-            RawMarkupData::InlineAttributes { attributes } => {
-                MarkupData::InlineAttributes { attributes: string(attributes) }
-            }
+            RawMarkupData::Text(text) => MarkupData::Text {
+                string: string(text),
+            },
+            RawMarkupData::SymbolLink { destination } => MarkupData::SymbolLink {
+                destination: destination.map(string),
+            },
+            RawMarkupData::InlineAttributes { attributes } => MarkupData::InlineAttributes {
+                attributes: string(attributes),
+            },
             RawMarkupData::Strikethrough => MarkupData::Strikethrough,
-            RawMarkupData::Table { column_alignments } => {
-                MarkupData::Table { column_alignments: self.alignments(column_alignments) }
-            }
+            RawMarkupData::Table { column_alignments } => MarkupData::Table {
+                column_alignments: self.alignments(column_alignments),
+            },
             RawMarkupData::TableHead => MarkupData::TableHead,
             RawMarkupData::TableBody => MarkupData::TableBody,
             RawMarkupData::TableRow => MarkupData::TableRow,
-            RawMarkupData::TableCell { colspan, rowspan } => MarkupData::TableCell { colspan, rowspan },
+            RawMarkupData::TableCell { colspan, rowspan } => {
+                MarkupData::TableCell { colspan, rowspan }
+            }
         }
     }
 
@@ -324,20 +395,43 @@ impl RawMarkupArena {
     }
 
     /// `RawMarkup.tableRow(parsedRange:_:)`.
-    pub(crate) fn table_row(&mut self, parsed_range: Option<SourceRange>, columns: &[NodeId]) -> NodeId {
-        assert!(columns.iter().all(|&column| self.node(column).data.is_table_cell()));
+    pub(crate) fn table_row(
+        &mut self,
+        parsed_range: Option<SourceRange>,
+        columns: &[NodeId],
+    ) -> NodeId {
+        assert!(
+            columns
+                .iter()
+                .all(|&column| self.node(column).data.is_table_cell())
+        );
         self.create(RawMarkupData::TableRow, parsed_range, columns)
     }
 
     /// `RawMarkup.tableHead(parsedRange:columns:)`.
-    pub(crate) fn table_head(&mut self, parsed_range: Option<SourceRange>, columns: &[NodeId]) -> NodeId {
-        assert!(columns.iter().all(|&column| self.node(column).data.is_table_cell()));
+    pub(crate) fn table_head(
+        &mut self,
+        parsed_range: Option<SourceRange>,
+        columns: &[NodeId],
+    ) -> NodeId {
+        assert!(
+            columns
+                .iter()
+                .all(|&column| self.node(column).data.is_table_cell())
+        );
         self.create(RawMarkupData::TableHead, parsed_range, columns)
     }
 
     /// `RawMarkup.tableBody(parsedRange:rows:)`.
-    pub(crate) fn table_body(&mut self, parsed_range: Option<SourceRange>, rows: &[NodeId]) -> NodeId {
-        assert!(rows.iter().all(|&row| self.node(row).data == RawMarkupData::TableRow));
+    pub(crate) fn table_body(
+        &mut self,
+        parsed_range: Option<SourceRange>,
+        rows: &[NodeId],
+    ) -> NodeId {
+        assert!(
+            rows.iter()
+                .all(|&row| self.node(row).data == RawMarkupData::TableRow)
+        );
         self.create(RawMarkupData::TableBody, parsed_range, rows)
     }
 
@@ -361,11 +455,14 @@ impl RawMarkupArena {
         let max_column_count = usize::max(self.node(header).child_count as usize, body_width);
         let start = to_u32(self.alignments.len());
         self.alignments.extend_from_slice(column_alignments);
-        let padding = usize::max(column_alignments.len(), max_column_count) - column_alignments.len();
+        let padding =
+            usize::max(column_alignments.len(), max_column_count) - column_alignments.len();
         self.alignments.extend(std::iter::repeat_n(None, padding));
         let len = to_u32(self.alignments.len()) - start;
         self.create(
-            RawMarkupData::Table { column_alignments: AlignmentsRef { start, len } },
+            RawMarkupData::Table {
+                column_alignments: AlignmentsRef { start, len },
+            },
             parsed_range,
             &[header, body],
         )

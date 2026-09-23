@@ -25,5 +25,7 @@ pub(crate) fn swift_contains_character(string: &str, character: char) -> bool {
     if !string.contains(character) {
         return false;
     }
-    string.graphemes(true).any(|grapheme| swift_string_eq(grapheme, character))
+    string
+        .graphemes(true)
+        .any(|grapheme| swift_string_eq(grapheme, character))
 }

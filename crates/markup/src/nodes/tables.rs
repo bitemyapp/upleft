@@ -40,9 +40,10 @@ impl<'a> Markup<'a> {
                 let body = self.child(1)?.max_column_count()?;
                 Some(usize::max(head, body))
             }
-            MarkupData::TableBody => {
-                Some(self.children().fold(0, |result, row| usize::max(result, row.child_count())))
-            }
+            MarkupData::TableBody => Some(
+                self.children()
+                    .fold(0, |result, row| usize::max(result, row.child_count())),
+            ),
             _ => None,
         }
     }

@@ -52,7 +52,10 @@ impl Document {
 
     /// The element with the given arena id, as returned by [`Markup::id`].
     pub fn markup(&self, id: NodeId) -> Markup<'_> {
-        assert!((id as usize) < self.arena.nodes.len(), "no element {id} in this document");
+        assert!(
+            (id as usize) < self.arena.nodes.len(),
+            "no element {id} in this document"
+        );
         Markup::new(self, id)
     }
 

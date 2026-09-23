@@ -48,7 +48,10 @@ impl SourceRange {
             lower_bound <= upper_bound,
             "Range requires lowerBound <= upperBound"
         );
-        SourceRange { lower_bound, upper_bound }
+        SourceRange {
+            lower_bound,
+            upper_bound,
+        }
     }
 
     /// `diagnosticDescription(includePath:)`. With no source URL the path is

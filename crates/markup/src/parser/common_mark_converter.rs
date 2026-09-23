@@ -198,16 +198,23 @@ impl MarkupConverterState {
             }
             (cmark::CMARK_EVENT_ENTER, CommonMarkNodeType::TableRow) if state.header_seen => {
                 if state.pending_table_body.is_none() {
-                    state.pending_table_body = Some(PendingTableBody { range: unsafe { range(state.node) } });
+                    state.pending_table_body = Some(PendingTableBody {
+                        range: unsafe { range(state.node) },
+                    });
                     assert!(state.pending_table_body.is_some());
                 }
             }
             (cmark::CMARK_EVENT_EXIT, CommonMarkNodeType::Table) => {
-                if let Some(end_of_table) = unsafe { range(state.node) }.map(|range| range.upper_bound)
-                    && let Some(pending_table_range) = state.pending_table_body.and_then(|pending| pending.range)
+                if let Some(end_of_table) =
+                    unsafe { range(state.node) }.map(|range| range.upper_bound)
+                    && let Some(pending_table_range) =
+                        state.pending_table_body.and_then(|pending| pending.range)
                     && let Some(pending) = state.pending_table_body.as_mut()
                 {
-                    pending.range = Some(SourceRange::new(pending_table_range.lower_bound, end_of_table));
+                    pending.range = Some(SourceRange::new(
+                        pending_table_range.lower_bound,
+                        end_of_table,
+                    ));
                 }
             }
             _ => {}
@@ -225,8 +232,16 @@ impl MarkupConverterState {
                 new_event,
                 new_node,
                 self.options,
-                if clear_pending_table_body { false } else { self.header_seen },
-                if clear_pending_table_body { None } else { self.pending_table_body },
+                if clear_pending_table_body {
+                    false
+                } else {
+                    self.header_seen
+                },
+                if clear_pending_table_body {
+                    None
+                } else {
+                    self.pending_table_body
+                },
             )
         }
     }
@@ -310,7 +325,10 @@ impl Converter {
     /// `String(cString:)` into the document's string buffer. A null pointer
     /// traps, as it does in Swift; invalid UTF-8 is repaired with U+FFFD.
     unsafe fn string(&mut self, pointer: *const c_char) -> StrRef {
-        assert!(!pointer.is_null(), "unexpectedly found nil while unwrapping a C string");
+        assert!(
+            !pointer.is_null(),
+            "unexpectedly found nil while unwrapping a C string"
+        );
         let bytes = unsafe { CStr::from_ptr(pointer) }.to_bytes();
         match std::str::from_utf8(bytes) {
             Ok(string) => self.arena.push_str(string),
@@ -321,7 +339,10 @@ impl Converter {
     /// `String(cString:)` mapped to `nil` when empty, as the converter does
     /// for fence info, link destinations and titles.
     unsafe fn non_empty_string(&mut self, pointer: *const c_char) -> Option<StrRef> {
-        assert!(!pointer.is_null(), "unexpectedly found nil while unwrapping a C string");
+        assert!(
+            !pointer.is_null(),
+            "unexpectedly found nil while unwrapping a C string"
+        );
         if unsafe { *pointer } == 0 {
             return None;
         }
@@ -343,47 +364,76 @@ impl Converter {
 
     // MARK: Leaves
 
-    unsafe fn convert_code_block(&mut self, state: &MarkupConverterState, parsed_range: Option<SourceRange>) -> NodeId {
+    unsafe fn convert_code_block(
+        &mut self,
+        state: &MarkupConverterState,
+        parsed_range: Option<SourceRange>,
+    ) -> NodeId {
         assert!(state.event == cmark::CMARK_EVENT_ENTER);
         assert!(state.node_type == CommonMarkNodeType::CodeBlock);
-        let language = unsafe { self.non_empty_string(cmark::cmark_node_get_fence_info(state.node)) };
+        let language =
+            unsafe { self.non_empty_string(cmark::cmark_node_get_fence_info(state.node)) };
         let code = unsafe { self.literal_content(state.node) };
         self.leaf(RawMarkupData::CodeBlock { code, language }, parsed_range)
     }
 
-    unsafe fn convert_html_block(&mut self, state: &MarkupConverterState, parsed_range: Option<SourceRange>) -> NodeId {
+    unsafe fn convert_html_block(
+        &mut self,
+        state: &MarkupConverterState,
+        parsed_range: Option<SourceRange>,
+    ) -> NodeId {
         assert!(state.event == cmark::CMARK_EVENT_ENTER);
         assert!(state.node_type == CommonMarkNodeType::HtmlBlock);
         let html = unsafe { self.literal_content(state.node) };
         self.leaf(RawMarkupData::HtmlBlock(html), parsed_range)
     }
 
-    fn convert_thematic_break(&mut self, state: &MarkupConverterState, parsed_range: Option<SourceRange>) -> NodeId {
+    fn convert_thematic_break(
+        &mut self,
+        state: &MarkupConverterState,
+        parsed_range: Option<SourceRange>,
+    ) -> NodeId {
         assert!(state.event == cmark::CMARK_EVENT_ENTER);
         assert!(state.node_type == CommonMarkNodeType::ThematicBreak);
         self.leaf(RawMarkupData::ThematicBreak, parsed_range)
     }
 
-    unsafe fn convert_text(&mut self, state: &MarkupConverterState, parsed_range: Option<SourceRange>) -> NodeId {
+    unsafe fn convert_text(
+        &mut self,
+        state: &MarkupConverterState,
+        parsed_range: Option<SourceRange>,
+    ) -> NodeId {
         assert!(state.event == cmark::CMARK_EVENT_ENTER);
         assert!(state.node_type == CommonMarkNodeType::Text);
         let string = unsafe { self.literal_content(state.node) };
         self.leaf(RawMarkupData::Text(string), parsed_range)
     }
 
-    fn convert_soft_break(&mut self, state: &MarkupConverterState, parsed_range: Option<SourceRange>) -> NodeId {
+    fn convert_soft_break(
+        &mut self,
+        state: &MarkupConverterState,
+        parsed_range: Option<SourceRange>,
+    ) -> NodeId {
         assert!(state.event == cmark::CMARK_EVENT_ENTER);
         assert!(state.node_type == CommonMarkNodeType::SoftBreak);
         self.leaf(RawMarkupData::SoftBreak, parsed_range)
     }
 
-    fn convert_line_break(&mut self, state: &MarkupConverterState, parsed_range: Option<SourceRange>) -> NodeId {
+    fn convert_line_break(
+        &mut self,
+        state: &MarkupConverterState,
+        parsed_range: Option<SourceRange>,
+    ) -> NodeId {
         assert!(state.event == cmark::CMARK_EVENT_ENTER);
         assert!(state.node_type == CommonMarkNodeType::LineBreak);
         self.leaf(RawMarkupData::LineBreak, parsed_range)
     }
 
-    unsafe fn convert_inline_code(&mut self, state: &MarkupConverterState, parsed_range: Option<SourceRange>) -> NodeId {
+    unsafe fn convert_inline_code(
+        &mut self,
+        state: &MarkupConverterState,
+        parsed_range: Option<SourceRange>,
+    ) -> NodeId {
         assert!(state.event == cmark::CMARK_EVENT_ENTER);
         assert!(state.node_type == CommonMarkNodeType::Code);
         let literal_content = unsafe { self.literal_content(state.node) };
@@ -391,20 +441,33 @@ impl Converter {
             && unsafe { cmark::cmark_node_get_backtick_count(state.node) } > 1
             && !swift_contains_character(self.arena.str(literal_content), '`')
         {
-            self.leaf(RawMarkupData::SymbolLink { destination: Some(literal_content) }, parsed_range)
+            self.leaf(
+                RawMarkupData::SymbolLink {
+                    destination: Some(literal_content),
+                },
+                parsed_range,
+            )
         } else {
             self.leaf(RawMarkupData::InlineCode(literal_content), parsed_range)
         }
     }
 
-    unsafe fn convert_inline_html(&mut self, state: &MarkupConverterState, parsed_range: Option<SourceRange>) -> NodeId {
+    unsafe fn convert_inline_html(
+        &mut self,
+        state: &MarkupConverterState,
+        parsed_range: Option<SourceRange>,
+    ) -> NodeId {
         assert!(state.event == cmark::CMARK_EVENT_ENTER);
         assert!(state.node_type == CommonMarkNodeType::Html);
         let html = unsafe { self.literal_content(state.node) };
         self.leaf(RawMarkupData::InlineHtml(html), parsed_range)
     }
 
-    unsafe fn convert_custom_inline(&mut self, state: &MarkupConverterState, parsed_range: Option<SourceRange>) -> NodeId {
+    unsafe fn convert_custom_inline(
+        &mut self,
+        state: &MarkupConverterState,
+        parsed_range: Option<SourceRange>,
+    ) -> NodeId {
         assert!(state.event == cmark::CMARK_EVENT_ENTER);
         assert!(state.node_type == CommonMarkNodeType::CustomInline);
         let text = unsafe { self.literal_content(state.node) };
@@ -413,12 +476,18 @@ impl Converter {
 
     /// Converts a leaf cmark node directly into its markup element
     /// (`createLeaf(state:)`).
-    unsafe fn create_leaf(&mut self, state: &MarkupConverterState, parsed_range: Option<SourceRange>) -> NodeId {
+    unsafe fn create_leaf(
+        &mut self,
+        state: &MarkupConverterState,
+        parsed_range: Option<SourceRange>,
+    ) -> NodeId {
         unsafe {
             match state.node_type {
                 CommonMarkNodeType::CodeBlock => self.convert_code_block(state, parsed_range),
                 CommonMarkNodeType::HtmlBlock => self.convert_html_block(state, parsed_range),
-                CommonMarkNodeType::ThematicBreak => self.convert_thematic_break(state, parsed_range),
+                CommonMarkNodeType::ThematicBreak => {
+                    self.convert_thematic_break(state, parsed_range)
+                }
                 CommonMarkNodeType::Text => self.convert_text(state, parsed_range),
                 CommonMarkNodeType::SoftBreak => self.convert_soft_break(state, parsed_range),
                 CommonMarkNodeType::LineBreak => self.convert_line_break(state, parsed_range),
@@ -435,7 +504,11 @@ impl Converter {
     /// A container over the frame's accumulated children, which are popped
     /// off the shared child stack.
     fn container(&mut self, frame: &ParsingFrame, data: RawMarkupData) -> NodeId {
-        let id = self.arena.create(data, frame.parsed_range, &self.children[frame.children_start..]);
+        let id = self.arena.create(
+            data,
+            frame.parsed_range,
+            &self.children[frame.children_start..],
+        );
         self.children.truncate(frame.children_start);
         id
     }
@@ -443,7 +516,11 @@ impl Converter {
     /// Converts a completed parsing frame into its markup element
     /// (`createContainer(frame:state:)`). Called on the matching EXIT event,
     /// when all descendants have been converted onto the child stack.
-    unsafe fn create_container(&mut self, frame: &ParsingFrame, state: &MarkupConverterState) -> NodeId {
+    unsafe fn create_container(
+        &mut self,
+        frame: &ParsingFrame,
+        state: &MarkupConverterState,
+    ) -> NodeId {
         assert!(
             state.event == cmark::CMARK_EVENT_EXIT,
             "Expected EXIT event when closing a container node."
@@ -471,15 +548,24 @@ impl Converter {
                             .expect("Negative value is not representable");
                         self.container(frame, RawMarkupData::OrderedList { start_index })
                     }
-                    _ => panic!("cmark reported a list node but said its list type is CMARK_NO_LIST?"),
+                    _ => panic!(
+                        "cmark reported a list node but said its list type is CMARK_NO_LIST?"
+                    ),
                 }
             }
-            CommonMarkNodeType::Item => self.container(frame, RawMarkupData::ListItem { checkbox: None }),
+            CommonMarkNodeType::Item => {
+                self.container(frame, RawMarkupData::ListItem { checkbox: None })
+            }
             CommonMarkNodeType::CustomBlock => self.container(frame, RawMarkupData::CustomBlock),
             CommonMarkNodeType::Paragraph => self.container(frame, RawMarkupData::Paragraph),
             CommonMarkNodeType::Heading => {
                 let heading_level = unsafe { cmark::cmark_node_get_heading_level(node) } as i64;
-                self.container(frame, RawMarkupData::Heading { level: heading_level })
+                self.container(
+                    frame,
+                    RawMarkupData::Heading {
+                        level: heading_level,
+                    },
+                )
             }
             CommonMarkNodeType::Emphasis => self.container(frame, RawMarkupData::Emphasis),
             CommonMarkNodeType::Strong => self.container(frame, RawMarkupData::Strong),
@@ -493,29 +579,43 @@ impl Converter {
                 let title = unsafe { self.non_empty_string(cmark::cmark_node_get_title(node)) };
                 self.container(frame, RawMarkupData::Image { source, title })
             }
-            CommonMarkNodeType::Strikethrough => self.container(frame, RawMarkupData::Strikethrough),
+            CommonMarkNodeType::Strikethrough => {
+                self.container(frame, RawMarkupData::Strikethrough)
+            }
             CommonMarkNodeType::TaskListItem => {
-                let checkbox = if unsafe { cmark::cmark_gfm_extensions_get_tasklist_item_checked(node) } {
-                    Checkbox::Checked
-                } else {
-                    Checkbox::Unchecked
-                };
-                self.container(frame, RawMarkupData::ListItem { checkbox: Some(checkbox) })
+                let checkbox =
+                    if unsafe { cmark::cmark_gfm_extensions_get_tasklist_item_checked(node) } {
+                        Checkbox::Checked
+                    } else {
+                        Checkbox::Unchecked
+                    };
+                self.container(
+                    frame,
+                    RawMarkupData::ListItem {
+                        checkbox: Some(checkbox),
+                    },
+                )
             }
             CommonMarkNodeType::Table => unsafe { self.create_table(frame, state) },
             CommonMarkNodeType::TableHead => {
-                let id = self.arena.table_head(frame.parsed_range, &self.children[frame.children_start..]);
+                let id = self
+                    .arena
+                    .table_head(frame.parsed_range, &self.children[frame.children_start..]);
                 self.children.truncate(frame.children_start);
                 id
             }
             CommonMarkNodeType::TableRow => {
-                let id = self.arena.table_row(frame.parsed_range, &self.children[frame.children_start..]);
+                let id = self
+                    .arena
+                    .table_row(frame.parsed_range, &self.children[frame.children_start..]);
                 self.children.truncate(frame.children_start);
                 id
             }
             CommonMarkNodeType::TableCell => {
-                let colspan = unsafe { cmark::cmark_gfm_extensions_get_table_cell_colspan(node) } as u64;
-                let rowspan = unsafe { cmark::cmark_gfm_extensions_get_table_cell_rowspan(node) } as u64;
+                let colspan =
+                    unsafe { cmark::cmark_gfm_extensions_get_table_cell_colspan(node) } as u64;
+                let rowspan =
+                    unsafe { cmark::cmark_gfm_extensions_get_table_cell_rowspan(node) } as u64;
                 self.container(frame, RawMarkupData::TableCell { colspan, rowspan })
             }
             CommonMarkNodeType::InlineAttributes => {
@@ -529,7 +629,11 @@ impl Converter {
     /// The `.table` case of `createContainer`: GFM tables are a header row
     /// followed by body rows; the body gets the range the converter state
     /// collected from its first row to the end of the table.
-    unsafe fn create_table(&mut self, frame: &ParsingFrame, state: &MarkupConverterState) -> NodeId {
+    unsafe fn create_table(
+        &mut self,
+        frame: &ParsingFrame,
+        state: &MarkupConverterState,
+    ) -> NodeId {
         let node = frame.node;
         let column_count = unsafe { cmark::cmark_gfm_extensions_get_table_columns(node) } as usize;
         let alignments = unsafe { cmark::cmark_gfm_extensions_get_table_alignments(node) };
@@ -563,9 +667,12 @@ impl Converter {
             assert!(state.pending_table_body.is_none());
         }
         let body_range = state.pending_table_body.and_then(|pending| pending.range);
-        let body = self.arena.table_body(body_range, &self.children[rows_start..]);
+        let body = self
+            .arena
+            .table_body(body_range, &self.children[rows_start..]);
         self.children.truncate(start);
-        self.arena.table(&column_alignments, frame.parsed_range, header, body)
+        self.arena
+            .table(&column_alignments, frame.parsed_range, header, body)
     }
 
     // MARK: Conversion
@@ -585,12 +692,18 @@ impl Converter {
 
             let parser = cmark::cmark_parser_new(cmark_options);
 
-            cmark::cmark_parser_attach_syntax_extension(parser, cmark::cmark_find_syntax_extension(c"table".as_ptr()));
+            cmark::cmark_parser_attach_syntax_extension(
+                parser,
+                cmark::cmark_find_syntax_extension(c"table".as_ptr()),
+            );
             cmark::cmark_parser_attach_syntax_extension(
                 parser,
                 cmark::cmark_find_syntax_extension(c"strikethrough".as_ptr()),
             );
-            cmark::cmark_parser_attach_syntax_extension(parser, cmark::cmark_find_syntax_extension(c"tasklist".as_ptr()));
+            cmark::cmark_parser_attach_syntax_extension(
+                parser,
+                cmark::cmark_find_syntax_extension(c"tasklist".as_ptr()),
+            );
             cmark::cmark_parser_feed(parser, string.as_ptr().cast(), string.len());
             let raw_document = cmark::cmark_parser_finish(parser);
             let mut state = MarkupConverterState::new(
@@ -627,7 +740,10 @@ impl Converter {
                 if state.event == cmark::CMARK_EVENT_ENTER {
                     if node_type.is_leaf() {
                         let leaf = converter.create_leaf(&state, parsed_range);
-                        assert!(!stack.is_empty(), "Leaf node encountered without a parent document on the stack.");
+                        assert!(
+                            !stack.is_empty(),
+                            "Leaf node encountered without a parent document on the stack."
+                        );
                         converter.children.push(leaf);
                     } else {
                         stack.push(ParsingFrame {
@@ -639,7 +755,10 @@ impl Converter {
                     }
                     state = state.next(false);
                 } else if state.event == cmark::CMARK_EVENT_EXIT {
-                    assert!(!node_type.is_leaf(), "cmark iterators should never return EXIT events for leaf nodes.");
+                    assert!(
+                        !node_type.is_leaf(),
+                        "cmark iterators should never return EXIT events for leaf nodes."
+                    );
 
                     let frame = stack.pop().expect("EXIT event without an open frame");
                     assert!(frame.node == node);
@@ -654,7 +773,10 @@ impl Converter {
                         cmark::cmark_node_free(raw_document);
                         cmark::cmark_parser_free(parser);
 
-                        return Document { arena: converter.arena, root: container };
+                        return Document {
+                            arena: converter.arena,
+                            root: container,
+                        };
                     } else {
                         converter.children.push(container);
                         state = state.next(node_type == CommonMarkNodeType::Table);
@@ -662,7 +784,9 @@ impl Converter {
                 }
             }
 
-            panic!("cmark iteration terminated prematurely without cleanly exiting the document root.");
+            panic!(
+                "cmark iteration terminated prematurely without cleanly exiting the document root."
+            );
         }
     }
 }

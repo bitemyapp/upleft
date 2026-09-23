@@ -37,7 +37,9 @@ impl BitOr for ParseOptions {
     type Output = ParseOptions;
 
     fn bitor(self, other: ParseOptions) -> ParseOptions {
-        ParseOptions { raw_value: self.raw_value | other.raw_value }
+        ParseOptions {
+            raw_value: self.raw_value | other.raw_value,
+        }
     }
 }
 
