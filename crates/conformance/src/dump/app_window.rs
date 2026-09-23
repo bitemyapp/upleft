@@ -203,9 +203,13 @@ pub(crate) mod off_screen {
         }
     }
 
-    /// Refuses to go on if a window touches any display.
+    /// Refuses to go on if a window touches any display: the windows the
+    /// scene captures, and every other visible window of this process (an
+    /// alert, a sheet, a panel some code path opens).
     pub fn verify(windows: &[Retained<NSWindow>], mtm: MainThreadMarker) {
-        for window in windows {
+        let mut windows: Vec<Retained<NSWindow>> = windows.to_vec();
+        windows.extend(NSApplication::sharedApplication(mtm).windows().iter().filter(|window| window.isVisible()));
+        for window in &windows {
             let frame = window.frame();
             let touches = NSScreen::screens(mtm).iter().any(|screen| intersects(screen.frame(), frame));
             if touches {
@@ -512,9 +516,50 @@ mod geometry {
             object = object.with("text", field.stringValue().to_string());
         } else if let Some(button) = view.downcast_ref::<NSButton>() {
             object = object.with("title", button.title().to_string()).with("state", button.state());
+        } else if let Some(text_view) = view.downcast_ref::<objc2_app_kit::NSTextView>()
+            && let Some(layout) = unsafe { text_view.textLayoutManager() }
+        {
+            object = object.with("fragments", fragments(&layout));
         }
         let subviews: Vec<Value> = view.subviews().iter().map(|subview| view_in(&subview, ambiguous)).collect();
         object.with("subviews", Value::Array(subviews)).build()
+    }
+
+    /// See `AppWindowGeometry.fragments`: the fragments TextKit has made so
+    /// far, without laying out anything more.
+    fn fragments(layout: &objc2_app_kit::NSTextLayoutManager) -> Value {
+        use objc2_app_kit::{NSTextElementProvider, NSTextLayoutFragment, NSTextLayoutFragmentEnumerationOptions};
+        let Some(content) = (unsafe { layout.textContentManager() }) else { return Value::Null };
+        let start = unsafe { content.documentRange() }.location();
+        let fragments = std::rc::Rc::new(std::cell::RefCell::new(Vec::new()));
+        let collected = fragments.clone();
+        let content_for_block = content.clone();
+        let start_for_block = start.clone();
+        let block = block2::RcBlock::new(move |fragment: std::ptr::NonNull<NSTextLayoutFragment>| -> objc2::runtime::Bool {
+            let fragment = unsafe { fragment.as_ref() };
+            let range = unsafe { fragment.rangeInElement() };
+            let location = unsafe { content_for_block.offsetFromLocation_toLocation(&start_for_block, &range.location()) };
+            let end = unsafe { content_for_block.offsetFromLocation_toLocation(&start_for_block, &range.endLocation()) };
+            collected.borrow_mut().push(
+                Object::new()
+                    .with("class", class_name(fragment.class()))
+                    .with("range", Value::Array(vec![location.into(), (end - location).into()]))
+                    .with("frame", rect(unsafe { fragment.layoutFragmentFrame() }))
+                    .with("state", unsafe { fragment.state() }.0 as i64)
+                    .build(),
+            );
+            objc2::runtime::Bool::YES
+        });
+        unsafe {
+            layout.enumerateTextLayoutFragmentsFromLocation_options_usingBlock(
+                Some(&start),
+                NSTextLayoutFragmentEnumerationOptions::empty(),
+                &block,
+            )
+        };
+        drop(block);
+        let fragments = fragments.borrow().clone();
+        Value::Array(fragments)
     }
 
     pub fn window(window: &NSWindow) -> Value {

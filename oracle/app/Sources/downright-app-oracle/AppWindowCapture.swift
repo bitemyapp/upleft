@@ -182,9 +182,12 @@ enum OffScreenWindows {
         method_setImplementation(method, imp_implementationWithBlock(identity))
     }
 
-    /// Refuses to go on if a window touches any display.
+    /// Refuses to go on if a window touches any display: the windows the
+    /// scene captures, and every other visible window of this process (an
+    /// alert, a sheet, a panel some code path opens).
     static func verify(_ windows: [NSWindow]) {
-        for window in windows where NSScreen.screens.contains(where: { $0.frame.intersects(window.frame) }) {
+        let all = windows + NSApp.windows.filter(\.isVisible)
+        for window in all where NSScreen.screens.contains(where: { $0.frame.intersects(window.frame) }) {
             for window in NSApp.windows { window.orderOut(nil) }
             FileHandle.standardError.write("app-window failed: a window reached a display at \(window.frame)\n".data(using: .utf8)!)
             exit(2)
@@ -340,9 +343,33 @@ enum AppWindowGeometry {
         } else if let button = view as? NSButton {
             pairs.append(("title", .string(button.title)))
             pairs.append(("state", .int(button.state.rawValue)))
+        } else if let textView = view as? NSTextView, let layout = textView.textLayoutManager {
+            pairs.append(("fragments", fragments(layout)))
         }
         pairs.append(("subviews", .array(view.subviews.map { Self.view($0, ambiguousAncestor: ambiguous) })))
         return .object(pairs)
+    }
+
+    /// The layout fragments TextKit has made so far (no `.ensuresLayout`:
+    /// the dump must not lay out what the window has not), with their state,
+    /// to localise a difference in a text view's estimated height.
+    static func fragments(_ layout: NSTextLayoutManager) -> JSON {
+        guard let content = layout.textContentManager else { return .null }
+        let start = content.documentRange.location
+        var fragments: [JSON] = []
+        layout.enumerateTextLayoutFragments(from: start, options: []) { fragment in
+            let range = fragment.rangeInElement
+            let location = content.offset(from: start, to: range.location)
+            let end = content.offset(from: start, to: range.endLocation)
+            fragments.append(.object([
+                ("class", .string(className(fragment))),
+                ("range", .array([.int(location), .int(end - location)])),
+                ("frame", rect(fragment.layoutFragmentFrame)),
+                ("state", .int(Int(fragment.state.rawValue))),
+            ]))
+            return true
+        }
+        return .array(fragments)
     }
 
     static func window(_ window: NSWindow) -> JSON {
