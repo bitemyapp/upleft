@@ -104,7 +104,7 @@ fn whitespace_only_blank_runs_collapse_without_overlap() {
     let source = "a\n   \n\t \nb\n";
     let rules = [TidyRule::TrailingWhitespace, TidyRule::BlankLines];
     let mut sorted = TidyDocument::plan_with(&MarkdownParser::parse(source), &rules);
-    sorted.sort_by(|a, b| a.range.location.cmp(&b.range.location));
+    sorted.sort_by_key(|edit| edit.range.location);
     for index in 1..sorted.len() {
         assert!(
             sorted[index - 1].range.upper_bound() <= sorted[index].range.location,

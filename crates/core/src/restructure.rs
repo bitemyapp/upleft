@@ -138,7 +138,7 @@ impl Restructure {
         let index = heading_index as usize;
         let root = &doc.headings[index];
         let target = root.level + delta;
-        if !(target >= 1 && target <= 6) {
+        if !(1..=6).contains(&target) {
             return Vec::new();
         }
 
@@ -764,7 +764,7 @@ impl Restructure {
         } else {
             // After the last sibling's block — unless the source already is
             // that sibling, which is where the move would put it.
-            let Some(last) = (0..tasks.len() as isize).filter(|&index| is_sibling(index)).last() else { return Vec::new() };
+            let Some(last) = (0..tasks.len() as isize).rev().find(|&index| is_sibling(index)) else { return Vec::new() };
             if last == task_index {
                 return Vec::new();
             }
