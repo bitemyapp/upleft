@@ -305,7 +305,9 @@ fn utf16_units(s: &str) -> Vec<u16> {
 /// non-ASCII document costs a full NFC pass over the shared prefix. (Also
 /// used by `ASTDiff`; belongs in `swift_text`.)
 pub(crate) fn string_eq(a: &str, b: &str) -> bool {
-    if a == b {
+    // The same storage is equal without reading it, as Swift's `==` answers
+    // for two references to one string buffer.
+    if std::ptr::eq(a, b) || a == b {
         return true;
     }
     let (x, y) = (a.as_bytes(), b.as_bytes());

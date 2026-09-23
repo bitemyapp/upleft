@@ -50,8 +50,7 @@ fn assert_round_trip(data: &[u8], label: &str) {
     assert!(written == data, "{label}: round trip changed {} bytes into {}", data.len(), written.len());
 }
 
-/// `assert_round_trip` without the parse step (extra: exercises the IO half
-/// until the parser lands).
+/// `assert_round_trip` without the parse step (extra: the IO half alone).
 fn assert_io_round_trip(data: &[u8], label: &str) {
     let directory = TemporaryDirectory::new();
     let url = directory.path().join("doc.md");
@@ -354,7 +353,7 @@ fn displaced_read_failure_leaves_recoverable_external_generation() {
 
 // MARK: - Extras (not in DocumentIOTests.swift)
 
-/// The parse-free half of every ignored round-trip test above.
+/// The parse-free half of every round-trip test above.
 #[test]
 fn io_round_trips_without_the_parser() {
     for (name, text) in corpus::ALL {
