@@ -1,6 +1,7 @@
 //! Ports of elk-swift's JSON-level tests (`Tests/ElkSwiftTests/`
 //! `OverallLayoutTests`, `GoldenOutputSnapshotTests`, `IssueRegressionTests`,
-//! `LayeredSpacingTests`, `ConcurrentLayoutTests`, `ElkSwiftTests`). The
+//! `LayeredSpacingTests`, `ElkSwiftTests`; `ConcurrentLayoutTests` is in
+//! `concurrent_layout_tests.rs`). The
 //! graphs are the literals from those files, extracted into
 //! `corpus/elk/elk-swift-tests/` by `tools/extract_test_graphs.py`.
 
@@ -8,7 +9,7 @@ use std::collections::{HashMap, HashSet};
 use std::path::PathBuf;
 
 use serde_json::{Map, Value};
-use upleft_elk::bridge::elk::{Elk, ElkError};
+use upleft_elk::bridge::elk::Elk;
 use upleft_elk::org::eclipse::elk::alg::layered::graph::l_graph::LGraphArena;
 use upleft_elk::org::eclipse::elk::core::math::k_vector::KVector;
 use upleft_elk::org::eclipse::elk::core::options::port_side::PortSide;
@@ -274,44 +275,6 @@ fn spacing_node_node_between_layers() {
 fn spacing_node_node_no_edges() {
     let result = layout("LayeredSpacingTests.testSpacingNodeNodeNoEdges");
     assert_positive_size(&result);
-}
-
-// MARK: ConcurrentLayoutTests
-
-#[test]
-fn concurrent_layouts_produce_same_results() {
-    for name in ["ConcurrentLayoutTests.flow18", "ConcurrentLayoutTests.simpleChainGraph", "ConcurrentLayoutTests.diamondGraph"] {
-        let g = graph(name);
-        let reference = Elk::new().layout(&g).unwrap();
-        let handles: Vec<_> = (0..8)
-            .map(|_| {
-                let g = g.clone();
-                std::thread::spawn(move || Elk::new().layout(&g).unwrap())
-            })
-            .collect();
-        for h in handles {
-            assert_eq!(h.join().unwrap(), reference, "{name}");
-        }
-    }
-}
-
-#[test]
-fn warm_cache_burst_is_deterministic() {
-    let g = graph("ConcurrentLayoutTests.flow18");
-    let mut elk = Elk::new();
-    let first = elk.layout(&g).unwrap();
-    for _ in 0..20 {
-        assert_eq!(elk.layout(&g).unwrap(), first);
-    }
-}
-
-#[test]
-fn layout_timeout() {
-    let g = graph("ConcurrentLayoutTests.flow18");
-    match Elk::new().layout_with(&g, None, 0.0) {
-        Err(ElkError::TimedOut(t)) => assert_eq!(t, 0.0),
-        other => panic!("expected a timeout, got {other:?}"),
-    }
 }
 
 // MARK: ElkSwiftTests
