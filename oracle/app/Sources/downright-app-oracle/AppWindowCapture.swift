@@ -46,6 +46,10 @@ struct AppWindowScenario {
     /// `StartGuideOffer` for the start window: "unavailable", "secondary",
     /// "primary".
     var guide: String = "unavailable"
+    /// Recent documents seeded into the sandbox before anything reads them
+    /// (`AppWindowSandbox.seedRecents`): each `{"path": "folder/name.md",
+    /// "heading": String?, "opened": ISO 8601 String, "words": Int?}`.
+    var recents: [[String: Any]] = []
     /// Commands (`Command` raw values) performed on the document window once
     /// its first frame has settled, in order, each followed by a settle.
     var commands: [String] = []
@@ -73,6 +77,7 @@ struct AppWindowScenario {
         }
         pane = object["pane"] as? String
         if let guide = object["guide"] as? String { self.guide = guide }
+        recents = object["recents"] as? [[String: Any]] ?? []
         commands = object["commands"] as? [String] ?? []
         if let timeout = object["settleTimeout"] as? Double { settleTimeout = timeout }
     }
@@ -94,8 +99,37 @@ enum AppWindowSandbox {
         if let preferences = scenario.preferences {
             try preferences.write(to: support.appendingPathComponent("preferences.json"))
         }
+        try seedRecents(scenario.recents, root: root, support: support)
         clearOwnDefaults()
         return root
+    }
+
+    /// Writes each recent's file under `<root>/recents/` (a one-line heading,
+    /// so `recents(limit:)` finds it on disk) and `recents.json` in the
+    /// support folder, in the scenario's order, as `DocumentStateStore`
+    /// stores it: absolute path, the file name without its extension, the
+    /// heading, the date and the word count.
+    static func seedRecents(_ recents: [[String: Any]], root: URL, support: URL) throws {
+        guard !recents.isEmpty else { return }
+        let folder = root.appendingPathComponent("recents", isDirectory: true)
+        var entries: [[String: Any]] = []
+        for recent in recents {
+            guard let relative = recent["path"] as? String, let opened = recent["opened"] as? String else {
+                throw AppOracleError(description: "a recent needs \"path\" and \"opened\"")
+            }
+            let heading = recent["heading"] as? String ?? ""
+            let file = folder.appendingPathComponent(relative)
+            try FileManager.default.createDirectory(at: file.deletingLastPathComponent(), withIntermediateDirectories: true)
+            try Data("# \(heading)\n".utf8).write(to: file)
+            entries.append([
+                "path": file.path,
+                "displayName": file.deletingPathExtension().lastPathComponent,
+                "firstHeading": heading,
+                "lastOpened": opened,
+                "wordCount": recent["words"] as? Int ?? 0,
+            ])
+        }
+        try JSONSerialization.data(withJSONObject: entries).write(to: support.appendingPathComponent("recents.json"))
     }
 
     /// This process's own defaults domain (never the user's app domain):

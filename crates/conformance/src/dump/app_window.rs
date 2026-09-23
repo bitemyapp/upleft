@@ -43,6 +43,8 @@ struct Scenario {
     preferences: Option<Vec<u8>>,
     pane: Option<String>,
     guide: String,
+    /// Recent documents seeded into the sandbox (`sandbox::seed_recents`).
+    recents: Vec<Value>,
     commands: Vec<String>,
     settle_timeout: Duration,
 }
@@ -77,6 +79,7 @@ impl Scenario {
             preferences,
             pane: object["pane"].as_str().map(str::to_owned),
             guide: object["guide"].as_str().unwrap_or("unavailable").to_owned(),
+            recents: object["recents"].as_array().cloned().unwrap_or_default(),
             commands: object["commands"]
                 .as_array()
                 .map(|commands| commands.iter().filter_map(|command| command.as_str().map(str::to_owned)).collect())
@@ -115,8 +118,41 @@ mod sandbox {
         if let Some(preferences) = &scenario.preferences {
             std::fs::write(support.join("preferences.json"), preferences)?;
         }
+        seed_recents(&scenario.recents, &root, &support)?;
         clear_own_defaults();
         Ok(root)
+    }
+
+    /// `AppWindowSandbox.seedRecents`: each recent's file under
+    /// `<root>/recents/` and `recents.json` in the support folder, in the
+    /// scenario's order.
+    fn seed_recents(recents: &[Value], root: &Path, support: &Path) -> Result<(), Failure> {
+        if recents.is_empty() {
+            return Ok(());
+        }
+        let folder = root.join("recents");
+        let mut entries = Vec::new();
+        for recent in recents {
+            let (Some(relative), Some(opened)) = (recent["path"].as_str(), recent["opened"].as_str()) else {
+                return Err(Failure::Error("a recent needs \"path\" and \"opened\"".into()));
+            };
+            let heading = recent["heading"].as_str().unwrap_or("");
+            let file = folder.join(relative);
+            if let Some(parent) = file.parent() {
+                std::fs::create_dir_all(parent)?;
+            }
+            std::fs::write(&file, format!("# {heading}\n"))?;
+            entries.push(serde_json::json!({
+                "path": file.to_string_lossy(),
+                "displayName": file.file_stem().map(|stem| stem.to_string_lossy().into_owned()).unwrap_or_default(),
+                "firstHeading": heading,
+                "lastOpened": opened,
+                "wordCount": recent["words"].as_i64().unwrap_or(0),
+            }));
+        }
+        let data = serde_json::to_vec(&Value::Array(entries)).map_err(|error| Failure::Error(error.to_string()))?;
+        std::fs::write(support.join("recents.json"), data)?;
+        Ok(())
     }
 
     /// This process's own defaults domain, never the user's app domain.
