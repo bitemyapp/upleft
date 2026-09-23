@@ -206,11 +206,28 @@ impl SentenceTokenizer {
     /// Sets `string` and enumerates the sentence ranges (UTF-16) over the
     /// whole string; `visit` returns `false` to stop.
     pub fn enumerate(&self, source: &str, visit: impl FnMut(NSRange) -> bool) {
-        let visit = std::cell::RefCell::new(visit);
+        objc2::rc::autoreleasepool(|_| self.enumerate_string(&NSString::from_str(source), visit));
+    }
+
+    /// `enumerate` over UTF-16 units already in hand, without transcoding.
+    /// Lone surrogates take the `String` round trip Swift's substring does
+    /// (each becomes U+FFFD, still one unit).
+    pub fn enumerate_utf16(&self, units: &[u16], visit: impl FnMut(NSRange) -> bool) {
+        let has_surrogate = units.iter().any(|&u| (0xD800..0xE000).contains(&u));
         objc2::rc::autoreleasepool(|_| {
-            let string = NSString::from_str(source);
+            if has_surrogate {
+                self.enumerate_string(&NSString::from_str(&swift_text::ns::string_from_utf16(units)), visit);
+            } else {
+                self.enumerate_string(&swift_text::ns::foundation::ns_from_utf16(units), visit);
+            }
+        });
+    }
+
+    fn enumerate_string(&self, string: &NSString, visit: impl FnMut(NSRange) -> bool) {
+        let visit = std::cell::RefCell::new(visit);
+        {
             let length = string.length();
-            unsafe { self.tokenizer.setString(Some(&string)) };
+            unsafe { self.tokenizer.setString(Some(string)) };
             let block = block2::StackBlock::new(
                 |range: FRange, _attributes: objc2_natural_language::NLTokenizerAttributes, stop: std::ptr::NonNull<objc2::runtime::Bool>| {
                     if !(visit.borrow_mut())(NSRange::new(range.location as isize, range.length as isize)) {
@@ -219,7 +236,7 @@ impl SentenceTokenizer {
                 },
             );
             unsafe { self.tokenizer.enumerateTokensInRange_usingBlock(FRange::new(0, length), &block) };
-        });
+        }
     }
 }
 
@@ -280,9 +297,10 @@ impl Metrics {
         if !(bounds.length > 0) {
             return None;
         }
-        let source = text.substring(bounds);
+        // `text.substring(with: bounds)`, handed straight to the tokenizer.
+        let source = &text[bounds.as_usize_range()];
         let mut result: Option<NSRange> = None;
-        tokenizer.enumerate(&source, |token| {
+        tokenizer.enumerate_utf16(source, |token| {
             result = Some(NSRange::new(bounds.location + token.location, token.length));
             false
         });
