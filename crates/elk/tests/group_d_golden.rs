@@ -12,6 +12,13 @@ use std::rc::Rc;
 use upleft_elk::org::eclipse::elk::alg::layered::graph::l_graph::{LEdgeId, LGraphArena, LGraphId, LLabelId, LNodeId, LPortId};
 use upleft_elk::org::eclipse::elk::alg::layered::graph::l_node::NodeType;
 use upleft_elk::org::eclipse::elk::alg::layered::intermediate::graph_transformer::{GraphTransformer, Mode};
+use upleft_elk::org::eclipse::elk::alg::layered::intermediate::self_loop_port_restorer::SelfLoopPortRestorer;
+use upleft_elk::org::eclipse::elk::alg::layered::intermediate::self_loop_post_processor::SelfLoopPostProcessor;
+use upleft_elk::org::eclipse::elk::alg::layered::intermediate::self_loop_pre_processor::SelfLoopPreProcessor;
+use upleft_elk::org::eclipse::elk::alg::layered::intermediate::self_loop_router::SelfLoopRouter;
+use upleft_elk::org::eclipse::elk::alg::layered::options::self_loop_distribution_strategy::SelfLoopDistributionStrategy;
+use upleft_elk::org::eclipse::elk::alg::layered::options::self_loop_ordering_strategy::SelfLoopOrderingStrategy;
+use upleft_elk::org::eclipse::elk::core::options::edge_routing::EdgeRouting;
 use upleft_elk::org::eclipse::elk::alg::layered::options::direction_congruency::DirectionCongruency;
 use upleft_elk::org::eclipse::elk::alg::layered::options::edge_label_side_selection::EdgeLabelSideSelection;
 use upleft_elk::org::eclipse::elk::alg::layered::options::in_layer_constraint::InLayerConstraint;
@@ -343,5 +350,132 @@ fn graph_transformer_matches_swift() {
         lg[g].size = KVector::new(0.0, 0.0);
         run(&mut lg, g, &mut GraphTransformer::new(Mode::TO_INPUT_DIRECTION));
         check(&golden, &format!("transformer zero-size {dir:?}"), &dump(&lg, g));
+    }
+}
+
+// MARK: - Self loops
+
+fn place_ports(lg: &mut LGraphArena, n: LNodeId) {
+    let size = lg[n].size;
+    for (i, p) in lg[n].ports.clone().into_iter().enumerate() {
+        let k = i as f64;
+        let side = lg[p].side;
+        let pos = &mut lg[p].position;
+        match side {
+            PortSide::NORTH => {
+                pos.x = 5.0 + 3.0 * k;
+                pos.y = 0.0;
+            }
+            PortSide::SOUTH => {
+                pos.x = 5.0 + 3.0 * k;
+                pos.y = size.y;
+            }
+            PortSide::EAST => {
+                pos.x = size.x;
+                pos.y = 2.0 + 2.0 * k;
+            }
+            PortSide::WEST => {
+                pos.x = 0.0;
+                pos.y = 2.0 + 2.0 * k;
+            }
+            _ => {}
+        }
+    }
+}
+
+fn self_loop_graph(lg: &mut LGraphArena, fixed_sides: bool, dir: Direction) -> (LGraphId, LNodeId) {
+    let g = lg.new_graph();
+    lg[g].props.set(&LayeredOptions::DIRECTION, dir);
+    let n = node(lg, g, 0.0, 0.0, 60.0, 40.0);
+    let m = node(lg, g, 200.0, 0.0, 20.0, 20.0);
+    let sd = |s: PortSide| if fixed_sides { s } else { PortSide::UNDEFINED };
+    let p_e = port(lg, n, PortSide::EAST, 60.0, 20.0, 0.0, 0.0);
+    let m_w = port(lg, m, PortSide::WEST, 0.0, 10.0, 0.0, 0.0);
+    edge(lg, p_e, m_w);
+    let sides = [
+        PortSide::NORTH, PortSide::NORTH, PortSide::EAST, PortSide::SOUTH, PortSide::WEST, PortSide::EAST, PortSide::NORTH, PortSide::EAST,
+        PortSide::SOUTH, PortSide::NORTH, PortSide::EAST, PortSide::SOUTH, PortSide::WEST, PortSide::SOUTH, PortSide::WEST,
+    ];
+    let mut ps = Vec::new();
+    for side in sides {
+        ps.push(port(lg, n, sd(side), 0.0, 0.0, 0.0, 0.0));
+    }
+    let [p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11, p12, p13, p14, p16] = ps.try_into().unwrap();
+    edge(lg, p1, p2);
+    edge(lg, p3, p4);
+    let e3 = edge(lg, p5, p6);
+    let l = label(lg, 20.0, 8.0, 0.0, 0.0);
+    lg[e3].labels.push(l);
+    edge(lg, p7, p8);
+    let e4 = edge(lg, p8, p9);
+    let l4 = label(lg, 16.0, 6.0, 0.0, 0.0);
+    lg[l4].props.set(&LayeredOptions::EDGE_LABELS_INLINE, true);
+    lg[e4].labels.push(l4);
+    edge(lg, p10, p11);
+    edge(lg, p11, p12);
+    let e5 = edge(lg, p12, p13);
+    let l = label(lg, 10.0, 10.0, 0.0, 0.0);
+    lg[e5].labels.push(l);
+    let l = label(lg, 4.0, 3.0, 0.0, 0.0);
+    lg[e5].labels.push(l);
+    let e6 = edge(lg, p14, p14);
+    let l = label(lg, 12.0, 4.0, 0.0, 0.0);
+    lg[e6].labels.push(l);
+    edge(lg, p_e, p16);
+    (g, n)
+}
+
+#[test]
+fn self_loops_match_swift() {
+    let golden = golden_sections();
+    use SelfLoopDistributionStrategy as D;
+    use SelfLoopOrderingStrategy as O;
+    let cases: [(&str, PortConstraints, Option<D>, Option<O>, Direction, Option<EdgeRouting>); 9] = [
+        ("free", PortConstraints::FREE, Some(D::NORTH), Some(O::STACKED), Direction::RIGHT, None),
+        ("free", PortConstraints::FREE, Some(D::NORTH_SOUTH), Some(O::SEQUENCED), Direction::RIGHT, Some(EdgeRouting::ORTHOGONAL)),
+        ("free", PortConstraints::UNDEFINED, Some(D::EQUALLY), Some(O::REVERSE_STACKED), Direction::RIGHT, None),
+        ("free", PortConstraints::FREE, Some(D::EQUALLY), Some(O::STACKED), Direction::DOWN, Some(EdgeRouting::POLYLINE)),
+        ("free", PortConstraints::FREE, None, Some(O::SEQUENCED), Direction::UP, None),
+        ("fixedSide", PortConstraints::FIXED_SIDE, None, Some(O::STACKED), Direction::RIGHT, None),
+        ("fixedSide", PortConstraints::FIXED_SIDE, None, Some(O::SEQUENCED), Direction::DOWN, None),
+        ("fixedSide", PortConstraints::FIXED_SIDE, None, Some(O::REVERSE_STACKED), Direction::LEFT, Some(EdgeRouting::POLYLINE)),
+        ("fixedOrder", PortConstraints::FIXED_ORDER, None, Some(O::STACKED), Direction::RIGHT, None),
+    ];
+    for (kind, opc, dist, ordering, dir, routing) in cases {
+        let mut lg = LGraphArena::new();
+        let (g, n) = self_loop_graph(&mut lg, kind != "free", dir);
+        if kind == "fixedOrder" {
+            lg[n].props.set(&LayeredOptions::PORT_CONSTRAINTS, PortConstraints::FIXED_ORDER);
+        }
+        if let Some(dist) = dist {
+            lg[n].props.set(&LayeredOptions::EDGE_ROUTING_SELF_LOOP_DISTRIBUTION, dist);
+        }
+        if let Some(ordering) = ordering {
+            lg[n].props.set(&LayeredOptions::EDGE_ROUTING_SELF_LOOP_ORDERING, ordering);
+        }
+        if let Some(routing) = routing {
+            lg[g].props.set(&LayeredOptions::EDGE_ROUTING, routing);
+        }
+        lg[n].props.set(&InternalProperties::ORIGINAL_PORT_CONSTRAINTS, opc);
+        let header = format!("selfloops {kind} {opc:?} {} {} {dir:?} {}", opt(dist), opt(ordering), opt(routing));
+
+        run(&mut lg, g, &mut SelfLoopPreProcessor::new());
+        check(&golden, &format!("{header} pre"), &dump(&lg, g));
+
+        let layer = lg.new_layer(g);
+        lg[g].layers.push(layer);
+        for x in lg[g].layerless_nodes.clone() {
+            lg.node_set_layer(x, Some(layer));
+        }
+        lg[g].layerless_nodes.clear();
+
+        run(&mut lg, g, &mut SelfLoopPortRestorer::new());
+        place_ports(&mut lg, n);
+        check(&golden, &format!("{header} restored"), &dump(&lg, g));
+
+        lg[n].position = KVector::new(100.0, 50.0);
+        run(&mut lg, g, &mut SelfLoopRouter::new());
+        run(&mut lg, g, &mut SelfLoopPostProcessor::new());
+        check(&golden, &format!("{header} routed"), &dump(&lg, g));
     }
 }

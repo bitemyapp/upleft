@@ -891,3 +891,612 @@ N2 NORMAL pos=78.0,200.0 size=20.0,20.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0
 N3 EXTERNAL_PORT pos=3.0,0.0 size=10.0,10.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=NONE ilc=TOP eps=NORTH pc=-
  P0 side=SOUTH pos=5.0,10.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
   E -> N0P1 bends=[] jps=- toff=-
+== selfloops free FREE NORTH STACKED RIGHT - pre
+graph size=0.0,0.0 offset=0.0,0.0 padding=0.0,0.0,0.0,0.0 nlp=- elss=-
+N0 NORMAL pos=0.0,0.0 size=60.0,40.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=- ilc=- eps=- pc=-
+ P0 side=EAST pos=60.0,20.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+  E -> N1P0 bends=[] jps=- toff=-
+N1 NORMAL pos=200.0,0.0 size=20.0,20.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=- ilc=- eps=- pc=-
+ P0 side=WEST pos=0.0,10.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+== selfloops free FREE NORTH STACKED RIGHT - restored
+graph size=0.0,0.0 offset=0.0,0.0 padding=0.0,0.0,0.0,0.0 nlp=- elss=-
+N0 NORMAL pos=0.0,0.0 size=60.0,40.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=0 align=- nlplace=- position=- min=- lc=- ilc=- eps=- pc=-
+ P0 side=NORTH pos=5.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+ P1 side=NORTH pos=8.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+ P2 side=NORTH pos=11.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+ P3 side=NORTH pos=14.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+ P4 side=NORTH pos=17.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+ P5 side=NORTH pos=20.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+ P6 side=NORTH pos=23.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+ P7 side=NORTH pos=26.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+ P8 side=NORTH pos=29.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+ P9 side=NORTH pos=32.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+ P10 side=NORTH pos=35.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+ P11 side=NORTH pos=38.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+ P12 side=NORTH pos=41.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+ P13 side=NORTH pos=44.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+ P14 side=NORTH pos=47.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+ P15 side=EAST pos=60.0,32.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+  E -> N1P0 bends=[] jps=- toff=-
+N1 NORMAL pos=200.0,0.0 size=20.0,20.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=0 align=- nlplace=- position=- min=- lc=- ilc=- eps=- pc=-
+ P0 side=WEST pos=0.0,10.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+== selfloops free FREE NORTH STACKED RIGHT - routed
+graph size=0.0,0.0 offset=0.0,0.0 padding=0.0,0.0,0.0,0.0 nlp=- elss=-
+N0 NORMAL pos=100.0,50.0 size=60.0,40.0 margin=89.0,10.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=0 align=- nlplace=- position=- min=- lc=- ilc=- eps=- pc=-
+ P0 side=NORTH pos=5.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+  E -> N0P12 bends=[105.0,-24.0;141.0,-24.0] jps=- toff=-
+ P1 side=NORTH pos=8.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+  E -> N0P0 bends=[108.0,-24.0;105.0,-24.0] jps=- toff=-
+ P2 side=NORTH pos=11.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+  E -> N0P10 bends=[111.0,-6.0;135.0,-6.0] jps=- toff=-
+ P3 side=NORTH pos=14.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+  E -> N0P8 bends=[114.0,14.0;129.0,14.0] jps=- toff=-
+   EL pos=120.0,4.0 size=20.0,8.0 inline=-
+ P4 side=NORTH pos=17.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+  E -> N0P7 bends=[117.0,24.0;126.0,24.0] jps=- toff=-
+ P5 side=NORTH pos=20.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+  E -> N0P6 bends=[120.0,40.0;123.0,40.0] jps=- toff=-
+ P6 side=NORTH pos=23.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+ P7 side=NORTH pos=26.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+ P8 side=NORTH pos=29.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+ P9 side=NORTH pos=32.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+ P10 side=NORTH pos=35.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+  E -> N0P9 bends=[135.0,-6.0;132.0,-6.0] jps=- toff=-
+   EL pos=122.0,-14.0 size=16.0,6.0 inline=-
+ P11 side=NORTH pos=38.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+ P12 side=NORTH pos=41.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+  E -> N0P11 bends=[141.0,-24.0;138.0,-24.0] jps=- toff=-
+   EL pos=125.0,-39.0 size=10.0,10.0 inline=-
+   EL pos=128.0,-29.0 size=4.0,3.0 inline=-
+ P13 side=NORTH pos=44.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+  E -> N0P13 bends=[144.0,40.0;144.0,40.0] jps=- toff=-
+   EL pos=124.0,34.0 size=12.0,4.0 inline=-
+ P14 side=NORTH pos=47.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+ P15 side=EAST pos=60.0,32.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+  E -> N1P0 bends=[] jps=- toff=-
+  E -> N0P14 bends=[170.0,82.0;170.0,40.0;147.0,40.0] jps=- toff=-
+N1 NORMAL pos=200.0,0.0 size=20.0,20.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=0 align=- nlplace=- position=- min=- lc=- ilc=- eps=- pc=-
+ P0 side=WEST pos=0.0,10.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+== selfloops free FREE NORTH_SOUTH SEQUENCED RIGHT ORTHOGONAL pre
+graph size=0.0,0.0 offset=0.0,0.0 padding=0.0,0.0,0.0,0.0 nlp=- elss=-
+N0 NORMAL pos=0.0,0.0 size=60.0,40.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=- ilc=- eps=- pc=-
+ P0 side=EAST pos=60.0,20.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+  E -> N1P0 bends=[] jps=- toff=-
+N1 NORMAL pos=200.0,0.0 size=20.0,20.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=- ilc=- eps=- pc=-
+ P0 side=WEST pos=0.0,10.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+== selfloops free FREE NORTH_SOUTH SEQUENCED RIGHT ORTHOGONAL restored
+graph size=0.0,0.0 offset=0.0,0.0 padding=0.0,0.0,0.0,0.0 nlp=- elss=-
+N0 NORMAL pos=0.0,0.0 size=60.0,40.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=0 align=- nlplace=- position=- min=- lc=- ilc=- eps=- pc=-
+ P0 side=NORTH pos=5.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+ P1 side=NORTH pos=8.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+ P2 side=NORTH pos=11.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+ P3 side=NORTH pos=14.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+ P4 side=NORTH pos=17.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+ P5 side=NORTH pos=20.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+ P6 side=NORTH pos=23.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+ P7 side=EAST pos=60.0,16.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+  E -> N1P0 bends=[] jps=- toff=-
+ P8 side=SOUTH pos=29.0,40.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+ P9 side=SOUTH pos=32.0,40.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+ P10 side=SOUTH pos=35.0,40.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+ P11 side=SOUTH pos=38.0,40.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+ P12 side=SOUTH pos=41.0,40.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+ P13 side=SOUTH pos=44.0,40.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+ P14 side=SOUTH pos=47.0,40.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+ P15 side=SOUTH pos=50.0,40.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+N1 NORMAL pos=200.0,0.0 size=20.0,20.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=0 align=- nlplace=- position=- min=- lc=- ilc=- eps=- pc=-
+ P0 side=WEST pos=0.0,10.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+== selfloops free FREE NORTH_SOUTH SEQUENCED RIGHT ORTHOGONAL routed
+graph size=0.0,0.0 offset=0.0,0.0 padding=0.0,0.0,0.0,0.0 nlp=- elss=-
+N0 NORMAL pos=100.0,50.0 size=60.0,40.0 margin=16.0,10.0,45.0,0.0 padding=0.0,0.0,0.0,0.0 layer=0 align=- nlplace=- position=- min=- lc=- ilc=- eps=- pc=-
+ P0 side=NORTH pos=5.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+ P1 side=NORTH pos=8.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+  E -> N0P0 bends=[108.0,40.0;105.0,40.0] jps=- toff=-
+ P2 side=NORTH pos=11.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+ P3 side=NORTH pos=14.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+  E -> N0P2 bends=[114.0,40.0;111.0,40.0] jps=- toff=-
+   EL pos=101.0,34.0 size=16.0,6.0 inline=true
+ P4 side=NORTH pos=17.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+  E -> N0P3 bends=[117.0,40.0;114.0,40.0] jps=- toff=-
+ P5 side=NORTH pos=20.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+  E -> N0P5 bends=[120.0,40.0;120.0,40.0] jps=- toff=-
+   EL pos=120.0,34.0 size=12.0,4.0 inline=-
+ P6 side=NORTH pos=23.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+ P7 side=EAST pos=60.0,16.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+  E -> N1P0 bends=[] jps=- toff=-
+  E -> N0P6 bends=[170.0,66.0;170.0,40.0;123.0,40.0] jps=- toff=-
+ P8 side=SOUTH pos=29.0,40.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+ P9 side=SOUTH pos=32.0,40.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+  E -> N0P8 bends=[132.0,100.0;129.0,100.0] jps=- toff=-
+ P10 side=SOUTH pos=35.0,40.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+ P11 side=SOUTH pos=38.0,40.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+  E -> N0P10 bends=[138.0,100.0;135.0,100.0] jps=- toff=-
+   EL pos=138.0,102.0 size=20.0,8.0 inline=-
+ P12 side=SOUTH pos=41.0,40.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+ P13 side=SOUTH pos=44.0,40.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+  E -> N0P12 bends=[144.0,120.0;141.0,120.0] jps=- toff=-
+   EL pos=131.0,122.0 size=10.0,10.0 inline=-
+   EL pos=137.0,132.0 size=4.0,3.0 inline=-
+ P14 side=SOUTH pos=47.0,40.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+  E -> N0P13 bends=[147.0,120.0;144.0,120.0] jps=- toff=-
+ P15 side=SOUTH pos=50.0,40.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+  E -> N0P14 bends=[150.0,120.0;147.0,120.0] jps=- toff=-
+N1 NORMAL pos=200.0,0.0 size=20.0,20.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=0 align=- nlplace=- position=- min=- lc=- ilc=- eps=- pc=-
+ P0 side=WEST pos=0.0,10.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+== selfloops free UNDEFINED EQUALLY REVERSE_STACKED RIGHT - pre
+graph size=0.0,0.0 offset=0.0,0.0 padding=0.0,0.0,0.0,0.0 nlp=- elss=-
+N0 NORMAL pos=0.0,0.0 size=60.0,40.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=- ilc=- eps=- pc=-
+ P0 side=EAST pos=60.0,20.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+  E -> N1P0 bends=[] jps=- toff=-
+N1 NORMAL pos=200.0,0.0 size=20.0,20.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=- ilc=- eps=- pc=-
+ P0 side=WEST pos=0.0,10.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+== selfloops free UNDEFINED EQUALLY REVERSE_STACKED RIGHT - restored
+graph size=0.0,0.0 offset=0.0,0.0 padding=0.0,0.0,0.0,0.0 nlp=- elss=-
+N0 NORMAL pos=0.0,0.0 size=60.0,40.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=0 align=- nlplace=- position=- min=- lc=- ilc=- eps=- pc=-
+ P0 side=NORTH pos=5.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+ P1 side=NORTH pos=8.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+ P2 side=NORTH pos=11.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+ P3 side=NORTH pos=14.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+ P4 side=NORTH pos=17.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+ P5 side=NORTH pos=20.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+ P6 side=EAST pos=60.0,14.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+ P7 side=EAST pos=60.0,16.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+ P8 side=EAST pos=60.0,18.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+  E -> N1P0 bends=[] jps=- toff=-
+ P9 side=SOUTH pos=32.0,40.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+ P10 side=SOUTH pos=35.0,40.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+ P11 side=SOUTH pos=38.0,40.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+ P12 side=WEST pos=0.0,26.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+ P13 side=WEST pos=0.0,28.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+ P14 side=WEST pos=0.0,30.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+ P15 side=WEST pos=0.0,32.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+N1 NORMAL pos=200.0,0.0 size=20.0,20.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=0 align=- nlplace=- position=- min=- lc=- ilc=- eps=- pc=-
+ P0 side=WEST pos=0.0,10.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+== selfloops free UNDEFINED EQUALLY REVERSE_STACKED RIGHT - routed
+graph size=0.0,0.0 offset=0.0,0.0 padding=0.0,0.0,0.0,0.0 nlp=- elss=-
+N0 NORMAL pos=100.0,50.0 size=60.0,40.0 margin=45.0,10.0,18.0,24.0 padding=0.0,0.0,0.0,0.0 layer=0 align=- nlplace=- position=- min=- lc=- ilc=- eps=- pc=-
+ P0 side=NORTH pos=5.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+ P1 side=NORTH pos=8.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+  E -> N0P4 bends=[108.0,20.0;117.0,20.0] jps=- toff=-
+ P2 side=NORTH pos=11.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+  E -> N0P1 bends=[111.0,20.0;108.0,20.0] jps=- toff=-
+ P3 side=NORTH pos=14.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+ P4 side=NORTH pos=17.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+  E -> N0P3 bends=[117.0,20.0;114.0,20.0] jps=- toff=-
+   EL pos=125.0,5.0 size=10.0,10.0 inline=-
+   EL pos=128.0,15.0 size=4.0,3.0 inline=-
+ P5 side=NORTH pos=20.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+  E -> N0P6 bends=[120.0,40.0;170.0,40.0;170.0,64.0] jps=- toff=-
+   EL pos=120.0,30.0 size=20.0,8.0 inline=-
+ P6 side=EAST pos=60.0,14.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+ P7 side=EAST pos=60.0,16.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+ P8 side=EAST pos=60.0,18.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+  E -> N1P0 bends=[] jps=- toff=-
+  E -> N0P7 bends=[170.0,68.0;170.0,66.0] jps=- toff=-
+ P9 side=SOUTH pos=32.0,40.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+  E -> N0P11 bends=[132.0,100.0;138.0,100.0] jps=- toff=-
+ P10 side=SOUTH pos=35.0,40.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+ P11 side=SOUTH pos=38.0,40.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+  E -> N0P10 bends=[138.0,100.0;135.0,100.0] jps=- toff=-
+   EL pos=122.0,102.0 size=16.0,6.0 inline=-
+ P12 side=WEST pos=0.0,26.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+  E -> N0P14 bends=[80.0,76.0;80.0,80.0] jps=- toff=-
+ P13 side=WEST pos=0.0,28.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+  E -> N0P13 bends=[90.0,78.0;90.0,78.0] jps=- toff=-
+   EL pos=76.0,78.0 size=12.0,4.0 inline=-
+ P14 side=WEST pos=0.0,30.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+ P15 side=WEST pos=0.0,32.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+  E -> N0P0 bends=[90.0,82.0;90.0,40.0;105.0,40.0] jps=- toff=-
+N1 NORMAL pos=200.0,0.0 size=20.0,20.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=0 align=- nlplace=- position=- min=- lc=- ilc=- eps=- pc=-
+ P0 side=WEST pos=0.0,10.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+== selfloops free FREE EQUALLY STACKED DOWN POLYLINE pre
+graph size=0.0,0.0 offset=0.0,0.0 padding=0.0,0.0,0.0,0.0 nlp=- elss=-
+N0 NORMAL pos=0.0,0.0 size=60.0,40.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=- ilc=- eps=- pc=-
+ P0 side=EAST pos=60.0,20.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+  E -> N1P0 bends=[] jps=- toff=-
+N1 NORMAL pos=200.0,0.0 size=20.0,20.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=- ilc=- eps=- pc=-
+ P0 side=WEST pos=0.0,10.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+== selfloops free FREE EQUALLY STACKED DOWN POLYLINE restored
+graph size=0.0,0.0 offset=0.0,0.0 padding=0.0,0.0,0.0,0.0 nlp=- elss=-
+N0 NORMAL pos=0.0,0.0 size=60.0,40.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=0 align=- nlplace=- position=- min=- lc=- ilc=- eps=- pc=-
+ P0 side=NORTH pos=5.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+ P1 side=NORTH pos=8.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+ P2 side=NORTH pos=11.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+ P3 side=NORTH pos=14.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+ P4 side=NORTH pos=17.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+ P5 side=NORTH pos=20.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+ P6 side=EAST pos=60.0,14.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+ P7 side=EAST pos=60.0,16.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+ P8 side=EAST pos=60.0,18.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+  E -> N1P0 bends=[] jps=- toff=-
+ P9 side=SOUTH pos=32.0,40.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+ P10 side=SOUTH pos=35.0,40.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+ P11 side=SOUTH pos=38.0,40.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+ P12 side=WEST pos=0.0,26.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+ P13 side=WEST pos=0.0,28.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+ P14 side=WEST pos=0.0,30.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+ P15 side=WEST pos=0.0,32.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+N1 NORMAL pos=200.0,0.0 size=20.0,20.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=0 align=- nlplace=- position=- min=- lc=- ilc=- eps=- pc=-
+ P0 side=WEST pos=0.0,10.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+== selfloops free FREE EQUALLY STACKED DOWN POLYLINE routed
+graph size=0.0,0.0 offset=0.0,0.0 padding=0.0,0.0,0.0,0.0 nlp=- elss=-
+N0 NORMAL pos=100.0,50.0 size=60.0,40.0 margin=42.0,10.0,18.0,24.0 padding=0.0,0.0,0.0,0.0 layer=0 align=- nlplace=- position=- min=- lc=- ilc=- eps=- pc=-
+ P0 side=NORTH pos=5.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+ P1 side=NORTH pos=8.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+  E -> N0P4 bends=[108.0,24.5;112.5,20.0;112.5,20.0;117.0,24.5] jps=- toff=-
+ P2 side=NORTH pos=11.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+  E -> N0P1 bends=[111.0,21.5;109.5,20.0;109.5,20.0;108.0,21.5] jps=- toff=-
+ P3 side=NORTH pos=14.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+ P4 side=NORTH pos=17.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+  E -> N0P3 bends=[117.0,21.5;115.5,20.0;115.5,20.0;114.0,21.5] jps=- toff=-
+   EL pos=123.0,8.0 size=10.0,10.0 inline=-
+   EL pos=133.0,15.0 size=4.0,3.0 inline=-
+ P5 side=NORTH pos=20.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+  E -> N0P6 bends=[120.0,45.0;125.0,40.0;160.0,40.0;170.0,50.0;170.0,59.0;165.0,64.0] jps=- toff=-
+   EL pos=120.0,30.0 size=20.0,8.0 inline=-
+ P6 side=EAST pos=60.0,14.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+ P7 side=EAST pos=60.0,16.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+ P8 side=EAST pos=60.0,18.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+  E -> N1P0 bends=[] jps=- toff=-
+  E -> N0P7 bends=[169.0,68.0;170.0,67.0;170.0,67.0;169.0,66.0] jps=- toff=-
+ P9 side=SOUTH pos=32.0,40.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+  E -> N0P11 bends=[132.0,97.0;135.0,100.0;135.0,100.0;138.0,97.0] jps=- toff=-
+ P10 side=SOUTH pos=35.0,40.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+ P11 side=SOUTH pos=38.0,40.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+  E -> N0P10 bends=[138.0,98.5;136.5,100.0;136.5,100.0;135.0,98.5] jps=- toff=-
+   EL pos=122.0,102.0 size=16.0,6.0 inline=-
+ P12 side=WEST pos=0.0,26.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+  E -> N0P13 bends=[91.0,76.0;90.0,77.0;90.0,77.0;91.0,78.0] jps=- toff=-
+ P13 side=WEST pos=0.0,28.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+ P14 side=WEST pos=0.0,30.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+  E -> N0P14 bends=[90.0,80.0;90.0,80.0;90.0,80.0;90.0,80.0] jps=- toff=-
+   EL pos=76.0,80.0 size=12.0,4.0 inline=-
+ P15 side=WEST pos=0.0,32.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+  E -> N0P0 bends=[95.0,82.0;90.0,77.0;90.0,47.5;97.5,40.0;100.0,40.0;105.0,45.0] jps=- toff=-
+N1 NORMAL pos=200.0,0.0 size=20.0,20.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=0 align=- nlplace=- position=- min=- lc=- ilc=- eps=- pc=-
+ P0 side=WEST pos=0.0,10.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+== selfloops free FREE - SEQUENCED UP - pre
+graph size=0.0,0.0 offset=0.0,0.0 padding=0.0,0.0,0.0,0.0 nlp=- elss=-
+N0 NORMAL pos=0.0,0.0 size=60.0,40.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=- ilc=- eps=- pc=-
+ P0 side=EAST pos=60.0,20.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+  E -> N1P0 bends=[] jps=- toff=-
+N1 NORMAL pos=200.0,0.0 size=20.0,20.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=- ilc=- eps=- pc=-
+ P0 side=WEST pos=0.0,10.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+== selfloops free FREE - SEQUENCED UP - restored
+graph size=0.0,0.0 offset=0.0,0.0 padding=0.0,0.0,0.0,0.0 nlp=- elss=-
+N0 NORMAL pos=0.0,0.0 size=60.0,40.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=0 align=- nlplace=- position=- min=- lc=- ilc=- eps=- pc=-
+ P0 side=NORTH pos=5.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+ P1 side=NORTH pos=8.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+ P2 side=NORTH pos=11.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+ P3 side=NORTH pos=14.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+ P4 side=NORTH pos=17.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+ P5 side=NORTH pos=20.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+ P6 side=NORTH pos=23.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+ P7 side=NORTH pos=26.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+ P8 side=NORTH pos=29.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+ P9 side=NORTH pos=32.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+ P10 side=NORTH pos=35.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+ P11 side=NORTH pos=38.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+ P12 side=NORTH pos=41.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+ P13 side=NORTH pos=44.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+ P14 side=NORTH pos=47.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+ P15 side=EAST pos=60.0,32.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+  E -> N1P0 bends=[] jps=- toff=-
+N1 NORMAL pos=200.0,0.0 size=20.0,20.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=0 align=- nlplace=- position=- min=- lc=- ilc=- eps=- pc=-
+ P0 side=WEST pos=0.0,10.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+== selfloops free FREE - SEQUENCED UP - routed
+graph size=0.0,0.0 offset=0.0,0.0 padding=0.0,0.0,0.0,0.0 nlp=- elss=-
+N0 NORMAL pos=100.0,50.0 size=60.0,40.0 margin=38.0,10.0,0.0,-0.0 padding=0.0,0.0,0.0,0.0 layer=0 align=- nlplace=- position=- min=- lc=- ilc=- eps=- pc=-
+ P0 side=NORTH pos=5.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+ P1 side=NORTH pos=8.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+  E -> N0P0 bends=[108.0,40.0;105.0,40.0] jps=- toff=-
+ P2 side=NORTH pos=11.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+ P3 side=NORTH pos=14.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+  E -> N0P2 bends=[114.0,40.0;111.0,40.0] jps=- toff=-
+ P4 side=NORTH pos=17.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+ P5 side=NORTH pos=20.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+  E -> N0P4 bends=[120.0,40.0;117.0,40.0] jps=- toff=-
+   EL pos=100.0,30.0 size=20.0,8.0 inline=-
+ P6 side=NORTH pos=23.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+ P7 side=NORTH pos=26.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+  E -> N0P6 bends=[126.0,18.0;123.0,18.0] jps=- toff=-
+   EL pos=113.0,12.0 size=16.0,6.0 inline=true
+ P8 side=NORTH pos=29.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+  E -> N0P7 bends=[129.0,18.0;126.0,18.0] jps=- toff=-
+ P9 side=NORTH pos=32.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+ P10 side=NORTH pos=35.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+  E -> N0P9 bends=[135.0,40.0;132.0,40.0] jps=- toff=-
+   EL pos=132.0,28.0 size=10.0,10.0 inline=-
+   EL pos=142.0,35.0 size=4.0,3.0 inline=-
+ P11 side=NORTH pos=38.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+  E -> N0P10 bends=[138.0,40.0;135.0,40.0] jps=- toff=-
+ P12 side=NORTH pos=41.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+  E -> N0P11 bends=[141.0,40.0;138.0,40.0] jps=- toff=-
+ P13 side=NORTH pos=44.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+  E -> N0P13 bends=[144.0,18.0;144.0,18.0] jps=- toff=-
+   EL pos=144.0,12.0 size=12.0,4.0 inline=-
+ P14 side=NORTH pos=47.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+ P15 side=EAST pos=60.0,32.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+  E -> N1P0 bends=[] jps=- toff=-
+  E -> N0P14 bends=[170.0,82.0;170.0,40.0;147.0,40.0] jps=- toff=-
+N1 NORMAL pos=200.0,0.0 size=20.0,20.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=0 align=- nlplace=- position=- min=- lc=- ilc=- eps=- pc=-
+ P0 side=WEST pos=0.0,10.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+== selfloops fixedSide FIXED_SIDE - STACKED RIGHT - pre
+graph size=0.0,0.0 offset=0.0,0.0 padding=0.0,0.0,0.0,0.0 nlp=- elss=-
+N0 NORMAL pos=0.0,0.0 size=60.0,40.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=- ilc=- eps=- pc=-
+ P0 side=EAST pos=60.0,20.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+  E -> N1P0 bends=[] jps=- toff=-
+N1 NORMAL pos=200.0,0.0 size=20.0,20.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=- ilc=- eps=- pc=-
+ P0 side=WEST pos=0.0,10.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+== selfloops fixedSide FIXED_SIDE - STACKED RIGHT - restored
+graph size=0.0,0.0 offset=0.0,0.0 padding=0.0,0.0,0.0,0.0 nlp=- elss=-
+N0 NORMAL pos=0.0,0.0 size=60.0,40.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=0 align=- nlplace=- position=- min=- lc=- ilc=- eps=- pc=-
+ P0 side=NORTH pos=5.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+ P1 side=NORTH pos=8.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+ P2 side=NORTH pos=11.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+ P3 side=NORTH pos=14.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+ P4 side=EAST pos=60.0,10.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+ P5 side=EAST pos=60.0,12.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+ P6 side=EAST pos=60.0,14.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+  E -> N1P0 bends=[] jps=- toff=-
+ P7 side=EAST pos=60.0,16.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+ P8 side=EAST pos=60.0,18.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+ P9 side=SOUTH pos=32.0,40.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+ P10 side=SOUTH pos=35.0,40.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+ P11 side=SOUTH pos=38.0,40.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+ P12 side=SOUTH pos=41.0,40.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+ P13 side=WEST pos=0.0,28.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+ P14 side=WEST pos=0.0,30.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+ P15 side=WEST pos=0.0,32.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+N1 NORMAL pos=200.0,0.0 size=20.0,20.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=0 align=- nlplace=- position=- min=- lc=- ilc=- eps=- pc=-
+ P0 side=WEST pos=0.0,10.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+== selfloops fixedSide FIXED_SIDE - STACKED RIGHT - routed
+graph size=0.0,0.0 offset=0.0,0.0 padding=0.0,0.0,0.0,0.0 nlp=- elss=-
+N0 NORMAL pos=100.0,50.0 size=60.0,40.0 margin=35.0,40.0,56.0,30.0 padding=0.0,0.0,0.0,0.0 layer=0 align=- nlplace=- position=- min=- lc=- ilc=- eps=- pc=-
+ P0 side=NORTH pos=5.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+  E -> N0P1 bends=[105.0,40.0;108.0,40.0] jps=- toff=-
+ P1 side=NORTH pos=8.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+ P2 side=NORTH pos=11.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+  E -> N0P5 bends=[111.0,30.0;190.0,30.0;190.0,62.0] jps=- toff=-
+ P3 side=NORTH pos=14.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+  E -> N0P4 bends=[114.0,40.0;180.0,40.0;180.0,60.0] jps=- toff=-
+ P4 side=EAST pos=60.0,10.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+  E -> N0P10 bends=[180.0,60.0;188.0,116.0;135.0,116.0] jps=- toff=-
+   EL pos=180.0,50.0 size=16.0,6.0 inline=true
+ P5 side=EAST pos=60.0,12.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+  E -> N0P12 bends=[190.0,62.0;190.0,100.0;141.0,100.0] jps=- toff=-
+ P6 side=EAST pos=60.0,14.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+  E -> N1P0 bends=[] jps=- toff=-
+  E -> N0P13 bends=[200.0,64.0;200.0,146.0;70.0,146.0;70.0,78.0] jps=- toff=-
+ P7 side=EAST pos=60.0,16.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+ P8 side=EAST pos=60.0,18.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+  E -> N0P9 bends=[170.0,68.0;170.0,100.0;132.0,100.0] jps=- toff=-
+ P9 side=SOUTH pos=32.0,40.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+ P10 side=SOUTH pos=35.0,40.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+ P11 side=SOUTH pos=38.0,40.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+  E -> N0P11 bends=[138.0,100.0;138.0,100.0] jps=- toff=-
+   EL pos=124.0,102.0 size=12.0,4.0 inline=-
+ P12 side=SOUTH pos=41.0,40.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+  E -> N0P15 bends=[141.0,100.0;90.0,100.0;90.0,82.0] jps=- toff=-
+   EL pos=125.0,15.0 size=10.0,10.0 inline=-
+   EL pos=128.0,25.0 size=4.0,3.0 inline=-
+ P13 side=WEST pos=0.0,28.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+ P14 side=WEST pos=0.0,30.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+  E -> N0P7 bends=[80.0,80.0;80.0,126.0;190.0,126.0;190.0,66.0] jps=- toff=-
+   EL pos=120.0,128.0 size=20.0,8.0 inline=-
+ P15 side=WEST pos=0.0,32.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+N1 NORMAL pos=200.0,0.0 size=20.0,20.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=0 align=- nlplace=- position=- min=- lc=- ilc=- eps=- pc=-
+ P0 side=WEST pos=0.0,10.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+== selfloops fixedSide FIXED_SIDE - SEQUENCED DOWN - pre
+graph size=0.0,0.0 offset=0.0,0.0 padding=0.0,0.0,0.0,0.0 nlp=- elss=-
+N0 NORMAL pos=0.0,0.0 size=60.0,40.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=- ilc=- eps=- pc=-
+ P0 side=EAST pos=60.0,20.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+  E -> N1P0 bends=[] jps=- toff=-
+N1 NORMAL pos=200.0,0.0 size=20.0,20.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=- ilc=- eps=- pc=-
+ P0 side=WEST pos=0.0,10.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+== selfloops fixedSide FIXED_SIDE - SEQUENCED DOWN - restored
+graph size=0.0,0.0 offset=0.0,0.0 padding=0.0,0.0,0.0,0.0 nlp=- elss=-
+N0 NORMAL pos=0.0,0.0 size=60.0,40.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=0 align=- nlplace=- position=- min=- lc=- ilc=- eps=- pc=-
+ P0 side=NORTH pos=5.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+ P1 side=NORTH pos=8.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+ P2 side=NORTH pos=11.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+ P3 side=NORTH pos=14.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+ P4 side=EAST pos=60.0,10.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+ P5 side=EAST pos=60.0,12.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+ P6 side=EAST pos=60.0,14.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+  E -> N1P0 bends=[] jps=- toff=-
+ P7 side=EAST pos=60.0,16.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+ P8 side=EAST pos=60.0,18.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+ P9 side=SOUTH pos=32.0,40.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+ P10 side=SOUTH pos=35.0,40.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+ P11 side=SOUTH pos=38.0,40.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+ P12 side=SOUTH pos=41.0,40.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+ P13 side=WEST pos=0.0,28.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+ P14 side=WEST pos=0.0,30.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+ P15 side=WEST pos=0.0,32.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+N1 NORMAL pos=200.0,0.0 size=20.0,20.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=0 align=- nlplace=- position=- min=- lc=- ilc=- eps=- pc=-
+ P0 side=WEST pos=0.0,10.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+== selfloops fixedSide FIXED_SIDE - SEQUENCED DOWN - routed
+graph size=0.0,0.0 offset=0.0,0.0 padding=0.0,0.0,0.0,0.0 nlp=- elss=-
+N0 NORMAL pos=100.0,50.0 size=60.0,40.0 margin=32.0,40.0,56.0,30.0 padding=0.0,0.0,0.0,0.0 layer=0 align=- nlplace=- position=- min=- lc=- ilc=- eps=- pc=-
+ P0 side=NORTH pos=5.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+ P1 side=NORTH pos=8.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+  E -> N0P0 bends=[108.0,40.0;105.0,40.0] jps=- toff=-
+ P2 side=NORTH pos=11.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+  E -> N0P5 bends=[111.0,30.0;190.0,30.0;190.0,62.0] jps=- toff=-
+ P3 side=NORTH pos=14.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+  E -> N0P4 bends=[114.0,40.0;180.0,40.0;180.0,60.0] jps=- toff=-
+ P4 side=EAST pos=60.0,10.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+  E -> N0P10 bends=[180.0,60.0;188.0,116.0;135.0,116.0] jps=- toff=-
+   EL pos=180.0,50.0 size=16.0,6.0 inline=true
+ P5 side=EAST pos=60.0,12.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+  E -> N0P12 bends=[190.0,62.0;190.0,100.0;141.0,100.0] jps=- toff=-
+ P6 side=EAST pos=60.0,14.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+  E -> N1P0 bends=[] jps=- toff=-
+  E -> N0P13 bends=[200.0,64.0;200.0,146.0;70.0,146.0;70.0,78.0] jps=- toff=-
+ P7 side=EAST pos=60.0,16.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+ P8 side=EAST pos=60.0,18.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+  E -> N0P9 bends=[170.0,68.0;170.0,100.0;132.0,100.0] jps=- toff=-
+ P9 side=SOUTH pos=32.0,40.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+ P10 side=SOUTH pos=35.0,40.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+ P11 side=SOUTH pos=38.0,40.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+  E -> N0P11 bends=[138.0,100.0;138.0,100.0] jps=- toff=-
+   EL pos=124.0,102.0 size=12.0,4.0 inline=-
+ P12 side=SOUTH pos=41.0,40.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+  E -> N0P15 bends=[141.0,100.0;90.0,100.0;90.0,82.0] jps=- toff=-
+   EL pos=123.0,18.0 size=10.0,10.0 inline=-
+   EL pos=133.0,25.0 size=4.0,3.0 inline=-
+ P13 side=WEST pos=0.0,28.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+ P14 side=WEST pos=0.0,30.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+  E -> N0P7 bends=[80.0,80.0;80.0,126.0;190.0,126.0;190.0,66.0] jps=- toff=-
+   EL pos=120.0,128.0 size=20.0,8.0 inline=-
+ P15 side=WEST pos=0.0,32.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+N1 NORMAL pos=200.0,0.0 size=20.0,20.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=0 align=- nlplace=- position=- min=- lc=- ilc=- eps=- pc=-
+ P0 side=WEST pos=0.0,10.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+== selfloops fixedSide FIXED_SIDE - REVERSE_STACKED LEFT POLYLINE pre
+graph size=0.0,0.0 offset=0.0,0.0 padding=0.0,0.0,0.0,0.0 nlp=- elss=-
+N0 NORMAL pos=0.0,0.0 size=60.0,40.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=- ilc=- eps=- pc=-
+ P0 side=EAST pos=60.0,20.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+  E -> N1P0 bends=[] jps=- toff=-
+N1 NORMAL pos=200.0,0.0 size=20.0,20.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=- ilc=- eps=- pc=-
+ P0 side=WEST pos=0.0,10.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+== selfloops fixedSide FIXED_SIDE - REVERSE_STACKED LEFT POLYLINE restored
+graph size=0.0,0.0 offset=0.0,0.0 padding=0.0,0.0,0.0,0.0 nlp=- elss=-
+N0 NORMAL pos=0.0,0.0 size=60.0,40.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=0 align=- nlplace=- position=- min=- lc=- ilc=- eps=- pc=-
+ P0 side=NORTH pos=5.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+ P1 side=NORTH pos=8.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+ P2 side=NORTH pos=11.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+ P3 side=NORTH pos=14.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+ P4 side=EAST pos=60.0,10.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+ P5 side=EAST pos=60.0,12.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+ P6 side=EAST pos=60.0,14.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+  E -> N1P0 bends=[] jps=- toff=-
+ P7 side=EAST pos=60.0,16.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+ P8 side=EAST pos=60.0,18.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+ P9 side=SOUTH pos=32.0,40.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+ P10 side=SOUTH pos=35.0,40.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+ P11 side=SOUTH pos=38.0,40.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+ P12 side=SOUTH pos=41.0,40.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+ P13 side=WEST pos=0.0,28.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+ P14 side=WEST pos=0.0,30.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+ P15 side=WEST pos=0.0,32.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+N1 NORMAL pos=200.0,0.0 size=20.0,20.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=0 align=- nlplace=- position=- min=- lc=- ilc=- eps=- pc=-
+ P0 side=WEST pos=0.0,10.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+== selfloops fixedSide FIXED_SIDE - REVERSE_STACKED LEFT POLYLINE routed
+graph size=0.0,0.0 offset=0.0,0.0 padding=0.0,0.0,0.0,0.0 nlp=- elss=-
+N0 NORMAL pos=100.0,50.0 size=60.0,40.0 margin=35.0,40.0,56.0,30.0 padding=0.0,0.0,0.0,0.0 layer=0 align=- nlplace=- position=- min=- lc=- ilc=- eps=- pc=-
+ P0 side=NORTH pos=5.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+  E -> N0P1 bends=[105.0,41.5;106.5,40.0;106.5,40.0;108.0,41.5] jps=- toff=-
+ P1 side=NORTH pos=8.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+ P2 side=NORTH pos=11.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+  E -> N0P5 bends=[111.0,40.0;121.0,30.0;180.0,30.0;190.0,40.0;190.0,52.0;180.0,62.0] jps=- toff=-
+ P3 side=NORTH pos=14.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+  E -> N0P4 bends=[114.0,45.0;119.0,40.0;170.0,40.0;180.0,50.0;180.0,50.0;170.0,60.0] jps=- toff=-
+ P4 side=EAST pos=60.0,10.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+  E -> N0P10 bends=[170.0,60.0;190.0,70.0;178.0,106.0;178.0,116.0;145.0,116.0;135.0,106.0] jps=- toff=-
+   EL pos=180.0,50.0 size=16.0,6.0 inline=true
+ P5 side=EAST pos=60.0,12.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+  E -> N0P12 bends=[180.0,62.0;190.0,72.0;190.0,90.0;180.0,100.0;146.0,100.0;141.0,95.0] jps=- toff=-
+ P6 side=EAST pos=60.0,14.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+  E -> N1P0 bends=[] jps=- toff=-
+  E -> N0P13 bends=[190.0,64.0;200.0,74.0;200.0,136.0;190.0,146.0;80.0,146.0;70.0,136.0;70.0,88.0;80.0,78.0] jps=- toff=-
+ P7 side=EAST pos=60.0,16.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+ P8 side=EAST pos=60.0,18.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+  E -> N0P9 bends=[165.0,68.0;170.0,73.0;170.0,90.0;160.0,100.0;137.0,100.0;132.0,95.0] jps=- toff=-
+ P9 side=SOUTH pos=32.0,40.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+ P10 side=SOUTH pos=35.0,40.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+ P11 side=SOUTH pos=38.0,40.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+  E -> N0P11 bends=[138.0,100.0;138.0,100.0;138.0,100.0;138.0,100.0] jps=- toff=-
+   EL pos=124.0,102.0 size=12.0,4.0 inline=-
+ P12 side=SOUTH pos=41.0,40.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+  E -> N0P15 bends=[141.0,95.0;136.0,100.0;99.0,100.0;90.0,91.0;90.0,87.0;95.0,82.0] jps=- toff=-
+   EL pos=125.0,15.0 size=10.0,10.0 inline=-
+   EL pos=128.0,25.0 size=4.0,3.0 inline=-
+ P13 side=WEST pos=0.0,28.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+ P14 side=WEST pos=0.0,30.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+  E -> N0P7 bends=[90.0,80.0;80.0,90.0;80.0,116.0;90.0,126.0;180.0,126.0;190.0,116.0;190.0,76.0;180.0,66.0] jps=- toff=-
+   EL pos=120.0,128.0 size=20.0,8.0 inline=-
+ P15 side=WEST pos=0.0,32.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+N1 NORMAL pos=200.0,0.0 size=20.0,20.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=0 align=- nlplace=- position=- min=- lc=- ilc=- eps=- pc=-
+ P0 side=WEST pos=0.0,10.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+== selfloops fixedOrder FIXED_ORDER - STACKED RIGHT - pre
+graph size=0.0,0.0 offset=0.0,0.0 padding=0.0,0.0,0.0,0.0 nlp=- elss=-
+N0 NORMAL pos=0.0,0.0 size=60.0,40.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=- ilc=- eps=- pc=fixedOrder
+ P0 side=EAST pos=60.0,20.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+  E -> N1P0 bends=[] jps=- toff=-
+ P1 side=NORTH pos=0.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+ P2 side=NORTH pos=0.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+ P3 side=EAST pos=0.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+ P4 side=SOUTH pos=0.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+ P5 side=WEST pos=0.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+ P6 side=EAST pos=0.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+ P7 side=NORTH pos=0.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+ P8 side=EAST pos=0.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+ P9 side=SOUTH pos=0.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+ P10 side=NORTH pos=0.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+ P11 side=EAST pos=0.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+ P12 side=SOUTH pos=0.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+ P13 side=WEST pos=0.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+ P14 side=SOUTH pos=0.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+ P15 side=WEST pos=0.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+N1 NORMAL pos=200.0,0.0 size=20.0,20.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=- ilc=- eps=- pc=-
+ P0 side=WEST pos=0.0,10.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+== selfloops fixedOrder FIXED_ORDER - STACKED RIGHT - restored
+graph size=0.0,0.0 offset=0.0,0.0 padding=0.0,0.0,0.0,0.0 nlp=- elss=-
+N0 NORMAL pos=0.0,0.0 size=60.0,40.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=0 align=- nlplace=- position=- min=- lc=- ilc=- eps=- pc=fixedOrder
+ P0 side=EAST pos=60.0,2.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+  E -> N1P0 bends=[] jps=- toff=-
+ P1 side=NORTH pos=8.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+ P2 side=NORTH pos=11.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+ P3 side=EAST pos=60.0,8.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+ P4 side=SOUTH pos=17.0,40.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+ P5 side=WEST pos=0.0,12.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+ P6 side=EAST pos=60.0,14.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+ P7 side=NORTH pos=26.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+ P8 side=EAST pos=60.0,18.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+ P9 side=SOUTH pos=32.0,40.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+ P10 side=NORTH pos=35.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+ P11 side=EAST pos=60.0,24.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+ P12 side=SOUTH pos=41.0,40.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+ P13 side=WEST pos=0.0,28.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+ P14 side=SOUTH pos=47.0,40.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+ P15 side=WEST pos=0.0,32.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+N1 NORMAL pos=200.0,0.0 size=20.0,20.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=0 align=- nlplace=- position=- min=- lc=- ilc=- eps=- pc=-
+ P0 side=WEST pos=0.0,10.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+== selfloops fixedOrder FIXED_ORDER - STACKED RIGHT - routed
+graph size=0.0,0.0 offset=0.0,0.0 padding=0.0,0.0,0.0,0.0 nlp=- elss=-
+N0 NORMAL pos=100.0,50.0 size=60.0,40.0 margin=20.0,36.0,51.0,40.0 padding=0.0,0.0,0.0,0.0 layer=0 align=- nlplace=- position=- min=- lc=- ilc=- eps=- pc=fixedOrder
+ P0 side=EAST pos=60.0,2.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+  E -> N1P0 bends=[] jps=- toff=-
+  E -> N0P15 bends=[170.0,52.0;170.0,40.0;90.0,40.0;90.0,82.0] jps=- toff=-
+ P1 side=NORTH pos=8.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+  E -> N0P2 bends=[108.0,40.0;111.0,40.0] jps=- toff=-
+ P2 side=NORTH pos=11.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+ P3 side=EAST pos=60.0,8.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+  E -> N0P4 bends=[170.0,58.0;170.0,116.0;117.0,116.0] jps=- toff=-
+ P4 side=SOUTH pos=17.0,40.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+ P5 side=WEST pos=0.0,12.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+  E -> N0P6 bends=[70.0,62.0;70.0,40.0;180.0,40.0;180.0,64.0] jps=- toff=-
+   EL pos=120.0,30.0 size=20.0,8.0 inline=-
+ P6 side=EAST pos=60.0,14.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+ P7 side=NORTH pos=26.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+  E -> N0P8 bends=[126.0,40.0;180.0,40.0;180.0,68.0] jps=- toff=-
+ P8 side=EAST pos=60.0,18.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+  E -> N0P9 bends=[180.0,68.0;188.0,126.0;132.0,126.0] jps=- toff=-
+   EL pos=180.0,50.0 size=16.0,6.0 inline=true
+ P9 side=SOUTH pos=32.0,40.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+ P10 side=NORTH pos=35.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+  E -> N0P11 bends=[135.0,40.0;180.0,40.0;180.0,74.0] jps=- toff=-
+ P11 side=EAST pos=60.0,24.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+  E -> N0P12 bends=[180.0,74.0;180.0,126.0;141.0,126.0] jps=- toff=-
+ P12 side=SOUTH pos=41.0,40.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+  E -> N0P13 bends=[141.0,126.0;60.0,126.0;60.0,78.0] jps=- toff=-
+   EL pos=125.0,128.0 size=10.0,10.0 inline=-
+   EL pos=128.0,138.0 size=4.0,3.0 inline=-
+ P13 side=WEST pos=0.0,28.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+ P14 side=SOUTH pos=47.0,40.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+  E -> N0P14 bends=[147.0,100.0;147.0,100.0] jps=- toff=-
+   EL pos=124.0,102.0 size=12.0,4.0 inline=-
+ P15 side=WEST pos=0.0,32.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+N1 NORMAL pos=200.0,0.0 size=20.0,20.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=0 align=- nlplace=- position=- min=- lc=- ilc=- eps=- pc=-
+ P0 side=WEST pos=0.0,10.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
