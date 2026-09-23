@@ -132,7 +132,9 @@
       "command": "displaymap",
       "output": "json",
       "variants": [
-        ["--mode", "live"]
+        ["--mode", "live"],
+        ["--mode", "read"],
+        ["--mode", "source"]
       ]
     },
     {
