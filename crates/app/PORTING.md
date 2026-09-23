@@ -9,7 +9,8 @@ This file covers the whole app-core port on `port/app-core`: Downright's app lay
 | `upleft-foundation` | none (Foundation itself) | `JSONEncoder` output; `JSONDecoder`'s scanner (`json_decoder`) and value rules (`decodable`); `JSONSerialization` through objc2; Swift `URL` for file URLs (`url::FileUrl`, checked against a recorded 46-path Swift fixture); `Date` and `.iso8601`; `FileManager`/`Data` calls through Foundation (`file_manager`, `foundation_io`) |
 | `upleft-cli` | `Sources/drdownright`, `Sources/down` | `markdown_cli`, `agent_bridge`, `agent_watcher` (FSEvents), `doctor`; the `down` binary (`src/bin/down/main.rs`) |
 | `upleft-spotlight-metadata` | `Sources/DownrightSpotlightMetadata` | `spotlight_metadata`, including the C entry point for the importer; no AppKit |
-| `upleft-quicklook` | `Sources/DownrightQL` | `quick_look_policy`, `quick_look_loader`, and the pure helpers of `preview_view_controller`; the view controller is left to the UI port |
+| `upleft-quicklook` | `Sources/DownrightQL` | `quick_look_policy`, `quick_look_loader`, `preview_view_controller` (the `PreviewViewController` view controller), and the extension executable `upleft-ql` (see "Quick Look extensions" below) |
+| `upleft-thumb` | `Sources/DownrightThumb` | `thumbnail_provider` (`ThumbnailProvider`) and the extension executable `upleft-thumb` |
 | `upleft-app` | `Sources/DownrightApp` (non-UI) | one module per Swift file, grouped by folder (below) |
 
 ## File mapping (`upleft-app`, `src/<folder>/<file>.rs`)
@@ -240,4 +241,46 @@ A scenario names the window and its sandbox: `preferences` (written as `preferen
 
 Run: `just app-oracle && cargo build --release -p upleft-conformance -p upleft-cli && target/release/conform --suite app-window` (and `--suite app-menu`). `bench-app-window <scenario.json>` times document open to first frame and a mode switch in either oracle.
 
-**Bundle.** `just upleft-app` → `target/upleft-app/Upleft.app` (see `scripts/bundle-upleft-app.sh`): `Contents/MacOS/{Upleft,down}`, `Contents/Resources/{mathFonts.bundle,AppIcon.icns,AppIcon.png,Welcome.md,PrivacyInfo.xcprivacy}`, `Contents/Frameworks/Sparkle.framework` (2.9.6, `scripts/sparkle-framework.sh`), `Contents/Library/Spotlight/DownrightSpotlight.mdimporter` (Rust `upleft-spotlight-importer` static library linked with `clang -bundle`), `Info.plist` from the rebranded `Config/Downright-Info.plist` without the Sparkle keys unless `PRODUCTION=1`, ad-hoc signature, verified layout. Never registered with Launch Services, never launched. The themes are compiled into the binary; there is no MarkdownRender resource bundle.
+**Bundle.** `just upleft-app` → `target/upleft-app/Upleft.app` (see `scripts/bundle-upleft-app.sh`): `Contents/MacOS/{Upleft,down}`, `Contents/Resources/{mathFonts.bundle,AppIcon.icns,AppIcon.png,Welcome.md,PrivacyInfo.xcprivacy}`, `Contents/Frameworks/Sparkle.framework` (2.9.6, `scripts/sparkle-framework.sh`), `Contents/Library/Spotlight/DownrightSpotlight.mdimporter` (Rust `upleft-spotlight-importer` static library linked with `clang -bundle`), `Contents/PlugIns/{DownrightQL,DownrightThumb}.appex` (`scripts/bundle-upleft-quicklook.sh`, below), `Info.plist` from the rebranded `Config/Downright-Info.plist` without the Sparkle keys unless `PRODUCTION=1`, ad-hoc signature, verified layout. Never registered with Launch Services, never launched. The themes are compiled into the binary; there is no MarkdownRender resource bundle.
+
+## Quick Look extensions (`port/app-shell-ql`)
+
+**File mapping.**
+
+| Swift | Rust | Objective-C name |
+|---|---|---|
+| `Sources/DownrightQL/PreviewViewController.swift` (with its `DensityGutterDelegate` extension) | `upleft-quicklook` `preview_view_controller` (`PreviewGutterDelegate` is the delegate proxy) | `PreviewViewController` (an `NSViewController` conforming to `QLPreviewingController`) |
+| `Sources/DownrightQL/QuickLookLoader.swift`, `QuickLookPolicy.swift` | `quick_look_loader`, `quick_look_policy` (ported earlier) | none |
+| `Sources/DownrightThumb/ThumbnailProvider.swift` | `upleft-thumb` `thumbnail_provider` | `ThumbnailProvider` (a `QLThumbnailProvider` subclass) |
+| the `main.swift` bundle-quicklook.sh generates | `crates/quicklook/src/main.rs` (`upleft-ql`), `crates/thumb/src/main.rs` (`upleft-thumb`) | none |
+| `Scripts/bundle-quicklook.sh` | `scripts/bundle-upleft-quicklook.sh` | none |
+| `Scripts/verify-bundle.sh`, Quick Look section | `scripts/verify-upleft-quicklook.sh` (sourced by both bundle scripts) | none |
+
+There is no objc2 crate for QuickLookUI or QuickLookThumbnailing at 0.3.2, so the crates declare what they use: `QLPreviewingController` (`extern_protocol!`, `preparePreviewOfFileAtURL:completionHandler:`), `QLThumbnailProvider`, `QLFileThumbnailRequest` and `QLThumbnailReply` (`extern_class!`). Each crate links its framework (`#[link(kind = "framework")]`), which is what makes the protocol and the superclass exist at run time.
+
+**Objective-C creation.** Quick Look instantiates the principal class from Objective-C, so `PreviewViewController` sets its ivars in its `initWithNibName:bundle:` override (NSViewController's `init` forwards there); `ThumbnailProvider` has no ivars. objc2 registers a class on first use, so each `main` calls `class()` before `NSExtensionMain` looks the principal class up by name. The executables are `#![no_main]` C `main`s: install the Mermaid hook (preview only), register the class, `NSExtensionMain(argc, argv)`. They are `test = false`: outside an extension host `NSExtensionMain` aborts ("An XPC Service cannot be run directly").
+
+**Threading.** Swift's main-actor `Task`, its detached user-initiated load and the `MainActor.run` hop are a main-queue block, a user-initiated global-queue block and a hop back, sharing one cancellation flag (`PreviewTask`). The completion handler is always called on the main thread, with the same `CocoaError` codes (4866 released controller, 3072 cancelled or superseded, 259 unreadable). The parses Swift runs on the main actor run at the end of the load instead (docs/KNOWN-DIFFERENCES.md). The thumbnail provider runs on whatever thread Quick Look calls it on, as in Swift.
+
+**Bundles.** `scripts/bundle-upleft-quicklook.sh [APP=…]` (or `just upleft-quicklook`) builds `upleft-ql` and `upleft-thumb` in release and assembles flat bundles in `$APP/Contents/PlugIns`:
+
+```
+DownrightQL.appex/     DownrightQL (the upleft-ql binary), Info.plist, mathFonts.bundle/, PrivacyInfo.xcprivacy, _CodeSignature/
+DownrightThumb.appex/  DownrightThumb (upleft-thumb), Info.plist, mathFonts.bundle/, PrivacyInfo.xcprivacy, _CodeSignature/
+```
+
+The Info.plists are the rebranded `Config/DownrightQL-Info.plist` and `DownrightThumb-Info.plist` with bundle-quicklook.sh's substitutions (the host's `CFBundleShortVersionString` and `CFBundleVersion`, `com.bitemyapp.upleft.quicklook` / `.thumbnail`), except that `NSExtensionPrincipalClass` drops the Swift module prefix (`PreviewViewController`, `ThumbnailProvider`). Each bundle is signed ad hoc with the rebranded `Config/QuickLook.entitlements` (App Sandbox, user-selected read-only) and its bundle id as identifier; then the host is re-signed. `bundle-upleft-app.sh` calls the script before its own signing step with `SIGN_HOST=0 VERIFY=0` and verifies the extensions with the rest of the bundle. Nothing is registered (`pluginkit`, `qlmanage`, `lsregister`) or launched. Checked against a scratch app skeleton under `target/ql-scratch` (39 checks, including `codesign --verify --strict` of each `.appex` and the host); the full `bundle-upleft-app.sh` run waits for the app binary.
+
+**Tests.** `crates/quicklook/tests/quick_look_policy_tests.rs` (DownrightQLTests: all 8, plus an empty-file case), `crates/quicklook/tests/preview_view_controller_tests.rs` (11, main-thread harness, the view in a borderless window at (-30000, -30000) that is never ordered in), `crates/thumb/tests/thumbnail_provider_tests.rs` (9, windowless; `TestThumbnailRequest` stands in for Quick Look's request, and the reply is drawn through its own `contextSize` and `drawingBlock` getters). Not tested: the n/p heading jumps and the gutter's scroll requests (animated scrolls and `NSBeep`), `openInApp:` (would open the app).
+
+**Conformance.** Both oracles; `just app-oracle && cargo build --release -p upleft-conformance && target/release/conform --suite …`:
+
+| Suite | Inputs | Result |
+|---|---|---|
+| `quicklook-preview` | `corpus/quicklook-preview/*.json`, through the panel harness (scene `PreviewViewController`) | 16/16, window-server pixels and view tree |
+| `quicklook-thumbnail` | the generated corpus and `corpus/quicklook-thumbnail/` × 256@2x, 64@2x, 1024@1x | 2745/2745 |
+| `quicklook-thumbnail-sizes` | `corpus/quicklook-thumbnail/` and four corpus documents × 7 more sizes | 154/154 |
+
+The preview scene drives `preparePreviewOfFile(at:completionHandler:)` and pumps the run loop until the handler runs, retires the memory watch (`previewGeneration &+= 1`: its malloc sample would make the capture depend on the oracle's footprint), and before every settle check lays the document out and calls `resizeToFitContent()`, since the text view's height otherwise depends on which layout pass ran last, in Swift as in Rust. A window wider than the text column (1200pt) is left out: there the column is fractional and Swift itself settles on one of two clip-view origins (−232 or −231.62) from run to run.
+
+**Unverified.** That the system's extension hosts load these bundles, find the principal classes by the bare names, and honour the sandbox; that previews and thumbnails appear in Finder. That needs registering the extensions, which is not done here.
