@@ -1,0 +1,893 @@
+== transformer - RIGHT TO_INTERNAL_LTR
+graph size=300.0,200.0 offset=3.0,7.0 padding=1.0,2.0,3.0,4.0 nlp=5.0,6.0,7.0,8.0 elss=SMART_UP
+N0 NORMAL pos=10.0,20.0 size=40.0,30.0 margin=1.0,2.0,3.0,4.0 padding=5.0,6.0,7.0,8.0 layer=- align=LEFT nlplace=73 position=11.0,22.0 min=15.0,25.0 lc=- ilc=- eps=- pc=-
+ P0 side=EAST pos=40.0,12.0 anchor=4.0,3.0 size=4.0,6.0 idx=3
+  PL pos=2.0,-4.0 size=5.0,3.0
+  E -> N1P0 bends=[80.0,35.0;80.0,74.0] jps=[80.0,50.0] toff=-
+   EL pos=60.0,40.0 size=14.0,8.0 inline=true
+ P1 side=NORTH pos=10.0,-2.0 anchor=1.5,0.25 size=6.0,2.0 idx=-
+  E -> N2P0 bends=[] jps=- toff=-
+ NL pos=1.0,2.0 size=12.0,6.0 nlplace=420
+N1 NORMAL pos=120.0,50.0 size=30.0,60.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=BOTTOM nlplace=- position=- min=- lc=- ilc=- eps=- pc=-
+ P0 side=WEST pos=-4.0,20.0 anchor=0.0,4.0 size=4.0,8.0 idx=-
+ P1 side=SOUTH pos=13.0,60.0 anchor=2.0,4.0 size=4.0,4.0 idx=-
+  E -> N2P0 bends=[135.0,150.0;170.0,150.0;170.0,15.0] jps=- toff=-
+N2 NORMAL pos=200.0,5.0 size=20.0,20.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=TOP nlplace=- position=- min=- lc=- ilc=- eps=- pc=-
+ P0 side=WEST pos=-2.0,8.0 anchor=0.0,2.0 size=2.0,4.0 idx=-
+N3 EXTERNAL_PORT pos=0.0,90.0 size=10.0,10.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=FIRST_SEPARATE ilc=- eps=WEST pc=-
+ P0 side=EAST pos=10.0,5.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+  E -> N0P1 bends=[] jps=- toff=-
+== transformer - RIGHT TO_INPUT_DIRECTION
+graph size=300.0,200.0 offset=3.0,7.0 padding=1.0,2.0,3.0,4.0 nlp=5.0,6.0,7.0,8.0 elss=SMART_UP
+N0 NORMAL pos=10.0,20.0 size=40.0,30.0 margin=1.0,2.0,3.0,4.0 padding=5.0,6.0,7.0,8.0 layer=- align=LEFT nlplace=73 position=11.0,22.0 min=15.0,25.0 lc=- ilc=- eps=- pc=-
+ P0 side=EAST pos=40.0,12.0 anchor=4.0,3.0 size=4.0,6.0 idx=3
+  PL pos=2.0,-4.0 size=5.0,3.0
+  E -> N1P0 bends=[80.0,35.0;80.0,74.0] jps=[80.0,50.0] toff=-
+   EL pos=60.0,40.0 size=14.0,8.0 inline=true
+ P1 side=NORTH pos=10.0,-2.0 anchor=1.5,0.25 size=6.0,2.0 idx=-
+  E -> N2P0 bends=[] jps=- toff=-
+ NL pos=1.0,2.0 size=12.0,6.0 nlplace=420
+N1 NORMAL pos=120.0,50.0 size=30.0,60.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=BOTTOM nlplace=- position=- min=- lc=- ilc=- eps=- pc=-
+ P0 side=WEST pos=-4.0,20.0 anchor=0.0,4.0 size=4.0,8.0 idx=-
+ P1 side=SOUTH pos=13.0,60.0 anchor=2.0,4.0 size=4.0,4.0 idx=-
+  E -> N2P0 bends=[135.0,150.0;170.0,150.0;170.0,15.0] jps=- toff=-
+N2 NORMAL pos=200.0,5.0 size=20.0,20.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=TOP nlplace=- position=- min=- lc=- ilc=- eps=- pc=-
+ P0 side=WEST pos=-2.0,8.0 anchor=0.0,2.0 size=2.0,4.0 idx=-
+N3 EXTERNAL_PORT pos=0.0,90.0 size=10.0,10.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=FIRST_SEPARATE ilc=- eps=WEST pc=-
+ P0 side=EAST pos=10.0,5.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+  E -> N0P1 bends=[] jps=- toff=-
+== transformer roundtrip - RIGHT
+graph size=317.0,209.0 offset=3.0,7.0 padding=1.0,2.0,3.0,4.0 nlp=5.0,6.0,7.0,8.0 elss=SMART_UP
+N0 NORMAL pos=10.0,20.0 size=40.0,30.0 margin=1.0,2.0,3.0,4.0 padding=5.0,6.0,7.0,8.0 layer=- align=LEFT nlplace=73 position=11.0,22.0 min=15.0,25.0 lc=- ilc=- eps=- pc=-
+ P0 side=EAST pos=40.0,12.0 anchor=4.0,3.0 size=4.0,6.0 idx=3
+  PL pos=2.0,-4.0 size=5.0,3.0
+  E -> N1P0 bends=[80.0,35.0;80.0,74.0] jps=[80.0,50.0] toff=-
+   EL pos=60.0,40.0 size=14.0,8.0 inline=true
+ P1 side=NORTH pos=10.0,-2.0 anchor=1.5,0.25 size=6.0,2.0 idx=-
+  E -> N2P0 bends=[] jps=- toff=-
+ NL pos=1.0,2.0 size=12.0,6.0 nlplace=420
+N1 NORMAL pos=120.0,50.0 size=30.0,60.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=BOTTOM nlplace=- position=- min=- lc=- ilc=- eps=- pc=-
+ P0 side=WEST pos=-4.0,20.0 anchor=0.0,4.0 size=4.0,8.0 idx=-
+ P1 side=SOUTH pos=13.0,60.0 anchor=2.0,4.0 size=4.0,4.0 idx=-
+  E -> N2P0 bends=[135.0,150.0;170.0,150.0;170.0,15.0] jps=- toff=-
+N2 NORMAL pos=200.0,5.0 size=20.0,20.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=TOP nlplace=- position=- min=- lc=- ilc=- eps=- pc=-
+ P0 side=WEST pos=-2.0,8.0 anchor=0.0,2.0 size=2.0,4.0 idx=-
+N3 EXTERNAL_PORT pos=0.0,90.0 size=10.0,10.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=FIRST_SEPARATE ilc=- eps=WEST pc=-
+ P0 side=EAST pos=10.0,5.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+  E -> N0P1 bends=[] jps=- toff=-
+== transformer - LEFT TO_INTERNAL_LTR
+graph size=300.0,200.0 offset=3.0,7.0 padding=1.0,4.0,3.0,2.0 nlp=5.0,8.0,7.0,6.0 elss=SMART_UP
+N0 NORMAL pos=244.0,20.0 size=40.0,30.0 margin=1.0,2.0,3.0,4.0 padding=5.0,8.0,7.0,6.0 layer=- align=RIGHT nlplace=76 position=243.0,22.0 min=15.0,25.0 lc=- ilc=- eps=- pc=-
+ P0 side=WEST pos=-4.0,12.0 anchor=0.0,3.0 size=4.0,6.0 idx=-3
+  PL pos=-3.0,-4.0 size=5.0,3.0
+  E -> N1P0 bends=[214.0,35.0;214.0,74.0] jps=[214.0,50.0] toff=-
+   EL pos=220.0,40.0 size=14.0,8.0 inline=true
+ P1 side=NORTH pos=24.0,-2.0 anchor=4.5,0.25 size=6.0,2.0 idx=-
+  E -> N2P0 bends=[] jps=- toff=-
+ NL pos=27.0,2.0 size=12.0,6.0 nlplace=417
+N1 NORMAL pos=144.0,50.0 size=30.0,60.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=BOTTOM nlplace=- position=- min=- lc=- ilc=- eps=- pc=-
+ P0 side=EAST pos=30.0,20.0 anchor=4.0,4.0 size=4.0,8.0 idx=-
+ P1 side=SOUTH pos=13.0,60.0 anchor=2.0,4.0 size=4.0,4.0 idx=-
+  E -> N2P0 bends=[159.0,150.0;124.0,150.0;124.0,15.0] jps=- toff=-
+N2 NORMAL pos=74.0,5.0 size=20.0,20.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=TOP nlplace=- position=- min=- lc=- ilc=- eps=- pc=-
+ P0 side=EAST pos=20.0,8.0 anchor=2.0,2.0 size=2.0,4.0 idx=-
+N3 EXTERNAL_PORT pos=284.0,90.0 size=10.0,10.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=LAST_SEPARATE ilc=- eps=EAST pc=-
+ P0 side=WEST pos=0.0,5.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+  E -> N0P1 bends=[] jps=- toff=-
+== transformer - LEFT TO_INPUT_DIRECTION
+graph size=300.0,200.0 offset=3.0,7.0 padding=1.0,4.0,3.0,2.0 nlp=5.0,8.0,7.0,6.0 elss=SMART_UP
+N0 NORMAL pos=244.0,20.0 size=40.0,30.0 margin=1.0,2.0,3.0,4.0 padding=5.0,8.0,7.0,6.0 layer=- align=RIGHT nlplace=76 position=243.0,22.0 min=15.0,25.0 lc=- ilc=- eps=- pc=-
+ P0 side=WEST pos=-4.0,12.0 anchor=0.0,3.0 size=4.0,6.0 idx=-3
+  PL pos=-3.0,-4.0 size=5.0,3.0
+  E -> N1P0 bends=[214.0,35.0;214.0,74.0] jps=[214.0,50.0] toff=-
+   EL pos=220.0,40.0 size=14.0,8.0 inline=true
+ P1 side=NORTH pos=24.0,-2.0 anchor=4.5,0.25 size=6.0,2.0 idx=-
+  E -> N2P0 bends=[] jps=- toff=-
+ NL pos=27.0,2.0 size=12.0,6.0 nlplace=417
+N1 NORMAL pos=144.0,50.0 size=30.0,60.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=BOTTOM nlplace=- position=- min=- lc=- ilc=- eps=- pc=-
+ P0 side=EAST pos=30.0,20.0 anchor=4.0,4.0 size=4.0,8.0 idx=-
+ P1 side=SOUTH pos=13.0,60.0 anchor=2.0,4.0 size=4.0,4.0 idx=-
+  E -> N2P0 bends=[159.0,150.0;124.0,150.0;124.0,15.0] jps=- toff=-
+N2 NORMAL pos=74.0,5.0 size=20.0,20.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=TOP nlplace=- position=- min=- lc=- ilc=- eps=- pc=-
+ P0 side=EAST pos=20.0,8.0 anchor=2.0,2.0 size=2.0,4.0 idx=-
+N3 EXTERNAL_PORT pos=284.0,90.0 size=10.0,10.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=LAST_SEPARATE ilc=- eps=EAST pc=-
+ P0 side=WEST pos=0.0,5.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+  E -> N0P1 bends=[] jps=- toff=-
+== transformer roundtrip - LEFT
+graph size=317.0,209.0 offset=3.0,7.0 padding=1.0,2.0,3.0,4.0 nlp=5.0,6.0,7.0,8.0 elss=SMART_UP
+N0 NORMAL pos=27.0,20.0 size=40.0,30.0 margin=1.0,2.0,3.0,4.0 padding=5.0,6.0,7.0,8.0 layer=- align=LEFT nlplace=73 position=28.0,22.0 min=15.0,25.0 lc=- ilc=- eps=- pc=-
+ P0 side=EAST pos=40.0,12.0 anchor=4.0,3.0 size=4.0,6.0 idx=3
+  PL pos=2.0,-4.0 size=5.0,3.0
+  E -> N1P0 bends=[97.0,35.0;97.0,74.0] jps=[97.0,50.0] toff=-
+   EL pos=77.0,40.0 size=14.0,8.0 inline=true
+ P1 side=NORTH pos=10.0,-2.0 anchor=1.5,0.25 size=6.0,2.0 idx=-
+  E -> N2P0 bends=[] jps=- toff=-
+ NL pos=1.0,2.0 size=12.0,6.0 nlplace=420
+N1 NORMAL pos=137.0,50.0 size=30.0,60.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=BOTTOM nlplace=- position=- min=- lc=- ilc=- eps=- pc=-
+ P0 side=WEST pos=-4.0,20.0 anchor=0.0,4.0 size=4.0,8.0 idx=-
+ P1 side=SOUTH pos=13.0,60.0 anchor=2.0,4.0 size=4.0,4.0 idx=-
+  E -> N2P0 bends=[152.0,150.0;187.0,150.0;187.0,15.0] jps=- toff=-
+N2 NORMAL pos=217.0,5.0 size=20.0,20.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=TOP nlplace=- position=- min=- lc=- ilc=- eps=- pc=-
+ P0 side=WEST pos=-2.0,8.0 anchor=0.0,2.0 size=2.0,4.0 idx=-
+N3 EXTERNAL_PORT pos=17.0,90.0 size=10.0,10.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=FIRST_SEPARATE ilc=- eps=WEST pc=-
+ P0 side=EAST pos=10.0,5.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+  E -> N0P1 bends=[] jps=- toff=-
+== transformer - DOWN TO_INTERNAL_LTR
+graph size=200.0,300.0 offset=7.0,3.0 padding=4.0,3.0,2.0,1.0 nlp=8.0,7.0,6.0,5.0 elss=SMART_DOWN
+N0 NORMAL pos=20.0,10.0 size=30.0,40.0 margin=1.0,2.0,3.0,4.0 padding=8.0,7.0,6.0,5.0 layer=- align=TOP nlplace=329 position=22.0,11.0 min=25.0,15.0 lc=- ilc=- eps=- pc=-
+ P0 side=SOUTH pos=12.0,40.0 anchor=3.0,4.0 size=6.0,4.0 idx=-3
+  PL pos=-4.0,2.0 size=3.0,5.0
+  E -> N1P0 bends=[35.0,80.0;74.0,80.0] jps=[50.0,80.0] toff=-
+   EL pos=40.0,60.0 size=8.0,14.0 inline=true
+ P1 side=WEST pos=-2.0,10.0 anchor=0.25,1.5 size=2.0,6.0 idx=-
+  E -> N2P0 bends=[] jps=- toff=-
+ NL pos=2.0,1.0 size=6.0,12.0 nlplace=164
+N1 NORMAL pos=50.0,120.0 size=60.0,30.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=RIGHT nlplace=- position=- min=- lc=- ilc=- eps=- pc=-
+ P0 side=NORTH pos=20.0,-4.0 anchor=4.0,0.0 size=8.0,4.0 idx=-
+ P1 side=EAST pos=60.0,13.0 anchor=4.0,2.0 size=4.0,4.0 idx=-
+  E -> N2P0 bends=[150.0,135.0;150.0,170.0;15.0,170.0] jps=- toff=-
+N2 NORMAL pos=5.0,200.0 size=20.0,20.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=LEFT nlplace=- position=- min=- lc=- ilc=- eps=- pc=-
+ P0 side=NORTH pos=8.0,-2.0 anchor=2.0,0.0 size=4.0,2.0 idx=-
+N3 EXTERNAL_PORT pos=90.0,0.0 size=10.0,10.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=NONE ilc=TOP eps=NORTH pc=-
+ P0 side=SOUTH pos=5.0,10.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+  E -> N0P1 bends=[] jps=- toff=-
+== transformer - DOWN TO_INPUT_DIRECTION
+graph size=200.0,300.0 offset=7.0,3.0 padding=4.0,3.0,2.0,1.0 nlp=8.0,7.0,6.0,5.0 elss=SMART_DOWN
+N0 NORMAL pos=20.0,10.0 size=30.0,40.0 margin=1.0,2.0,3.0,4.0 padding=8.0,7.0,6.0,5.0 layer=- align=TOP nlplace=329 position=22.0,11.0 min=25.0,15.0 lc=- ilc=- eps=- pc=-
+ P0 side=SOUTH pos=12.0,40.0 anchor=3.0,4.0 size=6.0,4.0 idx=-3
+  PL pos=-4.0,2.0 size=3.0,5.0
+  E -> N1P0 bends=[35.0,80.0;74.0,80.0] jps=[50.0,80.0] toff=-
+   EL pos=40.0,60.0 size=8.0,14.0 inline=true
+ P1 side=WEST pos=-2.0,10.0 anchor=0.25,1.5 size=2.0,6.0 idx=-
+  E -> N2P0 bends=[] jps=- toff=-
+ NL pos=2.0,1.0 size=6.0,12.0 nlplace=164
+N1 NORMAL pos=50.0,120.0 size=60.0,30.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=RIGHT nlplace=- position=- min=- lc=- ilc=- eps=- pc=-
+ P0 side=NORTH pos=20.0,-4.0 anchor=4.0,0.0 size=8.0,4.0 idx=-
+ P1 side=EAST pos=60.0,13.0 anchor=4.0,2.0 size=4.0,4.0 idx=-
+  E -> N2P0 bends=[150.0,135.0;150.0,170.0;15.0,170.0] jps=- toff=-
+N2 NORMAL pos=5.0,200.0 size=20.0,20.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=LEFT nlplace=- position=- min=- lc=- ilc=- eps=- pc=-
+ P0 side=NORTH pos=8.0,-2.0 anchor=2.0,0.0 size=4.0,2.0 idx=-
+N3 EXTERNAL_PORT pos=90.0,0.0 size=10.0,10.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=NONE ilc=TOP eps=NORTH pc=-
+ P0 side=SOUTH pos=5.0,10.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+  E -> N0P1 bends=[] jps=- toff=-
+== transformer roundtrip - DOWN
+graph size=309.0,217.0 offset=3.0,7.0 padding=1.0,2.0,3.0,4.0 nlp=5.0,6.0,7.0,8.0 elss=SMART_UP
+N0 NORMAL pos=10.0,20.0 size=40.0,30.0 margin=1.0,2.0,3.0,4.0 padding=5.0,6.0,7.0,8.0 layer=- align=LEFT nlplace=73 position=11.0,22.0 min=15.0,25.0 lc=- ilc=- eps=- pc=-
+ P0 side=EAST pos=40.0,12.0 anchor=4.0,3.0 size=4.0,6.0 idx=3
+  PL pos=2.0,-4.0 size=5.0,3.0
+  E -> N1P0 bends=[80.0,35.0;80.0,74.0] jps=[80.0,50.0] toff=-
+   EL pos=60.0,40.0 size=14.0,8.0 inline=true
+ P1 side=NORTH pos=10.0,-2.0 anchor=1.5,0.25 size=6.0,2.0 idx=-
+  E -> N2P0 bends=[] jps=- toff=-
+ NL pos=1.0,2.0 size=12.0,6.0 nlplace=420
+N1 NORMAL pos=120.0,50.0 size=30.0,60.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=BOTTOM nlplace=- position=- min=- lc=- ilc=- eps=- pc=-
+ P0 side=WEST pos=-4.0,20.0 anchor=0.0,4.0 size=4.0,8.0 idx=-
+ P1 side=SOUTH pos=13.0,60.0 anchor=2.0,4.0 size=4.0,4.0 idx=-
+  E -> N2P0 bends=[135.0,150.0;170.0,150.0;170.0,15.0] jps=- toff=-
+N2 NORMAL pos=200.0,5.0 size=20.0,20.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=TOP nlplace=- position=- min=- lc=- ilc=- eps=- pc=-
+ P0 side=WEST pos=-2.0,8.0 anchor=0.0,2.0 size=2.0,4.0 idx=-
+N3 EXTERNAL_PORT pos=0.0,90.0 size=10.0,10.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=FIRST_SEPARATE ilc=NONE eps=WEST pc=-
+ P0 side=EAST pos=10.0,5.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+  E -> N0P1 bends=[] jps=- toff=-
+== transformer - UP TO_INTERNAL_LTR
+graph size=200.0,300.0 offset=7.0,3.0 padding=2.0,3.0,4.0,1.0 nlp=6.0,7.0,8.0,5.0 elss=SMART_DOWN
+N0 NORMAL pos=20.0,244.0 size=30.0,40.0 margin=1.0,2.0,3.0,4.0 padding=6.0,7.0,8.0,5.0 layer=- align=BOTTOM nlplace=353 position=22.0,243.0 min=25.0,15.0 lc=- ilc=- eps=- pc=-
+ P0 side=NORTH pos=12.0,-4.0 anchor=3.0,0.0 size=6.0,4.0 idx=3
+  PL pos=-4.0,-3.0 size=3.0,5.0
+  E -> N1P0 bends=[35.0,214.0;74.0,214.0] jps=[50.0,214.0] toff=-
+   EL pos=40.0,220.0 size=8.0,14.0 inline=true
+ P1 side=WEST pos=-2.0,24.0 anchor=0.25,4.5 size=2.0,6.0 idx=-
+  E -> N2P0 bends=[] jps=- toff=-
+ NL pos=2.0,27.0 size=6.0,12.0 nlplace=140
+N1 NORMAL pos=50.0,144.0 size=60.0,30.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=RIGHT nlplace=- position=- min=- lc=- ilc=- eps=- pc=-
+ P0 side=SOUTH pos=20.0,30.0 anchor=4.0,4.0 size=8.0,4.0 idx=-
+ P1 side=EAST pos=60.0,13.0 anchor=4.0,2.0 size=4.0,4.0 idx=-
+  E -> N2P0 bends=[150.0,159.0;150.0,124.0;15.0,124.0] jps=- toff=-
+N2 NORMAL pos=5.0,74.0 size=20.0,20.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=LEFT nlplace=- position=- min=- lc=- ilc=- eps=- pc=-
+ P0 side=SOUTH pos=8.0,20.0 anchor=2.0,2.0 size=4.0,2.0 idx=-
+N3 EXTERNAL_PORT pos=90.0,284.0 size=10.0,10.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=NONE ilc=BOTTOM eps=SOUTH pc=-
+ P0 side=NORTH pos=5.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+  E -> N0P1 bends=[] jps=- toff=-
+== transformer - UP TO_INPUT_DIRECTION
+graph size=200.0,300.0 offset=7.0,3.0 padding=4.0,1.0,2.0,3.0 nlp=8.0,5.0,6.0,7.0 elss=SMART_DOWN
+N0 NORMAL pos=136.0,10.0 size=30.0,40.0 margin=1.0,2.0,3.0,4.0 padding=8.0,5.0,6.0,7.0 layer=- align=TOP nlplace=332 position=134.0,11.0 min=25.0,15.0 lc=- ilc=- eps=- pc=-
+ P0 side=SOUTH pos=12.0,40.0 anchor=3.0,4.0 size=6.0,4.0 idx=3
+  PL pos=7.0,2.0 size=3.0,5.0
+  E -> N1P0 bends=[151.0,80.0;112.0,80.0] jps=[136.0,80.0] toff=-
+   EL pos=138.0,60.0 size=8.0,14.0 inline=true
+ P1 side=EAST pos=30.0,10.0 anchor=1.75,1.5 size=2.0,6.0 idx=-
+  E -> N2P0 bends=[] jps=- toff=-
+ NL pos=22.0,1.0 size=6.0,12.0 nlplace=161
+N1 NORMAL pos=76.0,120.0 size=60.0,30.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=LEFT nlplace=- position=- min=- lc=- ilc=- eps=- pc=-
+ P0 side=NORTH pos=32.0,-4.0 anchor=4.0,0.0 size=8.0,4.0 idx=-
+ P1 side=WEST pos=-4.0,13.0 anchor=0.0,2.0 size=4.0,4.0 idx=-
+  E -> N2P0 bends=[36.0,135.0;36.0,170.0;171.0,170.0] jps=- toff=-
+N2 NORMAL pos=161.0,200.0 size=20.0,20.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=RIGHT nlplace=- position=- min=- lc=- ilc=- eps=- pc=-
+ P0 side=NORTH pos=8.0,-2.0 anchor=2.0,0.0 size=4.0,2.0 idx=-
+N3 EXTERNAL_PORT pos=86.0,0.0 size=10.0,10.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=NONE ilc=TOP eps=NORTH pc=-
+ P0 side=SOUTH pos=5.0,10.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+  E -> N0P1 bends=[] jps=- toff=-
+== transformer roundtrip - UP
+graph size=309.0,217.0 offset=3.0,7.0 padding=1.0,2.0,3.0,4.0 nlp=5.0,6.0,7.0,8.0 elss=SMART_UP
+N0 NORMAL pos=10.0,37.0 size=40.0,30.0 margin=1.0,2.0,3.0,4.0 padding=5.0,6.0,7.0,8.0 layer=- align=LEFT nlplace=73 position=11.0,39.0 min=15.0,25.0 lc=- ilc=- eps=- pc=-
+ P0 side=EAST pos=40.0,12.0 anchor=4.0,3.0 size=4.0,6.0 idx=3
+  PL pos=2.0,-4.0 size=5.0,3.0
+  E -> N1P0 bends=[80.0,52.0;80.0,91.0] jps=[80.0,67.0] toff=-
+   EL pos=60.0,57.0 size=14.0,8.0 inline=true
+ P1 side=NORTH pos=10.0,-2.0 anchor=1.5,0.25 size=6.0,2.0 idx=-
+  E -> N2P0 bends=[] jps=- toff=-
+ NL pos=1.0,2.0 size=12.0,6.0 nlplace=420
+N1 NORMAL pos=120.0,67.0 size=30.0,60.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=BOTTOM nlplace=- position=- min=- lc=- ilc=- eps=- pc=-
+ P0 side=WEST pos=-4.0,20.0 anchor=0.0,4.0 size=4.0,8.0 idx=-
+ P1 side=SOUTH pos=13.0,60.0 anchor=2.0,4.0 size=4.0,4.0 idx=-
+  E -> N2P0 bends=[135.0,167.0;170.0,167.0;170.0,32.0] jps=- toff=-
+N2 NORMAL pos=200.0,22.0 size=20.0,20.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=TOP nlplace=- position=- min=- lc=- ilc=- eps=- pc=-
+ P0 side=WEST pos=-2.0,8.0 anchor=0.0,2.0 size=2.0,4.0 idx=-
+N3 EXTERNAL_PORT pos=0.0,107.0 size=10.0,10.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=FIRST_SEPARATE ilc=NONE eps=WEST pc=-
+ P0 side=EAST pos=10.0,5.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+  E -> N0P1 bends=[] jps=- toff=-
+== transformer - UNDEFINED TO_INTERNAL_LTR
+graph size=300.0,200.0 offset=3.0,7.0 padding=1.0,2.0,3.0,4.0 nlp=5.0,6.0,7.0,8.0 elss=SMART_UP
+N0 NORMAL pos=10.0,20.0 size=40.0,30.0 margin=1.0,2.0,3.0,4.0 padding=5.0,6.0,7.0,8.0 layer=- align=LEFT nlplace=73 position=11.0,22.0 min=15.0,25.0 lc=- ilc=- eps=- pc=-
+ P0 side=EAST pos=40.0,12.0 anchor=4.0,3.0 size=4.0,6.0 idx=3
+  PL pos=2.0,-4.0 size=5.0,3.0
+  E -> N1P0 bends=[80.0,35.0;80.0,74.0] jps=[80.0,50.0] toff=-
+   EL pos=60.0,40.0 size=14.0,8.0 inline=true
+ P1 side=NORTH pos=10.0,-2.0 anchor=1.5,0.25 size=6.0,2.0 idx=-
+  E -> N2P0 bends=[] jps=- toff=-
+ NL pos=1.0,2.0 size=12.0,6.0 nlplace=420
+N1 NORMAL pos=120.0,50.0 size=30.0,60.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=BOTTOM nlplace=- position=- min=- lc=- ilc=- eps=- pc=-
+ P0 side=WEST pos=-4.0,20.0 anchor=0.0,4.0 size=4.0,8.0 idx=-
+ P1 side=SOUTH pos=13.0,60.0 anchor=2.0,4.0 size=4.0,4.0 idx=-
+  E -> N2P0 bends=[135.0,150.0;170.0,150.0;170.0,15.0] jps=- toff=-
+N2 NORMAL pos=200.0,5.0 size=20.0,20.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=TOP nlplace=- position=- min=- lc=- ilc=- eps=- pc=-
+ P0 side=WEST pos=-2.0,8.0 anchor=0.0,2.0 size=2.0,4.0 idx=-
+N3 EXTERNAL_PORT pos=0.0,90.0 size=10.0,10.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=FIRST_SEPARATE ilc=- eps=WEST pc=-
+ P0 side=EAST pos=10.0,5.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+  E -> N0P1 bends=[] jps=- toff=-
+== transformer - UNDEFINED TO_INPUT_DIRECTION
+graph size=300.0,200.0 offset=3.0,7.0 padding=1.0,2.0,3.0,4.0 nlp=5.0,6.0,7.0,8.0 elss=SMART_UP
+N0 NORMAL pos=10.0,20.0 size=40.0,30.0 margin=1.0,2.0,3.0,4.0 padding=5.0,6.0,7.0,8.0 layer=- align=LEFT nlplace=73 position=11.0,22.0 min=15.0,25.0 lc=- ilc=- eps=- pc=-
+ P0 side=EAST pos=40.0,12.0 anchor=4.0,3.0 size=4.0,6.0 idx=3
+  PL pos=2.0,-4.0 size=5.0,3.0
+  E -> N1P0 bends=[80.0,35.0;80.0,74.0] jps=[80.0,50.0] toff=-
+   EL pos=60.0,40.0 size=14.0,8.0 inline=true
+ P1 side=NORTH pos=10.0,-2.0 anchor=1.5,0.25 size=6.0,2.0 idx=-
+  E -> N2P0 bends=[] jps=- toff=-
+ NL pos=1.0,2.0 size=12.0,6.0 nlplace=420
+N1 NORMAL pos=120.0,50.0 size=30.0,60.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=BOTTOM nlplace=- position=- min=- lc=- ilc=- eps=- pc=-
+ P0 side=WEST pos=-4.0,20.0 anchor=0.0,4.0 size=4.0,8.0 idx=-
+ P1 side=SOUTH pos=13.0,60.0 anchor=2.0,4.0 size=4.0,4.0 idx=-
+  E -> N2P0 bends=[135.0,150.0;170.0,150.0;170.0,15.0] jps=- toff=-
+N2 NORMAL pos=200.0,5.0 size=20.0,20.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=TOP nlplace=- position=- min=- lc=- ilc=- eps=- pc=-
+ P0 side=WEST pos=-2.0,8.0 anchor=0.0,2.0 size=2.0,4.0 idx=-
+N3 EXTERNAL_PORT pos=0.0,90.0 size=10.0,10.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=FIRST_SEPARATE ilc=- eps=WEST pc=-
+ P0 side=EAST pos=10.0,5.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+  E -> N0P1 bends=[] jps=- toff=-
+== transformer roundtrip - UNDEFINED
+graph size=317.0,209.0 offset=3.0,7.0 padding=1.0,2.0,3.0,4.0 nlp=5.0,6.0,7.0,8.0 elss=SMART_UP
+N0 NORMAL pos=10.0,20.0 size=40.0,30.0 margin=1.0,2.0,3.0,4.0 padding=5.0,6.0,7.0,8.0 layer=- align=LEFT nlplace=73 position=11.0,22.0 min=15.0,25.0 lc=- ilc=- eps=- pc=-
+ P0 side=EAST pos=40.0,12.0 anchor=4.0,3.0 size=4.0,6.0 idx=3
+  PL pos=2.0,-4.0 size=5.0,3.0
+  E -> N1P0 bends=[80.0,35.0;80.0,74.0] jps=[80.0,50.0] toff=-
+   EL pos=60.0,40.0 size=14.0,8.0 inline=true
+ P1 side=NORTH pos=10.0,-2.0 anchor=1.5,0.25 size=6.0,2.0 idx=-
+  E -> N2P0 bends=[] jps=- toff=-
+ NL pos=1.0,2.0 size=12.0,6.0 nlplace=420
+N1 NORMAL pos=120.0,50.0 size=30.0,60.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=BOTTOM nlplace=- position=- min=- lc=- ilc=- eps=- pc=-
+ P0 side=WEST pos=-4.0,20.0 anchor=0.0,4.0 size=4.0,8.0 idx=-
+ P1 side=SOUTH pos=13.0,60.0 anchor=2.0,4.0 size=4.0,4.0 idx=-
+  E -> N2P0 bends=[135.0,150.0;170.0,150.0;170.0,15.0] jps=- toff=-
+N2 NORMAL pos=200.0,5.0 size=20.0,20.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=TOP nlplace=- position=- min=- lc=- ilc=- eps=- pc=-
+ P0 side=WEST pos=-2.0,8.0 anchor=0.0,2.0 size=2.0,4.0 idx=-
+N3 EXTERNAL_PORT pos=0.0,90.0 size=10.0,10.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=FIRST_SEPARATE ilc=- eps=WEST pc=-
+ P0 side=EAST pos=10.0,5.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+  E -> N0P1 bends=[] jps=- toff=-
+== transformer READING_DIRECTION RIGHT TO_INTERNAL_LTR
+graph size=300.0,200.0 offset=3.0,7.0 padding=1.0,2.0,3.0,4.0 nlp=5.0,6.0,7.0,8.0 elss=SMART_UP
+N0 NORMAL pos=10.0,20.0 size=40.0,30.0 margin=1.0,2.0,3.0,4.0 padding=5.0,6.0,7.0,8.0 layer=- align=LEFT nlplace=73 position=11.0,22.0 min=15.0,25.0 lc=- ilc=- eps=- pc=-
+ P0 side=EAST pos=40.0,12.0 anchor=4.0,3.0 size=4.0,6.0 idx=3
+  PL pos=2.0,-4.0 size=5.0,3.0
+  E -> N1P0 bends=[80.0,35.0;80.0,74.0] jps=[80.0,50.0] toff=-
+   EL pos=60.0,40.0 size=14.0,8.0 inline=true
+ P1 side=NORTH pos=10.0,-2.0 anchor=1.5,0.25 size=6.0,2.0 idx=-
+  E -> N2P0 bends=[] jps=- toff=-
+ NL pos=1.0,2.0 size=12.0,6.0 nlplace=420
+N1 NORMAL pos=120.0,50.0 size=30.0,60.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=BOTTOM nlplace=- position=- min=- lc=- ilc=- eps=- pc=-
+ P0 side=WEST pos=-4.0,20.0 anchor=0.0,4.0 size=4.0,8.0 idx=-
+ P1 side=SOUTH pos=13.0,60.0 anchor=2.0,4.0 size=4.0,4.0 idx=-
+  E -> N2P0 bends=[135.0,150.0;170.0,150.0;170.0,15.0] jps=- toff=-
+N2 NORMAL pos=200.0,5.0 size=20.0,20.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=TOP nlplace=- position=- min=- lc=- ilc=- eps=- pc=-
+ P0 side=WEST pos=-2.0,8.0 anchor=0.0,2.0 size=2.0,4.0 idx=-
+N3 EXTERNAL_PORT pos=0.0,90.0 size=10.0,10.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=FIRST_SEPARATE ilc=- eps=WEST pc=-
+ P0 side=EAST pos=10.0,5.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+  E -> N0P1 bends=[] jps=- toff=-
+== transformer READING_DIRECTION RIGHT TO_INPUT_DIRECTION
+graph size=300.0,200.0 offset=3.0,7.0 padding=1.0,2.0,3.0,4.0 nlp=5.0,6.0,7.0,8.0 elss=SMART_UP
+N0 NORMAL pos=10.0,20.0 size=40.0,30.0 margin=1.0,2.0,3.0,4.0 padding=5.0,6.0,7.0,8.0 layer=- align=LEFT nlplace=73 position=11.0,22.0 min=15.0,25.0 lc=- ilc=- eps=- pc=-
+ P0 side=EAST pos=40.0,12.0 anchor=4.0,3.0 size=4.0,6.0 idx=3
+  PL pos=2.0,-4.0 size=5.0,3.0
+  E -> N1P0 bends=[80.0,35.0;80.0,74.0] jps=[80.0,50.0] toff=-
+   EL pos=60.0,40.0 size=14.0,8.0 inline=true
+ P1 side=NORTH pos=10.0,-2.0 anchor=1.5,0.25 size=6.0,2.0 idx=-
+  E -> N2P0 bends=[] jps=- toff=-
+ NL pos=1.0,2.0 size=12.0,6.0 nlplace=420
+N1 NORMAL pos=120.0,50.0 size=30.0,60.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=BOTTOM nlplace=- position=- min=- lc=- ilc=- eps=- pc=-
+ P0 side=WEST pos=-4.0,20.0 anchor=0.0,4.0 size=4.0,8.0 idx=-
+ P1 side=SOUTH pos=13.0,60.0 anchor=2.0,4.0 size=4.0,4.0 idx=-
+  E -> N2P0 bends=[135.0,150.0;170.0,150.0;170.0,15.0] jps=- toff=-
+N2 NORMAL pos=200.0,5.0 size=20.0,20.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=TOP nlplace=- position=- min=- lc=- ilc=- eps=- pc=-
+ P0 side=WEST pos=-2.0,8.0 anchor=0.0,2.0 size=2.0,4.0 idx=-
+N3 EXTERNAL_PORT pos=0.0,90.0 size=10.0,10.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=FIRST_SEPARATE ilc=- eps=WEST pc=-
+ P0 side=EAST pos=10.0,5.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+  E -> N0P1 bends=[] jps=- toff=-
+== transformer roundtrip READING_DIRECTION RIGHT
+graph size=317.0,209.0 offset=3.0,7.0 padding=1.0,2.0,3.0,4.0 nlp=5.0,6.0,7.0,8.0 elss=SMART_UP
+N0 NORMAL pos=10.0,20.0 size=40.0,30.0 margin=1.0,2.0,3.0,4.0 padding=5.0,6.0,7.0,8.0 layer=- align=LEFT nlplace=73 position=11.0,22.0 min=15.0,25.0 lc=- ilc=- eps=- pc=-
+ P0 side=EAST pos=40.0,12.0 anchor=4.0,3.0 size=4.0,6.0 idx=3
+  PL pos=2.0,-4.0 size=5.0,3.0
+  E -> N1P0 bends=[80.0,35.0;80.0,74.0] jps=[80.0,50.0] toff=-
+   EL pos=60.0,40.0 size=14.0,8.0 inline=true
+ P1 side=NORTH pos=10.0,-2.0 anchor=1.5,0.25 size=6.0,2.0 idx=-
+  E -> N2P0 bends=[] jps=- toff=-
+ NL pos=1.0,2.0 size=12.0,6.0 nlplace=420
+N1 NORMAL pos=120.0,50.0 size=30.0,60.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=BOTTOM nlplace=- position=- min=- lc=- ilc=- eps=- pc=-
+ P0 side=WEST pos=-4.0,20.0 anchor=0.0,4.0 size=4.0,8.0 idx=-
+ P1 side=SOUTH pos=13.0,60.0 anchor=2.0,4.0 size=4.0,4.0 idx=-
+  E -> N2P0 bends=[135.0,150.0;170.0,150.0;170.0,15.0] jps=- toff=-
+N2 NORMAL pos=200.0,5.0 size=20.0,20.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=TOP nlplace=- position=- min=- lc=- ilc=- eps=- pc=-
+ P0 side=WEST pos=-2.0,8.0 anchor=0.0,2.0 size=2.0,4.0 idx=-
+N3 EXTERNAL_PORT pos=0.0,90.0 size=10.0,10.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=FIRST_SEPARATE ilc=- eps=WEST pc=-
+ P0 side=EAST pos=10.0,5.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+  E -> N0P1 bends=[] jps=- toff=-
+== transformer READING_DIRECTION LEFT TO_INTERNAL_LTR
+graph size=300.0,200.0 offset=3.0,7.0 padding=1.0,4.0,3.0,2.0 nlp=5.0,8.0,7.0,6.0 elss=SMART_UP
+N0 NORMAL pos=244.0,20.0 size=40.0,30.0 margin=1.0,2.0,3.0,4.0 padding=5.0,8.0,7.0,6.0 layer=- align=RIGHT nlplace=76 position=243.0,22.0 min=15.0,25.0 lc=- ilc=- eps=- pc=-
+ P0 side=WEST pos=-4.0,12.0 anchor=0.0,3.0 size=4.0,6.0 idx=-3
+  PL pos=-3.0,-4.0 size=5.0,3.0
+  E -> N1P0 bends=[214.0,35.0;214.0,74.0] jps=[214.0,50.0] toff=-
+   EL pos=220.0,40.0 size=14.0,8.0 inline=true
+ P1 side=NORTH pos=24.0,-2.0 anchor=4.5,0.25 size=6.0,2.0 idx=-
+  E -> N2P0 bends=[] jps=- toff=-
+ NL pos=27.0,2.0 size=12.0,6.0 nlplace=417
+N1 NORMAL pos=144.0,50.0 size=30.0,60.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=BOTTOM nlplace=- position=- min=- lc=- ilc=- eps=- pc=-
+ P0 side=EAST pos=30.0,20.0 anchor=4.0,4.0 size=4.0,8.0 idx=-
+ P1 side=SOUTH pos=13.0,60.0 anchor=2.0,4.0 size=4.0,4.0 idx=-
+  E -> N2P0 bends=[159.0,150.0;124.0,150.0;124.0,15.0] jps=- toff=-
+N2 NORMAL pos=74.0,5.0 size=20.0,20.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=TOP nlplace=- position=- min=- lc=- ilc=- eps=- pc=-
+ P0 side=EAST pos=20.0,8.0 anchor=2.0,2.0 size=2.0,4.0 idx=-
+N3 EXTERNAL_PORT pos=284.0,90.0 size=10.0,10.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=LAST_SEPARATE ilc=- eps=EAST pc=-
+ P0 side=WEST pos=0.0,5.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+  E -> N0P1 bends=[] jps=- toff=-
+== transformer READING_DIRECTION LEFT TO_INPUT_DIRECTION
+graph size=300.0,200.0 offset=3.0,7.0 padding=1.0,4.0,3.0,2.0 nlp=5.0,8.0,7.0,6.0 elss=SMART_UP
+N0 NORMAL pos=244.0,20.0 size=40.0,30.0 margin=1.0,2.0,3.0,4.0 padding=5.0,8.0,7.0,6.0 layer=- align=RIGHT nlplace=76 position=243.0,22.0 min=15.0,25.0 lc=- ilc=- eps=- pc=-
+ P0 side=WEST pos=-4.0,12.0 anchor=0.0,3.0 size=4.0,6.0 idx=-3
+  PL pos=-3.0,-4.0 size=5.0,3.0
+  E -> N1P0 bends=[214.0,35.0;214.0,74.0] jps=[214.0,50.0] toff=-
+   EL pos=220.0,40.0 size=14.0,8.0 inline=true
+ P1 side=NORTH pos=24.0,-2.0 anchor=4.5,0.25 size=6.0,2.0 idx=-
+  E -> N2P0 bends=[] jps=- toff=-
+ NL pos=27.0,2.0 size=12.0,6.0 nlplace=417
+N1 NORMAL pos=144.0,50.0 size=30.0,60.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=BOTTOM nlplace=- position=- min=- lc=- ilc=- eps=- pc=-
+ P0 side=EAST pos=30.0,20.0 anchor=4.0,4.0 size=4.0,8.0 idx=-
+ P1 side=SOUTH pos=13.0,60.0 anchor=2.0,4.0 size=4.0,4.0 idx=-
+  E -> N2P0 bends=[159.0,150.0;124.0,150.0;124.0,15.0] jps=- toff=-
+N2 NORMAL pos=74.0,5.0 size=20.0,20.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=TOP nlplace=- position=- min=- lc=- ilc=- eps=- pc=-
+ P0 side=EAST pos=20.0,8.0 anchor=2.0,2.0 size=2.0,4.0 idx=-
+N3 EXTERNAL_PORT pos=284.0,90.0 size=10.0,10.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=LAST_SEPARATE ilc=- eps=EAST pc=-
+ P0 side=WEST pos=0.0,5.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+  E -> N0P1 bends=[] jps=- toff=-
+== transformer roundtrip READING_DIRECTION LEFT
+graph size=317.0,209.0 offset=3.0,7.0 padding=1.0,2.0,3.0,4.0 nlp=5.0,6.0,7.0,8.0 elss=SMART_UP
+N0 NORMAL pos=27.0,20.0 size=40.0,30.0 margin=1.0,2.0,3.0,4.0 padding=5.0,6.0,7.0,8.0 layer=- align=LEFT nlplace=73 position=28.0,22.0 min=15.0,25.0 lc=- ilc=- eps=- pc=-
+ P0 side=EAST pos=40.0,12.0 anchor=4.0,3.0 size=4.0,6.0 idx=3
+  PL pos=2.0,-4.0 size=5.0,3.0
+  E -> N1P0 bends=[97.0,35.0;97.0,74.0] jps=[97.0,50.0] toff=-
+   EL pos=77.0,40.0 size=14.0,8.0 inline=true
+ P1 side=NORTH pos=10.0,-2.0 anchor=1.5,0.25 size=6.0,2.0 idx=-
+  E -> N2P0 bends=[] jps=- toff=-
+ NL pos=1.0,2.0 size=12.0,6.0 nlplace=420
+N1 NORMAL pos=137.0,50.0 size=30.0,60.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=BOTTOM nlplace=- position=- min=- lc=- ilc=- eps=- pc=-
+ P0 side=WEST pos=-4.0,20.0 anchor=0.0,4.0 size=4.0,8.0 idx=-
+ P1 side=SOUTH pos=13.0,60.0 anchor=2.0,4.0 size=4.0,4.0 idx=-
+  E -> N2P0 bends=[152.0,150.0;187.0,150.0;187.0,15.0] jps=- toff=-
+N2 NORMAL pos=217.0,5.0 size=20.0,20.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=TOP nlplace=- position=- min=- lc=- ilc=- eps=- pc=-
+ P0 side=WEST pos=-2.0,8.0 anchor=0.0,2.0 size=2.0,4.0 idx=-
+N3 EXTERNAL_PORT pos=17.0,90.0 size=10.0,10.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=FIRST_SEPARATE ilc=- eps=WEST pc=-
+ P0 side=EAST pos=10.0,5.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+  E -> N0P1 bends=[] jps=- toff=-
+== transformer READING_DIRECTION DOWN TO_INTERNAL_LTR
+graph size=200.0,300.0 offset=7.0,3.0 padding=4.0,3.0,2.0,1.0 nlp=8.0,7.0,6.0,5.0 elss=SMART_DOWN
+N0 NORMAL pos=20.0,10.0 size=30.0,40.0 margin=1.0,2.0,3.0,4.0 padding=8.0,7.0,6.0,5.0 layer=- align=TOP nlplace=329 position=22.0,11.0 min=25.0,15.0 lc=- ilc=- eps=- pc=-
+ P0 side=SOUTH pos=12.0,40.0 anchor=3.0,4.0 size=6.0,4.0 idx=-3
+  PL pos=-4.0,2.0 size=3.0,5.0
+  E -> N1P0 bends=[35.0,80.0;74.0,80.0] jps=[50.0,80.0] toff=-
+   EL pos=40.0,60.0 size=8.0,14.0 inline=true
+ P1 side=WEST pos=-2.0,10.0 anchor=0.25,1.5 size=2.0,6.0 idx=-
+  E -> N2P0 bends=[] jps=- toff=-
+ NL pos=2.0,1.0 size=6.0,12.0 nlplace=164
+N1 NORMAL pos=50.0,120.0 size=60.0,30.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=RIGHT nlplace=- position=- min=- lc=- ilc=- eps=- pc=-
+ P0 side=NORTH pos=20.0,-4.0 anchor=4.0,0.0 size=8.0,4.0 idx=-
+ P1 side=EAST pos=60.0,13.0 anchor=4.0,2.0 size=4.0,4.0 idx=-
+  E -> N2P0 bends=[150.0,135.0;150.0,170.0;15.0,170.0] jps=- toff=-
+N2 NORMAL pos=5.0,200.0 size=20.0,20.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=LEFT nlplace=- position=- min=- lc=- ilc=- eps=- pc=-
+ P0 side=NORTH pos=8.0,-2.0 anchor=2.0,0.0 size=4.0,2.0 idx=-
+N3 EXTERNAL_PORT pos=90.0,0.0 size=10.0,10.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=NONE ilc=TOP eps=NORTH pc=-
+ P0 side=SOUTH pos=5.0,10.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+  E -> N0P1 bends=[] jps=- toff=-
+== transformer READING_DIRECTION DOWN TO_INPUT_DIRECTION
+graph size=200.0,300.0 offset=7.0,3.0 padding=4.0,3.0,2.0,1.0 nlp=8.0,7.0,6.0,5.0 elss=SMART_DOWN
+N0 NORMAL pos=20.0,10.0 size=30.0,40.0 margin=1.0,2.0,3.0,4.0 padding=8.0,7.0,6.0,5.0 layer=- align=TOP nlplace=329 position=22.0,11.0 min=25.0,15.0 lc=- ilc=- eps=- pc=-
+ P0 side=SOUTH pos=12.0,40.0 anchor=3.0,4.0 size=6.0,4.0 idx=-3
+  PL pos=-4.0,2.0 size=3.0,5.0
+  E -> N1P0 bends=[35.0,80.0;74.0,80.0] jps=[50.0,80.0] toff=-
+   EL pos=40.0,60.0 size=8.0,14.0 inline=true
+ P1 side=WEST pos=-2.0,10.0 anchor=0.25,1.5 size=2.0,6.0 idx=-
+  E -> N2P0 bends=[] jps=- toff=-
+ NL pos=2.0,1.0 size=6.0,12.0 nlplace=164
+N1 NORMAL pos=50.0,120.0 size=60.0,30.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=RIGHT nlplace=- position=- min=- lc=- ilc=- eps=- pc=-
+ P0 side=NORTH pos=20.0,-4.0 anchor=4.0,0.0 size=8.0,4.0 idx=-
+ P1 side=EAST pos=60.0,13.0 anchor=4.0,2.0 size=4.0,4.0 idx=-
+  E -> N2P0 bends=[150.0,135.0;150.0,170.0;15.0,170.0] jps=- toff=-
+N2 NORMAL pos=5.0,200.0 size=20.0,20.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=LEFT nlplace=- position=- min=- lc=- ilc=- eps=- pc=-
+ P0 side=NORTH pos=8.0,-2.0 anchor=2.0,0.0 size=4.0,2.0 idx=-
+N3 EXTERNAL_PORT pos=90.0,0.0 size=10.0,10.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=NONE ilc=TOP eps=NORTH pc=-
+ P0 side=SOUTH pos=5.0,10.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+  E -> N0P1 bends=[] jps=- toff=-
+== transformer roundtrip READING_DIRECTION DOWN
+graph size=309.0,217.0 offset=3.0,7.0 padding=1.0,2.0,3.0,4.0 nlp=5.0,6.0,7.0,8.0 elss=SMART_UP
+N0 NORMAL pos=10.0,20.0 size=40.0,30.0 margin=1.0,2.0,3.0,4.0 padding=5.0,6.0,7.0,8.0 layer=- align=LEFT nlplace=73 position=11.0,22.0 min=15.0,25.0 lc=- ilc=- eps=- pc=-
+ P0 side=EAST pos=40.0,12.0 anchor=4.0,3.0 size=4.0,6.0 idx=3
+  PL pos=2.0,-4.0 size=5.0,3.0
+  E -> N1P0 bends=[80.0,35.0;80.0,74.0] jps=[80.0,50.0] toff=-
+   EL pos=60.0,40.0 size=14.0,8.0 inline=true
+ P1 side=NORTH pos=10.0,-2.0 anchor=1.5,0.25 size=6.0,2.0 idx=-
+  E -> N2P0 bends=[] jps=- toff=-
+ NL pos=1.0,2.0 size=12.0,6.0 nlplace=420
+N1 NORMAL pos=120.0,50.0 size=30.0,60.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=BOTTOM nlplace=- position=- min=- lc=- ilc=- eps=- pc=-
+ P0 side=WEST pos=-4.0,20.0 anchor=0.0,4.0 size=4.0,8.0 idx=-
+ P1 side=SOUTH pos=13.0,60.0 anchor=2.0,4.0 size=4.0,4.0 idx=-
+  E -> N2P0 bends=[135.0,150.0;170.0,150.0;170.0,15.0] jps=- toff=-
+N2 NORMAL pos=200.0,5.0 size=20.0,20.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=TOP nlplace=- position=- min=- lc=- ilc=- eps=- pc=-
+ P0 side=WEST pos=-2.0,8.0 anchor=0.0,2.0 size=2.0,4.0 idx=-
+N3 EXTERNAL_PORT pos=0.0,90.0 size=10.0,10.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=FIRST_SEPARATE ilc=NONE eps=WEST pc=-
+ P0 side=EAST pos=10.0,5.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+  E -> N0P1 bends=[] jps=- toff=-
+== transformer READING_DIRECTION UP TO_INTERNAL_LTR
+graph size=200.0,300.0 offset=7.0,3.0 padding=2.0,3.0,4.0,1.0 nlp=6.0,7.0,8.0,5.0 elss=SMART_DOWN
+N0 NORMAL pos=20.0,244.0 size=30.0,40.0 margin=1.0,2.0,3.0,4.0 padding=6.0,7.0,8.0,5.0 layer=- align=BOTTOM nlplace=353 position=22.0,243.0 min=25.0,15.0 lc=- ilc=- eps=- pc=-
+ P0 side=NORTH pos=12.0,-4.0 anchor=3.0,0.0 size=6.0,4.0 idx=3
+  PL pos=-4.0,-3.0 size=3.0,5.0
+  E -> N1P0 bends=[35.0,214.0;74.0,214.0] jps=[50.0,214.0] toff=-
+   EL pos=40.0,220.0 size=8.0,14.0 inline=true
+ P1 side=WEST pos=-2.0,24.0 anchor=0.25,4.5 size=2.0,6.0 idx=-
+  E -> N2P0 bends=[] jps=- toff=-
+ NL pos=2.0,27.0 size=6.0,12.0 nlplace=140
+N1 NORMAL pos=50.0,144.0 size=60.0,30.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=RIGHT nlplace=- position=- min=- lc=- ilc=- eps=- pc=-
+ P0 side=SOUTH pos=20.0,30.0 anchor=4.0,4.0 size=8.0,4.0 idx=-
+ P1 side=EAST pos=60.0,13.0 anchor=4.0,2.0 size=4.0,4.0 idx=-
+  E -> N2P0 bends=[150.0,159.0;150.0,124.0;15.0,124.0] jps=- toff=-
+N2 NORMAL pos=5.0,74.0 size=20.0,20.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=LEFT nlplace=- position=- min=- lc=- ilc=- eps=- pc=-
+ P0 side=SOUTH pos=8.0,20.0 anchor=2.0,2.0 size=4.0,2.0 idx=-
+N3 EXTERNAL_PORT pos=90.0,284.0 size=10.0,10.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=NONE ilc=BOTTOM eps=SOUTH pc=-
+ P0 side=NORTH pos=5.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+  E -> N0P1 bends=[] jps=- toff=-
+== transformer READING_DIRECTION UP TO_INPUT_DIRECTION
+graph size=200.0,300.0 offset=7.0,3.0 padding=4.0,1.0,2.0,3.0 nlp=8.0,5.0,6.0,7.0 elss=SMART_DOWN
+N0 NORMAL pos=136.0,10.0 size=30.0,40.0 margin=1.0,2.0,3.0,4.0 padding=8.0,5.0,6.0,7.0 layer=- align=TOP nlplace=332 position=134.0,11.0 min=25.0,15.0 lc=- ilc=- eps=- pc=-
+ P0 side=SOUTH pos=12.0,40.0 anchor=3.0,4.0 size=6.0,4.0 idx=3
+  PL pos=7.0,2.0 size=3.0,5.0
+  E -> N1P0 bends=[151.0,80.0;112.0,80.0] jps=[136.0,80.0] toff=-
+   EL pos=138.0,60.0 size=8.0,14.0 inline=true
+ P1 side=EAST pos=30.0,10.0 anchor=1.75,1.5 size=2.0,6.0 idx=-
+  E -> N2P0 bends=[] jps=- toff=-
+ NL pos=22.0,1.0 size=6.0,12.0 nlplace=161
+N1 NORMAL pos=76.0,120.0 size=60.0,30.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=LEFT nlplace=- position=- min=- lc=- ilc=- eps=- pc=-
+ P0 side=NORTH pos=32.0,-4.0 anchor=4.0,0.0 size=8.0,4.0 idx=-
+ P1 side=WEST pos=-4.0,13.0 anchor=0.0,2.0 size=4.0,4.0 idx=-
+  E -> N2P0 bends=[36.0,135.0;36.0,170.0;171.0,170.0] jps=- toff=-
+N2 NORMAL pos=161.0,200.0 size=20.0,20.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=RIGHT nlplace=- position=- min=- lc=- ilc=- eps=- pc=-
+ P0 side=NORTH pos=8.0,-2.0 anchor=2.0,0.0 size=4.0,2.0 idx=-
+N3 EXTERNAL_PORT pos=86.0,0.0 size=10.0,10.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=NONE ilc=TOP eps=NORTH pc=-
+ P0 side=SOUTH pos=5.0,10.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+  E -> N0P1 bends=[] jps=- toff=-
+== transformer roundtrip READING_DIRECTION UP
+graph size=309.0,217.0 offset=3.0,7.0 padding=1.0,2.0,3.0,4.0 nlp=5.0,6.0,7.0,8.0 elss=SMART_UP
+N0 NORMAL pos=10.0,37.0 size=40.0,30.0 margin=1.0,2.0,3.0,4.0 padding=5.0,6.0,7.0,8.0 layer=- align=LEFT nlplace=73 position=11.0,39.0 min=15.0,25.0 lc=- ilc=- eps=- pc=-
+ P0 side=EAST pos=40.0,12.0 anchor=4.0,3.0 size=4.0,6.0 idx=3
+  PL pos=2.0,-4.0 size=5.0,3.0
+  E -> N1P0 bends=[80.0,52.0;80.0,91.0] jps=[80.0,67.0] toff=-
+   EL pos=60.0,57.0 size=14.0,8.0 inline=true
+ P1 side=NORTH pos=10.0,-2.0 anchor=1.5,0.25 size=6.0,2.0 idx=-
+  E -> N2P0 bends=[] jps=- toff=-
+ NL pos=1.0,2.0 size=12.0,6.0 nlplace=420
+N1 NORMAL pos=120.0,67.0 size=30.0,60.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=BOTTOM nlplace=- position=- min=- lc=- ilc=- eps=- pc=-
+ P0 side=WEST pos=-4.0,20.0 anchor=0.0,4.0 size=4.0,8.0 idx=-
+ P1 side=SOUTH pos=13.0,60.0 anchor=2.0,4.0 size=4.0,4.0 idx=-
+  E -> N2P0 bends=[135.0,167.0;170.0,167.0;170.0,32.0] jps=- toff=-
+N2 NORMAL pos=200.0,22.0 size=20.0,20.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=TOP nlplace=- position=- min=- lc=- ilc=- eps=- pc=-
+ P0 side=WEST pos=-2.0,8.0 anchor=0.0,2.0 size=2.0,4.0 idx=-
+N3 EXTERNAL_PORT pos=0.0,107.0 size=10.0,10.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=FIRST_SEPARATE ilc=NONE eps=WEST pc=-
+ P0 side=EAST pos=10.0,5.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+  E -> N0P1 bends=[] jps=- toff=-
+== transformer READING_DIRECTION UNDEFINED TO_INTERNAL_LTR
+graph size=300.0,200.0 offset=3.0,7.0 padding=1.0,2.0,3.0,4.0 nlp=5.0,6.0,7.0,8.0 elss=SMART_UP
+N0 NORMAL pos=10.0,20.0 size=40.0,30.0 margin=1.0,2.0,3.0,4.0 padding=5.0,6.0,7.0,8.0 layer=- align=LEFT nlplace=73 position=11.0,22.0 min=15.0,25.0 lc=- ilc=- eps=- pc=-
+ P0 side=EAST pos=40.0,12.0 anchor=4.0,3.0 size=4.0,6.0 idx=3
+  PL pos=2.0,-4.0 size=5.0,3.0
+  E -> N1P0 bends=[80.0,35.0;80.0,74.0] jps=[80.0,50.0] toff=-
+   EL pos=60.0,40.0 size=14.0,8.0 inline=true
+ P1 side=NORTH pos=10.0,-2.0 anchor=1.5,0.25 size=6.0,2.0 idx=-
+  E -> N2P0 bends=[] jps=- toff=-
+ NL pos=1.0,2.0 size=12.0,6.0 nlplace=420
+N1 NORMAL pos=120.0,50.0 size=30.0,60.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=BOTTOM nlplace=- position=- min=- lc=- ilc=- eps=- pc=-
+ P0 side=WEST pos=-4.0,20.0 anchor=0.0,4.0 size=4.0,8.0 idx=-
+ P1 side=SOUTH pos=13.0,60.0 anchor=2.0,4.0 size=4.0,4.0 idx=-
+  E -> N2P0 bends=[135.0,150.0;170.0,150.0;170.0,15.0] jps=- toff=-
+N2 NORMAL pos=200.0,5.0 size=20.0,20.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=TOP nlplace=- position=- min=- lc=- ilc=- eps=- pc=-
+ P0 side=WEST pos=-2.0,8.0 anchor=0.0,2.0 size=2.0,4.0 idx=-
+N3 EXTERNAL_PORT pos=0.0,90.0 size=10.0,10.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=FIRST_SEPARATE ilc=- eps=WEST pc=-
+ P0 side=EAST pos=10.0,5.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+  E -> N0P1 bends=[] jps=- toff=-
+== transformer READING_DIRECTION UNDEFINED TO_INPUT_DIRECTION
+graph size=300.0,200.0 offset=3.0,7.0 padding=1.0,2.0,3.0,4.0 nlp=5.0,6.0,7.0,8.0 elss=SMART_UP
+N0 NORMAL pos=10.0,20.0 size=40.0,30.0 margin=1.0,2.0,3.0,4.0 padding=5.0,6.0,7.0,8.0 layer=- align=LEFT nlplace=73 position=11.0,22.0 min=15.0,25.0 lc=- ilc=- eps=- pc=-
+ P0 side=EAST pos=40.0,12.0 anchor=4.0,3.0 size=4.0,6.0 idx=3
+  PL pos=2.0,-4.0 size=5.0,3.0
+  E -> N1P0 bends=[80.0,35.0;80.0,74.0] jps=[80.0,50.0] toff=-
+   EL pos=60.0,40.0 size=14.0,8.0 inline=true
+ P1 side=NORTH pos=10.0,-2.0 anchor=1.5,0.25 size=6.0,2.0 idx=-
+  E -> N2P0 bends=[] jps=- toff=-
+ NL pos=1.0,2.0 size=12.0,6.0 nlplace=420
+N1 NORMAL pos=120.0,50.0 size=30.0,60.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=BOTTOM nlplace=- position=- min=- lc=- ilc=- eps=- pc=-
+ P0 side=WEST pos=-4.0,20.0 anchor=0.0,4.0 size=4.0,8.0 idx=-
+ P1 side=SOUTH pos=13.0,60.0 anchor=2.0,4.0 size=4.0,4.0 idx=-
+  E -> N2P0 bends=[135.0,150.0;170.0,150.0;170.0,15.0] jps=- toff=-
+N2 NORMAL pos=200.0,5.0 size=20.0,20.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=TOP nlplace=- position=- min=- lc=- ilc=- eps=- pc=-
+ P0 side=WEST pos=-2.0,8.0 anchor=0.0,2.0 size=2.0,4.0 idx=-
+N3 EXTERNAL_PORT pos=0.0,90.0 size=10.0,10.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=FIRST_SEPARATE ilc=- eps=WEST pc=-
+ P0 side=EAST pos=10.0,5.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+  E -> N0P1 bends=[] jps=- toff=-
+== transformer roundtrip READING_DIRECTION UNDEFINED
+graph size=317.0,209.0 offset=3.0,7.0 padding=1.0,2.0,3.0,4.0 nlp=5.0,6.0,7.0,8.0 elss=SMART_UP
+N0 NORMAL pos=10.0,20.0 size=40.0,30.0 margin=1.0,2.0,3.0,4.0 padding=5.0,6.0,7.0,8.0 layer=- align=LEFT nlplace=73 position=11.0,22.0 min=15.0,25.0 lc=- ilc=- eps=- pc=-
+ P0 side=EAST pos=40.0,12.0 anchor=4.0,3.0 size=4.0,6.0 idx=3
+  PL pos=2.0,-4.0 size=5.0,3.0
+  E -> N1P0 bends=[80.0,35.0;80.0,74.0] jps=[80.0,50.0] toff=-
+   EL pos=60.0,40.0 size=14.0,8.0 inline=true
+ P1 side=NORTH pos=10.0,-2.0 anchor=1.5,0.25 size=6.0,2.0 idx=-
+  E -> N2P0 bends=[] jps=- toff=-
+ NL pos=1.0,2.0 size=12.0,6.0 nlplace=420
+N1 NORMAL pos=120.0,50.0 size=30.0,60.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=BOTTOM nlplace=- position=- min=- lc=- ilc=- eps=- pc=-
+ P0 side=WEST pos=-4.0,20.0 anchor=0.0,4.0 size=4.0,8.0 idx=-
+ P1 side=SOUTH pos=13.0,60.0 anchor=2.0,4.0 size=4.0,4.0 idx=-
+  E -> N2P0 bends=[135.0,150.0;170.0,150.0;170.0,15.0] jps=- toff=-
+N2 NORMAL pos=200.0,5.0 size=20.0,20.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=TOP nlplace=- position=- min=- lc=- ilc=- eps=- pc=-
+ P0 side=WEST pos=-2.0,8.0 anchor=0.0,2.0 size=2.0,4.0 idx=-
+N3 EXTERNAL_PORT pos=0.0,90.0 size=10.0,10.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=FIRST_SEPARATE ilc=- eps=WEST pc=-
+ P0 side=EAST pos=10.0,5.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+  E -> N0P1 bends=[] jps=- toff=-
+== transformer ROTATION RIGHT TO_INTERNAL_LTR
+graph size=300.0,200.0 offset=3.0,7.0 padding=1.0,2.0,3.0,4.0 nlp=5.0,6.0,7.0,8.0 elss=SMART_UP
+N0 NORMAL pos=10.0,20.0 size=40.0,30.0 margin=1.0,2.0,3.0,4.0 padding=5.0,6.0,7.0,8.0 layer=- align=LEFT nlplace=73 position=11.0,22.0 min=15.0,25.0 lc=- ilc=- eps=- pc=-
+ P0 side=EAST pos=40.0,12.0 anchor=4.0,3.0 size=4.0,6.0 idx=3
+  PL pos=2.0,-4.0 size=5.0,3.0
+  E -> N1P0 bends=[80.0,35.0;80.0,74.0] jps=[80.0,50.0] toff=-
+   EL pos=60.0,40.0 size=14.0,8.0 inline=true
+ P1 side=NORTH pos=10.0,-2.0 anchor=1.5,0.25 size=6.0,2.0 idx=-
+  E -> N2P0 bends=[] jps=- toff=-
+ NL pos=1.0,2.0 size=12.0,6.0 nlplace=420
+N1 NORMAL pos=120.0,50.0 size=30.0,60.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=BOTTOM nlplace=- position=- min=- lc=- ilc=- eps=- pc=-
+ P0 side=WEST pos=-4.0,20.0 anchor=0.0,4.0 size=4.0,8.0 idx=-
+ P1 side=SOUTH pos=13.0,60.0 anchor=2.0,4.0 size=4.0,4.0 idx=-
+  E -> N2P0 bends=[135.0,150.0;170.0,150.0;170.0,15.0] jps=- toff=-
+N2 NORMAL pos=200.0,5.0 size=20.0,20.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=TOP nlplace=- position=- min=- lc=- ilc=- eps=- pc=-
+ P0 side=WEST pos=-2.0,8.0 anchor=0.0,2.0 size=2.0,4.0 idx=-
+N3 EXTERNAL_PORT pos=0.0,90.0 size=10.0,10.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=FIRST_SEPARATE ilc=- eps=WEST pc=-
+ P0 side=EAST pos=10.0,5.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+  E -> N0P1 bends=[] jps=- toff=-
+== transformer ROTATION RIGHT TO_INPUT_DIRECTION
+graph size=300.0,200.0 offset=3.0,7.0 padding=1.0,2.0,3.0,4.0 nlp=5.0,6.0,7.0,8.0 elss=SMART_UP
+N0 NORMAL pos=10.0,20.0 size=40.0,30.0 margin=1.0,2.0,3.0,4.0 padding=5.0,6.0,7.0,8.0 layer=- align=LEFT nlplace=73 position=11.0,22.0 min=15.0,25.0 lc=- ilc=- eps=- pc=-
+ P0 side=EAST pos=40.0,12.0 anchor=4.0,3.0 size=4.0,6.0 idx=3
+  PL pos=2.0,-4.0 size=5.0,3.0
+  E -> N1P0 bends=[80.0,35.0;80.0,74.0] jps=[80.0,50.0] toff=-
+   EL pos=60.0,40.0 size=14.0,8.0 inline=true
+ P1 side=NORTH pos=10.0,-2.0 anchor=1.5,0.25 size=6.0,2.0 idx=-
+  E -> N2P0 bends=[] jps=- toff=-
+ NL pos=1.0,2.0 size=12.0,6.0 nlplace=420
+N1 NORMAL pos=120.0,50.0 size=30.0,60.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=BOTTOM nlplace=- position=- min=- lc=- ilc=- eps=- pc=-
+ P0 side=WEST pos=-4.0,20.0 anchor=0.0,4.0 size=4.0,8.0 idx=-
+ P1 side=SOUTH pos=13.0,60.0 anchor=2.0,4.0 size=4.0,4.0 idx=-
+  E -> N2P0 bends=[135.0,150.0;170.0,150.0;170.0,15.0] jps=- toff=-
+N2 NORMAL pos=200.0,5.0 size=20.0,20.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=TOP nlplace=- position=- min=- lc=- ilc=- eps=- pc=-
+ P0 side=WEST pos=-2.0,8.0 anchor=0.0,2.0 size=2.0,4.0 idx=-
+N3 EXTERNAL_PORT pos=0.0,90.0 size=10.0,10.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=FIRST_SEPARATE ilc=- eps=WEST pc=-
+ P0 side=EAST pos=10.0,5.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+  E -> N0P1 bends=[] jps=- toff=-
+== transformer roundtrip ROTATION RIGHT
+graph size=317.0,209.0 offset=3.0,7.0 padding=1.0,2.0,3.0,4.0 nlp=5.0,6.0,7.0,8.0 elss=SMART_UP
+N0 NORMAL pos=10.0,20.0 size=40.0,30.0 margin=1.0,2.0,3.0,4.0 padding=5.0,6.0,7.0,8.0 layer=- align=LEFT nlplace=73 position=11.0,22.0 min=15.0,25.0 lc=- ilc=- eps=- pc=-
+ P0 side=EAST pos=40.0,12.0 anchor=4.0,3.0 size=4.0,6.0 idx=3
+  PL pos=2.0,-4.0 size=5.0,3.0
+  E -> N1P0 bends=[80.0,35.0;80.0,74.0] jps=[80.0,50.0] toff=-
+   EL pos=60.0,40.0 size=14.0,8.0 inline=true
+ P1 side=NORTH pos=10.0,-2.0 anchor=1.5,0.25 size=6.0,2.0 idx=-
+  E -> N2P0 bends=[] jps=- toff=-
+ NL pos=1.0,2.0 size=12.0,6.0 nlplace=420
+N1 NORMAL pos=120.0,50.0 size=30.0,60.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=BOTTOM nlplace=- position=- min=- lc=- ilc=- eps=- pc=-
+ P0 side=WEST pos=-4.0,20.0 anchor=0.0,4.0 size=4.0,8.0 idx=-
+ P1 side=SOUTH pos=13.0,60.0 anchor=2.0,4.0 size=4.0,4.0 idx=-
+  E -> N2P0 bends=[135.0,150.0;170.0,150.0;170.0,15.0] jps=- toff=-
+N2 NORMAL pos=200.0,5.0 size=20.0,20.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=TOP nlplace=- position=- min=- lc=- ilc=- eps=- pc=-
+ P0 side=WEST pos=-2.0,8.0 anchor=0.0,2.0 size=2.0,4.0 idx=-
+N3 EXTERNAL_PORT pos=0.0,90.0 size=10.0,10.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=FIRST_SEPARATE ilc=- eps=WEST pc=-
+ P0 side=EAST pos=10.0,5.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+  E -> N0P1 bends=[] jps=- toff=-
+== transformer ROTATION LEFT TO_INTERNAL_LTR
+graph size=300.0,200.0 offset=3.0,7.0 padding=3.0,4.0,1.0,2.0 nlp=7.0,8.0,5.0,6.0 elss=SMART_UP
+N0 NORMAL pos=244.0,136.0 size=40.0,30.0 margin=1.0,2.0,3.0,4.0 padding=7.0,8.0,5.0,6.0 layer=- align=RIGHT nlplace=100 position=243.0,134.0 min=15.0,25.0 lc=- ilc=- eps=- pc=-
+ P0 side=WEST pos=-4.0,12.0 anchor=0.0,3.0 size=4.0,6.0 idx=3
+  PL pos=-3.0,7.0 size=5.0,3.0
+  E -> N1P0 bends=[214.0,151.0;214.0,112.0] jps=[214.0,136.0] toff=-
+   EL pos=220.0,138.0 size=14.0,8.0 inline=true
+ P1 side=SOUTH pos=24.0,30.0 anchor=4.5,1.75 size=6.0,2.0 idx=-
+  E -> N2P0 bends=[] jps=- toff=-
+ NL pos=27.0,22.0 size=12.0,6.0 nlplace=393
+N1 NORMAL pos=144.0,76.0 size=30.0,60.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=TOP nlplace=- position=- min=- lc=- ilc=- eps=- pc=-
+ P0 side=EAST pos=30.0,32.0 anchor=4.0,4.0 size=4.0,8.0 idx=-
+ P1 side=NORTH pos=13.0,-4.0 anchor=2.0,0.0 size=4.0,4.0 idx=-
+  E -> N2P0 bends=[159.0,36.0;124.0,36.0;124.0,171.0] jps=- toff=-
+N2 NORMAL pos=74.0,161.0 size=20.0,20.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=BOTTOM nlplace=- position=- min=- lc=- ilc=- eps=- pc=-
+ P0 side=EAST pos=20.0,8.0 anchor=2.0,2.0 size=2.0,4.0 idx=-
+N3 EXTERNAL_PORT pos=284.0,86.0 size=10.0,10.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=LAST_SEPARATE ilc=- eps=EAST pc=-
+ P0 side=WEST pos=0.0,5.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+  E -> N0P1 bends=[] jps=- toff=-
+== transformer ROTATION LEFT TO_INPUT_DIRECTION
+graph size=300.0,200.0 offset=3.0,7.0 padding=3.0,4.0,1.0,2.0 nlp=7.0,8.0,5.0,6.0 elss=SMART_UP
+N0 NORMAL pos=244.0,136.0 size=40.0,30.0 margin=1.0,2.0,3.0,4.0 padding=7.0,8.0,5.0,6.0 layer=- align=RIGHT nlplace=100 position=243.0,134.0 min=15.0,25.0 lc=- ilc=- eps=- pc=-
+ P0 side=WEST pos=-4.0,12.0 anchor=0.0,3.0 size=4.0,6.0 idx=3
+  PL pos=-3.0,7.0 size=5.0,3.0
+  E -> N1P0 bends=[214.0,151.0;214.0,112.0] jps=[214.0,136.0] toff=-
+   EL pos=220.0,138.0 size=14.0,8.0 inline=true
+ P1 side=SOUTH pos=24.0,30.0 anchor=4.5,1.75 size=6.0,2.0 idx=-
+  E -> N2P0 bends=[] jps=- toff=-
+ NL pos=27.0,22.0 size=12.0,6.0 nlplace=393
+N1 NORMAL pos=144.0,76.0 size=30.0,60.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=TOP nlplace=- position=- min=- lc=- ilc=- eps=- pc=-
+ P0 side=EAST pos=30.0,32.0 anchor=4.0,4.0 size=4.0,8.0 idx=-
+ P1 side=NORTH pos=13.0,-4.0 anchor=2.0,0.0 size=4.0,4.0 idx=-
+  E -> N2P0 bends=[159.0,36.0;124.0,36.0;124.0,171.0] jps=- toff=-
+N2 NORMAL pos=74.0,161.0 size=20.0,20.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=BOTTOM nlplace=- position=- min=- lc=- ilc=- eps=- pc=-
+ P0 side=EAST pos=20.0,8.0 anchor=2.0,2.0 size=2.0,4.0 idx=-
+N3 EXTERNAL_PORT pos=284.0,86.0 size=10.0,10.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=LAST_SEPARATE ilc=- eps=EAST pc=-
+ P0 side=WEST pos=0.0,5.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+  E -> N0P1 bends=[] jps=- toff=-
+== transformer roundtrip ROTATION LEFT
+graph size=317.0,209.0 offset=3.0,7.0 padding=1.0,2.0,3.0,4.0 nlp=5.0,6.0,7.0,8.0 elss=SMART_UP
+N0 NORMAL pos=27.0,29.0 size=40.0,30.0 margin=1.0,2.0,3.0,4.0 padding=5.0,6.0,7.0,8.0 layer=- align=LEFT nlplace=73 position=28.0,31.0 min=15.0,25.0 lc=- ilc=- eps=- pc=-
+ P0 side=EAST pos=40.0,12.0 anchor=4.0,3.0 size=4.0,6.0 idx=3
+  PL pos=2.0,-4.0 size=5.0,3.0
+  E -> N1P0 bends=[97.0,44.0;97.0,83.0] jps=[97.0,59.0] toff=-
+   EL pos=77.0,49.0 size=14.0,8.0 inline=true
+ P1 side=NORTH pos=10.0,-2.0 anchor=1.5,0.25 size=6.0,2.0 idx=-
+  E -> N2P0 bends=[] jps=- toff=-
+ NL pos=1.0,2.0 size=12.0,6.0 nlplace=420
+N1 NORMAL pos=137.0,59.0 size=30.0,60.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=BOTTOM nlplace=- position=- min=- lc=- ilc=- eps=- pc=-
+ P0 side=WEST pos=-4.0,20.0 anchor=0.0,4.0 size=4.0,8.0 idx=-
+ P1 side=SOUTH pos=13.0,60.0 anchor=2.0,4.0 size=4.0,4.0 idx=-
+  E -> N2P0 bends=[152.0,159.0;187.0,159.0;187.0,24.0] jps=- toff=-
+N2 NORMAL pos=217.0,14.0 size=20.0,20.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=TOP nlplace=- position=- min=- lc=- ilc=- eps=- pc=-
+ P0 side=WEST pos=-2.0,8.0 anchor=0.0,2.0 size=2.0,4.0 idx=-
+N3 EXTERNAL_PORT pos=17.0,99.0 size=10.0,10.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=FIRST_SEPARATE ilc=- eps=WEST pc=-
+ P0 side=EAST pos=10.0,5.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+  E -> N0P1 bends=[] jps=- toff=-
+== transformer ROTATION DOWN TO_INTERNAL_LTR
+graph size=200.0,300.0 offset=7.0,3.0 padding=4.0,1.0,2.0,3.0 nlp=8.0,5.0,6.0,7.0 elss=SMART_DOWN
+N0 NORMAL pos=136.0,10.0 size=30.0,40.0 margin=1.0,2.0,3.0,4.0 padding=8.0,5.0,6.0,7.0 layer=- align=TOP nlplace=332 position=134.0,11.0 min=25.0,15.0 lc=- ilc=- eps=- pc=-
+ P0 side=SOUTH pos=12.0,40.0 anchor=3.0,4.0 size=6.0,4.0 idx=3
+  PL pos=7.0,2.0 size=3.0,5.0
+  E -> N1P0 bends=[151.0,80.0;112.0,80.0] jps=[136.0,80.0] toff=-
+   EL pos=138.0,60.0 size=8.0,14.0 inline=true
+ P1 side=EAST pos=30.0,10.0 anchor=1.75,1.5 size=2.0,6.0 idx=-
+  E -> N2P0 bends=[] jps=- toff=-
+ NL pos=22.0,1.0 size=6.0,12.0 nlplace=161
+N1 NORMAL pos=76.0,120.0 size=60.0,30.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=LEFT nlplace=- position=- min=- lc=- ilc=- eps=- pc=-
+ P0 side=NORTH pos=32.0,-4.0 anchor=4.0,0.0 size=8.0,4.0 idx=-
+ P1 side=WEST pos=-4.0,13.0 anchor=0.0,2.0 size=4.0,4.0 idx=-
+  E -> N2P0 bends=[36.0,135.0;36.0,170.0;171.0,170.0] jps=- toff=-
+N2 NORMAL pos=161.0,200.0 size=20.0,20.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=RIGHT nlplace=- position=- min=- lc=- ilc=- eps=- pc=-
+ P0 side=NORTH pos=8.0,-2.0 anchor=2.0,0.0 size=4.0,2.0 idx=-
+N3 EXTERNAL_PORT pos=86.0,0.0 size=10.0,10.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=NONE ilc=TOP eps=NORTH pc=-
+ P0 side=SOUTH pos=5.0,10.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+  E -> N0P1 bends=[] jps=- toff=-
+== transformer ROTATION DOWN TO_INPUT_DIRECTION
+graph size=200.0,300.0 offset=7.0,3.0 padding=2.0,3.0,4.0,1.0 nlp=6.0,7.0,8.0,5.0 elss=SMART_DOWN
+N0 NORMAL pos=20.0,244.0 size=30.0,40.0 margin=1.0,2.0,3.0,4.0 padding=6.0,7.0,8.0,5.0 layer=- align=BOTTOM nlplace=353 position=22.0,243.0 min=25.0,15.0 lc=- ilc=- eps=- pc=-
+ P0 side=NORTH pos=12.0,-4.0 anchor=3.0,0.0 size=6.0,4.0 idx=3
+  PL pos=-4.0,-3.0 size=3.0,5.0
+  E -> N1P0 bends=[35.0,214.0;74.0,214.0] jps=[50.0,214.0] toff=-
+   EL pos=40.0,220.0 size=8.0,14.0 inline=true
+ P1 side=WEST pos=-2.0,24.0 anchor=0.25,4.5 size=2.0,6.0 idx=-
+  E -> N2P0 bends=[] jps=- toff=-
+ NL pos=2.0,27.0 size=6.0,12.0 nlplace=140
+N1 NORMAL pos=50.0,144.0 size=60.0,30.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=RIGHT nlplace=- position=- min=- lc=- ilc=- eps=- pc=-
+ P0 side=SOUTH pos=20.0,30.0 anchor=4.0,4.0 size=8.0,4.0 idx=-
+ P1 side=EAST pos=60.0,13.0 anchor=4.0,2.0 size=4.0,4.0 idx=-
+  E -> N2P0 bends=[150.0,159.0;150.0,124.0;15.0,124.0] jps=- toff=-
+N2 NORMAL pos=5.0,74.0 size=20.0,20.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=LEFT nlplace=- position=- min=- lc=- ilc=- eps=- pc=-
+ P0 side=SOUTH pos=8.0,20.0 anchor=2.0,2.0 size=4.0,2.0 idx=-
+N3 EXTERNAL_PORT pos=90.0,284.0 size=10.0,10.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=NONE ilc=BOTTOM eps=SOUTH pc=-
+ P0 side=NORTH pos=5.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+  E -> N0P1 bends=[] jps=- toff=-
+== transformer roundtrip ROTATION DOWN
+graph size=309.0,217.0 offset=3.0,7.0 padding=1.0,2.0,3.0,4.0 nlp=5.0,6.0,7.0,8.0 elss=SMART_UP
+N0 NORMAL pos=19.0,20.0 size=40.0,30.0 margin=1.0,2.0,3.0,4.0 padding=5.0,6.0,7.0,8.0 layer=- align=LEFT nlplace=73 position=20.0,22.0 min=15.0,25.0 lc=- ilc=- eps=- pc=-
+ P0 side=EAST pos=40.0,12.0 anchor=4.0,3.0 size=4.0,6.0 idx=3
+  PL pos=2.0,-4.0 size=5.0,3.0
+  E -> N1P0 bends=[89.0,35.0;89.0,74.0] jps=[89.0,50.0] toff=-
+   EL pos=69.0,40.0 size=14.0,8.0 inline=true
+ P1 side=NORTH pos=10.0,-2.0 anchor=1.5,0.25 size=6.0,2.0 idx=-
+  E -> N2P0 bends=[] jps=- toff=-
+ NL pos=1.0,2.0 size=12.0,6.0 nlplace=420
+N1 NORMAL pos=129.0,50.0 size=30.0,60.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=BOTTOM nlplace=- position=- min=- lc=- ilc=- eps=- pc=-
+ P0 side=WEST pos=-4.0,20.0 anchor=0.0,4.0 size=4.0,8.0 idx=-
+ P1 side=SOUTH pos=13.0,60.0 anchor=2.0,4.0 size=4.0,4.0 idx=-
+  E -> N2P0 bends=[144.0,150.0;179.0,150.0;179.0,15.0] jps=- toff=-
+N2 NORMAL pos=209.0,5.0 size=20.0,20.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=TOP nlplace=- position=- min=- lc=- ilc=- eps=- pc=-
+ P0 side=WEST pos=-2.0,8.0 anchor=0.0,2.0 size=2.0,4.0 idx=-
+N3 EXTERNAL_PORT pos=9.0,90.0 size=10.0,10.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=FIRST_SEPARATE ilc=NONE eps=WEST pc=-
+ P0 side=EAST pos=10.0,5.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+  E -> N0P1 bends=[] jps=- toff=-
+== transformer ROTATION UP TO_INTERNAL_LTR
+graph size=200.0,300.0 offset=7.0,3.0 padding=2.0,3.0,4.0,1.0 nlp=6.0,7.0,8.0,5.0 elss=SMART_DOWN
+N0 NORMAL pos=20.0,244.0 size=30.0,40.0 margin=1.0,2.0,3.0,4.0 padding=6.0,7.0,8.0,5.0 layer=- align=BOTTOM nlplace=353 position=22.0,243.0 min=25.0,15.0 lc=- ilc=- eps=- pc=-
+ P0 side=NORTH pos=12.0,-4.0 anchor=3.0,0.0 size=6.0,4.0 idx=3
+  PL pos=-4.0,-3.0 size=3.0,5.0
+  E -> N1P0 bends=[35.0,214.0;74.0,214.0] jps=[50.0,214.0] toff=-
+   EL pos=40.0,220.0 size=8.0,14.0 inline=true
+ P1 side=WEST pos=-2.0,24.0 anchor=0.25,4.5 size=2.0,6.0 idx=-
+  E -> N2P0 bends=[] jps=- toff=-
+ NL pos=2.0,27.0 size=6.0,12.0 nlplace=140
+N1 NORMAL pos=50.0,144.0 size=60.0,30.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=RIGHT nlplace=- position=- min=- lc=- ilc=- eps=- pc=-
+ P0 side=SOUTH pos=20.0,30.0 anchor=4.0,4.0 size=8.0,4.0 idx=-
+ P1 side=EAST pos=60.0,13.0 anchor=4.0,2.0 size=4.0,4.0 idx=-
+  E -> N2P0 bends=[150.0,159.0;150.0,124.0;15.0,124.0] jps=- toff=-
+N2 NORMAL pos=5.0,74.0 size=20.0,20.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=LEFT nlplace=- position=- min=- lc=- ilc=- eps=- pc=-
+ P0 side=SOUTH pos=8.0,20.0 anchor=2.0,2.0 size=4.0,2.0 idx=-
+N3 EXTERNAL_PORT pos=90.0,284.0 size=10.0,10.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=NONE ilc=BOTTOM eps=SOUTH pc=-
+ P0 side=NORTH pos=5.0,0.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+  E -> N0P1 bends=[] jps=- toff=-
+== transformer ROTATION UP TO_INPUT_DIRECTION
+graph size=200.0,300.0 offset=7.0,3.0 padding=4.0,1.0,2.0,3.0 nlp=8.0,5.0,6.0,7.0 elss=SMART_DOWN
+N0 NORMAL pos=136.0,10.0 size=30.0,40.0 margin=1.0,2.0,3.0,4.0 padding=8.0,5.0,6.0,7.0 layer=- align=TOP nlplace=332 position=134.0,11.0 min=25.0,15.0 lc=- ilc=- eps=- pc=-
+ P0 side=SOUTH pos=12.0,40.0 anchor=3.0,4.0 size=6.0,4.0 idx=3
+  PL pos=7.0,2.0 size=3.0,5.0
+  E -> N1P0 bends=[151.0,80.0;112.0,80.0] jps=[136.0,80.0] toff=-
+   EL pos=138.0,60.0 size=8.0,14.0 inline=true
+ P1 side=EAST pos=30.0,10.0 anchor=1.75,1.5 size=2.0,6.0 idx=-
+  E -> N2P0 bends=[] jps=- toff=-
+ NL pos=22.0,1.0 size=6.0,12.0 nlplace=161
+N1 NORMAL pos=76.0,120.0 size=60.0,30.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=LEFT nlplace=- position=- min=- lc=- ilc=- eps=- pc=-
+ P0 side=NORTH pos=32.0,-4.0 anchor=4.0,0.0 size=8.0,4.0 idx=-
+ P1 side=WEST pos=-4.0,13.0 anchor=0.0,2.0 size=4.0,4.0 idx=-
+  E -> N2P0 bends=[36.0,135.0;36.0,170.0;171.0,170.0] jps=- toff=-
+N2 NORMAL pos=161.0,200.0 size=20.0,20.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=RIGHT nlplace=- position=- min=- lc=- ilc=- eps=- pc=-
+ P0 side=NORTH pos=8.0,-2.0 anchor=2.0,0.0 size=4.0,2.0 idx=-
+N3 EXTERNAL_PORT pos=86.0,0.0 size=10.0,10.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=NONE ilc=TOP eps=NORTH pc=-
+ P0 side=SOUTH pos=5.0,10.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+  E -> N0P1 bends=[] jps=- toff=-
+== transformer roundtrip ROTATION UP
+graph size=309.0,217.0 offset=3.0,7.0 padding=1.0,2.0,3.0,4.0 nlp=5.0,6.0,7.0,8.0 elss=SMART_UP
+N0 NORMAL pos=10.0,37.0 size=40.0,30.0 margin=1.0,2.0,3.0,4.0 padding=5.0,6.0,7.0,8.0 layer=- align=LEFT nlplace=73 position=11.0,39.0 min=15.0,25.0 lc=- ilc=- eps=- pc=-
+ P0 side=EAST pos=40.0,12.0 anchor=4.0,3.0 size=4.0,6.0 idx=3
+  PL pos=2.0,-4.0 size=5.0,3.0
+  E -> N1P0 bends=[80.0,52.0;80.0,91.0] jps=[80.0,67.0] toff=-
+   EL pos=60.0,57.0 size=14.0,8.0 inline=true
+ P1 side=NORTH pos=10.0,-2.0 anchor=1.5,0.25 size=6.0,2.0 idx=-
+  E -> N2P0 bends=[] jps=- toff=-
+ NL pos=1.0,2.0 size=12.0,6.0 nlplace=420
+N1 NORMAL pos=120.0,67.0 size=30.0,60.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=BOTTOM nlplace=- position=- min=- lc=- ilc=- eps=- pc=-
+ P0 side=WEST pos=-4.0,20.0 anchor=0.0,4.0 size=4.0,8.0 idx=-
+ P1 side=SOUTH pos=13.0,60.0 anchor=2.0,4.0 size=4.0,4.0 idx=-
+  E -> N2P0 bends=[135.0,167.0;170.0,167.0;170.0,32.0] jps=- toff=-
+N2 NORMAL pos=200.0,22.0 size=20.0,20.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=TOP nlplace=- position=- min=- lc=- ilc=- eps=- pc=-
+ P0 side=WEST pos=-2.0,8.0 anchor=0.0,2.0 size=2.0,4.0 idx=-
+N3 EXTERNAL_PORT pos=0.0,107.0 size=10.0,10.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=FIRST_SEPARATE ilc=NONE eps=WEST pc=-
+ P0 side=EAST pos=10.0,5.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+  E -> N0P1 bends=[] jps=- toff=-
+== transformer ROTATION UNDEFINED TO_INTERNAL_LTR
+graph size=300.0,200.0 offset=3.0,7.0 padding=1.0,2.0,3.0,4.0 nlp=5.0,6.0,7.0,8.0 elss=SMART_UP
+N0 NORMAL pos=10.0,20.0 size=40.0,30.0 margin=1.0,2.0,3.0,4.0 padding=5.0,6.0,7.0,8.0 layer=- align=LEFT nlplace=73 position=11.0,22.0 min=15.0,25.0 lc=- ilc=- eps=- pc=-
+ P0 side=EAST pos=40.0,12.0 anchor=4.0,3.0 size=4.0,6.0 idx=3
+  PL pos=2.0,-4.0 size=5.0,3.0
+  E -> N1P0 bends=[80.0,35.0;80.0,74.0] jps=[80.0,50.0] toff=-
+   EL pos=60.0,40.0 size=14.0,8.0 inline=true
+ P1 side=NORTH pos=10.0,-2.0 anchor=1.5,0.25 size=6.0,2.0 idx=-
+  E -> N2P0 bends=[] jps=- toff=-
+ NL pos=1.0,2.0 size=12.0,6.0 nlplace=420
+N1 NORMAL pos=120.0,50.0 size=30.0,60.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=BOTTOM nlplace=- position=- min=- lc=- ilc=- eps=- pc=-
+ P0 side=WEST pos=-4.0,20.0 anchor=0.0,4.0 size=4.0,8.0 idx=-
+ P1 side=SOUTH pos=13.0,60.0 anchor=2.0,4.0 size=4.0,4.0 idx=-
+  E -> N2P0 bends=[135.0,150.0;170.0,150.0;170.0,15.0] jps=- toff=-
+N2 NORMAL pos=200.0,5.0 size=20.0,20.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=TOP nlplace=- position=- min=- lc=- ilc=- eps=- pc=-
+ P0 side=WEST pos=-2.0,8.0 anchor=0.0,2.0 size=2.0,4.0 idx=-
+N3 EXTERNAL_PORT pos=0.0,90.0 size=10.0,10.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=FIRST_SEPARATE ilc=- eps=WEST pc=-
+ P0 side=EAST pos=10.0,5.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+  E -> N0P1 bends=[] jps=- toff=-
+== transformer ROTATION UNDEFINED TO_INPUT_DIRECTION
+graph size=300.0,200.0 offset=3.0,7.0 padding=1.0,2.0,3.0,4.0 nlp=5.0,6.0,7.0,8.0 elss=SMART_UP
+N0 NORMAL pos=10.0,20.0 size=40.0,30.0 margin=1.0,2.0,3.0,4.0 padding=5.0,6.0,7.0,8.0 layer=- align=LEFT nlplace=73 position=11.0,22.0 min=15.0,25.0 lc=- ilc=- eps=- pc=-
+ P0 side=EAST pos=40.0,12.0 anchor=4.0,3.0 size=4.0,6.0 idx=3
+  PL pos=2.0,-4.0 size=5.0,3.0
+  E -> N1P0 bends=[80.0,35.0;80.0,74.0] jps=[80.0,50.0] toff=-
+   EL pos=60.0,40.0 size=14.0,8.0 inline=true
+ P1 side=NORTH pos=10.0,-2.0 anchor=1.5,0.25 size=6.0,2.0 idx=-
+  E -> N2P0 bends=[] jps=- toff=-
+ NL pos=1.0,2.0 size=12.0,6.0 nlplace=420
+N1 NORMAL pos=120.0,50.0 size=30.0,60.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=BOTTOM nlplace=- position=- min=- lc=- ilc=- eps=- pc=-
+ P0 side=WEST pos=-4.0,20.0 anchor=0.0,4.0 size=4.0,8.0 idx=-
+ P1 side=SOUTH pos=13.0,60.0 anchor=2.0,4.0 size=4.0,4.0 idx=-
+  E -> N2P0 bends=[135.0,150.0;170.0,150.0;170.0,15.0] jps=- toff=-
+N2 NORMAL pos=200.0,5.0 size=20.0,20.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=TOP nlplace=- position=- min=- lc=- ilc=- eps=- pc=-
+ P0 side=WEST pos=-2.0,8.0 anchor=0.0,2.0 size=2.0,4.0 idx=-
+N3 EXTERNAL_PORT pos=0.0,90.0 size=10.0,10.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=FIRST_SEPARATE ilc=- eps=WEST pc=-
+ P0 side=EAST pos=10.0,5.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+  E -> N0P1 bends=[] jps=- toff=-
+== transformer roundtrip ROTATION UNDEFINED
+graph size=317.0,209.0 offset=3.0,7.0 padding=1.0,2.0,3.0,4.0 nlp=5.0,6.0,7.0,8.0 elss=SMART_UP
+N0 NORMAL pos=10.0,20.0 size=40.0,30.0 margin=1.0,2.0,3.0,4.0 padding=5.0,6.0,7.0,8.0 layer=- align=LEFT nlplace=73 position=11.0,22.0 min=15.0,25.0 lc=- ilc=- eps=- pc=-
+ P0 side=EAST pos=40.0,12.0 anchor=4.0,3.0 size=4.0,6.0 idx=3
+  PL pos=2.0,-4.0 size=5.0,3.0
+  E -> N1P0 bends=[80.0,35.0;80.0,74.0] jps=[80.0,50.0] toff=-
+   EL pos=60.0,40.0 size=14.0,8.0 inline=true
+ P1 side=NORTH pos=10.0,-2.0 anchor=1.5,0.25 size=6.0,2.0 idx=-
+  E -> N2P0 bends=[] jps=- toff=-
+ NL pos=1.0,2.0 size=12.0,6.0 nlplace=420
+N1 NORMAL pos=120.0,50.0 size=30.0,60.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=BOTTOM nlplace=- position=- min=- lc=- ilc=- eps=- pc=-
+ P0 side=WEST pos=-4.0,20.0 anchor=0.0,4.0 size=4.0,8.0 idx=-
+ P1 side=SOUTH pos=13.0,60.0 anchor=2.0,4.0 size=4.0,4.0 idx=-
+  E -> N2P0 bends=[135.0,150.0;170.0,150.0;170.0,15.0] jps=- toff=-
+N2 NORMAL pos=200.0,5.0 size=20.0,20.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=TOP nlplace=- position=- min=- lc=- ilc=- eps=- pc=-
+ P0 side=WEST pos=-2.0,8.0 anchor=0.0,2.0 size=2.0,4.0 idx=-
+N3 EXTERNAL_PORT pos=0.0,90.0 size=10.0,10.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=FIRST_SEPARATE ilc=- eps=WEST pc=-
+ P0 side=EAST pos=10.0,5.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+  E -> N0P1 bends=[] jps=- toff=-
+== transformer zero-size LEFT
+graph size=0.0,0.0 offset=3.0,7.0 padding=1.0,4.0,3.0,2.0 nlp=5.0,8.0,7.0,6.0 elss=SMART_UP
+N0 NORMAL pos=167.0,20.0 size=40.0,30.0 margin=1.0,2.0,3.0,4.0 padding=5.0,8.0,7.0,6.0 layer=- align=RIGHT nlplace=76 position=166.0,22.0 min=15.0,25.0 lc=- ilc=- eps=- pc=-
+ P0 side=WEST pos=-4.0,12.0 anchor=0.0,3.0 size=4.0,6.0 idx=-3
+  PL pos=-3.0,-4.0 size=5.0,3.0
+  E -> N1P0 bends=[137.0,35.0;137.0,74.0] jps=[137.0,50.0] toff=-
+   EL pos=143.0,40.0 size=14.0,8.0 inline=true
+ P1 side=NORTH pos=24.0,-2.0 anchor=4.5,0.25 size=6.0,2.0 idx=-
+  E -> N2P0 bends=[] jps=- toff=-
+ NL pos=27.0,2.0 size=12.0,6.0 nlplace=417
+N1 NORMAL pos=67.0,50.0 size=30.0,60.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=BOTTOM nlplace=- position=- min=- lc=- ilc=- eps=- pc=-
+ P0 side=EAST pos=30.0,20.0 anchor=4.0,4.0 size=4.0,8.0 idx=-
+ P1 side=SOUTH pos=13.0,60.0 anchor=2.0,4.0 size=4.0,4.0 idx=-
+  E -> N2P0 bends=[82.0,150.0;47.0,150.0;47.0,15.0] jps=- toff=-
+N2 NORMAL pos=-3.0,5.0 size=20.0,20.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=TOP nlplace=- position=- min=- lc=- ilc=- eps=- pc=-
+ P0 side=EAST pos=20.0,8.0 anchor=2.0,2.0 size=2.0,4.0 idx=-
+N3 EXTERNAL_PORT pos=207.0,90.0 size=10.0,10.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=LAST_SEPARATE ilc=- eps=EAST pc=-
+ P0 side=WEST pos=0.0,5.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+  E -> N0P1 bends=[] jps=- toff=-
+== transformer zero-size UP
+graph size=0.0,0.0 offset=7.0,3.0 padding=4.0,1.0,2.0,3.0 nlp=8.0,5.0,6.0,7.0 elss=SMART_DOWN
+N0 NORMAL pos=53.0,10.0 size=30.0,40.0 margin=1.0,2.0,3.0,4.0 padding=8.0,5.0,6.0,7.0 layer=- align=TOP nlplace=332 position=51.0,11.0 min=25.0,15.0 lc=- ilc=- eps=- pc=-
+ P0 side=SOUTH pos=12.0,40.0 anchor=3.0,4.0 size=6.0,4.0 idx=3
+  PL pos=7.0,2.0 size=3.0,5.0
+  E -> N1P0 bends=[68.0,80.0;29.0,80.0] jps=[53.0,80.0] toff=-
+   EL pos=55.0,60.0 size=8.0,14.0 inline=true
+ P1 side=EAST pos=30.0,10.0 anchor=1.75,1.5 size=2.0,6.0 idx=-
+  E -> N2P0 bends=[] jps=- toff=-
+ NL pos=22.0,1.0 size=6.0,12.0 nlplace=161
+N1 NORMAL pos=-7.0,120.0 size=60.0,30.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=LEFT nlplace=- position=- min=- lc=- ilc=- eps=- pc=-
+ P0 side=NORTH pos=32.0,-4.0 anchor=4.0,0.0 size=8.0,4.0 idx=-
+ P1 side=WEST pos=-4.0,13.0 anchor=0.0,2.0 size=4.0,4.0 idx=-
+  E -> N2P0 bends=[-47.0,135.0;-47.0,170.0;88.0,170.0] jps=- toff=-
+N2 NORMAL pos=78.0,200.0 size=20.0,20.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=RIGHT nlplace=- position=- min=- lc=- ilc=- eps=- pc=-
+ P0 side=NORTH pos=8.0,-2.0 anchor=2.0,0.0 size=4.0,2.0 idx=-
+N3 EXTERNAL_PORT pos=3.0,0.0 size=10.0,10.0 margin=0.0,0.0,0.0,0.0 padding=0.0,0.0,0.0,0.0 layer=- align=- nlplace=- position=- min=- lc=NONE ilc=TOP eps=NORTH pc=-
+ P0 side=SOUTH pos=5.0,10.0 anchor=0.0,0.0 size=0.0,0.0 idx=-
+  E -> N0P1 bends=[] jps=- toff=-
