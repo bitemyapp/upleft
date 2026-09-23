@@ -3,6 +3,7 @@
 
 pub mod core_text;
 pub mod attribute_dump;
+pub mod decorate;
 pub mod highlight;
 pub mod json;
 pub mod markup;
@@ -100,6 +101,7 @@ pub fn run(request: &Request) -> Result<(), Failure> {
         "parse" => parse::run(&request.input, &request.output),
         "core-text" => core_text::run(&request.input, &request.output),
         "bench-core-text" => core_text::bench(&request.input, &request.output),
+        "decorate" => decorate::run(request),
         "stylesheet" => {
             let value = style_sheet::dump(&request.theme, request.dark)?;
             Ok(json::write(&value, &request.output)?)

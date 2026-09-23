@@ -17,12 +17,15 @@ objc2.workspace = true
 objc2-foundation = { workspace = true, features = [
     "NSArray", "NSAttributedString", "NSData", "NSDictionary", "NSEnumerator", "NSError", "NSGeometry",
     "NSNotification", "NSRange", "NSString", "NSValue",
+    "NSURL", "block2",
 ] }
 objc2-app-kit = { workspace = true, features = [
     "NSAppearance", "NSApplication", "NSBitmapImageRep", "NSClipView", "NSColor", "NSColorList", "NSColorSpace",
     "NSFont", "NSFontDescriptor", "NSGraphics", "NSGraphicsContext", "NSImage", "NSImageRep", "NSResponder",
     "NSRunningApplication", "NSScrollView", "NSText", "NSTextView", "NSView", "NSWindow", "NSLayoutConstraint",
     "objc2-core-graphics",
+    "NSAttributedString", "NSParagraphStyle", "NSShadow", "NSTextAttachment", "NSTextList", "NSTextStorage",
+    "NSTextTable",
 ] }
 objc2-core-foundation = { workspace = true, features = ["CFArray", "CFCGTypes", "CFDictionary", "CFString"] }
 objc2-core-graphics = { workspace = true, features = ["CGBitmapContext", "CGColor", "CGColorSpace", "CGContext", "CGImage"] }
