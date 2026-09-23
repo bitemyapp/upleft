@@ -2157,6 +2157,31 @@ fn clear_cg_color() -> Retained<objc2_core_graphics::CGColor> {
         .into()
 }
 
+/// A row's `private var styleSheet: StyleSheet = .current`, evaluated on
+/// first read instead of at `init`. The panel's `tableView(_:viewFor:row:)`
+/// calls `configure`, which assigns the real sheet, in the same call that
+/// makes the row, so nothing reads the default first: the observable value is
+/// Swift's, and a new row no longer builds a whole sheet only to overwrite it
+/// (a quarter of a panel build, measured on agent-400).
+#[derive(Default)]
+struct RowStyleSheet(RefCell<Option<Rc<StyleSheet>>>);
+
+impl RowStyleSheet {
+    fn get(&self) -> Rc<StyleSheet> {
+        if let Some(style_sheet) = self.0.borrow().as_ref() {
+            return style_sheet.clone();
+        }
+        let mtm = MainThreadMarker::new().expect("rows are used on the main thread");
+        let current = Rc::new(StyleSheet::current(mtm));
+        *self.0.borrow_mut() = Some(current.clone());
+        current
+    }
+
+    fn set(&self, style_sheet: Rc<StyleSheet>) {
+        *self.0.borrow_mut() = Some(style_sheet);
+    }
+}
+
 // MARK: - Task row
 
 pub struct TaskRowViewIvars {
@@ -2169,7 +2194,7 @@ pub struct TaskRowViewIvars {
     checkbox_leading: RefCell<Option<Retained<NSLayoutConstraint>>>,
     task: RefCell<TaskItem>,
     indent_level: Cell<isize>,
-    style_sheet: RefCell<Rc<StyleSheet>>,
+    style_sheet: RowStyleSheet,
     is_pressed: Cell<bool>,
     is_selected: Cell<bool>,
 }
@@ -2201,7 +2226,7 @@ define_class!(
             if !(indent_level > 0) {
                 return;
             }
-            let style_sheet = self.ivars().style_sheet.borrow().clone();
+            let style_sheet = self.ivars().style_sheet.get();
             let contrast = style_sheet.increase_contrast;
             style_sheet.text.panel_alpha(if contrast { 0.16 } else { 0.09 }, contrast).setFill();
             for level in 1..=indent_level {
@@ -2246,7 +2271,7 @@ impl TaskRowView {
             checkbox_leading: RefCell::new(None),
             task: RefCell::new(task),
             indent_level: Cell::new(0),
-            style_sheet: RefCell::new(Rc::new(StyleSheet::current(mtm))),
+            style_sheet: RowStyleSheet::default(),
             is_pressed: Cell::new(false),
             is_selected: Cell::new(false),
         });
@@ -2340,7 +2365,7 @@ impl TaskRowView {
         *ivars.task.borrow_mut() = task.clone();
         let indent_level = task.indent_level.min(TaskRowMetrics::MAXIMUM_INDENT);
         ivars.indent_level.set(indent_level);
-        *ivars.style_sheet.borrow_mut() = style_sheet.clone();
+        ivars.style_sheet.set(style_sheet.clone());
         ivars.is_selected.set(is_selected);
         let leading = ivars.checkbox_leading.borrow().clone();
         if let Some(leading) = leading {
@@ -2395,7 +2420,7 @@ impl TaskRowView {
     /// while the label cools to its done colour.
     fn play_completion_moment(&self) {
         let ivars = self.ivars();
-        let style_sheet = ivars.style_sheet.borrow().clone();
+        let style_sheet = ivars.style_sheet.get();
         if !(!style_sheet.reduce_motion && self.window().is_some()) {
             return;
         }
@@ -2420,7 +2445,7 @@ impl TaskRowView {
     /// strengths.
     fn surface_color(&self) -> Retained<NSColor> {
         let ivars = self.ivars();
-        let style_sheet = ivars.style_sheet.borrow().clone();
+        let style_sheet = ivars.style_sheet.get();
         let contrast = style_sheet.increase_contrast;
         if ivars.is_pressed.get() {
             return style_sheet.selection.colorWithAlphaComponent(if contrast { 0.95 } else { 0.75 });
@@ -2433,7 +2458,7 @@ impl TaskRowView {
 
     fn update_surface(&self, animated: bool) {
         let color = cg(&self.surface_color());
-        let reduce_motion = self.ivars().style_sheet.borrow().reduce_motion;
+        let reduce_motion = self.ivars().style_sheet.get().reduce_motion;
         if !(animated && !reduce_motion && self.window().is_some()) {
             set_surface(self.surface_layer(), &color);
             self.update_glyph(false);
@@ -2446,7 +2471,7 @@ impl TaskRowView {
     fn update_glyph(&self, animated: bool) {
         let ivars = self.ivars();
         let target: CGFloat = if self.is_hovered() || ivars.is_selected.get() { 1.0 } else { 0.0 };
-        let reduce_motion = ivars.style_sheet.borrow().reduce_motion;
+        let reduce_motion = ivars.style_sheet.get().reduce_motion;
         if !(animated && !reduce_motion) {
             ivars.jump_glyph.setAlphaValue(target);
             return;
@@ -2468,7 +2493,7 @@ impl TaskRowView {
     /// checkbox's own colour, which settles back to whatever the row was
     /// already showing.
     fn pulse_row_glow(&self) {
-        let style_sheet = self.ivars().style_sheet.borrow().clone();
+        let style_sheet = self.ivars().style_sheet.get();
         if !(!style_sheet.reduce_motion && self.window().is_some()) {
             return;
         }
@@ -2583,7 +2608,7 @@ pub struct TaskSectionRowViewIvars {
     chevron: Retained<NSImageView>,
     title_label: Retained<NSTextField>,
     status_label: Retained<NSTextField>,
-    style_sheet: RefCell<Rc<StyleSheet>>,
+    style_sheet: RowStyleSheet,
 }
 
 define_class!(
@@ -2631,7 +2656,7 @@ impl TaskSectionRowView {
             chevron: NSImageView::new(mtm),
             title_label: label("", mtm),
             status_label: label("", mtm),
-            style_sheet: RefCell::new(Rc::new(StyleSheet::current(mtm))),
+            style_sheet: RowStyleSheet::default(),
         });
         TaskRowSurfaceView::stage_init(identifier, true);
         let this: Retained<TaskSectionRowView> = unsafe { msg_send![super(this), initWithFrame: RECT_ZERO] };
@@ -2683,7 +2708,7 @@ impl TaskSectionRowView {
 
     fn configure(&self, title: &str, open_count: isize, collapsed: bool, style_sheet: Rc<StyleSheet>) {
         let ivars = self.ivars();
-        *ivars.style_sheet.borrow_mut() = style_sheet.clone();
+        ivars.style_sheet.set(style_sheet.clone());
         set_label(&*ivars.chevron, if collapsed { "Expand section" } else { "Collapse section" });
         ivars.chevron.setContentTintColor(Some(&style_sheet.text_faint));
         set_disclosure_chevron(&ivars.chevron, !collapsed, self.window().is_some(), style_sheet.reduce_motion, self.window().is_some());
@@ -2706,7 +2731,7 @@ impl TaskSectionRowView {
 
     fn update_surface(&self) {
         let ivars = self.ivars();
-        let style_sheet = ivars.style_sheet.borrow().clone();
+        let style_sheet = ivars.style_sheet.get();
         let contrast = style_sheet.increase_contrast;
         let hovered = self.is_hovered();
         let color = if hovered {
@@ -2732,7 +2757,7 @@ pub struct TaskPileRowViewIvars {
     on_toggle: Handler,
     chevron: Retained<NSImageView>,
     label: Retained<NSTextField>,
-    style_sheet: RefCell<Rc<StyleSheet>>,
+    style_sheet: RowStyleSheet,
 }
 
 define_class!(
@@ -2778,7 +2803,7 @@ impl TaskPileRowView {
             on_toggle: RefCell::new(None),
             chevron: NSImageView::new(mtm),
             label: label("", mtm),
-            style_sheet: RefCell::new(Rc::new(StyleSheet::current(mtm))),
+            style_sheet: RowStyleSheet::default(),
         });
         TaskRowSurfaceView::stage_init(identifier, true);
         let this: Retained<TaskPileRowView> = unsafe { msg_send![super(this), initWithFrame: RECT_ZERO] };
@@ -2818,7 +2843,7 @@ impl TaskPileRowView {
 
     fn configure(&self, count: isize, expanded: bool, style_sheet: Rc<StyleSheet>) {
         let ivars = self.ivars();
-        *ivars.style_sheet.borrow_mut() = style_sheet.clone();
+        ivars.style_sheet.set(style_sheet.clone());
         set_label(&*ivars.chevron, if expanded { "Hide completed tasks" } else { "Show completed tasks" });
         set_disclosure_chevron(&ivars.chevron, expanded, self.window().is_some(), style_sheet.reduce_motion, self.window().is_some());
         ivars.label.setStringValue(&ns_string(&if count == 1 {
@@ -2836,7 +2861,7 @@ impl TaskPileRowView {
 
     fn apply_style(&self, animated: bool) {
         let ivars = self.ivars();
-        let style_sheet = ivars.style_sheet.borrow().clone();
+        let style_sheet = ivars.style_sheet.get();
         let contrast = style_sheet.increase_contrast;
         let warm = self.is_hovered();
         ivars.label.setTextColor(Some(if warm { &style_sheet.text_secondary } else { &style_sheet.text_faint }));
@@ -2868,7 +2893,7 @@ pub struct TaskAddRowViewIvars {
     plus_glyph: Retained<NSImageView>,
     hint_label: Retained<NSTextField>,
     text_field: Retained<NSTextField>,
-    style_sheet: RefCell<Rc<StyleSheet>>,
+    style_sheet: RowStyleSheet,
     editing: Cell<bool>,
     /// Esc marks the edit so `controlTextDidEndEditing` does not commit it.
     cancelled: Cell<bool>,
@@ -2951,7 +2976,7 @@ impl TaskAddRowView {
             plus_glyph: NSImageView::new(mtm),
             hint_label: label("Add task", mtm),
             text_field: NSTextField::new(mtm),
-            style_sheet: RefCell::new(Rc::new(StyleSheet::current(mtm))),
+            style_sheet: RowStyleSheet::default(),
             editing: Cell::new(false),
             cancelled: Cell::new(false),
             commit_sent: Cell::new(false),
@@ -3015,7 +3040,7 @@ impl TaskAddRowView {
 
     fn configure(&self, editing: bool, style_sheet: Rc<StyleSheet>) {
         let ivars = self.ivars();
-        *ivars.style_sheet.borrow_mut() = style_sheet;
+        ivars.style_sheet.set(style_sheet);
         let was_editing = ivars.editing.get();
         ivars.editing.set(editing);
         if editing != was_editing || !editing {
@@ -3037,7 +3062,7 @@ impl TaskAddRowView {
         let text_field: Retained<NSView> = Retained::into_super(Retained::into_super(ivars.text_field.clone()));
         let hint_label: Retained<NSView> = Retained::into_super(Retained::into_super(ivars.hint_label.clone()));
         let (incoming, outgoing) = if editing { (text_field, hint_label) } else { (hint_label, text_field) };
-        let reduce_motion = ivars.style_sheet.borrow().reduce_motion;
+        let reduce_motion = ivars.style_sheet.get().reduce_motion;
         if !(animated && self.window().is_some() && !reduce_motion) {
             outgoing.setHidden(true);
             outgoing.setAlphaValue(1.0);
@@ -3071,7 +3096,7 @@ impl TaskAddRowView {
 
     fn apply_style(&self, animated: bool) {
         let ivars = self.ivars();
-        let style_sheet = ivars.style_sheet.borrow().clone();
+        let style_sheet = ivars.style_sheet.get();
         let contrast = style_sheet.increase_contrast;
         let warm = self.is_hovered() && !ivars.editing.get();
         ivars.hint_label.setTextColor(Some(if warm { &style_sheet.text_secondary } else { &style_sheet.text_faint }));
