@@ -151,21 +151,15 @@ fn remote_images_stay_visible_but_inert_inside_safe_parents() {
 }
 
 #[test]
-#[ignore = "needs parser (upleft-markup) and compatibility (CompatibilityDiagnostics.swift, RenderTarget.swift)"]
 fn github_profile_continues_to_describe_raw_html_as_target_compatibility() {
+    use upleft_core::compatibility::compatibility_diagnostics::MarkdownCompatibility;
+    use upleft_core::compatibility::render_target::{MarkdownCapabilities, MarkdownCapability, RenderTargetProfile};
+
     let parsed = MarkdownParser::parse("<strong>Text</strong>");
-    let _ = parsed;
-    // The compatibility module is a placeholder in this worktree. Once it is
-    // ported, this is the Swift test (API names to match that port):
-    //
-    // let github = MarkdownCompatibility::diagnose(&parsed, &RenderTarget::GitHub);
-    // let no_html = MarkdownCompatibility::diagnose(
-    //     &parsed,
-    //     &RenderTarget::Custom { name: "No raw HTML".into(), capabilities: MarkdownCapabilities::empty() },
-    // );
-    // assert!(!github.diagnostics.iter().any(|d| d.capability == MarkdownCapability::RawHTML));
-    // assert!(no_html.diagnostics.iter().any(|d| d.capability == MarkdownCapability::RawHTML));
-    unimplemented!("needs the compatibility port");
+    let github = MarkdownCompatibility::diagnose(&parsed, &RenderTargetProfile::git_hub());
+    let no_html = MarkdownCompatibility::diagnose(&parsed, &RenderTargetProfile::custom("No raw HTML", MarkdownCapabilities::EMPTY));
+    assert!(!github.diagnostics.iter().any(|d| d.capability == MarkdownCapability::RawHTML));
+    assert!(no_html.diagnostics.iter().any(|d| d.capability == MarkdownCapability::RawHTML));
 }
 
 #[test]

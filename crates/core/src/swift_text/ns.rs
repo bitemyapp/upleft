@@ -202,8 +202,13 @@ pub mod foundation {
 
     use crate::ns_range::{NSRange, NS_NOT_FOUND};
 
+    /// `s as NSString`. Built from UTF-16 units: `NSString::from_str` decodes
+    /// UTF-8 and would drop a leading U+FEFF, which a Swift string keeps.
     fn ns(s: &str) -> Retained<NSString> {
-        NSString::from_str(s)
+        if s.is_ascii() {
+            return NSString::from_str(s);
+        }
+        ns_from_utf16(&super::utf16(s))
     }
 
     pub fn ns_from_utf16(units: &[u16]) -> Retained<NSString> {

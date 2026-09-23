@@ -433,6 +433,17 @@ pub fn str_eq(a: &str, b: &str) -> bool {
     if a == b {
         return true;
     }
+    let (x, y) = (a.as_bytes(), b.as_bytes());
+    let limit = x.len().min(y.len());
+    let mut first_difference = 0;
+    while first_difference < limit && x[first_difference] == y[first_difference] {
+        first_difference += 1;
+    }
+    // Normalise from the last shared ASCII byte before the first difference:
+    // an ASCII scalar is a starter nothing before it composes with, and the
+    // identical prefix normalises identically.
+    let start = x[..first_difference].iter().rposition(u8::is_ascii).unwrap_or(0);
+    let (a, b) = (&a[start..], &b[start..]);
     if a.is_ascii() && b.is_ascii() {
         return false;
     }
@@ -907,6 +918,10 @@ mod tests {
         assert_eq!(replacing_occurrences("a\u{212A}b", "K", ""), "ab");
         assert_eq!(replacing_occurrences("a*\u{200D}b", "*", ""), "a\u{200D}b");
         assert_eq!(replacing_occurrences("a***b", "**", "X"), "aX*b");
+        // A leading U+FEFF survives the trip through NSString.
+        assert_eq!(replacing_occurrences("\u{FEFF}a\u{E9}", "a", "b"), "\u{FEFF}b\u{E9}");
+        assert!(str_eq("xx\u{E9}!", "xxe\u{301}!"));
+        assert!(!str_eq("xx\u{E9}!", "xxe\u{301}?"));
         assert_eq!(components_separated_by("a\r\nb", "\n"), vec!["a\r", "b"]);
         assert_eq!(components_separated_by_set("a\r\nb\u{2028}c", CharSet::Newlines), vec!["a", "", "b", "c"]);
         assert!(case_insensitive_equal("Title", "TITLE"));
