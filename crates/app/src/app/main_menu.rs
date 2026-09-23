@@ -404,6 +404,9 @@ impl MainMenu {
     }
 
     /// Rebuilds shortcut display after the user remaps a binding.
+    ///
+    /// Reads `KeybindingStore::shared()` once per command item, so the
+    /// caller must not hold that store's guard (it is not reentrant).
     pub fn refresh_key_equivalents(menu: &NSMenu) {
         for item in menu.itemArray().iter() {
             if let Some(command) = Self::command(&item) {
