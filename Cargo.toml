@@ -11,6 +11,9 @@ repository = "https://github.com/bitemyapp/upleft"
 
 [workspace.dependencies]
 upleft-cmark-gfm-sys = { path = "crates/cmark-gfm-sys" }
+upleft-markup = { path = "crates/markup" }
+upleft-render = { path = "crates/render" }
+upleft-math = { path = "crates/math" }
 block2 = "0.6"
 objc2 = "0.6.4"
 objc2-foundation = { version = "0.3.2", default-features = false, features = ["std"] }

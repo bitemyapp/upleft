@@ -1,0 +1,1 @@
+﻿/* BOM and a block comment */ {"name": "BOM Theme", "type": "light", "colors": {"editor.background": "#fdf6e3" /* trailing */, "editor.foreground": "#657b83",}}

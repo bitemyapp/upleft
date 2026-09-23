@@ -55,6 +55,8 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "1e0e367e4e7da84520dedcac1901e4da967309406d1e51017ae1abfb97adbd38"
 dependencies = [
  "bitflags",
+ "block2",
+ "libc",
  "objc2",
 ]
 
@@ -111,6 +113,12 @@ name = "itoa"
 version = "1.0.18"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "8f42a60cbdf9a97f5d2305f08a87dc4e09308d1276d28c869c684d7777685682"
+
+[[package]]
+name = "libc"
+version = "0.2.189"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "3eaf3ede3fee6db1a4c2ee091bf8a8b4dccdc6d17f656fb07896ee72867612f2"
 
 [[package]]
 name = "memchr"
@@ -222,6 +230,19 @@ dependencies = [
  "bitflags",
  "objc2",
  "objc2-core-foundation",
+]
+
+[[package]]
+name = "objc2-screen-capture-kit"
+version = "0.3.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "74b7c5390f477482f001bc354d6571a70db7e4f8d5288e860c45521fbce11394"
+dependencies = [
+ "block2",
+ "objc2",
+ "objc2-core-foundation",
+ "objc2-core-graphics",
+ "objc2-foundation",
 ]
 
 [[package]]
@@ -359,15 +380,29 @@ dependencies = [
 name = "upleft-conformance"
 version = "0.1.0"
 dependencies = [
+ "block2",
+ "dispatch2",
  "objc2",
  "objc2-app-kit",
  "objc2-core-foundation",
  "objc2-core-graphics",
  "objc2-core-text",
  "objc2-foundation",
+ "objc2-screen-capture-kit",
  "png",
  "serde_json",
+ "upleft-markup",
  "upleft-math",
+ "upleft-render",
+]
+
+[[package]]
+name = "upleft-markup"
+version = "0.1.0"
+dependencies = [
+ "unicode-normalization",
+ "unicode-segmentation",
+ "upleft-cmark-gfm-sys",
 ]
 
 [[package]]
@@ -381,6 +416,24 @@ dependencies = [
  "objc2-core-graphics",
  "objc2-core-text",
  "objc2-foundation",
+ "unicode-normalization",
+ "unicode-segmentation",
+]
+
+[[package]]
+name = "upleft-render"
+version = "0.1.0"
+dependencies = [
+ "block2",
+ "dispatch2",
+ "libc",
+ "objc2",
+ "objc2-app-kit",
+ "objc2-core-foundation",
+ "objc2-core-graphics",
+ "objc2-core-text",
+ "objc2-foundation",
+ "serde_json",
  "unicode-normalization",
  "unicode-segmentation",
 ]

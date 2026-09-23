@@ -1,0 +1,6 @@
+# Downright's deployment target (Package.swift: `.macOS(.v14)`). Together with
+# the SDK the linker records, this is the LC_BUILD_VERSION AppKit consults for
+# its linked-on-or-after behaviour switches (scroller style among them), so it
+# must match the Swift reference binaries exactly — see docs/BUILD-VERSION.md.
+[env]
+MACOSX_DEPLOYMENT_TARGET = "14.0"

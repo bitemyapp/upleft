@@ -1,0 +1,25 @@
+{
+  // A comment, because shipped themes are JSONC.
+  "name": "Downright Import Fixture",
+  "type": "dark",
+  "colors": {
+    "editor.background": "#101418",
+    "editor.foreground": "#d0d6dd",
+    "editor.selectionBackground": "#2a3a4a80",
+    "textLink.foreground": "#7aa2f7",
+    "editorError.foreground": "#e06c75",
+    "editorWarning.foreground": "#e5c07b",
+    "gitDecoration.addedResourceForeground": "#98c379",
+    "unrelated.null": null,
+  },
+  "tokenColors": [
+    { "scope": "comment", "settings": { "foreground": "#5c6370", "fontStyle": "italic" } },
+    { "scope": ["string", "string.quoted.double"], "settings": { "foreground": "#98c379" } },
+    { "scope": "keyword.control, storage.type", "settings": { "foreground": "#c678dd" } },
+    { "scope": "constant.numeric", "settings": { "foreground": "#d19a66" } },
+    { "scope": "entity.name.function", "settings": { "foreground": "#61afef" } },
+    { "scope": "entity.name.type", "settings": { "foreground": "#e5c07b" } },
+    { "scope": "markup.inserted", "settings": { "foreground": "#98c379" } },
+    { "scope": "markup.deleted", "settings": { "foreground": "#e06c75" } },
+  ]
+}

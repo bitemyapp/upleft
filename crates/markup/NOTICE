@@ -1,0 +1,16 @@
+upleft-markup
+=============
+
+upleft-markup is a Rust port of parts of swift-markdown
+(https://github.com/apple/swift-markdown), at revision
+27b7fc1a19068bcea3d2072db0ce86360d1400ed:
+
+    swift-markdown, Copyright (c) 2021 Apple Inc. and the Swift project authors
+    Licensed under the Apache License, Version 2.0 with Runtime Library Exception
+
+The ported files keep that license. See LICENSE for the full text.
+
+Modifications: the Swift sources were translated to Rust for Upleft
+(https://github.com/bitemyapp/upleft). The translation keeps swift-markdown's
+algorithms and observable behaviour; only the in-memory representation of the
+markup tree differs.
