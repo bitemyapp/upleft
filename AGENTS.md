@@ -31,6 +31,10 @@ Upleft is a faithful Rust port of Downright (`vendor/downright`). The Swift orig
 
 FoundationModels (Downright's optional on-device AI, `AI/LocalAI.swift`) and AppIntents (`Integrations/AppIntents.swift`) are Swift-only frameworks, so objc2 can't reach them. By the owner's decision (2026-09-23), Upleft carries a tiny Swift shim for them at `crates/app/swift-shim/`: C entry points for the model session and its availability, plus the intent declarations. Every other piece of logic stays in Rust. Nothing else in Upleft is written in Swift, and the shim must not grow beyond those framework calls.
 
+## App identity
+
+By the owner's decision (2026-09-23), the app is always **Upleft**. It has its own name in every visible string, bundle id `com.bitemyapp.upleft`, and its own Application Support folder and preferences domain, so it never shares state with a real Downright install. To keep window-level conformance exact, the Swift reference app for those suites is Downright built from a scripted copy that rebrands only visible strings and identifiers ("Downright" to "Upleft"). `vendor/` is never modified, and the rebranding script's substitutions are listed and reviewed. The pure library layers are unaffected.
+
 ## Gates
 
 - `cargo test --workspace` must pass.
