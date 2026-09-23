@@ -62,6 +62,11 @@ final class CaptureSession: NSObject, NSApplicationDelegate {
     private var window: NSWindow!
     private var settleView: NSView!
     private var previousCapture: Data?
+    /// Frames, visibility and alpha of the scene's extra windows at the last
+    /// check. A child window (a hover preview, an outline) can arrive after
+    /// the settle view stops changing, so the scene is settled only when both
+    /// the pixels and this signature hold still.
+    private var previousExtras: String?
     private var stableCaptures = 0
     private var deadline = Date.distantFuture
 
@@ -126,11 +131,15 @@ final class CaptureSession: NSObject, NSApplicationDelegate {
             fail("PNG encoding failed")
             return
         }
-        if png == previousCapture {
+        let extras = scene.extraWindows()
+            .map { "\($0.frame)|\($0.isVisible)|\($0.alphaValue)" }
+            .joined(separator: ";")
+        if png == previousCapture && extras == previousExtras {
             stableCaptures += 1
         } else {
             stableCaptures = 0
             previousCapture = png
+            previousExtras = extras
         }
         if !scene.isReady { stableCaptures = 0 }
         guard stableCaptures >= 2 || Date() > deadline else {

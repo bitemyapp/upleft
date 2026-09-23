@@ -512,7 +512,49 @@ fn launchable_app_guard() -> Option<String> {
     (!found.is_empty()).then(|| format!("Spotlight finds an app with Upleft's bundle id that `down open` would launch:\n{found}"))
 }
 
+/// Downright (and so Upleft) publishes its Quick Look appearance in the
+/// global preferences domain on every launch (`PreviewAppearanceStore`), and a
+/// sandbox HOME does not isolate CFPreferences. The runner snapshots those keys
+/// before any suite and puts them back afterwards, deleting the ones that did
+/// not exist, so a conformance run leaves the owner's preferences as it found
+/// them.
+const GLOBAL_PREFERENCE_KEYS: [&str; 3] = [
+    "com.bitemyapp.upleft.quickLook.appearance",
+    "com.bitemyapp.upleft.quickLook.lightTheme",
+    "com.bitemyapp.upleft.quickLook.darkTheme",
+];
+
+fn snapshot_global_preferences() -> Vec<(&'static str, Option<String>)> {
+    GLOBAL_PREFERENCE_KEYS
+        .iter()
+        .map(|key| {
+            let output = Command::new("/usr/bin/defaults").args(["read", "-g", key]).output().ok();
+            let value = output
+                .filter(|output| output.status.success())
+                .map(|output| String::from_utf8_lossy(&output.stdout).trim_end_matches('\n').to_owned());
+            (*key, value)
+        })
+        .collect()
+}
+
+fn restore_global_preferences(snapshot: &[(&'static str, Option<String>)]) {
+    for (key, value) in snapshot {
+        let arguments: Vec<&str> = match value {
+            Some(value) => vec!["write", "-g", key, "-string", value],
+            None => vec!["delete", "-g", key],
+        };
+        let _ = Command::new("/usr/bin/defaults").args(&arguments).output();
+    }
+}
+
 fn main() -> ExitCode {
+    let snapshot = snapshot_global_preferences();
+    let code = run();
+    restore_global_preferences(&snapshot);
+    code
+}
+
+fn run() -> ExitCode {
     let options = parse_options();
     let root = root();
     let (corpus, exclude, suites) = load_suites(&root);

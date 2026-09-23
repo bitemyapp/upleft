@@ -74,6 +74,9 @@ struct Session {
     window: Option<Retained<NSWindow>>,
     settle_view: Option<Retained<NSView>>,
     previous_capture: Option<Vec<u8>>,
+    /// See `previousExtras` in the Swift session: the extra windows' frames,
+    /// visibility and alpha at the last check.
+    previous_extras: Option<String>,
     stable_captures: u32,
     deadline: Option<Instant>,
 }
@@ -124,6 +127,7 @@ pub fn run(request: CaptureRequest, scene: Box<dyn CaptureScene>) -> ! {
             window: None,
             settle_view: None,
             previous_capture: None,
+            previous_extras: None,
             stable_captures: 0,
             deadline: None,
         })
@@ -218,11 +222,30 @@ fn check_settled() {
         let rep = view.bitmapImageRepForCachingDisplayInRect(bounds).ok_or("no bitmap representation")?;
         view.cacheDisplayInRect_toBitmapImageRep(bounds, &rep);
         let png = png_data(&rep).ok_or("PNG encoding failed")?;
-        if session.previous_capture.as_ref() == Some(&png) {
+        let extras = session
+            .scene
+            .extra_windows()
+            .iter()
+            .map(|window| {
+                let frame = window.frame();
+                format!(
+                    "{},{},{},{}|{}|{}",
+                    frame.origin.x,
+                    frame.origin.y,
+                    frame.size.width,
+                    frame.size.height,
+                    window.isVisible(),
+                    window.alphaValue()
+                )
+            })
+            .collect::<Vec<_>>()
+            .join(";");
+        if session.previous_capture.as_ref() == Some(&png) && session.previous_extras.as_ref() == Some(&extras) {
             session.stable_captures += 1;
         } else {
             session.stable_captures = 0;
             session.previous_capture = Some(png.clone());
+            session.previous_extras = Some(extras);
         }
         if !session.scene.is_ready() {
             session.stable_captures = 0;
