@@ -101,7 +101,7 @@ do {
         engine.decorate(storage, document: MarkdownParser.parse(text), dirty: .wholesale)
         try write(AttributeDump.storage(storage), to: output)
 
-    case "render":
+    case "render", "probe":
         let request = RenderRequest(
             input: input,
             outputPNG: URL(fileURLWithPath: output),
@@ -113,11 +113,7 @@ do {
             height: flags.height,
             captureFromScreen: flags.captureFromScreen
         )
-        let app = NSApplication.shared
-        app.setActivationPolicy(.accessory)
-        let session = RenderSession(request: request)
-        app.delegate = session
-        app.run()
+        CaptureSession.run(request: request, scene: command == "render" ? MarkdownScene() : ProbeScene())
 
     case "stylesheet":
         try write(StyleSheetDump.dump(themeName: flags.theme, dark: flags.dark), to: output)

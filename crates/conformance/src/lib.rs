@@ -6,6 +6,7 @@
 //! (`-0.0` differs from `0.0`). PNGs are decoded and compared pixel by pixel;
 //! any differing channel in any pixel is a failure.
 
+pub mod capture;
 pub mod dump;
 
 use std::fmt;
