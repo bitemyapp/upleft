@@ -345,6 +345,15 @@ impl Preferences {
         })
     }
 
+    /// Installs `preferences` (a [`Preferences::for_testing`] instance) as
+    /// `Preferences.shared` before anything reads it, so a test binary that
+    /// builds panels (`PanelFont` reads the shared text size adjustment)
+    /// never publishes the Quick Look appearance to the real user defaults.
+    /// Returns the instance back if `shared` was already initialised.
+    pub fn install_shared_for_testing(preferences: Preferences) -> Result<(), Preferences> {
+        SHARED.set(preferences)
+    }
+
     /// A `Preferences` reading and writing `preferences_file` only: no Quick
     /// Look publication and no notification. `snapshot_store`, when given,
     /// receives the history limits as `SnapshotStore.shared` does.
