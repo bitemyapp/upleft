@@ -4,7 +4,7 @@
 use objc2::rc::Retained;
 use objc2_app_kit::{NSAppearance, NSAppearanceNameAqua, NSAppearanceNameDarkAqua, NSColor};
 use serde_json::Value;
-use upleft_render::core_types::{CalloutKind, ChangeKind};
+use upleft_render::core_types::CalloutKind;
 use upleft_render::engine::render_metrics::{self as rm, RoundingRule};
 use upleft_render::render_contracts::{
     CodeTheme, DecorationPolicy, FragmentKind, MarkdownRenderConfiguration, MarkdownRevealPolicy,
@@ -502,7 +502,7 @@ fn colors(sheet: &StyleSheet) -> Value {
         .with(
             "changes",
             Value::Array(
-                ChangeKind::ALL_KINDS
+                upleft_render::core_types::CHANGE_KINDS
                     .iter()
                     .map(|kind| {
                         Object::new()

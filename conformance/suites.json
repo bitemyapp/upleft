@@ -118,6 +118,32 @@
       ]
     },
     {
+      "name": "incremental",
+      "command": "incremental",
+      "output": "json",
+      "variants": [
+        ["--mode", "live"],
+        ["--mode", "source"],
+        ["--mode", "read"]
+      ]
+    },
+    {
+      "name": "displaymap",
+      "command": "displaymap",
+      "output": "json",
+      "variants": [
+        ["--mode", "live"],
+        ["--mode", "read"],
+        ["--mode", "source"]
+      ]
+    },
+    {
+      "name": "clipboard",
+      "command": "clipboard",
+      "output": "json",
+      "variants": [[]]
+    },
+    {
       "name": "render",
       "command": "render",
       "output": "png",

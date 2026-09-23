@@ -9,9 +9,9 @@ use objc2::rc::Retained;
 use objc2::runtime::NSObject;
 use objc2::{AllocAnyThread, DefinedClass, define_class, msg_send};
 use objc2_app_kit::NSColor;
-use objc2_foundation::{NSRange, NSString, ns_string};
+use objc2_foundation::{NSString, ns_string};
 
-use crate::core_types::{BlockIdentity, InlineSpan, TableCell, TableData, TableRow};
+use crate::core_types::{BlockIdentity, InlineSpan, NSRange, TableCell, TableData, TableRow};
 use crate::engine::render_metrics;
 use crate::swift_compat::{self, json};
 
@@ -568,26 +568,22 @@ fn project_span(span: &InlineSpan, edit: NSRange, inserted_length: isize) -> Inl
 /// `FragmentPayload.project(_:across:insertedLength:)` on `NSRange`, in
 /// Swift's signed `Int` arithmetic.
 pub fn project_range(range: NSRange, edit: NSRange, inserted_length: isize) -> NSRange {
-    let location = range.location as isize;
-    let length = range.length as isize;
-    let upper = location + length;
-    let edit_location = edit.location as isize;
-    let edit_upper = edit_location + edit.length as isize;
-    let delta = inserted_length - edit.length as isize;
-    if upper <= edit_location {
+    let upper = range.upper_bound();
+    let edit_upper = edit.upper_bound();
+    let delta = inserted_length - edit.length;
+    if upper <= edit.location {
         return range;
     }
-    if location >= edit_upper {
-        return NSRange::new(0.max(location + delta) as usize, range.length);
+    if range.location >= edit_upper {
+        return NSRange::new(0.max(range.location + delta), range.length);
     }
     // The edit intersects this semantic range. Preserve the part on each side
     // and let the replacement occupy the intersected interval.
-    let prefix = 0.max(edit_location - location);
+    let prefix = 0.max(edit.location - range.location);
     let suffix = 0.max(upper - edit_upper);
-    let new_location = location.min(edit_location);
     NSRange::new(
-        new_location as usize,
-        (prefix + inserted_length + suffix) as usize,
+        range.location.min(edit.location),
+        prefix + inserted_length + suffix,
     )
 }
 

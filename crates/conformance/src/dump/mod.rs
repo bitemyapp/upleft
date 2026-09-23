@@ -1,10 +1,14 @@
 //! Rust counterparts of the Swift oracle's dumps (`oracle/Sources/downright-oracle`).
 //! Each submodule mirrors one Swift file and must emit the same JSON shape.
 
+pub mod clipboard;
 pub mod core_text;
 pub mod attribute_dump;
+pub mod decorate;
+pub mod display_map;
 pub mod elk;
 pub mod highlight;
+pub mod incremental;
 pub mod json;
 pub mod markup;
 pub mod mermaid;
@@ -104,6 +108,10 @@ pub fn run(request: &Request) -> Result<(), Failure> {
         "core-text" => core_text::run(&request.input, &request.output),
         "unicode" => unicode::run(&request.input, &request.output),
         "bench-core-text" => core_text::bench(&request.input, &request.output),
+        "decorate" => decorate::run(request),
+        "incremental" => incremental::run(request),
+        "displaymap" => display_map::run(request),
+        "clipboard" => clipboard::run(request),
         "stylesheet" => {
             let value = style_sheet::dump(&request.theme, request.dark)?;
             Ok(json::write(&value, &request.output)?)

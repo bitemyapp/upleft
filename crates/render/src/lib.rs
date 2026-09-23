@@ -11,14 +11,17 @@
 //! | `Theme/*.swift` | [`theme`] |
 //! | `View/StyleSheetDefaults.swift` | [`view::style_sheet_defaults`] |
 //!
-//! [`core_types`] holds the few MarkdownCore types the contracts name until
-//! `upleft-core` lands; [`swift_compat`] reproduces the Swift standard
-//! library and Foundation behaviours the port depends on.
+//! [`core_types`] re-exports the MarkdownCore types from `upleft-core`;
+//! [`swift_compat`] reproduces the Swift standard library and Foundation
+//! behaviours the port depends on.
 
+pub mod clipboard_semantic_html;
 pub mod core_types;
 pub mod engine;
+pub mod fragments;
 pub mod render_contracts;
 pub mod swift_compat;
+pub mod swift_value;
 pub mod syntax;
 pub mod theme;
 pub mod view;

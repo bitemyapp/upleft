@@ -11,9 +11,13 @@ block2.workspace = true
 dispatch2 = "0.3"
 libc = "0.2"
 objc2.workspace = true
+upleft-core.workspace = true
+upleft-math.workspace = true
 upleft-swift-text.workspace = true
 objc2-foundation = { workspace = true, features = [
     "NSArray",
+    "NSAttributedString",
+    "block2",
     "NSData",
     "NSDictionary",
     "NSEnumerator",
@@ -38,7 +42,13 @@ objc2-app-kit = { workspace = true, features = [
     "NSColorSpace",
     "NSFont",
     "NSFontDescriptor",
+    "NSParagraphStyle",
     "NSResponder",
+    "NSStringDrawing",
+    "NSText",
+    "NSTextAttachment",
+    "NSTextStorage",
+    "NSImage",
     "NSWorkspace",
     "block2",
     "objc2-core-foundation",
