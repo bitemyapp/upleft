@@ -99,6 +99,7 @@ fn fail(message: &str) -> ! {
 
 /// Runs the capture to completion; the process exits from inside.
 pub fn run(request: CaptureRequest, scene: Box<dyn CaptureScene>) -> ! {
+    acquire_window_capture_lock();
     let mtm = MainThreadMarker::new().expect("capture runs on the main thread");
     let app = NSApplication::sharedApplication(mtm);
     app.setActivationPolicy(NSApplicationActivationPolicy::Accessory);
@@ -117,6 +118,22 @@ pub fn run(request: CaptureRequest, scene: Box<dyn CaptureScene>) -> ! {
     app.setDelegate(Some(ProtocolObject::from_ref(&*delegate)));
     app.run();
     std::process::exit(0)
+}
+
+/// One window capture at a time on this machine; see `acquireWindowCaptureLock`
+/// in the Swift oracle, which takes the same lock. Held until the process exits.
+fn acquire_window_capture_lock() {
+    let file = std::fs::OpenOptions::new()
+        .create(true)
+        .truncate(false)
+        .read(true)
+        .write(true)
+        .open("/tmp/upleft-window-capture.lock")
+        .unwrap_or_else(|error| fail(&format!("cannot open /tmp/upleft-window-capture.lock: {error}")));
+    if let Err(error) = file.lock() {
+        fail(&format!("cannot take /tmp/upleft-window-capture.lock: {error}"));
+    }
+    std::mem::forget(file);
 }
 
 pub fn appearance(dark: bool) -> Retained<NSAppearance> {

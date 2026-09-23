@@ -55,6 +55,7 @@ final class CaptureSession: NSObject, NSApplicationDelegate {
     }
 
     static func run(request: RenderRequest, scene: CaptureScene) -> Never {
+        acquireWindowCaptureLock()
         let app = NSApplication.shared
         app.setActivationPolicy(.accessory)
         let session = CaptureSession(request: request, scene: scene)
@@ -167,6 +168,19 @@ final class CaptureSession: NSObject, NSApplicationDelegate {
         FileHandle.standardError.write("render failed: \(message)\n".data(using: .utf8)!)
         exit(2)
     }
+}
+
+/// One window capture at a time on this machine. Two captures on screen at
+/// once compete for activation and window order, so every capture (from any
+/// worktree, oracle or agent) takes this lock for its whole process lifetime.
+/// `upleft-oracle` takes the same lock.
+func acquireWindowCaptureLock() {
+    let fd = open("/tmp/upleft-window-capture.lock", O_CREAT | O_RDWR, 0o644)
+    guard fd >= 0, flock(fd, LOCK_EX) == 0 else {
+        FileHandle.standardError.write("render failed: cannot take /tmp/upleft-window-capture.lock\n".data(using: .utf8)!)
+        exit(2)
+    }
+    // Deliberately never closed: the lock is released when the process exits.
 }
 
 /// Downright's real `MarkdownContainerView`, set up the way the app's
