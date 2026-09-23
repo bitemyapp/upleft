@@ -41,11 +41,17 @@ struct AppWindowScenario {
     /// Written verbatim as `preferences.json`; absent means no settings file
     /// (a first run).
     var preferences: Data?
+    /// Written verbatim as `keybindings.json`, if present.
+    var keybindings: Data?
     /// Settings pane to select (`preferences` windows).
     var pane: String?
     /// `StartGuideOffer` for the start window: "unavailable", "secondary",
     /// "primary".
     var guide: String = "unavailable"
+    /// Recent documents seeded into the sandbox before anything reads them
+    /// (`AppWindowSandbox.seedRecents`): each `{"path": "folder/name.md",
+    /// "heading": String?, "opened": ISO 8601 String, "words": Int?}`.
+    var recents: [[String: Any]] = []
     /// Commands (`Command` raw values) performed on the document window once
     /// its first frame has settled, in order, each followed by a settle.
     var commands: [String] = []
@@ -53,10 +59,10 @@ struct AppWindowScenario {
 
     init(url: URL) throws {
         let data = try Data(contentsOf: url)
-        guard let object = try JSONSerialization.jsonObject(with: data) as? [String: Any],
-              let window = object["window"] as? String
-        else { throw AppOracleError(description: "scenario needs a \"window\"") }
-        self.window = window
+        guard let object = try JSONSerialization.jsonObject(with: data) as? [String: Any] else {
+            throw AppOracleError(description: "a scenario is a JSON object")
+        }
+        window = object["window"] as? String ?? ""
         document = object["document"] as? String
         if let mode = object["mode"] as? String {
             guard let parsed = RenderMode(rawValue: mode) else {
@@ -71,8 +77,12 @@ struct AppWindowScenario {
         if let preferences = object["preferences"] {
             self.preferences = try JSONSerialization.data(withJSONObject: preferences, options: [.prettyPrinted, .sortedKeys])
         }
+        if let keybindings = object["keybindings"] {
+            self.keybindings = try JSONSerialization.data(withJSONObject: keybindings, options: [.prettyPrinted, .sortedKeys])
+        }
         pane = object["pane"] as? String
         if let guide = object["guide"] as? String { self.guide = guide }
+        recents = object["recents"] as? [[String: Any]] ?? []
         commands = object["commands"] as? [String] ?? []
         if let timeout = object["settleTimeout"] as? Double { settleTimeout = timeout }
     }
@@ -94,8 +104,40 @@ enum AppWindowSandbox {
         if let preferences = scenario.preferences {
             try preferences.write(to: support.appendingPathComponent("preferences.json"))
         }
+        if let keybindings = scenario.keybindings {
+            try keybindings.write(to: support.appendingPathComponent("keybindings.json"))
+        }
+        try seedRecents(scenario.recents, root: root, support: support)
         clearOwnDefaults()
         return root
+    }
+
+    /// Writes each recent's file under `<root>/recents/` (a one-line heading,
+    /// so `recents(limit:)` finds it on disk) and `recents.json` in the
+    /// support folder, in the scenario's order, as `DocumentStateStore`
+    /// stores it: absolute path, the file name without its extension, the
+    /// heading, the date and the word count.
+    static func seedRecents(_ recents: [[String: Any]], root: URL, support: URL) throws {
+        guard !recents.isEmpty else { return }
+        let folder = root.appendingPathComponent("recents", isDirectory: true)
+        var entries: [[String: Any]] = []
+        for recent in recents {
+            guard let relative = recent["path"] as? String, let opened = recent["opened"] as? String else {
+                throw AppOracleError(description: "a recent needs \"path\" and \"opened\"")
+            }
+            let heading = recent["heading"] as? String ?? ""
+            let file = folder.appendingPathComponent(relative)
+            try FileManager.default.createDirectory(at: file.deletingLastPathComponent(), withIntermediateDirectories: true)
+            try Data("# \(heading)\n".utf8).write(to: file)
+            entries.append([
+                "path": file.path,
+                "displayName": file.deletingPathExtension().lastPathComponent,
+                "firstHeading": heading,
+                "lastOpened": opened,
+                "wordCount": recent["words"] as? Int ?? 0,
+            ])
+        }
+        try JSONSerialization.data(withJSONObject: entries).write(to: support.appendingPathComponent("recents.json"))
     }
 
     /// This process's own defaults domain (never the user's app domain):
@@ -279,11 +321,17 @@ enum AppWindowGeometry {
         return String(identifier[..<range.lowerBound]) + "(0x…)"
     }
 
-    static func view(_ view: NSView) -> JSON {
+    /// A view whose Auto Layout solution is ambiguous (`hasAmbiguousLayout`)
+    /// gets whichever solution the engine happens to pick, run to run, in
+    /// Swift as in Rust (Settings' form stacks do). Its geometry and its
+    /// subtree's are reported as ambiguous rather than compared; the pixels
+    /// still are.
+    static func view(_ view: NSView, ambiguousAncestor: Bool = false) -> JSON {
+        let ambiguous = ambiguousAncestor || view.hasAmbiguousLayout
         var pairs: [(String, JSON)] = [
             ("class", .string(className(view))),
-            ("frame", rect(view.frame)),
-            ("bounds", rect(view.bounds)),
+            ("frame", ambiguous ? .string("ambiguous") : rect(view.frame)),
+            ("bounds", ambiguous ? .string("ambiguous") : rect(view.bounds)),
             ("hidden", .bool(view.isHidden)),
             ("alpha", .double(Double(view.alphaValue))),
         ]
@@ -293,7 +341,7 @@ enum AppWindowGeometry {
             pairs.append(("title", .string(button.title)))
             pairs.append(("state", .int(button.state.rawValue)))
         }
-        pairs.append(("subviews", .array(view.subviews.map { Self.view($0) })))
+        pairs.append(("subviews", .array(view.subviews.map { Self.view($0, ambiguousAncestor: ambiguous) })))
         return .object(pairs)
     }
 
@@ -579,5 +627,59 @@ enum AppWindowBench {
         ])
         try json.text.write(toFile: output, atomically: true, encoding: .utf8)
         exit(0)
+    }
+}
+
+// MARK: - The main menu
+
+/// `app-menu <scenario.json> <out.json>`: the main menu `MainMenu.build()`
+/// makes, in the scenario's sandbox, every submenu refreshed by its delegate
+/// (`menuNeedsUpdate`) as AppKit does before showing it.
+@MainActor
+enum AppMenuDump {
+    static func run(input: URL, repositoryRoot: URL) throws -> JSON {
+        let scenario = try AppWindowScenario(url: input)
+        let sandbox = try AppWindowSandbox.prepare(scenario)
+        defer { AppWindowSandbox.remove(sandbox) }
+        NSApplication.shared.setActivationPolicy(.accessory)
+        applyScenarioAppearance(scenario, repositoryRoot: repositoryRoot)
+        let menu = MainMenu.build()
+        NSApp.mainMenu = menu
+        return dump(menu)
+    }
+
+    static func dump(_ menu: NSMenu) -> JSON {
+        menu.delegate?.menuNeedsUpdate?(menu)
+        return .object([
+            ("title", .string(menu.title)),
+            ("items", .array(menu.items.map(item))),
+        ])
+    }
+
+    static func item(_ item: NSMenuItem) -> JSON {
+        let represented: JSON
+        switch item.representedObject {
+        case nil: represented = .null
+        case let string as String: represented = .string(string)
+        case let other?: represented = .string("<\(AppWindowGeometry.className(other as AnyObject))>")
+        }
+        return .object([
+            ("title", .string(item.title)),
+            ("separator", .bool(item.isSeparatorItem)),
+            ("keyEquivalent", .string(item.keyEquivalent)),
+            ("modifiers", .int(Int(item.keyEquivalentModifierMask.rawValue))),
+            ("action", item.action.map { .string(NSStringFromSelector($0)) } ?? .null),
+            ("target", item.target.map { .string(AppWindowGeometry.className($0 as AnyObject)) } ?? .null),
+            ("tag", .int(item.tag)),
+            ("representedObject", represented),
+            ("enabled", .bool(item.isEnabled)),
+            ("state", .int(item.state.rawValue)),
+            ("hidden", .bool(item.isHidden)),
+            ("alternate", .bool(item.isAlternate)),
+            ("indentation", .int(item.indentationLevel)),
+            ("image", .bool(item.image != nil)),
+            ("toolTip", .string(item.toolTip)),
+            ("submenu", item.submenu.map { dump($0) } ?? .null),
+        ])
     }
 }

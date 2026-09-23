@@ -5,3 +5,10 @@
 // PORT: DocumentWindowController+Diagnostics.swift fills this in.
 #[derive(Default)]
 pub struct DiagnosticsState {}
+
+impl crate::app::document_window_controller::DocumentWindowController {
+    /// `refreshDiagnosticsPanels()`.
+    pub fn refresh_diagnostics_panels(&self) {
+        // PORT: DocumentWindowController+Diagnostics.swift
+    }
+}

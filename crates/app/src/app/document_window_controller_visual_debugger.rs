@@ -5,3 +5,10 @@
 // PORT: DocumentWindowController+VisualDebugger.swift fills this in.
 #[derive(Default)]
 pub struct VisualDebuggerState {}
+
+impl crate::app::document_window_controller::DocumentWindowController {
+    /// `refreshVisualDebuggerIfVisible()`.
+    pub fn refresh_visual_debugger_if_visible(&self) {
+        // PORT: DocumentWindowController+VisualDebugger.swift
+    }
+}

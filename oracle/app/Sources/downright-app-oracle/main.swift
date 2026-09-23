@@ -20,6 +20,7 @@ import AppKit
 //   app-window       <scenario.json> <out.png> [--layout out.json]
 //                                 a real app window, captured off-screen (AppWindowCapture.swift)
 //   bench-app-window <scenario.json> document open and mode-switch timings (AppWindowCapture.swift)
+//   app-menu         <scenario.json> the main menu, every submenu refreshed (AppWindowCapture.swift)
 //   panel        <scenario.json>  a panel built off-screen and captured (Panels/PanelHarness.swift)
 //   panel-model  <scenario.json>  panels built windowless, laid out and dumped (Panels/PanelHarness.swift)
 //   bench-panel  <scenario.json>  panel build, layout and draw timings (Panels/PanelBench.swift)
@@ -82,6 +83,8 @@ do {
         try MainActor.assumeIsolated {
             try AppWindowSession.run(input: input, output: output, flags: flags, repositoryRoot: repositoryRoot)
         }
+    case "app-menu":
+        try write(MainActor.assumeIsolated { try AppMenuDump.run(input: input, repositoryRoot: repositoryRoot) }, to: output)
     case "bench-app-window":
         try MainActor.assumeIsolated {
             try AppWindowBench.run(input: input, output: output, repositoryRoot: repositoryRoot)

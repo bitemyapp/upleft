@@ -24,7 +24,7 @@ This file covers the whole app-core port on `port/app-core`: Downright's app lay
 | `Review/` | ReviewAnchorResolver, ReviewSidecar |
 | `Security/` | DocumentTrust, TrustStore |
 | `Support/` | AppPaths, CommandPaletteModel, Commands, FindEngine, JumpHistory, Keybindings, Preferences, QuickOpenProviders, ReaderProfiles, SpeechCoordinator, SystemIntegration, WelcomeTour |
-| `Updater/` | DownrightUpdateDriver, ReleaseWatch, UpdateCoordinator, UpdateEngine, UpdateMetadata, UpdateStateMachine |
+| `Updater/` | DownrightUpdateDriver, ReleaseWatch, UpdateCoordinator, UpdateEngine, UpdateMetadata, UpdateStateMachine; `sparkle` holds the Sparkle half of UpdateEngine and DownrightUpdateDriver (see "Sparkle" below) |
 | `Workspace/` | WorkspaceIndex, WorkspaceLinkGraph, WorkspaceSearch |
 
 ## Conformance
@@ -52,7 +52,7 @@ Every Swift file in scope is ported. The two exceptions are `LocalAI.swift` and 
 ## Left
 
 - **UI-bound code** goes to the UI port: `DocumentWindowController`, `MainMenu`, the panels, the Settings window, and the update panel (`UpdateNotesSummary` and the release-notes reduction live in `Panels/`). About 90 window-bound Swift tests wait with it; each area's list is in the commit messages and the section notes below.
-- **Sparkle linkage** comes with app packaging. `updater::update_engine` has the marked `SpuUpdater` seam, and until a factory is installed the updater stays disabled.
+- **Sparkle in the app binary.** `updater::sparkle` reaches Sparkle 2.9.6 at run time. The app binary still has to link and embed the framework and call `updater::sparkle::install(mtm)` at start-up (see "Sparkle" below). A real update cycle is unverified.
 - **Behaviour that is ported but unverified**, because exercising it would launch apps, change system state or write the real Spotlight index:
   - the success paths of `down open`, `--reveal`, `watch` and `notify`;
   - `ExternalEditor.open`;
@@ -71,6 +71,38 @@ Every Swift file in scope is ported. The two exceptions are `LocalAI.swift` and 
 2. Add each new check to the relevant suite. Where Swift has a seam (an injectable store, clock or URL), drive both sides through it. Never touch `UserDefaults.standard`, `Preferences.shared` or the real home.
 3. `cargo test --workspace`, the nine suites above and `just app-bench` must stay green.
 
+
+## Sparkle (`updater::sparkle`)
+
+Downright imports Sparkle in `UpdateEngine.swift` and `DownrightUpdateDriver.swift`, and only its host app links it. In Upleft, upleft-app never references a Sparkle symbol. `updater::sparkle` declares what the two Swift files use (`SPUUpdater`, `SUAppcastItem`, `SPUUserUpdateState`, `SPUDownloadData`, `SPUUpdatePermissionRequest`, `SUUpdatePermissionResponse`, and the `SPUUserDriver` and `SPUUpdaterDelegate` protocols) with objc2, resolved through the Objective-C runtime. Only the app binary links the framework.
+
+- `SparkleUpdater` implements the engine's `SpuUpdater` over a real `SPUUpdater`. It holds the updater and both bridge objects, because `SPUUpdater` keeps its delegate only weakly.
+- `DownrightUpdateDriverObject` (runtime name `DownrightUpdateDriver`) is the `SPUUserDriver`. `BackgroundDownloadNotifierObject` (runtime name `BackgroundDownloadNotifier`) is the `SPUUpdaterDelegate`. Each forwards to the ported `DownrightUpdateDriver` or `BackgroundDownloadNotifier` on the main thread. A call that arrives on another thread is carried to the main queue (see `docs/KNOWN-DIFFERENCES.md`, "Sparkle bridge").
+- `make_updater` answers `None` when Sparkle is not loaded, and the updater then stays disabled.
+
+**Start-up.** Before `UpdateCoordinator::shared(mtm).start()` (Downright's `applicationDidFinishLaunching`), the app calls:
+
+```rust
+upleft_app::updater::sparkle::install(mtm);
+UpdateCoordinator::shared(mtm).start();
+```
+
+**Link and bundle.** `scripts/sparkle-framework.sh` prints the path of the SwiftPM-resolved `Sparkle.framework`. It checks that the version is 2.9.6, and resolves `oracle/app` first if the framework is missing. The app binary's build script passes the following only to that binary (`cargo::rustc-link-arg-bin=<bin>=…`), so no other target links Sparkle:
+
+- `-F<directory containing Sparkle.framework>`
+- `-Wl,-needed_framework,Sparkle`. `-framework Sparkle` also works: rustc passes `-dead_strip` but not `-dead_strip_dylibs`, so both keep the load command (checked with a scratch binary).
+- `-Wl,-rpath,@executable_path/../Frameworks`
+
+The framework's install name is `@rpath/Sparkle.framework/Versions/B/Sparkle`. The bundle copies `Sparkle.framework` into `Contents/Frameworks` and signs it before the app, as `Scripts/bundle-app.sh` does. A dev bundle leaves out the `SU*` Info.plist keys, which keeps the updater disabled.
+
+**Tests.** `tests/sparkle_bridge_tests.rs` `dlopen`s the framework from `UPLEFT_SPARKLE_FRAMEWORK`, or else from the script's path, and skips with a message when it is absent. It covers:
+
+- the build contract;
+- the protocol conformance and method type encodings against Sparkle's compiled protocols;
+- the coordinator flows through Sparkle's own objects and reply blocks;
+- a real `SPUUpdater`'s settings and its start-up failure.
+
+The `SPUUpdater`s belong to a throw-away bundle with no feed and no key, so `startUpdater:` fails before anything is scheduled. They use a unique `upleft.conformance.sparkle.<uuid>` defaults suite, which each test removes. The tests never check for updates, touch the network or show UI.
 
 ## Swift shim (`swift-shim/`)
 
@@ -189,3 +221,23 @@ The app shell (`App/`, `Assets/`, `Debugging/`, `Lens/`) and the panels (`Panels
 **Tests.** Window-level Swift tests become Rust tests in `crates/app/tests/<swift_test_file_snake>.rs`, run on the main thread (`harness = false`, `tests/main_thread/mod.rs`). Any window a test creates is moved to `(-30000, -30000)` before it is ordered in; tests never activate the app and never put a window on a screen. Keep each test's name and assertions; list skipped tests with the reason.
 
 **Never block the main thread** beyond what Swift does to paint the same frames (`AGENTS.md`).
+
+## App shell: status and window-level conformance (`port/app-shell`)
+
+**Window captures, as they really work** (probed 2026-09-23, both findings reproducible with `oracle/app`'s `app-window`):
+
+- A *titled* window moved to (-30000, -30000) and then ordered in is **not** off-screen: `-[NSWindow constrainFrameRect:toScreen:]` pulls it back onto a connected display, where it is visible. Only borderless windows stay put. The harness therefore replaces that one method with the identity for its whole process before any window exists, and refuses to continue (orders every window out, exits 2) if a window's frame touches any display. Tests never order a titled window in.
+- ScreenCaptureKit refuses a window that is on no display (`SCStreamErrorDomain -3811`), titled or borderless. It only appeared to work for titled windows because AppKit had moved them on-screen. `cacheDisplay` of the frame view renders the views but not the glass and backdrop layers the window server composites (the macOS 26 toolbar and panels are glass). `CGWindowListCreateImage(CGRectNull, kCGWindowListOptionIncludingWindow, id, BoundsIgnoreFraming | BestResolution)`, looked up with `dlsym` because the macOS 15 SDK marks it obsoleted, returns the window server's exact composite of an off-screen window, glass included. That is what `app-window` compares.
+
+**Suites.**
+
+| Suite | Inputs | What is compared |
+|---|---|---|
+| `app-window` | `corpus/app-window/*.json` | the window server's image of a real window built as the app builds it (document window over a corpus file in either mode, light/dark, sizes, after commands such as find, split, focus; start window; setup panel; each Settings pane), plus every view's class, frame, bounds, visibility, alpha and text, and the window's title, style and toolbar items |
+| `app-menu` | `corpus/app-menu/*.json` | `MainMenu.build()` in a sandbox, every submenu refreshed by its delegate: titles, key equivalents, modifiers, actions, targets, tags, represented objects, states |
+
+A scenario names the window and its sandbox: `preferences` (written as `preferences.json`; absent means a first run), `keybindings`, `appearance`, `size`, `mode`, `pane`, `guide`, `commands` (`Command` raw values performed on the document window after the first frame settles, each followed by another settle). Each run gets fresh `HOME`/`CFFIXED_USER_HOME`/`DOWNRIGHT_SUPPORT_DIRECTORY`, clears the oracle process's own defaults domain, sets `NSApp.appearance` and selects the theme as `AppDelegate.applySelectedTheme` does, and shows the bundle's `AppIcon.icns` as the application icon (an oracle has no bundle). The `probe` scenarios (a stock titled window) prove the two harnesses agree before any port is judged.
+
+Run: `just app-oracle && cargo build --release -p upleft-conformance -p upleft-cli && target/release/conform --suite app-window` (and `--suite app-menu`). `bench-app-window <scenario.json>` times document open to first frame and a mode switch in either oracle.
+
+**Bundle.** `just upleft-app` → `target/upleft-app/Upleft.app` (see `scripts/bundle-upleft-app.sh`): `Contents/MacOS/{Upleft,down}`, `Contents/Resources/{mathFonts.bundle,AppIcon.icns,AppIcon.png,Welcome.md,PrivacyInfo.xcprivacy}`, `Contents/Frameworks/Sparkle.framework` (2.9.6, `scripts/sparkle-framework.sh`), `Contents/Library/Spotlight/DownrightSpotlight.mdimporter` (Rust `upleft-spotlight-importer` static library linked with `clang -bundle`), `Info.plist` from the rebranded `Config/Downright-Info.plist` without the Sparkle keys unless `PRODUCTION=1`, ad-hoc signature, verified layout. Never registered with Launch Services, never launched. The themes are compiled into the binary; there is no MarkdownRender resource bundle.

@@ -5,3 +5,10 @@
 // PORT: DocumentWindowController+DocumentLens.swift fills this in.
 #[derive(Default)]
 pub struct DocumentLensState {}
+
+impl crate::app::document_window_controller::DocumentWindowController {
+    /// `refreshDocumentLensIfVisible()`.
+    pub fn refresh_document_lens_if_visible(&self) {
+        // PORT: DocumentWindowController+DocumentLens.swift
+    }
+}
