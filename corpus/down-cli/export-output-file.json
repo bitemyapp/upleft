@@ -1,0 +1,14 @@
+{
+ "files": [
+  {
+   "path": "work/doc.md",
+   "text": "# Doc\n\nbody\n"
+  }
+ ],
+ "argv": [
+  "export",
+  "-o",
+  "out.html",
+  "doc.md"
+ ]
+}

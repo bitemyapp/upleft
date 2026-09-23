@@ -1,0 +1,11 @@
+{
+ "argv": [
+  "open",
+  "-",
+  "missing.md"
+ ],
+ "stdin": {
+  "text": "# piped document\n"
+ },
+ "tempFiles": true
+}

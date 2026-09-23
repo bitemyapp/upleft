@@ -1,0 +1,19 @@
+{
+ "files": [
+  {
+   "path": "work/doc.md",
+   "text": "# New\n"
+  },
+  {
+   "path": "work/out.html",
+   "text": "old contents\n",
+   "mode": "600"
+  }
+ ],
+ "argv": [
+  "export",
+  "-o",
+  "out.html",
+  "doc.md"
+ ]
+}

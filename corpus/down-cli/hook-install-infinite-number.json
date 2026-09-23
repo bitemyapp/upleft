@@ -1,0 +1,12 @@
+{
+ "files": [
+  {
+   "path": "work/.claude/settings.json",
+   "text": "{\"big\": 1e400}"
+  }
+ ],
+ "argv": [
+  "hook",
+  "--install"
+ ]
+}

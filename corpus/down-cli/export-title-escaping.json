@@ -1,0 +1,12 @@
+{
+ "files": [
+  {
+   "path": "work/a \"b\" <c> & d.tar.md",
+   "text": "x\n"
+  }
+ ],
+ "argv": [
+  "export",
+  "a \"b\" <c> & d.tar.md"
+ ]
+}

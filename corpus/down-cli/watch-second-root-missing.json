@@ -1,0 +1,14 @@
+{
+ "files": [
+  {
+   "path": "work/a.md",
+   "text": "a\n"
+  }
+ ],
+ "argv": [
+  "watch",
+  "a.md",
+  ".",
+  "gone/x/y.md"
+ ]
+}

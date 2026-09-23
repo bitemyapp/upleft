@@ -1,0 +1,9 @@
+{
+ "argv": [
+  "check"
+ ],
+ "stdin": {
+  "repeat": "a",
+  "count": 10485761
+ }
+}

@@ -1,0 +1,8 @@
+{
+ "argv": [
+  "export"
+ ],
+ "stdin": {
+  "text": "# From stdin\n\ntext\n"
+ }
+}

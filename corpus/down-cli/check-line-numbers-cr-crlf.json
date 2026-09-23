@@ -1,0 +1,12 @@
+{
+ "files": [
+  {
+   "path": "work/cr.md",
+   "text": "l1\r[m](missing.md)\r\n\r\nl4\r\n[n](nope.md)\n"
+  }
+ ],
+ "argv": [
+  "check",
+  "cr.md"
+ ]
+}

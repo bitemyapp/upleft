@@ -1,0 +1,12 @@
+{
+ "files": [
+  {
+   "path": "work/w.md",
+   "text": "a\n \t \nb\n　\nc\n​\nd\n"
+  }
+ ],
+ "argv": [
+  "export",
+  "w.md"
+ ]
+}

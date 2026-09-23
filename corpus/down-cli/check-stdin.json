@@ -1,0 +1,9 @@
+{
+ "argv": [
+  "check",
+  "-"
+ ],
+ "stdin": {
+  "text": "# S\n\n[missing](missing.md) [bad](javascript:x)\n"
+ }
+}

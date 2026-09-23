@@ -1,0 +1,81 @@
+{
+ "files": [
+  {
+   "path": "work/docs/keep.md",
+   "text": "# Keep\n\n[missing](does-not-exist.md)\n"
+  },
+  {
+   "path": "work/docs/Upper.MD",
+   "text": "# Upper\n"
+  },
+  {
+   "path": "work/docs/b.markdown",
+   "text": "[x](gone.md)\n"
+  },
+  {
+   "path": "work/docs/c.qmd",
+   "text": "# Q\n"
+  },
+  {
+   "path": "work/docs/notes.txt",
+   "text": "[x](gone.md)\n"
+  },
+  {
+   "path": "work/docs/.hidden.md",
+   "text": "[x](gone.md)\n"
+  },
+  {
+   "path": "work/docs/sub/deep/d.mdx",
+   "text": "[x](../../keep.md)\n"
+  },
+  {
+   "path": "work/docs/.git/ignored.md",
+   "text": "[x](gone.md)\n"
+  },
+  {
+   "path": "work/docs/.build/ignored.md",
+   "text": "[x](gone.md)\n"
+  },
+  {
+   "path": "work/docs/node_modules/pkg/ignored.md",
+   "text": "[x](gone.md)\n"
+  },
+  {
+   "path": "work/docs/sub/DerivedData/ignored.md",
+   "text": "[x](gone.md)\n"
+  },
+  {
+   "path": "work/docs/.swiftpm/ignored.md",
+   "text": "[x](gone.md)\n"
+  },
+  {
+   "path": "work/docs/.git.md",
+   "text": "[x](gone.md)\n"
+  },
+  {
+   "path": "work/docs/linked",
+   "symlink": "../elsewhere"
+  },
+  {
+   "path": "work/elsewhere/through-link.md",
+   "text": "[x](gone.md)\n"
+  },
+  {
+   "path": "work/docs/link.md",
+   "symlink": "keep.md"
+  },
+  {
+   "path": "work/docs/é-nfc.md",
+   "text": "# NFC\n"
+  },
+  {
+   "path": "work/docs/é-nfd.md",
+   "text": "# NFD\n"
+  }
+ ],
+ "argv": [
+  "check",
+  "--json",
+  "docs"
+ ]
+}

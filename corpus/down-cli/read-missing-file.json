@@ -1,0 +1,13 @@
+{
+ "files": [
+  {
+   "path": "work/a.md",
+   "text": "a\n"
+  }
+ ],
+ "argv": [
+  "read",
+  "a.md",
+  "missing.md"
+ ]
+}

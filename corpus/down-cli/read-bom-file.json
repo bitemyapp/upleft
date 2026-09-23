@@ -1,0 +1,13 @@
+{
+ "files": [
+  {
+   "path": "work/bom.md",
+   "hex": "efbbbf23206f6b0a"
+  }
+ ],
+ "argv": [
+  "read",
+  "--json",
+  "bom.md"
+ ]
+}

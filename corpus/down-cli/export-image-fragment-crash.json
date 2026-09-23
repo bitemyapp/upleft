@@ -1,0 +1,12 @@
+{
+ "files": [
+  {
+   "path": "work/crash.md",
+   "text": "![x](#)\n"
+  }
+ ],
+ "argv": [
+  "export",
+  "crash.md"
+ ]
+}

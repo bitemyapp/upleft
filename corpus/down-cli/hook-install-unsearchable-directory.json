@@ -1,0 +1,17 @@
+{
+ "files": [
+  {
+   "path": "work/.claude/settings.json",
+   "text": "{}"
+  },
+  {
+   "path": "work/.claude",
+   "directory": true,
+   "mode": "000"
+  }
+ ],
+ "argv": [
+  "hook",
+  "--install"
+ ]
+}

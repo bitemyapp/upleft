@@ -1,0 +1,12 @@
+{
+ "files": [
+  {
+   "path": "work/notes.md",
+   "text": "# Notes\n\nBody.\n"
+  }
+ ],
+ "argv": [
+  "read",
+  "notes.md"
+ ]
+}

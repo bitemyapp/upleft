@@ -24,9 +24,12 @@ libc = "0.2"
 objc2-foundation = { workspace = true, features = [
     "NSArray", "NSBundle", "NSData", "NSDate", "NSDictionary", "NSEnumerator", "NSError", "NSFileHandle",
     "NSFileManager", "NSJSONSerialization", "NSNull", "NSObjCRuntime", "NSPathUtilities", "NSProcessInfo",
-    "NSRange", "NSString", "NSTask", "NSURL", "NSUUID", "NSValue", "block2",
+    "NSPropertyList", "NSRange", "NSRegularExpression", "NSString", "NSTask", "NSTextCheckingResult", "NSURL", "NSUUID",
+    "NSValue", "block2",
 ] }
-objc2-app-kit = { workspace = true, features = ["NSWorkspace", "block2"] }
+objc2-app-kit = { workspace = true, features = ["NSWorkspace", "block2", "objc2-uniform-type-identifiers"] }
+objc2-uniform-type-identifiers = { version = "0.3.2", default-features = false, features = ["std", "UTType", "UTCoreTypes"] }
 objc2-core-foundation = { workspace = true, features = ["CFArray", "CFBase", "CFRunLoop", "CFString", "CFURL"] }
+objc2-core-services = { version = "0.3.2", default-features = false, features = ["std", "FSEvents", "dispatch2"] }
 
 [dev-dependencies]

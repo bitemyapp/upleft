@@ -1,0 +1,10 @@
+{
+ "argv": [
+  "read",
+  "--json",
+  "-"
+ ],
+ "stdin": {
+  "text": "# piped\n"
+ }
+}

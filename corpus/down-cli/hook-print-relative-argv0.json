@@ -1,0 +1,8 @@
+{
+ "cwd": ".",
+ "argv0": "bin/down",
+ "argv": [
+  "hook",
+  "--print"
+ ]
+}

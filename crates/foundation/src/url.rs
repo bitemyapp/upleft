@@ -186,6 +186,33 @@ impl FileUrl {
         file_system_representation(&absolute)
     }
 
+    /// `URL(fileURLWithPath:relativeTo:)`, for the path it names.
+    ///
+    /// Recorded from Swift 6.4 on macOS 26: a leading `~` is expanded, an
+    /// absolute path ignores the base, and a relative one is merged with the
+    /// base as RFC 3986 does (so a base without a trailing slash loses its
+    /// last segment: `bin/down` against `/tmp` is `/bin/down`), with dot
+    /// segments removed and the result in its file-system representation.
+    /// The result is stored as an absolute URL; `path`, `standardizedFileURL`
+    /// and `resolvingSymlinksInPath()` are what callers read from it.
+    pub fn from_path_relative_to(path: &str, base: &FileUrl) -> FileUrl {
+        let expanded = if path.starts_with('~') { expanding_tilde_in_path(path) } else { path.to_owned() };
+        if expanded.starts_with('/') {
+            let mut url = FileUrl::from_path(&expanded);
+            url.relative = false;
+            return url;
+        }
+        let directory = match base.url_path.rfind('/') {
+            Some(index) => &base.url_path[..=index],
+            None => "/",
+        };
+        let mut url_path = file_system_representation(&remove_dot_segments(&format!("{directory}{expanded}")));
+        if !url_path.ends_with('/') && is_directory(&url_path) {
+            url_path.push('/');
+        }
+        FileUrl { url_path, relative: false }
+    }
+
     /// Wraps an `NSURL` that Foundation handed back (a `file:` URL).
     pub fn from_nsurl(url: &NSURL) -> Option<FileUrl> {
         let path = url.path()?.to_string();
@@ -387,5 +414,30 @@ mod tests {
         assert_eq!(FileUrl::from_path("/a/b/c.md").path_components(), vec!["/", "a", "b", "c.md"]);
         assert_eq!(FileUrl::from_path("/tmp/x/file.tar.gz").path_extension(), "gz");
         assert_eq!(FileUrl::from_path("/tmp/x/.hidden").path_extension(), "");
+    }
+
+    // Swift 6.4, macOS 26:
+    //   let base = URL(fileURLWithPath: "/tmp/p4/sub/")
+    //   URL(fileURLWithPath: p, relativeTo: base).path for
+    //   "x.md" → "/tmp/p4/sub/x.md", "../x.md" → "/tmp/p4/x.md",
+    //   "./a/../b.md" → "/tmp/p4/sub/b.md", "/abs/x.md" → "/abs/x.md",
+    //   "" → "/tmp/p4/sub", "a/" → "/tmp/p4/sub/a", "é.md" → decomposed,
+    //   "a#b?.md" and "%41.md" literally;
+    //   URL(fileURLWithPath: "bin/down", relativeTo: URL(fileURLWithPath: "/tmp")).path → "/bin/down"
+    #[test]
+    fn relative_to_matches_swift() {
+        let base = FileUrl::from_path_is_directory("/nonexistent-upleft/p4/sub", true);
+        let path = |relative: &str| FileUrl::from_path_relative_to(relative, &base).path();
+        assert_eq!(path("x.md"), "/nonexistent-upleft/p4/sub/x.md");
+        assert_eq!(path("../x.md"), "/nonexistent-upleft/p4/x.md");
+        assert_eq!(path("./a/../b.md"), "/nonexistent-upleft/p4/sub/b.md");
+        assert_eq!(path("/abs/x.md"), "/abs/x.md");
+        assert_eq!(path(""), "/nonexistent-upleft/p4/sub");
+        assert_eq!(path("a/"), "/nonexistent-upleft/p4/sub/a");
+        assert_eq!(path("\u{e9}.md"), "/nonexistent-upleft/p4/sub/e\u{301}.md");
+        assert_eq!(path("a#b?.md"), "/nonexistent-upleft/p4/sub/a#b?.md");
+        assert_eq!(path("%41.md"), "/nonexistent-upleft/p4/sub/%41.md");
+        let file_base = FileUrl::from_path_is_directory("/tmp", false);
+        assert_eq!(FileUrl::from_path_relative_to("bin/down", &file_base).path(), "/bin/down");
     }
 }

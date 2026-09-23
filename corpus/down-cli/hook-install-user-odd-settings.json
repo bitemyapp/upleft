@@ -1,0 +1,14 @@
+{
+ "files": [
+  {
+   "path": "home/.claude/settings.json",
+   "text": "{\n  \"permissions\" : { \"allow\" : [ \"Bash(ls:*)\", \"Read(~/docs/**)\" ], \"deny\":[] },\n  \"env\": {\"GREETING\": \"h\\u00e9llo \\ud83c\\udf0a\", \"PATH_HINT\": \"/usr/local/bin\", \"EMPTY\": \"\"},\n  \"numbers\": [1, 1.0, 1.5, -0, 0.1, 1e2, 12345678901234567890, 3.14159265358979323846, -9223372036854775808, 2.5e-8],\n  \"nested\": {\"z\": null, \"a\": true, \"B\": false, \"é\": \"composed\", \"e\\u0301\": \"decomposed\", \"_\": {\"deep\": [[]]}},\n  \"model\": \"opus\",\n  \"hooks\": {\"PreToolUse\": [{\"matcher\": \"Read\", \"hooks\": [{\"type\": \"command\", \"command\": \"echo pre\", \"timeout\": 30}]}],\n            \"PostToolUse\": [{\"matcher\": \"Bash\", \"hooks\": [{\"type\": \"command\", \"command\": \"echo mine\"}]}]}\n}\n"
+  }
+ ],
+ "argv": [
+  "hook",
+  "--install",
+  "--scope",
+  "user"
+ ]
+}

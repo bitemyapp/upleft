@@ -1,0 +1,13 @@
+{
+ "files": [
+  {
+   "path": "work/sub/a.md",
+   "text": "a\n"
+  }
+ ],
+ "argv": [
+  "read",
+  "--json",
+  "./sub/../sub/./a.md"
+ ]
+}

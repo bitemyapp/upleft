@@ -19,6 +19,9 @@
 //!   keyed-container rules, value conversions, `.iso8601` dates, `UUID`.
 //! * [`file_manager`] makes the `FileManager` and `Data` calls the stores
 //!   make, through Foundation.
+//! * [`foundation_io`] makes the `FileManager`, `FileHandle`, `Data` and
+//!   `String(contentsOf:)` calls the command-line tools make, with
+//!   Foundation's own error text.
 //!
 //! Unlike the other crates this one has no Swift file of its own to mirror;
 //! each function names the Foundation API it reproduces.
@@ -27,6 +30,7 @@ pub mod date;
 pub mod decodable;
 pub mod file_manager;
 pub mod json_decoder;
+pub mod foundation_io;
 pub mod json_encoder;
 pub mod json_serialization;
 pub mod url;

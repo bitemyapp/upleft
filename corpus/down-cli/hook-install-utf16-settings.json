@@ -1,0 +1,12 @@
+{
+ "files": [
+  {
+   "path": "work/.claude/settings.json",
+   "hex": "fffe7b002200610022003a002200e90022007d00"
+  }
+ ],
+ "argv": [
+  "hook",
+  "--install"
+ ]
+}

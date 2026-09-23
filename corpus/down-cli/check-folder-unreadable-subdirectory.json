@@ -1,0 +1,21 @@
+{
+ "files": [
+  {
+   "path": "work/docs/ok.md",
+   "text": "# ok\n"
+  },
+  {
+   "path": "work/docs/locked/x.md",
+   "text": "[x](gone.md)\n"
+  },
+  {
+   "path": "work/docs/locked",
+   "directory": true,
+   "mode": "000"
+  }
+ ],
+ "argv": [
+  "check",
+  "docs"
+ ]
+}

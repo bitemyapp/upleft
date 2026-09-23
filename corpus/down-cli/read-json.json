@@ -1,0 +1,18 @@
+{
+ "files": [
+  {
+   "path": "work/a.md",
+   "text": "# A “quoted” / slash\n\tTab\n"
+  },
+  {
+   "path": "work/sub/é.md",
+   "text": "é\n"
+  }
+ ],
+ "argv": [
+  "read",
+  "--json",
+  "a.md",
+  "sub/é.md"
+ ]
+}
