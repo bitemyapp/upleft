@@ -1,9 +1,12 @@
 //! Port of `Sources/DownrightApp/Updater/UpdateEngine.swift`.
 //!
-//! The Sparkle framework is not linked yet (it arrives with app packaging).
-//! [`SparkleUpdateEngine`] is ported in full against [`SpuUpdater`], a trait
-//! that names every call the engine makes into `SPUUpdater`; that trait and
-//! [`set_spu_updater_factory`] are the seam the packaging layer fills in.
+//! Swift imports Sparkle in this file. The port reaches `SPUUpdater` through
+//! [`SpuUpdater`], a trait that names every call the engine makes into it, so
+//! that upleft-app does not need Sparkle at link time: only the app binary
+//! links the framework, as only Downright's host app does.
+//! [`super::sparkle`] implements the trait over the real `SPUUpdater`, and
+//! [`super::sparkle::install`] hands its constructor to
+//! [`set_spu_updater_factory`].
 
 use std::cell::{Cell, RefCell};
 use std::rc::Rc;
@@ -58,11 +61,9 @@ pub trait UpdateEngine {
 
 // MARK: - Production
 
-/// SEAM(Sparkle): every call `SparkleUpdateEngine` makes into its
-/// `SPUUpdater`, one method per Objective-C message. When Sparkle is linked,
-/// an `SPUUpdater` wrapper implements this, and [`set_spu_updater_factory`]
-/// installs the constructor
-/// `SPUUpdater(hostBundle:applicationBundle:userDriver:delegate:)`.
+/// Every call `SparkleUpdateEngine` makes into its `SPUUpdater`, one method
+/// per Objective-C message. [`super::sparkle`] implements it over the real
+/// `SPUUpdater`; tests may install a stand-in.
 pub trait SpuUpdater {
     /// `clearFeedURLFromUserDefaults()`.
     fn clear_feed_url_from_user_defaults(&self);
@@ -89,18 +90,21 @@ pub trait SpuUpdater {
     fn last_update_check_date(&self) -> Option<Date>;
 }
 
-/// SEAM(Sparkle): `SPUUpdater(hostBundle: host, applicationBundle: host,
-/// userDriver: userDriver, delegate: notifier)`.
-pub type SpuUpdaterFactory =
-    Box<dyn Fn(&NSBundle, &NSBundle, &Rc<DownrightUpdateDriver>, &Rc<BackgroundDownloadNotifier>) -> Rc<dyn SpuUpdater>>;
+/// `SPUUpdater(hostBundle: host, applicationBundle: host, userDriver:
+/// userDriver, delegate: notifier)`. It answers `None` when the framework is
+/// not loaded in this process (see [`super::sparkle::make_updater`]).
+pub type SpuUpdaterFactory = Box<
+    dyn Fn(&NSBundle, &NSBundle, &Rc<DownrightUpdateDriver>, &Rc<BackgroundDownloadNotifier>) -> Option<Rc<dyn SpuUpdater>>,
+>;
 
 thread_local! {
     static SPU_UPDATER_FACTORY: RefCell<Option<SpuUpdaterFactory>> = const { RefCell::new(None) };
 }
 
-/// Installs the `SPUUpdater` constructor (SEAM(Sparkle)). Until something
-/// installs one, `SparkleUpdateEngine::new` answers `None` even for a valid
-/// configuration, so the coordinator stays in its ordinary disabled state.
+/// Installs the `SPUUpdater` constructor ([`super::sparkle::install`] does it
+/// at start-up). Until something installs one, or while it answers `None`,
+/// `SparkleUpdateEngine::new` answers `None` even for a valid configuration,
+/// so the coordinator stays in its ordinary disabled state.
 pub fn set_spu_updater_factory(factory: Option<SpuUpdaterFactory>) {
     SPU_UPDATER_FACTORY.with(|slot| *slot.borrow_mut() = factory);
 }
@@ -138,7 +142,7 @@ impl SparkleUpdateEngine {
         }
         let notifier = Rc::new(BackgroundDownloadNotifier::default());
         let updater = SPU_UPDATER_FACTORY
-            .with(|slot| slot.borrow().as_ref().map(|factory| factory(&host, &host, &user_driver, &notifier)))?;
+            .with(|slot| slot.borrow().as_ref().and_then(|factory| factory(&host, &host, &user_driver, &notifier)))?;
         Some(SparkleUpdateEngine { updater, driver: user_driver, notifier, is_running: Cell::new(false) })
     }
 }
@@ -226,8 +230,9 @@ pub struct BackgroundDownloadNotifier {
 }
 
 impl BackgroundDownloadNotifier {
-    /// `updater(_:didDownloadUpdate:)` (SEAM(Sparkle): the delegate method
-    /// the `SPUUpdaterDelegate` bridge forwards here).
+    /// `updater(_:didDownloadUpdate:)`. The Objective-C `SPUUpdaterDelegate`
+    /// (`super::sparkle::BackgroundDownloadNotifierObject`) forwards here, on
+    /// the main thread.
     pub fn updater_did_download_update(&self, item: &dyn SuAppcastItem) {
         let handler = self.handler.borrow().clone();
         if let Some(handler) = handler {
