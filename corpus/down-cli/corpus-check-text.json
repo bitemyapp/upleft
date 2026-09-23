@@ -1,0 +1,37 @@
+{
+ "files": [
+  {
+   "path": "work/corpus/spec",
+   "copyTree": "corpus/generated/spec"
+  },
+  {
+   "path": "work/corpus/fixtures",
+   "copyTree": "corpus/generated/fixtures"
+  },
+  {
+   "path": "work/corpus/docs",
+   "copyTree": "corpus/generated/docs"
+  },
+  {
+   "path": "work/corpus/agent",
+   "copyTree": "corpus/generated/agent"
+  },
+  {
+   "path": "work/corpus/highlight",
+   "copyTree": "corpus/highlight"
+  }
+ ],
+ "ignore": [
+  "work/corpus"
+ ],
+ "argv": [
+  "check",
+  "--target",
+  "obsidian",
+  "corpus/spec",
+  "corpus/fixtures",
+  "corpus/docs",
+  "corpus/agent",
+  "corpus/highlight"
+ ]
+}

@@ -67,6 +67,9 @@ fn run_in(scenario: &Map<String, Value>, sandbox: &Path, binary: &Path) -> Resul
     let substitute = |text: &str| text.replace("$SANDBOX", &sandbox_text);
 
     let files = scenario.get("files").and_then(Value::as_array).cloned().unwrap_or_default();
+    let root = repository_root().ok_or_else(|| Failure::Error("cannot find the repository root".into()))?;
+    let mut copied = json::Object::new();
+    let mut any_copied = false;
     for file in &files {
         let relative = file.get("path").and_then(Value::as_str).ok_or_else(|| Failure::Error("file without path".into()))?;
         let path = PathBuf::from(format!("{sandbox_text}/{}", substitute(relative)));
@@ -75,6 +78,11 @@ fn run_in(scenario: &Map<String, Value>, sandbox: &Path, binary: &Path) -> Resul
         }
         if file.get("directory").and_then(Value::as_bool) == Some(true) {
             std::fs::create_dir_all(&path)?;
+        } else if let Some(source) = file.get("copyTree").and_then(Value::as_str) {
+            let mut hash: u64 = 0xcbf2_9ce4_8422_2325;
+            copy_tree(&root.join(source), &path, &mut hash, "")?;
+            copied = copied.with(relative, json::hex(hash));
+            any_copied = true;
         } else if let Some(target) = file.get("symlink").and_then(Value::as_str) {
             std::os::unix::fs::symlink(substitute(target), &path)?;
         } else {
@@ -144,7 +152,15 @@ fn run_in(scenario: &Map<String, Value>, sandbox: &Path, binary: &Path) -> Resul
         object.with("stdout", text_or_hex(&masked(&stdout)))
     };
     object = object.with("stderr", text_or_hex(&masked(&stderr)));
-    let items: Vec<Value> = snapshot(sandbox)
+    if any_copied {
+        object = object.with("copied", copied.build());
+    }
+    let ignored: Vec<String> = scenario
+        .get("ignore")
+        .and_then(Value::as_array)
+        .map(|values| values.iter().filter_map(Value::as_str).map(str::to_owned).collect())
+        .unwrap_or_default();
+    let items: Vec<Value> = snapshot(sandbox, &ignored)
         .into_iter()
         .map(|item| {
             let mut entry = json::Object::new().with("path", item.path).with("type", item.kind).with("mode", item.mode);
@@ -205,6 +221,39 @@ fn directory_names(path: &Path) -> BTreeSet<String> {
         .unwrap_or_default()
 }
 
+/// Copies the regular files and directories under `source` to
+/// `destination`, in byte order of their names, folding each relative path
+/// and its contents into a 64-bit FNV-1a hash (as the Swift side does).
+fn copy_tree(source: &Path, destination: &Path, hash: &mut u64, relative: &str) -> Result<(), Failure> {
+    fn fold(hash: &mut u64, bytes: &[u8]) {
+        for &byte in bytes {
+            *hash ^= byte as u64;
+            *hash = hash.wrapping_mul(0x0000_0100_0000_01b3);
+        }
+    }
+    std::fs::create_dir_all(destination)?;
+    let mut names: Vec<std::ffi::OsString> =
+        std::fs::read_dir(source)?.flatten().map(|entry| entry.file_name()).collect();
+    names.sort_by(|a, b| a.as_encoded_bytes().cmp(b.as_encoded_bytes()));
+    for name in names {
+        let from = source.join(&name);
+        let Ok(metadata) = std::fs::symlink_metadata(&from) else { continue };
+        let name_text = name.to_string_lossy();
+        let path = if relative.is_empty() { name_text.into_owned() } else { format!("{relative}/{name_text}") };
+        if metadata.is_dir() {
+            copy_tree(&from, &destination.join(&name), hash, &path)?;
+        } else if metadata.is_file() {
+            let contents = std::fs::read(&from)?;
+            std::fs::write(destination.join(&name), &contents)?;
+            fold(hash, path.as_bytes());
+            fold(hash, &[0]);
+            fold(hash, &contents);
+            fold(hash, &[0]);
+        }
+    }
+    Ok(())
+}
+
 /// Deletes a tree, first making every directory in it writable and searchable.
 fn remove_tree(path: &Path) {
     let Ok(metadata) = std::fs::symlink_metadata(path) else { return };
@@ -230,9 +279,13 @@ struct SnapshotItem {
 }
 
 /// Every item under the sandbox, by relative path in UTF-8 byte order.
-fn snapshot(sandbox: &Path) -> Vec<SnapshotItem> {
-    fn visit(sandbox: &Path, relative: &str, items: &mut Vec<SnapshotItem>) {
-        if relative == "bin" || relative == "home/Library" || relative.starts_with("tmp/xcrun_db") {
+fn snapshot(sandbox: &Path, ignored: &[String]) -> Vec<SnapshotItem> {
+    fn visit(sandbox: &Path, ignored: &[String], relative: &str, items: &mut Vec<SnapshotItem>) {
+        if relative == "bin"
+            || relative == "home/Library"
+            || relative.starts_with("tmp/xcrun_db")
+            || ignored.iter().any(|path| path == relative)
+        {
             return;
         }
         let path = if relative.is_empty() { sandbox.to_path_buf() } else { sandbox.join(relative) };
@@ -257,7 +310,7 @@ fn snapshot(sandbox: &Path) -> Vec<SnapshotItem> {
             names.sort_by(|a, b| a.as_bytes().cmp(b.as_bytes()));
             for name in names {
                 let child = if relative.is_empty() { name } else { format!("{relative}/{name}") };
-                visit(sandbox, &child, items);
+                visit(sandbox, ignored, &child, items);
             }
         } else if file_type.is_symlink() {
             let target = std::fs::read_link(&path)
@@ -279,7 +332,7 @@ fn snapshot(sandbox: &Path) -> Vec<SnapshotItem> {
         }
     }
     let mut items = Vec::new();
-    visit(sandbox, "", &mut items);
+    visit(sandbox, ignored, "", &mut items);
     items
 }
 

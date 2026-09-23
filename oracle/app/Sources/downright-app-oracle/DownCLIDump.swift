@@ -16,6 +16,7 @@ import Foundation
 ///                  "prefix": "…", "suffix": "…"},            // generated
 ///                 {"path": "work/d", "directory": true},
 ///                 {"path": "work/e.md", "symlink": "a.md"},
+///                 {"path": "work/corpus", "copyTree": "corpus/generated/spec"},
 ///                 {"path": "work/f.md", "text": "", "mode": "000"}],
 ///       "cwd": "work",                  // relative to the sandbox (default)
 ///       "argv": ["check", "a.md"],
@@ -24,7 +25,8 @@ import Foundation
 ///                                       // absent: /dev/null
 ///       "env": {"NAME": "value"},
 ///       "stdoutFormat": "lines" | "json-lines",
-///       "tempFiles": true               // collect new stdin-*.md documents
+///       "tempFiles": true,              // collect new stdin-*.md documents
+///       "ignore": ["work/corpus"]       // left out of the snapshot
 ///     }
 ///
 /// Every string in `files`, `argv`, `argv0`, `cwd` and `env` may name
@@ -44,7 +46,11 @@ import Foundation
 /// `\/` form, is replaced by `$SANDBOX` in all captured bytes. With
 /// `"tempFiles"`, documents `down` wrote to `FileManager.temporaryDirectory`
 /// `/Downright` (which ignores TMPDIR) are dumped with their UUID replaced by
-/// `$UUID`, then deleted. No field is read from the clock.
+/// `$UUID`, then deleted. A `copyTree` copies a directory of the repository
+/// (regular files and directories, names byte for byte) and the dump records
+/// a 64-bit FNV-1a digest of what it copied, so a Swift result cached before
+/// the source changed shows up as a difference. No field is read from the
+/// clock.
 enum DownCLIDump {
     static func run(input: URL, flags: [String]) throws -> JSON {
         let data = try Data(contentsOf: input)
@@ -97,12 +103,17 @@ private struct DownCLIScenario {
 
         // Files.
         let files = scenario["files"] as? [[String: Any]] ?? []
+        var copied: [(String, JSON)] = []
         for file in files {
             guard let relative = file["path"] as? String else { throw AppOracleError(description: "file without path") }
             let path = sandbox + "/" + substitute(relative)
             mkdirs((path as NSString).deletingLastPathComponent)
             if file["directory"] as? Bool == true {
                 mkdirs(path)
+            } else if let source = file["copyTree"] as? String {
+                var hash: UInt64 = 0xcbf2_9ce4_8422_2325
+                try copyTree(root + "/" + source, to: path, hash: &hash)
+                copied.append((relative, .hex(hash)))
             } else if let target = file["symlink"] as? String {
                 guard symlink(substitute(target), path) == 0 else { throw AppOracleError(description: "symlink \(path)") }
             } else {
@@ -145,7 +156,9 @@ private struct DownCLIScenario {
             members.append(("stdout", textOrHex(masked(result.stdout))))
         }
         members.append(("stderr", textOrHex(masked(result.stderr))))
-        members.append(("files", .array(snapshot(sandbox).map { item in
+        if !copied.isEmpty { members.append(("copied", .object(copied))) }
+        let ignored = scenario["ignore"] as? [String] ?? []
+        members.append(("files", .array(snapshot(sandbox, ignoring: ignored).map { item in
             var entry: [(String, JSON)] = [("path", .string(item.path)), ("type", .string(item.type)), ("mode", .string(item.mode))]
             if let target = item.target { entry.append(("target", textOrHex(masked(target)))) }
             if let contents = item.contents { entry.append(("contents", contents.count > 1_048_576 ? digest(contents) : textOrHex(masked(contents)))) }
@@ -203,6 +216,32 @@ private func writeBytes(_ bytes: [UInt8], to path: String) throws {
     }
 }
 
+/// Copies the regular files and directories under `source` to
+/// `destination`, in byte order of their names, folding each relative path
+/// and its contents into a 64-bit FNV-1a hash.
+private func copyTree(_ source: String, to destination: String, hash: inout UInt64, relative: String = "") throws {
+    func fold(_ bytes: [UInt8]) {
+        for byte in bytes {
+            hash ^= UInt64(byte)
+            hash = hash &* 0x0000_0100_0000_01b3
+        }
+    }
+    mkdirs(destination)
+    for name in (directoryEntries(source) ?? []).sorted(by: { Array($0.utf8).lexicographicallyPrecedes(Array($1.utf8)) }) {
+        var info = stat()
+        guard lstat(source + "/" + name, &info) == 0 else { continue }
+        let path = relative.isEmpty ? name : relative + "/" + name
+        if (info.st_mode & S_IFMT) == S_IFDIR {
+            try copyTree(source + "/" + name, to: destination + "/" + name, hash: &hash, relative: path)
+        } else if (info.st_mode & S_IFMT) == S_IFREG {
+            let contents = [UInt8](try Data(contentsOf: URL(fileURLWithPath: source + "/" + name)))
+            try writeBytes(contents, to: destination + "/" + name)
+            fold(Array(path.utf8) + [0])
+            fold(contents + [0])
+        }
+    }
+}
+
 /// Deletes a tree, first making every directory in it writable and searchable.
 private func removeTree(_ path: String) {
     var info = stat()
@@ -240,11 +279,11 @@ private struct SnapshotItem {
 }
 
 /// Every item under the sandbox, by relative path in UTF-8 byte order.
-private func snapshot(_ sandbox: String) -> [SnapshotItem] {
+private func snapshot(_ sandbox: String, ignoring ignored: [String]) -> [SnapshotItem] {
     var items: [SnapshotItem] = []
     func visit(_ relative: String) {
         let path = relative.isEmpty ? sandbox : sandbox + "/" + relative
-        if relative == "bin" || relative == "home/Library" { return }
+        if relative == "bin" || relative == "home/Library" || ignored.contains(relative) { return }
         if Array(relative.utf8).starts(with: Array("tmp/xcrun_db".utf8)) { return }
         var info = stat()
         guard lstat(path, &info) == 0 else { return }

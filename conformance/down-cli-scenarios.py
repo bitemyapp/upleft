@@ -229,6 +229,7 @@ add("export-lists-switching", files=[f("work/l.md", "- a\n1. b\n- c\n\n2. d\ntex
 add("export-fence-language", files=[f("work/f.md", "```  c++ <x> \nint a;\n```\n``` \n```\n````\nfour\n````\n")],
     argv=["export", "f.md"])
 add("export-image-fragment-crash", files=[f("work/crash.md", "![x](#)\n")], argv=["export", "crash.md"])
+add("export-image-query-crash", files=[f("work/crash.md", "text ![x](?#b) more\n")], argv=["export", "crash.md"])
 add("export-missing-input", argv=["export", "nothing.md"])
 add("export-invalid-utf8-input", files=[f("work/bad.md", hex="ff")], argv=["export", "bad.md"])
 
@@ -536,6 +537,37 @@ add("doctor-app-symlinked-into-home", files=app_bundle(APP, plist_xml()) + [f("h
 add("doctor-app-is-a-file", files=[f("work/Downright.app", "not a bundle\n")], argv=["doctor", "--json", "--app", "Downright.app"])
 add("doctor-argv0-inside-bundle", files=app_bundle("work/Bundle.app", plist_xml(version="2.0")),
     argv0="$SANDBOX/work/Bundle.app/Contents/MacOS/down", argv=["doctor"])
+
+# ---------------------------------------------------------------- the Markdown corpus
+#
+# `copyTree` copies a generated corpus directory into the sandbox (run
+# `just corpus` first); the dump records a digest of what it copied.
+
+ROOT = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..")
+
+
+def corpus_files(directory):
+    names = sorted(name for name in os.listdir(os.path.join(ROOT, directory)) if name.endswith(".md"))
+    return names
+
+
+SPEC = corpus_files("corpus/generated/spec")
+OTHER = [("fixtures", corpus_files("corpus/generated/fixtures")), ("docs", corpus_files("corpus/generated/docs")),
+         ("agent", corpus_files("corpus/generated/agent")), ("highlight", corpus_files("corpus/highlight"))]
+OTHER_TREES = [f("work/corpus/" + name, copyTree=("corpus/highlight" if name == "highlight" else "corpus/generated/" + name))
+               for name, _ in OTHER]
+OTHER_PATHS = ["corpus/" + name + "/" + file for name, files in OTHER for file in files]
+add("corpus-export-spec", files=[f("work/corpus", copyTree="corpus/generated/spec")], ignore=["work/corpus"],
+    argv=["export", "--"] + ["corpus/" + name for name in SPEC])
+add("corpus-export-other", files=OTHER_TREES, ignore=["work/corpus"], argv=["export"] + OTHER_PATHS)
+add("corpus-outline-json", files=[f("work/corpus/spec", copyTree="corpus/generated/spec")] + OTHER_TREES, ignore=["work/corpus"],
+    argv=["outline", "--json"] + ["corpus/spec/" + name for name in SPEC] + OTHER_PATHS, stdoutFormat="json-lines")
+add("corpus-outline-text", files=OTHER_TREES, ignore=["work/corpus"], argv=["outline"] + OTHER_PATHS)
+add("corpus-check-json", files=[f("work/corpus/spec", copyTree="corpus/generated/spec")] + OTHER_TREES, ignore=["work/corpus"],
+    argv=["check", "--json", "--target", "github", "corpus"])
+add("corpus-check-text", files=[f("work/corpus/spec", copyTree="corpus/generated/spec")] + OTHER_TREES, ignore=["work/corpus"],
+    argv=["check", "--target", "obsidian", "corpus/spec", "corpus/fixtures", "corpus/docs", "corpus/agent", "corpus/highlight"])
+add("corpus-read-json", files=OTHER_TREES, ignore=["work/corpus"], argv=["read", "--json"] + OTHER_PATHS)
 
 for name, scenario in scenarios.items():
     with open(os.path.join(OUT, name + ".json"), "w", encoding="utf-8") as handle:
