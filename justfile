@@ -14,16 +14,15 @@ oracle:
     cd oracle && swift build -c release -Xswiftc -enable-testing --scratch-path {{scratch}}/oracle
     just stamp {{scratch}}/oracle/release/downright-oracle
 
-# Build downright-app-oracle, the Swift reference for the app-layer suites
-# (oracle/app: Downright's own module sources compiled as libraries, see its
-# Package.swift). Separate from `just oracle` so the core suites never need
-# the whole app or Sparkle.
+# oracle/app compiles Downright's own module sources as libraries (see its
+# Package.swift). It is separate from `just oracle` so the core suites never
+# need the whole app or Sparkle.
+# Build downright-app-oracle, the Swift reference for the app-layer suites.
 app-oracle:
     swift build --package-path oracle/app -c release -Xswiftc -enable-testing --scratch-path {{scratch}}/app-oracle
     just stamp {{scratch}}/app-oracle/release/downright-app-oracle
 
-# Build Downright's real `down` command-line tool from the submodule, stamped,
-# for the `down-cli` suite.
+# Build Downright's real `down` from the submodule, stamped, for `down-cli`.
 downright-cli:
     cd vendor/downright && swift build -c release --scratch-path ../../target/downright-cli --product down
     just stamp {{scratch}}/downright-cli/release/down
@@ -52,6 +51,13 @@ drbench:
 bench *args: drbench
     cargo build --release -p upleft-bench
     python3 scripts/bench-compare.py {{args}}
+
+# Runs downright-app-oracle (Swift) and upleft-oracle (Rust) stage by stage
+# and fails on any stage slower than Swift beyond run-to-run noise.
+# Compare the app layer's benchmarks: HTML export, workspace index, find.
+app-bench *args: app-oracle corpus
+    cargo build --release -p upleft-conformance
+    python3 scripts/app-bench-compare.py {{args}}
 
 # Build the original Downright.app from the submodule (for window-level conformance).
 downright-app:
