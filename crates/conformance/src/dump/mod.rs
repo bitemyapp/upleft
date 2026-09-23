@@ -2,6 +2,7 @@
 //! Each submodule mirrors one Swift file and must emit the same JSON shape.
 
 pub mod json;
+pub mod markup;
 
 use std::path::PathBuf;
 
@@ -75,6 +76,7 @@ impl From<std::io::Error> for Failure {
 /// Dispatches a request. Ported layers add their command here.
 pub fn run(request: &Request) -> Result<(), Failure> {
     match request.command.as_str() {
+        "markup" => markup::run(&request.input, &request.output),
         _ => Err(Failure::NotPorted),
     }
 }
