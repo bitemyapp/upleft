@@ -189,13 +189,5 @@ impl SweepCopy {
 
 /// `PortListSorter.CMP_COMBINED`.
 fn cmp_combined(lg: &LGraphArena, p1: LPortId, p2: LPortId) -> i64 {
-    _needs_group_a_port_list_sorter_cmp_combined(lg, p1, p2)
-}
-
-/// NEEDS GROUP A: `org_eclipse_elk_alg_layered_intermediate_PortListSorter.CMP_COMBINED`
-/// from `intermediate::port_list_sorter` (assumed Rust API:
-/// `PortListSorter::cmp_combined(lg: &LGraphArena, p1: LPortId, p2: LPortId) -> i64`).
-/// Only reached when a layer holds north/south port dummies.
-fn _needs_group_a_port_list_sorter_cmp_combined(_lg: &LGraphArena, _p1: LPortId, _p2: LPortId) -> i64 {
-    unimplemented!("PortListSorter::cmp_combined (group A) is not wired yet")
+    crate::org::eclipse::elk::alg::layered::intermediate::port_list_sorter::PortListSorter::cmp_combined(lg, p1, p2)
 }

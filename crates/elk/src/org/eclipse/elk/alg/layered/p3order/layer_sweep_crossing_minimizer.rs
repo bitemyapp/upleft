@@ -14,7 +14,6 @@
 //! * `chooseMinimizingMethod` returns a closure in Swift, an enum here.
 
 use std::cell::RefCell;
-use std::collections::HashMap;
 use std::rc::Rc;
 
 use super::counting::cross_min_util::port_side_view;
@@ -26,6 +25,9 @@ use crate::org::eclipse::elk::alg::layered::graph::l_graph::{LGraphArena, LGraph
 use crate::org::eclipse::elk::alg::layered::graph::l_node::NodeType;
 use crate::org::eclipse::elk::alg::layered::graph_configurator::Random;
 use crate::org::eclipse::elk::alg::layered::intermediate::intermediate_processor_strategy::IntermediateProcessorStrategy;
+use crate::org::eclipse::elk::alg::layered::intermediate::preserveorder::model_order_node_comparator::ModelOrderNodeComparator;
+use crate::org::eclipse::elk::alg::layered::intermediate::preserveorder::model_order_port_comparator::ModelOrderPortComparator;
+use crate::org::eclipse::elk::alg::layered::intermediate::sort_by_input_model_processor::SortByInputModelProcessor;
 use crate::org::eclipse::elk::alg::layered::layered_phases::LayeredPhases;
 use crate::org::eclipse::elk::alg::layered::options::group_order_strategy::GroupOrderStrategy;
 use crate::org::eclipse::elk::alg::layered::options::internal_properties as InternalProperties;
@@ -407,13 +409,13 @@ impl LayerSweepCrossingMinimizer {
 
         for layer in layers {
             let previous_layer = if previous_layer_index == -1 { &layers[0] } else { &layers[previous_layer_index as usize] };
-            let mut comp = _needs_group_a_model_order_node_comparator(lg, graph, previous_layer, strategy, LongEdgeOrderingStrategy::EQUAL, cm_group_order_strategy, false);
+            let mut comp = ModelOrderNodeComparator::new(graph, previous_layer.clone(), strategy, LongEdgeOrderingStrategy::EQUAL, cm_group_order_strategy, false);
             if layer.len() > 1 {
                 for i in 0..(layer.len() - 1) {
                     for j in (i + 1)..layer.len() {
                         if lg[layer[i]].props.has(&InternalProperties::MODEL_ORDER)
                             && lg[layer[j]].props.has(&InternalProperties::MODEL_ORDER)
-                            && comp(lg, layer[i], layer[j]) > 0
+                            && comp.compare(lg, layer[i], layer[j]) > 0
                         {
                             wrong_model_order += 1;
                         }
@@ -437,14 +439,14 @@ impl LayerSweepCrossingMinimizer {
                 let strategy = node_graph
                     .and_then(|g| string_key_ordering_strategy(lg, g, CONSIDER_MODEL_ORDER_STRATEGY))
                     .unwrap_or(OrderingStrategy::NODES_AND_EDGES);
-                let target_node_model_order = _needs_group_a_long_edge_target_node_preprocessing(lg, node);
+                let target_node_model_order = SortByInputModelProcessor::long_edge_target_node_preprocessing(lg, node);
                 let port_model_order = node_graph.and_then(|g| string_key_bool(lg, g, CONSIDER_MODEL_ORDER_PORT_MODEL_ORDER)).unwrap_or(false);
-                let mut comp = _needs_group_a_model_order_port_comparator(lg, graph, previous_layer, strategy, Some(target_node_model_order), port_model_order);
+                let comp = ModelOrderPortComparator::new(graph, previous_layer.clone(), strategy, Some(target_node_model_order), port_model_order);
                 let ports = lg[node].ports.clone();
                 if ports.len() > 1 {
                     for i in 0..(ports.len() - 1) {
                         for j in (i + 1)..ports.len() {
-                            if comp(lg, ports[i], ports[j]) > 0 {
+                            if comp.compare(lg, ports[i], ports[j]) > 0 {
                                 wrong_model_order += 1;
                             }
                         }
@@ -895,51 +897,3 @@ impl ILayoutPhase for LayerSweepCrossingMinimizer {
 
 // MARK: - Group A dependencies (intermediate::preserveorder, SortByInputModelProcessor)
 
-/// NEEDS GROUP A: `ModelOrderNodeComparator(graph, previousLayer, strategy,
-/// longEdgeOrderingStrategy, groupOrderStrategy, beforePorts)` (the
-/// `[LNode]` initializer) followed by `comp.compare(n1, n2)` calls. Assumed
-/// Rust API in `intermediate::preserveorder::model_order_node_comparator`:
-/// `ModelOrderNodeComparator::new_with_nodes(graph: LGraphId, previous_layer: Vec<LNodeId>,
-/// ordering_strategy: OrderingStrategy, long_edge_ordering_strategy: LongEdgeOrderingStrategy,
-/// group_order_strategy: GroupOrderStrategy, before_ports: bool)` and
-/// `compare(&mut self, lg: &mut LGraphArena, n1: LNodeId, n2: LNodeId) -> i64`.
-/// Only reached when a crossing-counter node/port influence is set.
-#[allow(clippy::type_complexity)]
-fn _needs_group_a_model_order_node_comparator(
-    _lg: &mut LGraphArena,
-    _graph: LGraphId,
-    _previous_layer: &[LNodeId],
-    _strategy: OrderingStrategy,
-    _long_edge_ordering_strategy: LongEdgeOrderingStrategy,
-    _group_order_strategy: GroupOrderStrategy,
-    _before_ports: bool,
-) -> Box<dyn FnMut(&mut LGraphArena, LNodeId, LNodeId) -> i64> {
-    unimplemented!("ModelOrderNodeComparator (group A) is not wired yet")
-}
-
-/// NEEDS GROUP A: `ModelOrderPortComparator(graph, previousLayer, strategy,
-/// targetNodeModelOrder, portModelOrder)` (the `[LNode]` initializer)
-/// followed by `comp.compare(p1, p2)` calls. Assumed Rust API in
-/// `intermediate::preserveorder::model_order_port_comparator`:
-/// `ModelOrderPortComparator::new(graph: LGraphId, previous_layer: Vec<LNodeId>,
-/// strategy: OrderingStrategy, target_node_model_order: Option<HashMap<LNodeId, i64>>,
-/// port_model_order: bool)` and `compare(&mut self, lg: &mut LGraphArena, p1: LPortId, p2: LPortId) -> i64`.
-#[allow(clippy::type_complexity)]
-fn _needs_group_a_model_order_port_comparator(
-    _lg: &mut LGraphArena,
-    _graph: LGraphId,
-    _previous_layer: &[LNodeId],
-    _strategy: OrderingStrategy,
-    _target_node_model_order: Option<HashMap<LNodeId, i64>>,
-    _port_model_order: bool,
-) -> Box<dyn FnMut(&mut LGraphArena, LPortId, LPortId) -> i64> {
-    unimplemented!("ModelOrderPortComparator (group A) is not wired yet")
-}
-
-/// NEEDS GROUP A: `SortByInputModelProcessor.longEdgeTargetNodePreprocessing(node)`
-/// (`[ObjectIdentifier: Int]` keyed by target node). Assumed Rust API in
-/// `intermediate::sort_by_input_model_processor`:
-/// `SortByInputModelProcessor::long_edge_target_node_preprocessing(lg: &mut LGraphArena, node: LNodeId) -> HashMap<LNodeId, i64>`.
-fn _needs_group_a_long_edge_target_node_preprocessing(_lg: &mut LGraphArena, _node: LNodeId) -> HashMap<LNodeId, i64> {
-    unimplemented!("SortByInputModelProcessor::long_edge_target_node_preprocessing (group A) is not wired yet")
-}
