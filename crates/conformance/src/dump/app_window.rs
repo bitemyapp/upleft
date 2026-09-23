@@ -89,7 +89,7 @@ impl Scenario {
 /// Window kinds this oracle can build yet. Anything else is "not ported",
 /// reported before the application starts.
 fn is_ported(window: &str) -> bool {
-    matches!(window, "probe" | "setup" | "preferences")
+    matches!(window, "probe" | "setup" | "preferences" | "document")
 }
 
 // MARK: - Sandbox
@@ -273,11 +273,43 @@ struct Scene {
     pending_commands: Option<Vec<String>>,
     /// Keeps the window's controller alive (`retained` in Swift).
     _retained: Option<Retained<NSObject>>,
+    /// `documentController`: the document window's controller, which also
+    /// performs the scenario's commands.
+    document_controller: Option<Retained<upleft_app::app::document_window_controller::DocumentWindowController>>,
 }
 
 impl Scene {
-    fn build(scenario: &Scenario, _root: &Path, mtm: MainThreadMarker) -> Result<Scene, Failure> {
+    fn build(scenario: &Scenario, root: &Path, mtm: MainThreadMarker) -> Result<Scene, Failure> {
         match scenario.window.as_str() {
+            "document" => {
+                use upleft_app::app::document_window_controller::DocumentWindowController;
+                use upleft_render::render_contracts::RenderMode;
+                let path = scenario
+                    .document
+                    .as_ref()
+                    .ok_or_else(|| Failure::Error("document scenario needs \"document\"".into()))?;
+                let url = upleft_foundation::url::FileUrl::from_path(&root.join(path).to_string_lossy());
+                let mode = match scenario.mode.as_str() {
+                    "read" => RenderMode::Read,
+                    "source" => RenderMode::Source,
+                    _ => RenderMode::Live,
+                };
+                let controller = DocumentWindowController::new(mtm);
+                if let (Some(size), Some(window)) = (scenario.size, controller.window()) {
+                    window.setContentSize(size);
+                }
+                controller.open(&url, mode).map_err(|error| Failure::Error(error.localized_description()))?;
+                let window = controller.window().ok_or_else(|| Failure::Error("document controller has no window".into()))?;
+                let scene = Scene {
+                    window,
+                    pending_commands: None,
+                    _retained: None,
+                    document_controller: Some(controller.clone()),
+                };
+                scene.show(mtm);
+                controller.apply_command_line_open(None, false);
+                Ok(scene)
+            }
             "probe" => {
                 let probe = unsafe {
                     NSWindow::initWithContentRect_styleMask_backing_defer(
@@ -307,7 +339,7 @@ impl Scene {
                 let content = probe.contentView().expect("content view");
                 content.addSubview(&label);
                 content.addSubview(&button);
-                let scene = Scene { window: probe, pending_commands: None, _retained: None };
+                let scene = Scene { window: probe, pending_commands: None, _retained: None, document_controller: None };
                 scene.show(mtm);
                 Ok(scene)
             }
@@ -317,7 +349,12 @@ impl Scene {
                     Failure::Error("SetupWindowController.makeIfNeeded() returned nil on this machine".into())
                 })?;
                 let window = controller.window().ok_or_else(|| Failure::Error("setup controller has no window".into()))?;
-                let scene = Scene { window, pending_commands: None, _retained: Some(Retained::into_super(Retained::into_super(Retained::into_super(controller)))) };
+                let scene = Scene {
+                    window,
+                    pending_commands: None,
+                    _retained: Some(Retained::into_super(Retained::into_super(Retained::into_super(controller)))),
+                    document_controller: None,
+                };
                 scene.show(mtm);
                 Ok(scene)
             }
@@ -330,7 +367,12 @@ impl Scene {
                     controller.select(pane);
                 }
                 let window = controller.window().ok_or_else(|| Failure::Error("Settings has no window".into()))?;
-                let scene = Scene { window, pending_commands: None, _retained: Some(Retained::into_super(Retained::into_super(Retained::into_super(controller)))) };
+                let scene = Scene {
+                    window,
+                    pending_commands: None,
+                    _retained: Some(Retained::into_super(Retained::into_super(Retained::into_super(controller)))),
+                    document_controller: None,
+                };
                 scene.show(mtm);
                 Ok(scene)
             }
@@ -352,7 +394,13 @@ impl Scene {
             return Ok(false);
         }
         let name = commands.remove(0);
-        Err(Failure::Error(format!("commands need a document window (got {name})")))
+        let Some(controller) = &self.document_controller else {
+            return Err(Failure::Error(format!("commands need a document window (got {name})")));
+        };
+        let command = upleft_app::support::commands::Command::from_raw_value(&name)
+            .ok_or_else(|| Failure::Error(format!("unknown command {name}")))?;
+        let _ = controller.perform(command);
+        Ok(true)
     }
 
     fn captured_windows(&self) -> Vec<Retained<NSWindow>> {
@@ -640,9 +688,92 @@ pub fn run(request: &Request) -> Result<(), Failure> {
     std::process::exit(0)
 }
 
-/// `bench-app-window`: not measurable until the document window is ported.
+/// `bench-app-window <scenario.json> <out.json>` (`AppWindowBench`): document
+/// open to the first displayed frame, and a Live → Source → Live mode switch
+/// to its next frame, over the scenario's document. Windows are off-screen,
+/// as in `app-window`.
 pub fn bench(request: &Request) -> Result<(), Failure> {
+    use upleft_app::app::document_window_controller::DocumentWindowController;
+    use upleft_render::render_contracts::RenderMode;
+    const WARMUP: usize = 3;
+    const RUNS: usize = 15;
+
     let scenario = Scenario::load(&request.input)?;
-    let _ = scenario;
-    Err(Failure::NotPorted)
+    let mtm = MainThreadMarker::new().ok_or_else(|| Failure::Error("bench-app-window runs on the main thread".into()))?;
+    acquire_window_capture_lock();
+    off_screen::install();
+    let sandbox = sandbox::prepare(&scenario)?;
+    let app = NSApplication::sharedApplication(mtm);
+    app.setActivationPolicy(NSApplicationActivationPolicy::Accessory);
+    let root = repository_root();
+    apply_scenario_appearance(&scenario, &root, mtm);
+    let path = scenario.document.as_ref().ok_or_else(|| Failure::Error("bench needs a document".into()))?;
+    let url = upleft_foundation::url::FileUrl::from_path(&root.join(path).to_string_lossy());
+
+    let mut open: Vec<f64> = Vec::new();
+    let mut to_source: Vec<f64> = Vec::new();
+    let mut to_live: Vec<f64> = Vec::new();
+    for iteration in 0..(WARMUP + RUNS) {
+        let start = Instant::now();
+        let controller = DocumentWindowController::new(mtm);
+        if let (Some(size), Some(window)) = (scenario.size, controller.window()) {
+            window.setContentSize(size);
+        }
+        controller.open(&url, RenderMode::Live).map_err(|error| Failure::Error(error.localized_description()))?;
+        let window = controller.window().ok_or_else(|| Failure::Error("document controller has no window".into()))?;
+        window.setFrameOrigin(NSPoint::new(-30000.0, -30000.0));
+        window.orderFrontRegardless();
+        off_screen::verify(std::slice::from_ref(&window), mtm);
+        // The first frame is the one the deferred restore paints: it makes
+        // the document's text view first responder.
+        let text_view: Retained<AnyObject> =
+            Retained::into_super(Retained::into_super(Retained::into_super(Retained::into_super(Retained::into_super(
+                controller.primary_container().text_view().clone(),
+            )))));
+        loop {
+            let first = window.firstResponder().map(|responder| Retained::as_ptr(&responder) as *const AnyObject);
+            if first == Some(Retained::as_ptr(&text_view)) {
+                break;
+            }
+            let until = objc2_foundation::NSDate::dateWithTimeIntervalSinceNow(0.001);
+            objc2_foundation::NSRunLoop::mainRunLoop()
+                .runMode_beforeDate(unsafe { objc2_foundation::NSDefaultRunLoopMode }, &until);
+        }
+        window.displayIfNeeded();
+        let opened = Instant::now();
+
+        controller.apply_mode(RenderMode::Source);
+        window.displayIfNeeded();
+        let sourced = Instant::now();
+        controller.apply_mode(RenderMode::Live);
+        window.displayIfNeeded();
+        let lived = Instant::now();
+
+        if iteration >= WARMUP {
+            open.push((opened - start).as_secs_f64() * 1e3);
+            to_source.push((sourced - opened).as_secs_f64() * 1e3);
+            to_live.push((lived - sourced).as_secs_f64() * 1e3);
+        }
+        controller.close();
+        let until = objc2_foundation::NSDate::dateWithTimeIntervalSinceNow(0.05);
+        objc2_foundation::NSRunLoop::mainRunLoop().runMode_beforeDate(unsafe { objc2_foundation::NSDefaultRunLoopMode }, &until);
+    }
+    sandbox::remove(&sandbox);
+    fn stage(name: &str, samples: &[f64]) -> Value {
+        let mut sorted = samples.to_vec();
+        sorted.sort_by(|a, b| a.total_cmp(b));
+        serde_json::json!({
+            "stage": name,
+            "p50": sorted[sorted.len() / 2],
+            "min": sorted[0],
+            "runs": sorted.len(),
+        })
+    }
+    let json = Value::Array(vec![
+        stage("open to first frame", &open),
+        stage("mode switch Live to Source", &to_source),
+        stage("mode switch Source to Live", &to_live),
+    ]);
+    json::write(&json, &request.output)?;
+    std::process::exit(0)
 }
