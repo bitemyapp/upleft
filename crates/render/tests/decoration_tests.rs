@@ -749,17 +749,16 @@ fn keystroke_decoration_stays_under_the_budget() {
     let mut engine = engine(RenderMode::Live);
     engine.decorate(&storage, &MarkdownParser::parse(&text), &DirtySet::wholesale());
 
-    let mut caret = find(&text, "Paragraph 250 with").location + 10;
+    let seed = find(&text, "Paragraph 250 with").location + 10;
     let x = NSString::from_str("x");
     let mut samples = Vec::new();
-    for _ in 0..100 {
+    for caret in seed..seed + 100 {
         storage.replaceCharactersInRange_withString(objc2_foundation::NSRange::new(caret as usize, 0), &x);
         let document = MarkdownParser::parse(&storage.string().to_string());
         let dirty = DirtySet::new(vec![NSRange::new(caret, 1)], false);
         let started = Instant::now();
         engine.decorate(&storage, &document, &dirty);
         samples.push(started.elapsed().as_secs_f64() * 1000.0);
-        caret += 1;
     }
     let p95 = p95(samples);
     assert!(p95 < 8.0, "p95 keystroke decoration was {p95} ms, over the 8ms budget in §12");

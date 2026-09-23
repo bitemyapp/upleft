@@ -88,17 +88,17 @@ fn agent_document(target_lines: usize) -> String {
         );
         out += &block;
         line_count += block.bytes().filter(|&b| b == b'\n').count();
-        if index % 7 == 0 {
+        if index.is_multiple_of(7) {
             out += &format!(
                 "```swift\nlet value{index} = {index}\nfunc compute{index}() -> Int {{ value{index} * 2 }}\n```\n\n"
             );
             line_count += 6;
         }
-        if index % 11 == 0 {
+        if index.is_multiple_of(11) {
             out += &format!("| column | value |\n|---|--:|\n| a | {index} |\n| b | {} |\n\n", index * 2);
             line_count += 6;
         }
-        if index % 13 == 0 {
+        if index.is_multiple_of(13) {
             out += "> [!NOTE]\n> A callout, because agents emit these constantly.\n\n";
             line_count += 3;
         }
@@ -152,7 +152,8 @@ fn main() {
             },
         ));
     });
-    let variants: [(&str, fn(&mut ParseOptions)); 4] = [
+    type Variant = (&'static str, fn(&mut ParseOptions));
+    let variants: [Variant; 4] = [
         ("  … without path tokens", |o| o.detect_path_tokens = false),
         ("  … without math", |o| o.detect_math = false),
         ("  … without wikilinks", |o| o.detect_wikilinks = false),
