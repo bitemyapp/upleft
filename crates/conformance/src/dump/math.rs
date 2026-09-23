@@ -27,7 +27,7 @@ use objc2_core_graphics::{
 use objc2_core_text::{
     CTFont, CTLine, CTRun, kCTFontAttributeName, kCTForegroundColorAttributeName,
 };
-use objc2_foundation::{NSAttributedString, NSDictionary, NSNumber, NSRange, NSString};
+use objc2_foundation::{NSAttributedString, NSDictionary, NSNumber, NSRange};
 use serde_json::Value;
 use upleft_math::downright::math_renderer::{MathRenderer, trimming_whitespaces_and_newlines};
 use upleft_math::math_render::mt_math_image::MTMathImage;
@@ -41,12 +41,12 @@ use upleft_math::math_render::mt_math_ui_label::{MTMathUILabelMode, MTTextAlignm
 use super::Failure;
 use super::json::{Object, double, range, write};
 
-struct Input {
-    display: bool,
-    latex: String,
+pub(crate) struct Input {
+    pub(crate) display: bool,
+    pub(crate) latex: String,
 }
 
-fn read(path: &Path) -> Result<Input, Failure> {
+pub(crate) fn read(path: &Path) -> Result<Input, Failure> {
     let bytes = std::fs::read(path)?;
     let newline = bytes
         .iter()
@@ -78,7 +78,7 @@ fn read(path: &Path) -> Result<Input, Failure> {
 /// The theme values come from the theme file Downright ships; the arithmetic
 /// is `StyleSheet.systemFont(preset:size:weight:)`, `mathPointSize(body:typography:)`
 /// and `ColorResolver.resolve`.
-fn parameters() -> Result<(CGFloat, Retained<NSColor>), Failure> {
+pub(crate) fn parameters() -> Result<(CGFloat, Retained<NSColor>), Failure> {
     let path = Path::new(env!("CARGO_MANIFEST_DIR"))
         .join("../../vendor/downright/Sources/MarkdownRender/Themes/paper-light.json");
     let theme: Value = serde_json::from_str(&std::fs::read_to_string(&path)?)
@@ -715,6 +715,3 @@ fn display_json(display: Option<&MTDisplay>) -> Value {
     }
     object.build()
 }
-
-#[allow(dead_code)]
-fn unused(_: &NSString) {}

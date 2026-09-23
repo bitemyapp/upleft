@@ -1,8 +1,9 @@
 //! `MTFont.swift`: a math font — a `CGFont` loaded from the bundled `.otf`,
 //! a `CTFont` at a size, and the font's math table.
 
+use std::collections::HashMap;
 use std::ffi::CString;
-use std::sync::Arc;
+use std::sync::{Arc, RwLock};
 
 use objc2_core_foundation::{CFRetained, CFString, CGFloat};
 use objc2_core_graphics::{CGDataProvider, CGFont, CGGlyph};
@@ -25,6 +26,53 @@ pub fn glyph_with_name(font: &CGFont, name: &str) -> CGGlyph {
     CGFont::glyph_with_glyph_name(Some(font), Some(&name))
 }
 
+/// A `CGFont` with its glyph ↔ name lookups memoised.
+///
+/// SwiftMath resolves every math-table entry through the glyph's *name*
+/// (`CGFontCopyGlyphNameForGlyph`, `CGFontGetGlyphWithGlyphName`), and those
+/// two calls are most of its typesetting time. A `CGFont` is immutable, so
+/// their answers are fixed; the copies of a font at every size share one cache.
+#[derive(Debug)]
+pub struct GraphicsFont {
+    pub cg_font: CFRetained<CGFont>,
+    names: RwLock<HashMap<CGGlyph, Arc<str>>>,
+    glyphs: RwLock<HashMap<Arc<str>, CGGlyph>>,
+}
+
+// SAFETY: CGFont is an immutable, thread-safe Core Foundation object.
+unsafe impl Send for GraphicsFont {}
+unsafe impl Sync for GraphicsFont {}
+
+impl GraphicsFont {
+    pub fn new(cg_font: CFRetained<CGFont>) -> Arc<GraphicsFont> {
+        Arc::new(GraphicsFont {
+            cg_font,
+            names: RwLock::default(),
+            glyphs: RwLock::default(),
+        })
+    }
+
+    /// `CGFont.name(for:)`, or "" when the glyph has no name.
+    pub fn name(&self, glyph: CGGlyph) -> Arc<str> {
+        if let Some(name) = self.names.read().unwrap().get(&glyph) {
+            return name.clone();
+        }
+        let name: Arc<str> = glyph_name(&self.cg_font, glyph).into();
+        self.names.write().unwrap().insert(glyph, name.clone());
+        name
+    }
+
+    /// `CGFont.getGlyphWithGlyphName(name:)`.
+    pub fn glyph(&self, name: &str) -> CGGlyph {
+        if let Some(&glyph) = self.glyphs.read().unwrap().get(name) {
+            return glyph;
+        }
+        let glyph = glyph_with_name(&self.cg_font, name);
+        self.glyphs.write().unwrap().insert(name.into(), glyph);
+        glyph
+    }
+}
+
 /// `CTFontCreateWithGraphicsFont(cgFont, size, nil, nil)`.
 pub fn ct_font_with_graphics_font(font: &CGFont, size: CGFloat) -> CFRetained<CTFont> {
     unsafe { CTFont::with_graphics_font(font, size, std::ptr::null(), None) }
@@ -32,7 +80,7 @@ pub fn ct_font_with_graphics_font(font: &CGFont, size: CGFloat) -> CFRetained<CT
 
 #[derive(Debug)]
 pub struct MTFont {
-    default_cg_font: CFRetained<CGFont>,
+    default_cg_font: Arc<GraphicsFont>,
     ct_font: CFRetained<CTFont>,
     math_table: Option<MTFontMathTable>,
     raw_math_table: Arc<RawMathTable>,
@@ -55,9 +103,10 @@ impl MTFont {
         let filename = CString::new(font_path.to_str().expect("UTF-8 font path")).unwrap();
         let provider = unsafe { CGDataProvider::with_filename(filename.as_ptr()) }
             .expect("CGDataProvider(filename:)");
-        let default_cg_font =
-            CGFont::with_data_provider(&provider).expect("CGFont(fontDataProvider)");
-        let ct_font = ct_font_with_graphics_font(&default_cg_font, size);
+        let default_cg_font = GraphicsFont::new(
+            CGFont::with_data_provider(&provider).expect("CGFont(fontDataProvider)"),
+        );
+        let ct_font = ct_font_with_graphics_font(&default_cg_font.cg_font, size);
 
         let plist = math_resource_bundle::resource_path(name, "plist")
             .unwrap_or_else(|| panic!("mathFonts.bundle has no {name}.plist"));
@@ -82,7 +131,7 @@ impl MTFont {
     /// An `MTFontV2`: the table is a `MTFontMathTableV2` over a registered font.
     pub(crate) fn v2(
         math_font: MathFont,
-        default_cg_font: CFRetained<CGFont>,
+        default_cg_font: Arc<GraphicsFont>,
         ct_font: CFRetained<CTFont>,
         raw_math_table: Arc<RawMathTable>,
         size: CGFloat,
@@ -114,7 +163,7 @@ impl MTFont {
             // MTFontV2.copy(withSize:) is MTFontV2(font: font, size: size).
             return Arc::new(math_font.mtfont(size));
         }
-        let ct_font = ct_font_with_graphics_font(&self.default_cg_font, size);
+        let ct_font = ct_font_with_graphics_font(&self.default_cg_font.cg_font, size);
         let raw_math_table = self.raw_math_table.clone();
         let math_table = MTFontMathTable::new(
             self.default_cg_font.clone(),
@@ -133,11 +182,11 @@ impl MTFont {
     }
 
     pub fn get_name_for_glyph(&self, glyph: CGGlyph) -> String {
-        glyph_name(&self.default_cg_font, glyph)
+        self.default_cg_font.name(glyph).to_string()
     }
 
     pub fn get_glyph_with_name(&self, name: &str) -> CGGlyph {
-        glyph_with_name(&self.default_cg_font, name)
+        self.default_cg_font.glyph(name)
     }
 
     /// The size of this font in points.
@@ -150,7 +199,7 @@ impl MTFont {
     }
 
     pub fn default_cg_font(&self) -> &CGFont {
-        &self.default_cg_font
+        &self.default_cg_font.cg_font
     }
 
     pub fn math_table(&self) -> Option<&MTFontMathTable> {

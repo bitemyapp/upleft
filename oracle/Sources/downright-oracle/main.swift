@@ -97,6 +97,9 @@ do {
     case "math-tree":
         try MathDump.tree(input, to: output)
 
+    case "bench-math":
+        try MathBench.run(input, to: output)
+
     case "render":
         let request = RenderRequest(
             input: input,

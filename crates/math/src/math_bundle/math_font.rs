@@ -15,7 +15,7 @@ use objc2_core_text::{
 };
 
 use super::math_resource_bundle;
-use crate::math_render::mt_font::{MTFont, ct_font_with_graphics_font};
+use crate::math_render::mt_font::{GraphicsFont, MTFont, ct_font_with_graphics_font};
 use crate::math_render::mt_font_math_table::RawMathTable;
 
 /// The math fonts SwiftMath ships.
@@ -91,7 +91,7 @@ impl MathFont {
     }
 
     pub fn cg_font(self) -> CFRetained<CGFont> {
-        BUNDLE_MANAGER.obtain_cg_font(self)
+        BUNDLE_MANAGER.obtain_cg_font(self).cg_font.clone()
     }
 
     pub fn ct_font(self, size: CGFloat) -> CFRetained<CTFont> {
@@ -104,7 +104,7 @@ impl MathFont {
 
     /// `mtfont(size:)`: an `MTFontV2`.
     pub fn mtfont(self, size: CGFloat) -> MTFont {
-        let cg_font = self.cg_font();
+        let cg_font = BUNDLE_MANAGER.obtain_cg_font(self);
         let ct_font = self.ct_font(size);
         MTFont::v2(self, cg_font, ct_font, self.raw_math_table(), size)
     }
@@ -119,17 +119,14 @@ pub enum FontError {
     InvalidMathTable,
 }
 
-struct CGFontRef(CFRetained<CGFont>);
 struct CTFontRef(CFRetained<CTFont>);
-// SAFETY: CGFont and CTFont are immutable, thread-safe Core Foundation objects.
-unsafe impl Send for CGFontRef {}
-unsafe impl Sync for CGFontRef {}
+// SAFETY: CTFont is an immutable, thread-safe Core Foundation object.
 unsafe impl Send for CTFontRef {}
 unsafe impl Sync for CTFontRef {}
 
 #[derive(Default)]
 struct Tables {
-    cg_fonts: HashMap<MathFont, CGFontRef>,
+    cg_fonts: HashMap<MathFont, Arc<GraphicsFont>>,
     ct_fonts: HashMap<(MathFont, u64), CTFontRef>,
     raw_math_tables: HashMap<MathFont, Arc<RawMathTable>>,
 }
@@ -168,7 +165,7 @@ impl BundleManager {
 
         tables
             .cg_fonts
-            .insert(math_font, CGFontRef(default_cg_font.clone()));
+            .insert(math_font, GraphicsFont::new(default_cg_font.clone()));
 
         // This does not load the complete math font, it only has about half the glyphs of the full math font.
         // So we first load a CGFont from the file and then convert it to a CTFont.
@@ -233,13 +230,13 @@ impl BundleManager {
         }
     }
 
-    fn obtain_cg_font(&self, font: MathFont) -> CFRetained<CGFont> {
+    fn obtain_cg_font(&self, font: MathFont) -> Arc<GraphicsFont> {
         self.on_demand_registration(font);
         let tables = self.tables.read().unwrap();
         tables
             .cg_fonts
             .get(&font)
-            .map(|f| f.0.clone())
+            .cloned()
             .unwrap_or_else(|| panic!("unable to locate CGFont {}", font.font_name()))
     }
 
@@ -256,7 +253,7 @@ impl BundleManager {
         let cg_font = tables
             .cg_fonts
             .get(&font)
-            .map(|f| f.0.clone())
+            .map(|f| f.cg_font.clone())
             .expect("CGFont to create CTFont");
         let result = ct_font_with_graphics_font(&cg_font, size);
         tables.ct_fonts.insert(key, CTFontRef(result.clone()));
@@ -280,7 +277,7 @@ impl Drop for BundleManager {
         let tables = self.tables.get_mut().unwrap();
         tables.ct_fonts.clear();
         for cg_font in tables.cg_fonts.values() {
-            unsafe { CTFontManagerUnregisterGraphicsFont(&cg_font.0, std::ptr::null_mut()) };
+            unsafe { CTFontManagerUnregisterGraphicsFont(&cg_font.cg_font, std::ptr::null_mut()) };
         }
         tables.cg_fonts.clear();
     }

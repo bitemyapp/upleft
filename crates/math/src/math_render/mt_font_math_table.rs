@@ -14,11 +14,11 @@ use objc2::AnyThread;
 use objc2::rc::Retained;
 use objc2::runtime::AnyObject;
 use objc2_core_foundation::{CFRetained, CGFloat, CGRect, CGSize};
-use objc2_core_graphics::{CGFont, CGGlyph};
+use objc2_core_graphics::CGGlyph;
 use objc2_core_text::{CTFont, CTFontOrientation};
 use objc2_foundation::{NSArray, NSDictionary, NSNumber, NSString, NSURL};
 
-use super::mt_font::{glyph_name, glyph_with_name};
+use super::mt_font::GraphicsFont;
 
 /// A number from the plist: what `intValue` and `floatValue` would return.
 #[derive(Clone, Copy, Debug)]
@@ -199,7 +199,7 @@ pub enum MathTableFlavor {
 /// The Math table of an OpenType font.
 #[derive(Debug)]
 pub struct MTFontMathTable {
-    cg_font: CFRetained<CGFont>,
+    cg_font: Arc<GraphicsFont>,
     ct_font: CFRetained<CTFont>,
     units_per_em: u32,
     font_size: CGFloat,
@@ -216,7 +216,7 @@ unsafe impl Sync for MTFontMathTable {}
 impl MTFontMathTable {
     /// `MTFontMathTable(withFont:mathTable:)`.
     pub fn new(
-        cg_font: CFRetained<CGFont>,
+        cg_font: Arc<GraphicsFont>,
         ct_font: CFRetained<CTFont>,
         math_table: Arc<RawMathTable>,
         flavor: MathTableFlavor,
@@ -495,12 +495,12 @@ impl MTFontMathTable {
 
     // MARK: - Variants
 
-    fn name_for_glyph(&self, glyph: CGGlyph) -> String {
-        glyph_name(&self.cg_font, glyph)
+    fn name_for_glyph(&self, glyph: CGGlyph) -> Arc<str> {
+        self.cg_font.name(glyph)
     }
 
     fn glyph_with_name(&self, name: &str) -> CGGlyph {
-        glyph_with_name(&self.cg_font, name)
+        self.cg_font.glyph(name)
     }
 
     /// All the vertical variants of the glyph, or the glyph itself.
@@ -527,7 +527,7 @@ impl MTFontMathTable {
         variants: &HashMap<String, Vec<String>>,
     ) -> Vec<CGGlyph> {
         let glyph_name = self.name_for_glyph(glyph);
-        match variants.get(&glyph_name) {
+        match variants.get(&*glyph_name) {
             Some(variant_glyphs) if !variant_glyphs.is_empty() => variant_glyphs
                 .iter()
                 .map(|name| self.glyph_with_name(name))
@@ -546,13 +546,13 @@ impl MTFontMathTable {
             panic!("v_variants missing from the math table");
         };
         let glyph_name = self.name_for_glyph(glyph);
-        let Some(variant_glyphs) = variants.get(&glyph_name).filter(|v| !v.is_empty()) else {
+        let Some(variant_glyphs) = variants.get(&*glyph_name).filter(|v| !v.is_empty()) else {
             // There are no extra variants, so just return the current glyph.
             return glyph;
         };
         // Find the first variant with a different name.
         for glyph_variant_name in variant_glyphs {
-            if *glyph_variant_name != glyph_name {
+            if **glyph_variant_name != *glyph_name {
                 return self.glyph_with_name(glyph_variant_name);
             }
         }
@@ -570,7 +570,7 @@ impl MTFontMathTable {
             None if self.flavor == MathTableFlavor::V2 => return 0.0,
             None => panic!("italic missing from the math table"),
         };
-        match (italics.get(&glyph_name), self.flavor) {
+        match (italics.get(&*glyph_name), self.flavor) {
             (Some(value), _) => self.font_units_to_pt(value.int_value),
             (None, MathTableFlavor::V1) => self.font_units_to_pt(0),
             (None, MathTableFlavor::V2) => 0.0,
@@ -584,7 +584,7 @@ impl MTFontMathTable {
     pub fn get_top_accent_adjustment(&self, glyph: CGGlyph) -> CGFloat {
         let glyph_name = self.name_for_glyph(glyph);
         let value = match &self.math_table.accents {
-            Some(accents) => accents.get(&glyph_name),
+            Some(accents) => accents.get(&*glyph_name),
             None if self.flavor == MathTableFlavor::V2 => None,
             None => panic!("accents missing from the math table"),
         };
@@ -622,7 +622,7 @@ impl MTFontMathTable {
             None if self.flavor == MathTableFlavor::V2 => return Vec::new(),
             None => panic!("v_assembly missing from the math table"),
         };
-        let Some(assembly_info) = assembly_table.get(&glyph_name) else {
+        let Some(assembly_info) = assembly_table.get(&*glyph_name) else {
             // No vertical assembly defined for glyph
             return Vec::new();
         };

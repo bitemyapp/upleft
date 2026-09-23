@@ -3,6 +3,7 @@
 
 pub mod json;
 pub mod math;
+pub mod math_bench;
 
 use std::path::PathBuf;
 
@@ -78,6 +79,7 @@ pub fn run(request: &Request) -> Result<(), Failure> {
     match request.command.as_str() {
         "math" => math::image(&request.input, &request.output),
         "math-tree" => math::tree(&request.input, &request.output),
+        "bench-math" => math_bench::run(&request.input, &request.output),
         _ => Err(Failure::NotPorted),
     }
 }
