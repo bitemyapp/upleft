@@ -1,0 +1,16 @@
+[package]
+name = "upleft-spotlight-importer"
+description = "Port of Downright's DownrightSpotlightImporter: the CFPlugIn ABI mdworker loads, over the ported Spotlight metadata"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+publish.workspace = true
+
+# Spotlight loads an MH_BUNDLE, which a cdylib (MH_DYLIB) is not: the
+# bundling script links this static library with `clang -bundle`, as
+# Downright's Package.swift passes `-Xlinker -bundle` to its C target.
+[lib]
+crate-type = ["staticlib", "rlib"]
+
+[dependencies]
+upleft-spotlight-metadata.workspace = true

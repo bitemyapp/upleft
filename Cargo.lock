@@ -779,6 +779,13 @@ dependencies = [
 ]
 
 [[package]]
+name = "upleft-spotlight-importer"
+version = "0.1.0"
+dependencies = [
+ "upleft-spotlight-metadata",
+]
+
+[[package]]
 name = "upleft-spotlight-metadata"
 version = "0.1.0"
 dependencies = [
