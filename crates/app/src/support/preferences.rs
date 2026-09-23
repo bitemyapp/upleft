@@ -354,6 +354,16 @@ impl Preferences {
         SHARED.set(preferences).is_ok()
     }
 
+    /// Test seam: makes `preferences` (a [`Preferences::for_testing`]
+    /// instance) what `Preferences::shared()` returns, so a test binary that
+    /// builds panels (`PanelFont` reads the shared text size adjustment)
+    /// never loads the real one, whose load publishes the Quick Look
+    /// appearance to the user's global preferences. Call before anything
+    /// reads `shared()`; false when it was already loaded.
+    pub fn install_shared_for_testing(preferences: Preferences) -> bool {
+        SHARED.set(preferences).is_ok()
+    }
+
     /// A `Preferences` reading and writing `preferences_file` only: no Quick
     /// Look publication and no notification. `snapshot_store`, when given,
     /// receives the history limits as `SnapshotStore.shared` does.

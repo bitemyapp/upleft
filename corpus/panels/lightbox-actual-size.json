@@ -1,0 +1,1 @@
+{"panel": "LightboxWindow", "theme": "Paper Light", "dark": true, "width": 700, "height": 500, "state": {"image": "corpus/render-images/img/alpha.png", "keys": [{"characters": "1", "keyCode": 18}, {"characters": "", "keyCode": 126}, {"characters": "-", "keyCode": 27}]}}

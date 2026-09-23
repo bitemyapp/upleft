@@ -1,0 +1,30 @@
+{
+ "panel": "TaskProgressRing",
+ "theme": "Paper Light",
+ "width": 34,
+ "height": 34,
+ "document": "corpus/generated/agent/agent-400.md",
+ "state": {},
+ "states": [
+  {"name": "fresh"},
+  {"name": "empty plan", "steps": [[0, 0]]},
+  {"name": "from document", "fromDocument": true},
+  {"name": "partial", "steps": [[3, 7]]},
+  {"name": "one left", "steps": [[6, 7]]},
+  {"name": "complete", "steps": [[5, 5]]},
+  {"name": "complete then reopened", "steps": [[5, 5], [4, 6]]},
+  {"name": "overdone", "steps": [[9, 5]]},
+  {"name": "negative done", "steps": [[-3, 5]]},
+  {"name": "ninety-nine", "steps": [[1, 100]]},
+  {"name": "long plan", "steps": [[5, 400]]},
+  {"name": "gained and lost a plan", "steps": [[0, 3], [0, 0], [1, 2]]},
+  {"name": "same progress twice", "steps": [[2, 4], [2, 4]]},
+  {"name": "active", "steps": [[3, 7]], "active": true},
+  {"name": "active then inactive", "steps": [[3, 7]], "active": true, "inactive": true},
+  {"name": "active empty", "active": true},
+  {"name": "hover", "steps": [[3, 7]], "hover": true},
+  {"name": "hover and exit", "steps": [[3, 7]], "hover": true, "exit": true},
+  {"name": "press", "steps": [[3, 7]], "press": true},
+  {"name": "current sheet restyled", "current": true, "steps": [[2, 9]], "restyle": true}
+ ]
+}

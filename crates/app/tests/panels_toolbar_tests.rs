@@ -8,6 +8,8 @@
 //!   `breadcrumbShowsOnlyTheCurrentSection`,
 //!   `breadcrumbPathComparisonAvoidsScrollTimeRebuilds`.
 //!
+//! - `DocumentChromeLayoutTests.TaskProgressRingAccessibilityTests` (all
+//!   six).
 //! - `WindowChromeTests.statusBarIsOffByDefaultAndCostsNoHeightWhenHidden`,
 //!   adapted: the preference default and the bar's own `isVisible` contract
 //!   on a bar built directly (the Swift test reads the bar through
@@ -29,6 +31,7 @@ use objc2_foundation::{NSSize, NSString};
 use upleft_app::panels::appkit_support::{RectExt, accessibility_label, downcast};
 use upleft_app::panels::breadcrumb_view::{BreadcrumbView, Crumb};
 use upleft_app::panels::document_status_bar_view::DocumentStatusBarView;
+use upleft_app::panels::task_progress_ring::TaskProgressRing;
 use upleft_app::support::preferences::Values as PreferenceValues;
 use upleft_render::theme::style_sheet::StyleSheet;
 use upleft_render::view::markdown_container_view::MarkdownContainerView;
@@ -133,12 +136,82 @@ fn status_bar_is_off_by_default_and_costs_no_height_when_hidden() {
     assert!(bar.intrinsicContentSize().height > 0.0);
 }
 
+// MARK: - TaskProgressRingAccessibilityTests
+
+fn ring() -> Retained<TaskProgressRing> {
+    TaskProgressRing::new_current(mtm())
+}
+
+fn tool_tip(view: &NSView) -> Option<String> {
+    view.toolTip().map(|tip| tip.to_string())
+}
+
+/// An empty plan still names itself.
+fn empty_ring_is_labelled() {
+    let ring = ring();
+    ring.set_progress(0, 0);
+    assert_eq!(accessibility_label(&*ring).as_deref(), Some("No tasks"));
+    assert_eq!(tool_tip(&ring).as_deref(), Some("No tasks — Open Tasks"));
+    let role: Option<Retained<NSString>> = unsafe { objc2::msg_send![&*ring, accessibilityRole] };
+    assert_eq!(role.map(|role| role.to_string()).as_deref(), Some("AXButton"));
+    let can_move: bool = unsafe { objc2::msg_send![&*ring, mouseDownCanMoveWindow] };
+    assert!(!can_move);
+}
+
+/// A partly finished plan reports the count and the remainder.
+fn partial_ring_reports_remainder() {
+    let ring = ring();
+    ring.set_progress(3, 7);
+    assert_eq!(ring.count_text_for_testing(), "4");
+    assert_eq!(accessibility_label(&*ring).as_deref(), Some("3 of 7 tasks complete"));
+    assert_eq!(tool_tip(&ring).as_deref(), Some("3 of 7 tasks complete, 4 left — Open Tasks"));
+}
+
+/// One remaining task is not pluralised.
+fn single_remainder_reads_naturally() {
+    let ring = ring();
+    ring.set_progress(6, 7);
+    assert_eq!(ring.count_text_for_testing(), "1");
+    assert!(tool_tip(&ring).is_some_and(|tip| tip.contains("1 left")));
+}
+
+/// An open panel gives the tally to the panel.
+fn active_ring_hides_drawn_count() {
+    let ring = ring();
+    ring.set_progress(3, 7);
+    ring.set_is_active(true);
+    assert!(ring.count_text_for_testing().is_empty());
+}
+
+/// A finished plan says so rather than saying nothing.
+fn complete_ring_reports_completion() {
+    let ring = ring();
+    ring.set_progress(5, 5);
+    assert_eq!(accessibility_label(&*ring).as_deref(), Some("5 of 5 tasks complete"));
+    assert!(tool_tip(&ring).is_some_and(|tip| tip.contains("all done")));
+}
+
+/// A long plan truncates the drawn numeral to "99+", so the exact figure
+/// has to survive somewhere.
+fn long_plan_keeps_exact_figure() {
+    let ring = ring();
+    ring.set_progress(5, 400);
+    assert_eq!(accessibility_label(&*ring).as_deref(), Some("5 of 400 tasks complete"));
+    assert!(tool_tip(&ring).is_some_and(|tip| tip.contains("395 left")));
+}
+
 fn main() {
     main_thread::run(&[
         ("breadcrumb_reserves_a_stable_text_safe_lane", breadcrumb_reserves_a_stable_text_safe_lane),
         ("breadcrumb_appears_only_when_presented", breadcrumb_appears_only_when_presented),
         ("breadcrumb_shows_only_the_current_section", breadcrumb_shows_only_the_current_section),
         ("breadcrumb_path_comparison_avoids_scroll_time_rebuilds", breadcrumb_path_comparison_avoids_scroll_time_rebuilds),
+        ("empty_ring_is_labelled", empty_ring_is_labelled),
+        ("partial_ring_reports_remainder", partial_ring_reports_remainder),
+        ("single_remainder_reads_naturally", single_remainder_reads_naturally),
+        ("active_ring_hides_drawn_count", active_ring_hides_drawn_count),
+        ("complete_ring_reports_completion", complete_ring_reports_completion),
+        ("long_plan_keeps_exact_figure", long_plan_keeps_exact_figure),
         (
             "status_bar_is_off_by_default_and_costs_no_height_when_hidden",
             status_bar_is_off_by_default_and_costs_no_height_when_hidden,
