@@ -195,7 +195,7 @@ impl ImageRenderCache {
 fn freshness(path: &str) -> Freshness {
     match std::fs::metadata(path) {
         Ok(metadata) => Freshness {
-            file_size: metadata.is_file().then(|| metadata.len() as i64),
+            file_size: metadata.is_file().then_some(metadata.len() as i64),
             modified: metadata.modified().ok(),
         },
         Err(_) => Freshness { file_size: None, modified: None },

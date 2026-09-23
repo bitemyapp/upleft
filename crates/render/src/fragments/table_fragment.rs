@@ -63,7 +63,7 @@ impl TableCellPresentation {
                 Some(NSRange::new(intersection.location - cell.content_range.location, intersection.length))
             })
             .collect();
-        markers.sort_by(|a, b| b.location.cmp(&a.location));
+        markers.sort_by_key(|marker| std::cmp::Reverse(marker.location));
         for marker in markers {
             if marker.upper_bound() <= content.length() as isize {
                 content.deleteCharactersInRange(ns(marker));

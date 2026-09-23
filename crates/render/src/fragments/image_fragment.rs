@@ -293,14 +293,14 @@ fn target_pixel_dimension(fragment: &DownrightFragment) -> isize {
         .and_then(|view| view.window())
         .map(|window| window.backingScaleFactor())
         .or_else(|| {
-            objc2::MainThreadMarker::new().and_then(|mtm| NSScreen::mainScreen(mtm)).map(|screen| screen.backingScaleFactor())
+            objc2::MainThreadMarker::new().and_then(NSScreen::mainScreen).map(|screen| screen.backingScaleFactor())
         })
         .unwrap_or(2.0);
     // A hard per-image ceiling keeps one pathological asset from defeating
     // the cache's budget.
     let points = smax(fragment.content_width(), viewport_height_cap(fragment));
     let pixels = crate::swift_compat::int_truncating((points * scale).ceil()) as isize;
-    pixels.max(1).min(2048)
+    pixels.clamp(1, 2048)
 }
 
 fn resolved_request(fragment: &DownrightFragment) -> Option<LocalAssetRequest> {
