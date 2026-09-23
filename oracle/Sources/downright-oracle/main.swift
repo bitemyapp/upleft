@@ -89,6 +89,9 @@ do {
         engine.decorate(storage, document: MarkdownParser.parse(text), dirty: .wholesale)
         try write(AttributeDump.storage(storage), to: output)
 
+    case "elk":
+        try write(ElkDump.layout(input), to: output)
+
     case "render":
         let request = RenderRequest(
             input: input,

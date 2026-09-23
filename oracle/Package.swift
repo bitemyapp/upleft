@@ -10,6 +10,7 @@ let package = Package(
     platforms: [.macOS(.v14)],
     dependencies: [
         .package(name: "downright", path: "../vendor/downright"),
+        .package(url: "https://github.com/lukilabs/elk-swift", exact: "1.0.2"),
     ],
     targets: [
         .executableTarget(
@@ -17,6 +18,7 @@ let package = Package(
             dependencies: [
                 .product(name: "MarkdownCore", package: "downright"),
                 .product(name: "MarkdownRender", package: "downright"),
+                .product(name: "ElkSwift", package: "elk-swift"),
             ],
             swiftSettings: [.swiftLanguageMode(.v5)]
         ),

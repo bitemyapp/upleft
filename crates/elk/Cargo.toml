@@ -1,0 +1,14 @@
+[package]
+name = "upleft-elk"
+description = "Rust port of elk-swift (the Eclipse Layout Kernel's layered algorithm), as used by beautiful-mermaid-swift"
+version.workspace = true
+edition.workspace = true
+# A derivative of ELK / elk-swift, so it keeps their license.
+license = "EPL-2.0"
+publish.workspace = true
+repository.workspace = true
+
+[dependencies]
+serde_json.workspace = true
+
+[dev-dependencies]
