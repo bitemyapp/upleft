@@ -33,6 +33,7 @@ objc2-foundation = { workspace = true, features = [
     "NSUserDefaults",
     "NSValue",
     "NSRunLoop",
+    "NSProcessInfo",
     "NSObjCRuntime",
     "NSAttributedString",
     "NSNotification",

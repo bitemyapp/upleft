@@ -31,6 +31,15 @@ fn main() {
     // AppKit views work without a running app, but windows want the shared
     // application to exist.
     let _ = objc2_app_kit::NSApplication::sharedApplication(mtm);
+    // The pump-based tests wait on main-queue timers (the 40–80 ms resize
+    // idle delays). A background process is eligible for App Nap, which
+    // coalesces those timers by up to seconds; hold a latency-critical
+    // activity for the run so a busy machine cannot time them out.
+    let reason = objc2_foundation::NSString::from_str("upleft view tests");
+    let _activity = objc2_foundation::NSProcessInfo::processInfo().beginActivityWithOptions_reason(
+        objc2_foundation::NSActivityOptions::UserInitiated | objc2_foundation::NSActivityOptions::LatencyCritical,
+        &reason,
+    );
     let filters: Vec<String> = std::env::args().skip(1).filter(|arg| !arg.starts_with('-')).collect();
     let mut tests: Vec<Test> = Vec::new();
     tests.extend(layout_filler_tests::TESTS);

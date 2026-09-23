@@ -54,7 +54,7 @@ fn semantic_update_is_deferred(mtm: MainThreadMarker) {
     replace_all(&storage, changed);
     view.update(parse(changed), &dirty(vec![NSRange::new(0, utf16_len(changed))]), true);
     expect!(view.pending_resize_request_for_testing() == Some(ContentResizeRequest::Semantic));
-    expect!(pump(|| view.pending_resize_request_for_testing().is_none()));
+    expect!(pump(|| view.pending_resize_request_for_testing().is_none()), "still pending: {:?}", view.pending_resize_request_for_testing());
 }
 
 fn line_count_update_is_deferred(mtm: MainThreadMarker) {
@@ -82,7 +82,7 @@ fn semantic_repair_stays_content_anchored_at_the_bottom(mtm: MainThreadMarker) {
     scroll_clip(&container, (settled_height - clip.bounds().size.height).max(0.0));
     for _ in 0..2 {
         view.update(parse(text), &dirty(vec![NSRange::new(utf16_len(text) - 1, 1)]), true);
-        expect!(pump(|| view.pending_resize_request_for_testing().is_none()));
+        expect!(pump(|| view.pending_resize_request_for_testing().is_none()), "still pending: {:?}", view.pending_resize_request_for_testing());
     }
     expect!(view.frame().size.height <= settled_height + 0.5);
 }
@@ -110,7 +110,7 @@ fn local_typing_keeps_visible_content_stable(mtm: MainThreadMarker) {
         expect!((anchor_screen_y() - before).abs() < 0.5);
         edit_offset += 1;
     }
-    expect!(pump(|| view.pending_resize_request_for_testing().is_none()));
+    expect!(pump(|| view.pending_resize_request_for_testing().is_none()), "still pending: {:?}", view.pending_resize_request_for_testing());
     expect!((anchor_screen_y() - before).abs() < 0.5);
 }
 
@@ -175,7 +175,7 @@ fn non_local_reparse_keeps_the_pixel_viewport(mtm: MainThreadMarker) {
     let before = screen_y();
     view.update(parse(&text), &dirty(vec![NSRange::new(40, 1)]), true);
     expect!((screen_y() - before).abs() < 0.5, "the commit moved the page");
-    expect!(pump(|| view.pending_resize_request_for_testing().is_none()));
+    expect!(pump(|| view.pending_resize_request_for_testing().is_none()), "still pending: {:?}", view.pending_resize_request_for_testing());
     expect!((screen_y() - before).abs() < 0.5, "the deferred resize moved the page");
 }
 
@@ -197,7 +197,7 @@ fn shared_storage_edit_keeps_the_pixel_viewport(mtm: MainThreadMarker) {
     );
     view.update(parse(&storage_string(&storage)), &dirty(vec![NSRange::new(edit_offset, 1)]), true);
     expect!((screen_y() - before).abs() < 0.5, "the shared-storage edit moved the page");
-    expect!(pump(|| view.pending_resize_request_for_testing().is_none()));
+    expect!(pump(|| view.pending_resize_request_for_testing().is_none()), "still pending: {:?}", view.pending_resize_request_for_testing());
     expect!((screen_y() - before).abs() < 0.5, "the deferred shared-storage repair moved the page");
 }
 
