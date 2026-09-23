@@ -27,30 +27,17 @@ use upleft_foundation::foundation_io;
 use upleft_foundation::url::FileUrl;
 use upleft_render::view::markdown_text_view::MarkdownTextView;
 use upleft_render::view::markdown_text_view_delegate::DocumentDrop;
+use upleft_swift_text::ns::foundation;
 
 use crate::app::document_window_controller::DocumentWindowController;
 use crate::assets::captured_image::InsertionEdit;
 use crate::assets::dropped_asset::{DroppedAsset, Insertion, Payload, WriteContents};
 
-/// An error that already carries its `localizedDescription`: what Swift's
-/// `presentOperationError(_:error:)` shows for a Foundation `NSError`.
-#[derive(Clone, Debug, PartialEq, Eq)]
-pub(crate) struct LocalizedError(pub(crate) String);
-
-impl LocalizedError {
-    /// `(error as NSError).localizedDescription`.
-    pub(crate) fn from_ns(error: &NSError) -> LocalizedError {
-        LocalizedError(error.localizedDescription().to_string())
-    }
+/// `error.localizedDescription`: what Swift's
+/// `presentOperationError(_:error:)` shows for a Foundation error.
+fn localized_description(error: &NSError) -> String {
+    foundation::to_string(&error.localizedDescription())
 }
-
-impl std::fmt::Display for LocalizedError {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        f.write_str(&self.0)
-    }
-}
-
-impl std::error::Error for LocalizedError {}
 
 impl DocumentWindowController {
     // MARK: - Drops (§7.1)
@@ -119,10 +106,10 @@ impl DocumentWindowController {
                 // file that appeared in between.
                 WriteContents::Data(data) => NSData::with_bytes(data)
                     .writeToURL_options_error(&target.to_nsurl(), NSDataWritingOptions::WithoutOverwriting)
-                    .map_err(|error| LocalizedError::from_ns(&error)),
+                    .map_err(|error| localized_description(&error)),
                 WriteContents::CopyOf(origin) => NSFileManager::defaultManager()
                     .copyItemAtURL_toURL_error(&origin.to_nsurl(), &target.to_nsurl())
-                    .map_err(|error| LocalizedError::from_ns(&error)),
+                    .map_err(|error| localized_description(&error)),
             });
             match outcome {
                 Ok(()) => created.push(target),

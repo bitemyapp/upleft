@@ -144,7 +144,10 @@ fn main() {
             "dropping_an_image_inserts_one_undoable_reference_at_the_drop_point",
             dropping_an_image_inserts_one_undoable_reference_at_the_drop_point,
         ),
-        ("dropping_pixels_writes_a_file_named_after_the_document", dropping_pixels_writes_a_file_named_after_the_document),
+        (
+            "dropping_pixels_writes_a_file_named_after_the_document",
+            dropping_pixels_writes_a_file_named_after_the_document,
+        ),
         (
             "a_never_saved_window_takes_files_but_not_loose_image_bytes",
             a_never_saved_window_takes_files_but_not_loose_image_bytes,

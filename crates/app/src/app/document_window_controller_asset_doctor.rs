@@ -51,11 +51,15 @@ impl DocumentWindowController {
             ));
             if decision != TrustDecision::Allow {
                 let weak: ObjcWeak<DocumentWindowController> = ObjcWeak::from(self);
-                self.authorize_local_effect(TrustEffect::ReadLocalAsset, &folder, move || {
-                    if let Some(this) = weak.load() {
-                        this.show_asset_doctor_panel();
-                    }
-                });
+                self.authorize_local_effect(
+                    TrustEffect::ReadLocalAsset,
+                    &folder,
+                    Rc::new(move || {
+                        if let Some(this) = weak.load() {
+                            this.show_asset_doctor_panel();
+                        }
+                    }),
+                );
                 return;
             }
         }
@@ -113,10 +117,14 @@ impl DocumentWindowController {
         }
         let Some(url) = diagnostic.reference.url.clone() else { return };
         let target = url.clone();
-        self.authorize_local_effect(TrustEffect::LaunchPathOrEditor, &target, move || {
-            let urls = NSArray::from_retained_slice(&[url.to_nsurl()]);
-            NSWorkspace::sharedWorkspace().activateFileViewerSelectingURLs(&urls);
-        });
+        self.authorize_local_effect(
+            TrustEffect::LaunchPathOrEditor,
+            &target,
+            Rc::new(move || {
+                let urls = NSArray::from_retained_slice(&[url.to_nsurl()]);
+                NSWorkspace::sharedWorkspace().activateFileViewerSelectingURLs(&urls);
+            }),
+        );
     }
 
     /// `assetDoctorView(_:didRequestProposal:for:)`.

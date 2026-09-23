@@ -19,14 +19,13 @@ use std::ptr::NonNull;
 
 use objc2::rc::Retained;
 use objc2::runtime::{AnyObject, ProtocolObject};
-use objc2::{AllocAnyThread, Message};
+use objc2::{AllocAnyThread, MainThreadMarker, Message};
 use objc2_app_kit::{NSSharingContentScope, NSSharingService, NSSharingServicePicker, NSView, NSWindow};
 use objc2_foundation::{NSArray, NSRect, NSRectEdge, NSURL};
 use upleft_foundation::url::FileUrl;
 use upleft_render::appkit_compat::{RectExt, rect};
 
 use crate::app::document_window_controller::DocumentWindowController;
-use crate::app::document_window_controller_asset_insertion::LocalizedError;
 use crate::app::document_window_controller_support::PrintRenderer;
 use crate::export::document_share::{DocumentShareSource, DocumentShareStaging};
 use crate::panels::appkit_support::object;
@@ -70,7 +69,7 @@ impl DocumentWindowController {
                 // Never translate an I/O failure into "nothing happened": the
                 // reader chose Share and would otherwise be left watching a
                 // menu close on silence.
-                self.present_operation_error("Couldn\u{2019}t prepare this document for sharing", &*error);
+                self.present_operation_error("Couldn\u{2019}t prepare this document for sharing", &error.to_string());
                 return;
             }
         };
@@ -90,14 +89,16 @@ impl DocumentWindowController {
         ) {
             Ok(url) => url,
             Err(error) => {
-                self.present_operation_error("Couldn\u{2019}t prepare this document for sharing", &*error);
+                self.present_operation_error("Couldn\u{2019}t prepare this document for sharing", &error.to_string());
                 return;
             }
         };
-        if !PrintRenderer::write_pdf(&exporter.html(), &url) {
+        if !PrintRenderer::write_pdf(&exporter.html(), &url.to_nsurl(), MainThreadMarker::from(self)) {
+            // `NSError(domain: "Upleft.Export", code: 1, userInfo:
+            // [NSLocalizedDescriptionKey: …])`: its description is the text.
             self.present_operation_error(
                 "Couldn\u{2019}t prepare this document for sharing",
-                &LocalizedError("The PDF renderer could not produce a file to share.".to_owned()),
+                "The PDF renderer could not produce a file to share.",
             );
             return;
         }

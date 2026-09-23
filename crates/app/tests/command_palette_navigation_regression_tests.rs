@@ -102,8 +102,12 @@ fn successful_workspace_open_selects_heading_in_destination(via_symlink: bool) {
     if via_symlink {
         std::os::unix::fs::symlink(destination.path(), target.path()).unwrap();
     }
-    let result =
-        QuickOpenResult::new("heading", QuickOpenProviderKind::Symbol, "Target", QuickOpenAction::OpenAt(target, range));
+    let result = QuickOpenResult::new(
+        "heading",
+        QuickOpenProviderKind::Symbol,
+        "Target",
+        QuickOpenAction::OpenAt(target, range),
+    );
     controller.command_palette_did_choose(&palette(), &result);
     assert_eq!(controller.markdown_document().url(), Some(destination.resolving_symlinks_in_path()));
     assert_eq!(controller.container_text_view().source_selected_range(), range);

@@ -25,7 +25,6 @@ use upleft_swift_text as swift;
 
 use crate::app::document_window_controller::{DocumentWindowController, DocumentWindowControllerDelegates};
 use crate::app::document_window_controller_asset_doctor::make_first_responder;
-use crate::app::document_window_controller_asset_insertion::LocalizedError;
 use crate::panels::appkit_support::set_label;
 use crate::panels::panel_chrome::panel_title;
 use crate::panels::review_panel_view::{ReviewPanelView, ReviewPanelViewDelegate};
@@ -49,12 +48,12 @@ pub struct ReviewState {
 }
 
 /// `error.localizedDescription` for what a sidecar store throws.
-fn review_error(error: &ReviewSidecarError) -> LocalizedError {
-    LocalizedError(match error {
+fn review_error(error: &ReviewSidecarError) -> String {
+    match error {
         ReviewSidecarError::FileReadTooLarge => FoundationError::cocoa(263).description,
         ReviewSidecarError::Foundation(error) => error.description.clone(),
         ReviewSidecarError::Decoding(error) => error.localized_description().to_owned(),
-    })
+    }
 }
 
 impl DocumentWindowController {
