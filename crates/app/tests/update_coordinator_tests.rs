@@ -1093,8 +1093,8 @@ fn main() {
     let skipped = [
         Skipped { name: "UpdatePanelFooterTests/rebuildsAfterCheckIntoAvailableState (footer view)", reason: "UpdatePanelFooter is a view (UI port); the coordinator part runs above" },
         Skipped { name: "UpdatePanelTransitionTests/rendersEveryUpdaterPhaseWithoutThrowing (panel renders)", reason: "UpdatePanelView is a view (UI port); the coordinator part runs above" },
-        Skipped { name: "UpdateBuildContractTests/sparkleIsImportedOnlyByTheHostApp", reason: "checks the Swift source tree's imports; Sparkle is not linked into Upleft yet" },
-        Skipped { name: "UpdateBuildContractTests/packageAndXcodeProjectDeclareSparkleExactly", reason: "checks Upleft's Package.swift and project.yml" },
+        Skipped { name: "UpdateBuildContractTests/sparkleIsImportedOnlyByTheHostApp", reason: "ported in sparkle_bridge_tests" },
+        Skipped { name: "UpdateBuildContractTests/packageAndXcodeProjectDeclareSparkleExactly", reason: "ported in sparkle_bridge_tests" },
         Skipped { name: "UpdateNotesSummaryTests/dropsTheLeadingTitle", reason: panels },
         Skipped { name: "UpdateNotesSummaryTests/stopsWellShortOfAWallOfText", reason: panels },
         Skipped { name: "UpdateNotesSummaryTests/handlesNoNotesAtAll", reason: panels },

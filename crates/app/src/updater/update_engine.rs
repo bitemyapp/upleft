@@ -94,7 +94,12 @@ pub trait SpuUpdater {
 /// userDriver, delegate: notifier)`. It answers `None` when the framework is
 /// not loaded in this process (see [`super::sparkle::make_updater`]).
 pub type SpuUpdaterFactory = Box<
-    dyn Fn(&NSBundle, &NSBundle, &Rc<DownrightUpdateDriver>, &Rc<BackgroundDownloadNotifier>) -> Option<Rc<dyn SpuUpdater>>,
+    dyn Fn(
+        &NSBundle,
+        &NSBundle,
+        &Rc<DownrightUpdateDriver>,
+        &Rc<BackgroundDownloadNotifier>,
+    ) -> Option<Rc<dyn SpuUpdater>>,
 >;
 
 thread_local! {

@@ -88,7 +88,7 @@ pub fn is_available() -> bool {
 /// answers `None`, so installing it is always safe.
 pub fn install(_mtm: MainThreadMarker) {
     set_spu_updater_factory(Some(Box::new(|host, application, driver, notifier| {
-        make_updater(host, application, driver, notifier)
+        make_updater(host, application, driver, notifier).map(|updater| updater as Rc<dyn SpuUpdater>)
     })));
 }
 
@@ -105,7 +105,7 @@ pub fn make_updater(
     application_bundle: &NSBundle,
     driver: &Rc<DownrightUpdateDriver>,
     notifier: &Rc<BackgroundDownloadNotifier>,
-) -> Option<Rc<dyn SpuUpdater>> {
+) -> Option<Rc<SparkleUpdater>> {
     let mtm = MainThreadMarker::new()?;
     if !is_available() {
         return None;
@@ -664,14 +664,11 @@ define_class!(
         }
 
         #[unsafe(method(showUpdateInstalledAndRelaunched:acknowledgement:))]
-        fn show_update_installed_and_relaunched(
-            &self,
-            relaunched: bool,
-            acknowledgement: &DynBlock<dyn Fn()>,
-        ) {
+        fn show_update_installed_and_relaunched(&self, relaunched: bool, acknowledgement: &DynBlock<dyn Fn()>) {
             let acknowledgement = acknowledgement.copy();
             on_main(self, move |this| {
-                this.driver().show_update_installed_and_relaunched(relaunched, Box::new(move || acknowledgement.call(())));
+                this.driver()
+                    .show_update_installed_and_relaunched(relaunched, Box::new(move || acknowledgement.call(())));
             });
         }
 
@@ -712,7 +709,11 @@ fn permission_request(request: &SPUUpdatePermissionRequest) -> SpuUpdatePermissi
         entry.objectForKey(name).map(|text| text.to_string()).unwrap_or_default()
     };
     SpuUpdatePermissionRequest {
-        system_profile: request.systemProfile().iter().map(|entry| (text(&entry, &key), text(&entry, &value))).collect(),
+        system_profile: request
+            .systemProfile()
+            .iter()
+            .map(|entry| (text(&entry, &key), text(&entry, &value)))
+            .collect(),
     }
 }
 
