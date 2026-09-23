@@ -222,16 +222,17 @@ pub mod foundation {
         }
     }
 
+    /// `String(ns)`: the string's UTF-16 units, lone surrogates repaired.
+    ///
+    /// Read through CoreFoundation (NSString is toll-free bridged to
+    /// CFString) rather than `-getCharacters:range:`, whose method encoding
+    /// objc2's debug checks reject on Swift-implemented NSString subclasses.
     pub fn to_string(s: &NSString) -> String {
-        let length = s.length();
-        let mut units = vec![0u16; length];
+        let cf: &objc2_core_foundation::CFString = unsafe { &*(s as *const NSString as *const objc2_core_foundation::CFString) };
+        let length = cf.length();
+        let mut units = vec![0u16; length as usize];
         if length > 0 {
-            unsafe {
-                s.getCharacters_range(
-                    std::ptr::NonNull::new(units.as_mut_ptr()).unwrap(),
-                    FRange::new(0, length),
-                );
-            }
+            unsafe { cf.characters(objc2_core_foundation::CFRange::new(0, length), units.as_mut_ptr()) };
         }
         super::string_from_utf16(&units)
     }

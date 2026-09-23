@@ -32,15 +32,6 @@ fn prefix_while(s: &str, mut predicate: impl FnMut(&str) -> bool) -> &str {
     &s[..end]
 }
 
-/// `ListSortOrder.rawValue` (the Swift enum is `String`-backed).
-fn sort_order_raw_value(order: ListSortOrder) -> &'static str {
-    match order {
-        ListSortOrder::Alphabetical => "alphabetical",
-        ListSortOrder::ReverseAlphabetical => "reverseAlphabetical",
-        ListSortOrder::UncheckedFirst => "uncheckedFirst",
-        ListSortOrder::CheckedFirst => "checkedFirst",
-    }
-}
 
 #[inline]
 fn contains_index<T>(items: &[T], index: isize) -> bool {
@@ -513,7 +504,7 @@ impl Restructure {
         if swift_text::str_eq(&result, &text.substring(span)) {
             return Vec::new();
         }
-        vec![TextEdit::new(span, result, format!("Sort list ({})", sort_order_raw_value(order)), None)]
+        vec![TextEdit::new(span, result, format!("Sort list ({})", order.raw_value()), None)]
     }
 
     fn rank(checked: Option<bool>, unchecked_first: bool) -> isize {

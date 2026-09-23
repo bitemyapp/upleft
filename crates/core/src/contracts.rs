@@ -266,6 +266,17 @@ pub enum ListSortOrder {
     CheckedFirst,
 }
 
+impl ListSortOrder {
+    pub fn raw_value(&self) -> &'static str {
+        match self {
+            ListSortOrder::Alphabetical => "alphabetical",
+            ListSortOrder::ReverseAlphabetical => "reverseAlphabetical",
+            ListSortOrder::UncheckedFirst => "uncheckedFirst",
+            ListSortOrder::CheckedFirst => "checkedFirst",
+        }
+    }
+}
+
 // MARK: - Reading metrics (§9.6)
 
 #[derive(Clone, Copy, Debug, PartialEq)]
