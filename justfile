@@ -96,3 +96,10 @@ upleft-app: rebrand
 panel-bench *args: corpus
     cargo build --release -p upleft-conformance
     python3 scripts/panel-bench-compare.py {{args}}
+
+# Compare the document window's timings (open to first frame, mode switch)
+# between downright-app-oracle and upleft-oracle; fails on a slower stage.
+# Windows are off-screen and never activated.
+app-window-bench *args: corpus
+    cargo build --release -p upleft-conformance
+    python3 scripts/app-window-bench-compare.py {{args}}
