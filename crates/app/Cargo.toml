@@ -28,10 +28,11 @@ objc2-foundation = { workspace = true, features = [
     "NSValue", "NSXMLDocument", "NSXMLElement", "NSXMLNode", "NSXMLParser", "block2",
 ] }
 objc2-app-kit = { workspace = true, features = [
-    "NSAppearance", "NSApplication", "NSAttributedString", "NSColor", "NSFont", "NSImage", "NSParagraphStyle",
-    "NSPasteboard", "NSResponder", "NSSpeechSynthesizer", "NSText", "NSTextStorage", "NSWorkspace", "block2",
-    "objc2-core-foundation",
+    "NSAppearance", "NSApplication", "NSAttributedString", "NSColor", "NSEvent", "NSFont", "NSImage", "NSParagraphStyle",
+    "NSPasteboard", "NSResponder", "NSRunningApplication", "NSSpeechSynthesizer", "NSText", "NSTextStorage", "NSWorkspace", "block2",
+    "objc2-core-foundation", "objc2-uniform-type-identifiers",
 ] }
+objc2-avf-audio = { version = "0.3.2", default-features = false, features = ["std", "AVSpeechSynthesis"] }
 objc2-uniform-type-identifiers = { version = "0.3.2", default-features = false, features = ["std", "UTType", "UTCoreTypes"] }
 objc2-core-foundation = { workspace = true, features = ["CFArray", "CFBase", "CFDate", "CFRunLoop", "CFString", "CFURL"] }
 
