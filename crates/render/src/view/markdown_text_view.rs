@@ -420,9 +420,11 @@ define_class!(
             self.draw_drop_insertion_caret(dirty_rect);
         }
 
-        #[unsafe(method(drawBackgroundInRect:))]
+        // Swift's `drawBackground(in:)` is NSTextView's `drawViewBackgroundInRect:`;
+        // there is no `drawBackgroundInRect:` for AppKit to call.
+        #[unsafe(method(drawViewBackgroundInRect:))]
         fn __draw_background(&self, rect: NSRect) {
-            let _: () = unsafe { msg_send![super(self), drawBackgroundInRect: rect] };
+            let _: () = unsafe { msg_send![super(self), drawViewBackgroundInRect: rect] };
             self.draw_scoped_source_background(rect);
         }
 
