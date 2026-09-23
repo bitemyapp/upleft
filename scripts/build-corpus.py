@@ -9,6 +9,8 @@ submodule revisions always produce the same files.
                that contain no interpolation — the documents its own tests
                parse and render
   agent/       drbench's agentDocument(lines:) at several sizes
+  math/        every $…$, $$…$$, \\(…\\) and \\[…\\] formula in the documents above,
+               as .tex inputs for the math suites (first line: inline|display)
 """
 
 import os
@@ -161,6 +163,106 @@ def agent_document(target_lines):
     return "".join(out)
 
 
+def math_matches(text):
+    """MarkdownCore's MathScanner.matches over one run of text: (content, is_display)."""
+    out = []
+    i, end = 0, len(text)
+    at = lambda k: text[k] if 0 <= k < end else None
+    while i < end:
+        ch = text[i]
+        if ch == "\\":
+            nxt = at(i + 1)
+            if nxt in ("(", "["):
+                closer = ")" if nxt == "(" else "]"
+                j, found = i + 2, None
+                while j + 1 < end:
+                    if text[j] == "\\" and text[j + 1] == closer:
+                        count, p = 0, j
+                        while p >= i + 2 and text[p] == "\\":
+                            count += 1
+                            p -= 1
+                        if count % 2 == 1:
+                            found = j
+                            break
+                    j += 1
+                if found is not None and found > i + 2:
+                    out.append((text[i + 2:found], nxt == "["))
+                    i = found + 2
+                    continue
+            i += 2
+            continue
+        if ch == "$" and not (i > 0 and text[i - 1] == "\\") and not (at(i - 1) or "").isdigit():
+            display = at(i + 1) == "$"
+            width = 2 if display else 1
+            j, match = i + width, None
+            while j < end:
+                if text[j] == "\\":
+                    j += 2
+                    continue
+                if text[j] == "$":
+                    if display and at(j + 1) != "$":
+                        j += 1
+                        continue
+                    if not display and at(j + 1) == "$":
+                        break
+                    body = text[i + width:j]
+                    close_end = j + width
+                    if display:
+                        plausible = body.strip() != ""
+                    else:
+                        plausible = (
+                            body != "" and "\n" not in body and not body[0].isspace() and not body[-1].isspace()
+                            and not all(c.isdigit() or c in ".," for c in body)
+                            and not (at(close_end) or "").isdigit()
+                        )
+                    if plausible:
+                        match = (body, display, close_end)
+                    break
+                j += 1
+            if match:
+                out.append((match[0], match[1]))
+                i = match[2]
+                continue
+        i += 1
+    return out
+
+
+def math_formulas():
+    """The formulas in the Markdown corpus, one .tex per (style, LaTeX): code
+    fences and code spans stripped, inline math per line, `$$` blocks per paragraph."""
+    seen = set()
+    number = 0
+    for directory, subdirectories, files in os.walk(OUT):
+        subdirectories.sort()
+        for name in sorted(files):
+            if not name.endswith(".md"):
+                continue
+            lines, fence = [], None
+            for line in open(os.path.join(directory, name), encoding="utf-8").read().split("\n"):
+                stripped = line.lstrip()
+                if fence is None and (stripped.startswith("```") or stripped.startswith("~~~")):
+                    fence = stripped[:3]
+                    lines.append("")
+                    continue
+                if fence is not None:
+                    if stripped.startswith(fence):
+                        fence = None
+                    lines.append("")
+                    continue
+                lines.append(re.sub(r"(`+)(.+?)\1", "", line))
+            found = [m for line in lines for m in math_matches(line)]
+            for paragraph in "\n".join(lines).split("\n\n"):
+                if "\n" in paragraph.strip():
+                    found.extend(m for m in math_matches(paragraph.strip()) if m[1])
+            for latex, display in found:
+                if (latex, display) in seen:
+                    continue
+                seen.add((latex, display))
+                number += 1
+                style = "display" if display else "inline"
+                write(f"math/formula-{number:04d}-{style}.tex", f"{style}\n{latex}")
+
+
 def main():
     if not os.path.exists(os.path.join(VENDOR, "downright", "Package.swift")):
         sys.exit("vendor/downright is missing; run `git submodule update --init`")
@@ -171,6 +273,7 @@ def main():
     test_fixtures()
     for lines in (40, 400, 5000):
         write(f"agent/agent-{lines}.md", agent_document(lines))
+    math_formulas()
     count = sum(len(files) for _, _, files in os.walk(OUT))
     print(f"corpus/generated: {count} documents")
 

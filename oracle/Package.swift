@@ -12,6 +12,7 @@ let package = Package(
         .package(name: "downright", path: "../vendor/downright"),
         .package(url: "https://github.com/apple/swift-markdown.git", revision: "27b7fc1a19068bcea3d2072db0ce86360d1400ed"),
         .package(url: "https://github.com/lukilabs/elk-swift", exact: "1.0.2"),
+        .package(path: "../vendor/downright/Vendor/SwiftMath"),
     ],
     targets: [
         .executableTarget(
@@ -21,6 +22,7 @@ let package = Package(
                 .product(name: "MarkdownRender", package: "downright"),
                 .product(name: "Markdown", package: "swift-markdown"),
                 .product(name: "ElkSwift", package: "elk-swift"),
+                .product(name: "SwiftMath", package: "SwiftMath"),
             ],
             swiftSettings: [.swiftLanguageMode(.v5)]
         ),

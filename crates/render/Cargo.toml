@@ -11,8 +11,7 @@ block2.workspace = true
 dispatch2 = "0.3"
 libc = "0.2"
 objc2.workspace = true
-unicode-normalization = "0.1.24"
-unicode-segmentation = "1.13"
+upleft-swift-text.workspace = true
 objc2-foundation = { workspace = true, features = [
     "NSArray",
     "NSData",

@@ -289,6 +289,9 @@ fn symbol_link_contains_uses_characters() {
     assert!(swift_contains_character("a`b", '`'));
     assert!(!swift_contains_character("\u{0600}`", '`'));
     assert!(!swift_contains_character("`\u{200D}", '`'));
+    // Swift 6.4: U+1FEF GREEK VARIA is canonically equivalent to a backtick,
+    // so `"a\u{1FEF}b".contains("`")` is true.
+    assert!(swift_contains_character("a\u{1FEF}b", '`'));
 }
 
 // MARK: - SymbolLinkTests

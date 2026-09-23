@@ -1,0 +1,76 @@
+[package]
+name = "upleft-math"
+description = "SwiftMath (as vendored by Downright) and Downright's math rendering, ported to Rust"
+version.workspace = true
+edition.workspace = true
+license = "MIT"
+publish.workspace = true
+
+[dependencies]
+block2.workspace = true
+objc2.workspace = true
+objc2-foundation = { workspace = true, features = [
+    "NSArray",
+    "NSAttributedString",
+    "NSCharacterSet",
+    "NSData",
+    "NSDictionary",
+    "NSEnumerator",
+    "NSError",
+    "NSGeometry",
+    "NSObjCRuntime",
+    "NSObject",
+    "NSRange",
+    "NSScanner",
+    "NSString",
+    "NSThread",
+    "NSURL",
+    "NSValue",
+] }
+objc2-app-kit = { workspace = true, features = [
+    "block2",
+    "objc2-core-foundation",
+    "objc2-core-graphics",
+    "NSAttributedString",
+    "NSBezierPath",
+    "NSBitmapImageRep",
+    "NSColor",
+    "NSColorSpace",
+    "NSFont",
+    "NSGraphics",
+    "NSGraphicsContext",
+    "NSImage",
+    "NSImageRep",
+    "NSTextAttachment",
+] }
+objc2-core-foundation = { workspace = true, features = [
+    "CFArray",
+    "CFAttributedString",
+    "CFCGTypes",
+    "CFData",
+    "CFDictionary",
+    "CFError",
+    "CFNumber",
+    "CFString",
+    "CFURL",
+] }
+objc2-core-graphics = { workspace = true, features = [
+    "CGBitmapContext",
+    "CGColor",
+    "CGColorSpace",
+    "CGContext",
+    "CGDataProvider",
+    "CGFont",
+    "CGGeometry",
+    "CGImage",
+] }
+objc2-core-text = { workspace = true, features = [
+    "objc2-core-graphics",
+    "CTFont",
+    "CTFontDescriptor",
+    "CTFontManager",
+    "CTLine",
+    "CTRun",
+    "CTStringAttributes",
+] }
+upleft-swift-text.workspace = true
