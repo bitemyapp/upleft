@@ -8,6 +8,7 @@
 
 pub mod downright_update_driver;
 pub mod release_watch;
+pub mod sparkle;
 pub mod update_coordinator;
 pub mod update_engine;
 pub mod update_metadata;

@@ -12,6 +12,53 @@ use objc2_foundation::{NSArray, NSString};
 use crate::app::document_window_controller::DocumentWindowController;
 
 impl DocumentWindowController {
+    /// `updateBreadcrumbAndGutter()`.
+    pub fn update_breadcrumb_and_gutter(&self) {
+        // PORT: DocumentWindowController+Actions.swift
+    }
+
+    /// `beginActivity()`.
+    pub fn begin_activity(&self) {
+        // PORT: DocumentWindowController+Actions.swift
+    }
+
+    /// `endActivity()`.
+    pub fn end_activity(&self) {
+        // PORT: DocumentWindowController+Actions.swift
+    }
+
+    /// `var presentationSegment`.
+    pub fn presentation_segment(&self) -> isize {
+        // PORT: DocumentWindowController+Actions.swift
+        0
+    }
+
+    /// `var documentLineCount`.
+    pub fn document_line_count(&self) -> isize {
+        // PORT: DocumentWindowController+Actions.swift
+        0
+    }
+
+    /// `setPresentationSegment(_:)`.
+    pub fn set_presentation_segment(&self, _segment: isize) {
+        // PORT: DocumentWindowController+Actions.swift
+    }
+
+    /// `changePresentation(to:)`.
+    pub fn change_presentation(&self, _selected_segment: isize) {
+        // PORT: DocumentWindowController+Actions.swift
+    }
+
+    /// `refreshSourceFocusToolbar()`.
+    pub fn refresh_source_focus_toolbar(&self) {
+        // PORT: DocumentWindowController+Actions.swift
+    }
+
+    /// `refreshToolbarSelectionState()`.
+    pub fn refresh_toolbar_selection_state(&self) {
+        // PORT: DocumentWindowController+Actions.swift
+    }
+
     /// `static let modeItem = NSToolbarItem.Identifier("presentation-mode")`.
     pub const MODE_ITEM: &'static str = "presentation-mode";
 

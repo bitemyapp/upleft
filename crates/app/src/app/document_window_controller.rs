@@ -131,7 +131,20 @@
 //! | `sharingServicePicker:didChooseSharingService:` | `sharing_service_picker_did_choose(&NSSharingServicePicker, Option<&NSSharingService>)` | `+Share` |
 //! | `sharingService:sourceWindowForShareItems:sharingContentScope:` | `sharing_service_source_window(&NSSharingService, &NSArray, NonNull<NSSharingContentScope>) -> Option<Retained<NSWindow>>` | `+Share` |
 
+mod construction;
+mod derived_ui;
+mod find;
+mod floating;
+mod lifecycle;
+mod navigation;
+mod opening;
+mod presentation;
 mod views;
+
+/// For the extension modules: a `Send` stand-in for `[weak self]`
+/// (`handle()`), resolved on the main thread.
+#[allow(unused_imports)]
+pub(crate) use construction::ControllerHandle;
 
 use std::cell::{Cell, OnceCell, RefCell};
 use std::ptr::NonNull;
@@ -141,7 +154,7 @@ use std::sync::{Arc, Mutex};
 use dispatch2::{DispatchQueue, DispatchRetained};
 use objc2::rc::{Retained, Weak as ObjcWeak};
 use objc2::runtime::{AnyObject, NSObjectProtocol, ProtocolObject};
-use objc2::{DefinedClass, MainThreadMarker, MainThreadOnly, Message, define_class};
+use objc2::{DefinedClass, MainThreadMarker, MainThreadOnly, define_class};
 use objc2_app_kit::{
     NSAlert, NSMenu, NSMenuDelegate, NSMenuItem, NSMenuItemValidation, NSPasteboard, NSResponder,
     NSServicesMenuRequestor, NSSharingContentScope, NSSharingService, NSSharingServiceDelegate,
@@ -264,6 +277,9 @@ impl DocumentWindowControllerDelegates {
 /// Swift's stored properties, in declaration order, then the extensions'
 /// associated-object state.
 pub struct DocumentWindowControllerIvars {
+    /// Key of this controller in the main-thread registry behind
+    /// [`ControllerHandle`].
+    id: usize,
     markdown_document: Retained<MarkdownDocument>,
     mode: Cell<RenderMode>,
     on_close: RefCell<Option<Rc<dyn Fn()>>>,
@@ -595,11 +611,7 @@ define_class!(
 // MARK: - Accessors
 
 impl DocumentWindowController {
-    fn mtm(&self) -> MainThreadMarker {
-        self.mtm_marker()
-    }
-
-    fn mtm_marker(&self) -> MainThreadMarker {
+    pub(crate) fn mtm(&self) -> MainThreadMarker {
         MainThreadMarker::from(self)
     }
 
@@ -931,10 +943,43 @@ impl DocumentWindowController {
         *self.ivars().bar_stack.borrow_mut() = stack;
     }
 
-    /// `var scanner`. The setter (`set_scanner`, running Swift's `didSet`)
-    /// is with the sibling-search code.
+    /// `var scanner`.
     pub fn scanner(&self) -> Option<Rc<SiblingScanner>> {
         self.ivars().scanner.borrow().clone()
+    }
+
+    /// `scanner = …`, running its `didSet`: rewire `onChange` to the new
+    /// scanner (identity is the `Rc`), then retire sibling-search work tied
+    /// to the old one.
+    pub fn set_scanner(&self, scanner: Option<Rc<SiblingScanner>>) {
+        let old_value = self.ivars().scanner.replace(scanner.clone());
+        let same = match (&old_value, &scanner) {
+            (Some(old), Some(new)) => Rc::ptr_eq(old, new),
+            (None, None) => true,
+            _ => false,
+        };
+        if same {
+            return;
+        }
+        if let Some(old_value) = &old_value {
+            old_value.set_on_change(None::<fn()>);
+        }
+        let scanner_id = scanner.as_ref().map(|scanner| Rc::as_ptr(scanner) as usize);
+        if let Some(scanner) = &scanner {
+            let weak = ObjcWeak::new(self);
+            scanner.set_on_change(Some(move || {
+                let weak = weak.clone();
+                // `Task { @MainActor [weak self] in … }`
+                upleft_render::appkit_compat::main_async(move || {
+                    let Some(this) = weak.load() else { return };
+                    if this.scanner().map(|scanner| Rc::as_ptr(&scanner) as usize) != scanner_id {
+                        return;
+                    }
+                    this.sibling_search_scanner_did_change();
+                });
+            }));
+        }
+        self.sibling_search_scanner_did_change();
     }
 
     /// `var pathResolver`.
@@ -1121,71 +1166,5 @@ impl DocumentWindowController {
     /// `var currentFindQuery`.
     pub fn current_find_query(&self) -> FindQuery {
         self.find_session().borrow().query().clone()
-    }
-}
-
-// MARK: - Window delegate
-
-impl DocumentWindowController {
-    pub fn window_did_become_key(&self, _notification: &NSNotification) {
-        // PORT: body (phase 2).
-    }
-
-    /// Ordinary app switching is not dismissal. The surface keeps its state
-    /// while another document is active, and its responder is restored when
-    /// this window becomes key again.
-    pub fn window_did_resign_key(&self, _notification: &NSNotification) {
-        // Intentionally empty. Explicit close, Esc, the ring, or an outside
-        // click owns dismissal; Cmd-Tab must not destroy work-in-progress.
-    }
-
-    pub fn window_will_return_undo_manager(&self, _window: &NSWindow) -> Option<Retained<NSUndoManager>> {
-        let manager: &NSUndoManager = self.markdown_document().undo_manager();
-        Some(manager.retain())
-    }
-
-    pub fn window_did_resize(&self, _notification: &NSNotification) {
-        // PORT: body (phase 2).
-    }
-
-    pub fn window_did_enter_full_screen(&self, _notification: &NSNotification) {
-        // PORT: body (phase 2).
-    }
-
-    pub fn window_did_exit_full_screen(&self, _notification: &NSNotification) {
-        // PORT: body (phase 2).
-    }
-
-    pub fn window_did_deminiaturize(&self, _notification: &NSNotification) {
-        // PORT: body (phase 2).
-    }
-
-    pub fn window_did_change_backing_properties(&self, _notification: &NSNotification) {
-        // PORT: body (phase 2).
-    }
-
-    pub fn window_should_close(&self, _sender: &NSWindow) -> bool {
-        // PORT: body (phase 2).
-        true
-    }
-
-    pub fn window_will_close(&self, _notification: &NSNotification) {
-        // PORT: body (phase 2).
-    }
-
-    pub fn window_did_change_occlusion_state(&self, _notification: &NSNotification) {
-        // PORT: body (phase 2).
-    }
-
-    fn preferences_did_change(&self) {
-        // PORT: body (phase 2).
-    }
-
-    fn accessibility_display_options_did_change(&self) {
-        // PORT: body (phase 2).
-    }
-
-    fn auxiliary_window_will_close(&self, _notification: &NSNotification) {
-        // PORT: body (phase 2).
     }
 }

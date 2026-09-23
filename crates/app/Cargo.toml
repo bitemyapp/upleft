@@ -120,7 +120,7 @@ objc2-app-kit = { workspace = true, features = [
     "objc2-core-foundation", "objc2-uniform-type-identifiers", "objc2-core-graphics", "objc2-quartz-core",
     "objc2-core-text",
 ] }
-objc2-quartz-core = { version = "0.3.2", default-features = false, features = ["std", "CAAnimation", "CABase", "CADisplayLink", "CAFrameRateRange", "CAGradientLayer", "CALayer", "CAMediaTiming", "CAMediaTimingFunction", "CAReplicatorLayer", "CAScrollLayer", "CAShapeLayer", "CATextLayer", "CATransaction", "CATransform3D", "CATransformLayer", "CAValueFunction", "objc2-core-foundation", "objc2-core-graphics"] }
+objc2-quartz-core = { version = "0.3.2", default-features = false, features = ["std", "CAAnimation", "CABase", "CADisplayLink", "CAFrameRateRange", "CAGradientLayer", "CALayer", "CAMediaTiming", "CAMediaTimingFunction", "CAReplicatorLayer", "CAScrollLayer", "CAShapeLayer", "CATextLayer", "CATransaction", "CATransform3D", "CATransformLayer", "CAValueFunction", "objc2-core-foundation", "objc2-core-graphics", "block2"] }
 objc2-core-text = { workspace = true, features = ["CTFont", "CTFontDescriptor", "objc2-core-graphics"] }
 objc2-avf-audio = { version = "0.3.2", default-features = false, features = ["std", "AVSpeechSynthesis"] }
 objc2-uniform-type-identifiers = { version = "0.3.2", default-features = false, features = ["std", "UTType", "UTCoreTypes"] }
@@ -141,6 +141,10 @@ objc2-foundation = { workspace = true, features = ["NSURLProtocol"] }
 # these tests own the main thread (no libtest harness) and run its run loop.
 [[test]]
 name = "update_coordinator_tests"
+harness = false
+
+[[test]]
+name = "sparkle_bridge_tests"
 harness = false
 
 [[test]]
@@ -241,7 +245,6 @@ harness = false
 [[test]]
 name = "scroll_zoom_tests"
 harness = false
-
 [[test]]
 name = "settings_pane_tests"
 harness = false
@@ -292,6 +295,34 @@ harness = false
 
 [[test]]
 name = "toolbar_controls_tests"
+harness = false
+
+# The start window (`App/StartWindowController.swift`): the `@MainActor`
+# StartWindowTests and RecentRowSubtitleTests, on the main thread
+# (tests/main_thread/mod.rs), in a sandboxed home.
+[[test]]
+name = "start_window_tests_window"
+harness = false
+
+# `DocumentWindowController` (`App/DocumentWindowController.swift` and its
+# +Support/+Trust/+Speech/+CommandLine/+ContinuityCamera extensions): the
+# `@MainActor` suites that build the controller, on the main thread
+# (tests/main_thread/mod.rs), in a sandboxed home
+# (tests/document_window_support/mod.rs); no window is ordered in.
+[[test]]
+name = "window_chrome_tests_document"
+harness = false
+
+[[test]]
+name = "document_chrome_layout_tests"
+harness = false
+
+[[test]]
+name = "autosave_lifecycle_tests_window"
+harness = false
+
+[[test]]
+name = "export_snapshot_tests"
 harness = false
 
 # Window-level cases of the DocumentWindowController panel extensions
