@@ -1,10 +1,11 @@
 //! Mirrors `oracle/Sources/downright-oracle/MathDump.swift`.
 //!
-//!   upleft-oracle math      <file.tex> <out.png>
-//!   upleft-oracle math-tree <file.tex> <out.json>
+//!   upleft-oracle math      <file.tex> <out.png>  [--theme NAME] [--dark]
+//!   upleft-oracle math-tree <file.tex> <out.json> [--theme NAME] [--dark]
 //!
 //! A `.tex` input's first line is `inline` or `display`; the rest is the
-//! LaTeX. Both use Paper Light in the light appearance: `inline` is
+//! LaTeX. Both build the style sheet for the theme and appearance (Paper
+//! Light, light by default) as `decorate` does. `inline` is
 //! `InlineMathDisplay`'s call (`mathPointSize`, no padding), `display` is
 //! `MathFragment`'s (`mathPointSize * 1.12`, 8pt padding).
 
@@ -14,8 +15,7 @@ use std::ptr::NonNull;
 use objc2::AnyThread;
 use objc2::rc::Retained;
 use objc2_app_kit::{
-    NSBitmapImageFileType, NSBitmapImageRep, NSColor, NSColorSpace, NSColorType, NSFont,
-    NSFontDescriptorSystemDesignSerif, NSFontWeightRegular, NSGraphicsContext, NSImage,
+    NSBitmapImageFileType, NSBitmapImageRep, NSColor, NSColorType, NSGraphicsContext, NSImage,
 };
 use objc2_core_foundation::{
     CFArray, CFDictionary, CFRange, CFRetained, CGFloat, CGPoint, CGRect, CGSize,
@@ -37,9 +37,12 @@ use upleft_math::math_render::mt_math_list::{
 use upleft_math::math_render::mt_math_list_builder::{MTMathListBuilder, MTParseError};
 use upleft_math::math_render::mt_math_list_display::{DisplayKind, MTDisplay};
 use upleft_math::math_render::mt_math_ui_label::{MTMathUILabelMode, MTTextAlignment};
+use upleft_render::theme::style_sheet::StyleSheet;
+use upleft_render::theme::theme_store::ThemeStore;
 
 use super::Failure;
 use super::json::{Object, double, range, write};
+use super::style_sheet::appearance_named;
 
 pub(crate) struct Input {
     pub(crate) display: bool,
@@ -74,65 +77,34 @@ pub(crate) fn read(path: &Path) -> Result<Input, Failure> {
     }
 }
 
-/// Paper Light, light appearance: `StyleSheet.mathPointSize` and `.text`.
-/// The theme values come from the theme file Downright ships; the arithmetic
-/// is `StyleSheet.systemFont(preset:size:weight:)`, `mathPointSize(body:typography:)`
-/// and `ColorResolver.resolve`.
-pub(crate) fn parameters() -> Result<(CGFloat, Retained<NSColor>), Failure> {
-    let path = Path::new(env!("CARGO_MANIFEST_DIR"))
-        .join("../../vendor/downright/Sources/MarkdownRender/Themes/paper-light.json");
-    let theme: Value = serde_json::from_str(&std::fs::read_to_string(&path)?)
-        .map_err(|error| Failure::Error(format!("{}: {error}", path.display())))?;
-    let typography = &theme["typography"];
-    let body_size = typography["bodySize"].as_f64().unwrap_or(16.0);
-    let math_scale = typography["mathScale"].as_f64().unwrap_or(1.0);
-    let reading = typography["preset"].as_str() == Some("reading");
-
-    let base = NSFont::systemFontOfSize_weight(body_size, unsafe { NSFontWeightRegular });
-    let body = if reading {
-        base.fontDescriptor()
-            .fontDescriptorWithDesign(unsafe { NSFontDescriptorSystemDesignSerif })
-            .and_then(|descriptor| NSFont::fontWithDescriptor_size(&descriptor, body_size))
-            .unwrap_or(base)
-    } else {
-        base
+/// The style sheet's `mathPointSize` and `text` for a theme and appearance,
+/// built as `decorate` builds it (`MathDump.parameters(theme:dark:)`).
+pub(crate) fn parameters(
+    theme_name: &str,
+    dark: bool,
+) -> Result<(CGFloat, Retained<NSColor>), Failure> {
+    let appearance = appearance_named(dark);
+    let store = ThemeStore::shared();
+    let Some(theme) = store
+        .themes()
+        .into_iter()
+        .find(|theme| theme.name == theme_name)
+    else {
+        let names: Vec<String> = store.themes().into_iter().map(|theme| theme.name).collect();
+        return Err(Failure::Error(format!(
+            "unknown theme {theme_name}; have {names:?}"
+        )));
     };
-    let optical = body.xHeight() / 0.431;
-    let clamped = swift_min(swift_max(optical, body_size * 0.90), body_size * 1.10);
-    let point_size = clamped * math_scale;
-
-    let hex = theme["palette"]["text"]
-        .as_str()
-        .unwrap_or("#000000")
-        .trim_start_matches('#');
-    let v =
-        u64::from_str_radix(hex, 16).map_err(|_| Failure::Error(format!("bad colour {hex}")))?;
-    let has_alpha = hex.len() == 8;
-    let r = ((v >> if has_alpha { 24 } else { 16 }) & 0xFF) as CGFloat / 255.0;
-    let g = ((v >> if has_alpha { 16 } else { 8 }) & 0xFF) as CGFloat / 255.0;
-    let b = ((v >> if has_alpha { 8 } else { 0 }) & 0xFF) as CGFloat / 255.0;
-    let a = if has_alpha {
-        (v & 0xFF) as CGFloat / 255.0
-    } else {
-        1.0
-    };
-    let color = NSColor::colorWithSRGBRed_green_blue_alpha(r, g, b, a);
-    let color = color
-        .colorUsingColorSpace(&NSColorSpace::sRGBColorSpace())
-        .unwrap_or(color);
-    Ok((point_size, color))
+    let sheet = StyleSheet::new(theme, &appearance, Some(true));
+    Ok((sheet.math_point_size, sheet.text.clone()))
 }
 
-fn swift_max(x: f64, y: f64) -> f64 {
-    if y >= x { y } else { x }
-}
-
-fn swift_min(x: f64, y: f64) -> f64 {
-    if y < x { y } else { x }
-}
-
-fn request(input: &Input) -> Result<(CGFloat, Retained<NSColor>, CGFloat), Failure> {
-    let (base, color) = parameters()?;
+fn request(
+    input: &Input,
+    theme: &str,
+    dark: bool,
+) -> Result<(CGFloat, Retained<NSColor>, CGFloat), Failure> {
+    let (base, color) = parameters(theme, dark)?;
     Ok(if input.display {
         (base * 1.12, color, 8.0)
     } else {
@@ -142,9 +114,9 @@ fn request(input: &Input) -> Result<(CGFloat, Retained<NSColor>, CGFloat), Failu
 
 // MARK: - Image
 
-pub fn image(input: &Path, output: &Path) -> Result<(), Failure> {
+pub fn image(input: &Path, output: &Path, theme: &str, dark: bool) -> Result<(), Failure> {
     let input = read(input)?;
-    let (point_size, color, padding) = request(&input)?;
+    let (point_size, color, padding) = request(&input, theme, dark)?;
     let image = MathRenderer::image(&input.latex, input.display, point_size, &color, padding);
     let png = match image {
         Some(image) => rasterize(&image)?,
@@ -216,9 +188,9 @@ fn sentinel() -> Result<Vec<u8>, Failure> {
 
 // MARK: - Display tree
 
-pub fn tree(input: &Path, output: &Path) -> Result<(), Failure> {
+pub fn tree(input: &Path, output: &Path, theme: &str, dark: bool) -> Result<(), Failure> {
     let input = read(input)?;
-    let (point_size, color, padding) = request(&input)?;
+    let (point_size, color, padding) = request(&input, theme, dark)?;
     write(&tree_json(&input, point_size, &color, padding), output)?;
     Ok(())
 }

@@ -27,10 +27,15 @@ fn text_color() -> Retained<NSColor> {
 #[test]
 fn block_math_gets_padding() {
     let color = text_color();
-    let unpadded = MathRenderer::image("\\frac{a}{b}", true, 18.0, &color, 0.0).expect("math renderer returned nil");
-    let padded = MathRenderer::image("\\frac{a}{b}", true, 18.0, &color, 8.0).expect("math renderer returned nil");
+    let unpadded = MathRenderer::image("\\frac{a}{b}", true, 18.0, &color, 0.0)
+        .expect("math renderer returned nil");
+    let padded = MathRenderer::image("\\frac{a}{b}", true, 18.0, &color, 8.0)
+        .expect("math renderer returned nil");
     let (unpadded, padded) = (unpadded.size(), padded.size());
-    assert!(padded.width - unpadded.width >= 15.9, "block math should carry 8pt of air per side");
+    assert!(
+        padded.width - unpadded.width >= 15.9,
+        "block math should carry 8pt of air per side"
+    );
     assert!(padded.height - unpadded.height >= 15.9);
 }
 
@@ -38,16 +43,28 @@ fn block_math_gets_padding() {
 fn block_math_supports_operator_wrappers() {
     let formula = r"\mathop{\mathrm{read}}(source) \longrightarrow \mathop{\mathrm{parse}}(tree)";
     let image = MathRenderer::image(formula, true, 16.0, &NSColor::labelColor(), 0.0);
-    assert!(image.is_some(), "common operator wrappers should not fall back to raw LaTeX");
+    assert!(
+        image.is_some(),
+        "common operator wrappers should not fall back to raw LaTeX"
+    );
 }
 
 #[test]
 fn math_op_wrapper_is_dropped_keeping_its_content() {
-    assert_eq!(MathRenderer::swift_math_source(r"\mathop{\mathrm{d}}x"), r"\mathrm{d}x");
-    assert_eq!(MathRenderer::swift_math_source(r"\mathop{a{b}c}_x"), "a{b}c_x");
+    assert_eq!(
+        MathRenderer::swift_math_source(r"\mathop{\mathrm{d}}x"),
+        r"\mathrm{d}x"
+    );
+    assert_eq!(
+        MathRenderer::swift_math_source(r"\mathop{a{b}c}_x"),
+        "a{b}c_x"
+    );
     assert_eq!(MathRenderer::swift_math_source(r"\mathop{x"), r"\mathop{x");
     assert_eq!(MathRenderer::swift_math_source(r"\mathop x"), r"\mathop x");
-    assert_eq!(MathRenderer::swift_math_source(r"\frac{a}{b}"), r"\frac{a}{b}");
+    assert_eq!(
+        MathRenderer::swift_math_source(r"\frac{a}{b}"),
+        r"\frac{a}{b}"
+    );
     assert_eq!(MathRenderer::swift_math_source(r"\mathop{\}}"), r"\}");
 }
 
@@ -135,7 +152,10 @@ impl TemporaryDirectory {
         let unique = format!(
             "upleft-mathfonts-{}-{}",
             std::process::id(),
-            std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).unwrap().as_nanos()
+            std::time::SystemTime::now()
+                .duration_since(std::time::UNIX_EPOCH)
+                .unwrap()
+                .as_nanos()
         );
         let root = std::env::temp_dir().join(unique);
         std::fs::create_dir_all(&root).unwrap();
