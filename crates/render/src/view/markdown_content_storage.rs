@@ -8,6 +8,10 @@
 //! measure instead. Every replacement published to this storage is source-
 //! length preserving, so element and source coordinates stay aligned.
 
+// `!(a > b)` spells Swift's `guard a > b`, which is false for NaN; the
+// negated comparisons are deliberate.
+#![allow(clippy::neg_cmp_op_on_partial_ord)]
+
 use std::cell::{Cell, RefCell};
 use std::collections::HashMap;
 use std::ptr::NonNull;
@@ -210,7 +214,7 @@ impl MarkdownContentStorage {
         let document_length = storage.length() as isize;
         let document_start = self.documentRange().location();
         let requested_offset = match text_location {
-            Some(location) => self.offsetFromLocation_toLocation(&document_start, location) as isize,
+            Some(location) => self.offsetFromLocation_toLocation(&document_start, location),
             None => {
                 if reverse {
                     document_length

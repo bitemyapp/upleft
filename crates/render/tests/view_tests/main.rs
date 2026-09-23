@@ -35,6 +35,15 @@ fn main() {
     // idle delays). A background process is eligible for App Nap, which
     // coalesces those timers by up to seconds; hold a latency-critical
     // activity for the run so a busy machine cannot time them out.
+    // An app's main thread runs at user-interactive QoS; a test binary's
+    // starts lower, and its main-queue timers then fire hundreds of
+    // milliseconds late on a loaded machine.
+    unsafe extern "C" {
+        fn pthread_set_qos_class_self_np(class: u32, relative_priority: i32) -> i32;
+    }
+    const QOS_CLASS_USER_INTERACTIVE: u32 = 0x21;
+    // SAFETY: sets the calling thread's own QoS class.
+    unsafe { pthread_set_qos_class_self_np(QOS_CLASS_USER_INTERACTIVE, 0) };
     let reason = objc2_foundation::NSString::from_str("upleft view tests");
     let _activity = objc2_foundation::NSProcessInfo::processInfo().beginActivityWithOptions_reason(
         objc2_foundation::NSActivityOptions::UserInitiated | objc2_foundation::NSActivityOptions::LatencyCritical,

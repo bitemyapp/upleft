@@ -17,6 +17,10 @@
 //! document using that kind fail the `render` conformance suite until it
 //! lands. Porting a fragment means filling in its one function.
 
+// `!(a > b)` spells Swift's `guard a > b`, which is false for NaN; the
+// negated comparisons are deliberate.
+#![allow(clippy::neg_cmp_op_on_partial_ord)]
+
 use std::rc::Rc;
 
 use objc2::rc::Retained;
@@ -100,8 +104,8 @@ impl FragmentProvider {
             return plain();
         };
         let document_start = manager.documentRange().location();
-        let start = manager.offsetFromLocation_toLocation(&document_start, &element_range.location()) as isize;
-        let end = manager.offsetFromLocation_toLocation(&document_start, &element_range.endLocation()) as isize;
+        let start = manager.offsetFromLocation_toLocation(&document_start, &element_range.location());
+        let end = manager.offsetFromLocation_toLocation(&document_start, &element_range.endLocation());
         let source = NSRange::new(start, (end - start).max(0));
 
         // Elision wins over everything (§5.2, §7.1).

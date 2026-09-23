@@ -24,6 +24,10 @@
 //! inside its own calls (a `super` selection change, a storage edit, a
 //! layout pass), exactly as it re-enters the Swift one.
 
+// `!(a > b)` spells Swift's `guard a > b`, which is false for NaN; the
+// negated comparisons are deliberate.
+#![allow(clippy::neg_cmp_op_on_partial_ord)]
+
 use std::cell::{Cell, RefCell};
 use std::collections::{HashMap, HashSet};
 use std::ptr::NonNull;
@@ -849,7 +853,7 @@ impl MarkdownTextView {
     }
 
     pub fn configuration(&self) -> MarkdownRenderConfiguration {
-        self.ivars().configuration.borrow().clone()
+        *self.ivars().configuration.borrow()
     }
 
     pub fn source_focus(&self) -> SourceFocus {
@@ -1040,7 +1044,7 @@ impl MarkdownTextView {
             *self.ivars().configuration.borrow_mut() = configuration;
             return;
         }
-        *self.ivars().configuration.borrow_mut() = configuration.clone();
+        *self.ivars().configuration.borrow_mut() = configuration;
         let anchor = self.capture_viewport_anchor();
         let selection = self.source_selected_ranges();
         let policy = self.effective_policy();
@@ -1460,7 +1464,7 @@ impl MarkdownTextView {
         }
         let mut anchor = self.capture_viewport_anchor();
         let mut sorted: Vec<&TextEdit> = edits.iter().collect();
-        sorted.sort_by(|a, b| b.range.location.cmp(&a.range.location));
+        sorted.sort_by_key(|edit| std::cmp::Reverse(edit.range.location));
         for edit in sorted {
             if !(edit.range.location >= 0 && edit.range.upper_bound() <= storage.length() as isize) {
                 continue;
@@ -2258,7 +2262,7 @@ impl MarkdownTextView {
             let still_hiding = |map: &DisplayMap| -> Vec<DisplaySubstitution> {
                 map.substitutions_in_paragraph_containing(composing.location)
                     .into_iter()
-                    .filter(|entry| !base_hidden_ranges.iter().any(|hidden_range| *hidden_range == entry.source_range))
+                    .filter(|entry| !base_hidden_ranges.contains(&entry.source_range))
                     .collect()
             };
             logical_display_map = base_display_map.replacing_paragraph(composing.location, still_hiding(&base_display_map));
@@ -2301,7 +2305,7 @@ impl MarkdownTextView {
                 let unrevealed = |map: &DisplayMap| -> Vec<DisplaySubstitution> {
                     map.substitutions()
                         .into_iter()
-                        .filter(|entry| !revealed_display_objects.iter().any(|range| *range == entry.source_range))
+                        .filter(|entry| !revealed_display_objects.contains(&entry.source_range))
                         .collect()
                 };
                 logical_display_map = DisplayMap::new(paragraph_index.clone(), unrevealed(&base_display_map));
@@ -3212,7 +3216,7 @@ impl MarkdownTextView {
             use objc2_app_kit::NSTextSelectionDataSource;
             let text_kit_offset = layout_manager
                 .offsetFromLocation_toLocation(&layout_manager.documentRange().location(), &fragment.rangeInElement().location());
-            return self.current_display_map().source_offset_for_text_kit(text_kit_offset as isize);
+            return self.current_display_map().source_offset_for_text_kit(text_kit_offset);
         }
         let sample_view_y = smax(visible.min_y(), origin.y) + 1.0;
         self.source_offset_at(NSPoint::new(origin.x + 1.0, sample_view_y))

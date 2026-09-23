@@ -110,7 +110,8 @@ fn local_typing_keeps_visible_content_stable(mtm: MainThreadMarker) {
         expect!((anchor_screen_y() - before).abs() < 0.5);
         edit_offset += 1;
     }
-    expect!(pump(|| view.pending_resize_request_for_testing().is_none()), "still pending: {:?}", view.pending_resize_request_for_testing());
+    let cleared = pump(|| view.pending_resize_request_for_testing().is_none());
+    expect!(cleared, "still pending: {:?}", view.pending_resize_request_for_testing());
     expect!((anchor_screen_y() - before).abs() < 0.5);
 }
 

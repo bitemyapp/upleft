@@ -271,11 +271,13 @@ pub fn main_after(delay: f64, work: impl FnOnce() + 'static) {
     });
 }
 
+type PendingWork = Box<dyn FnOnce()>;
+
 /// `DispatchWorkItem`: a closure that can be cancelled before it runs.
 #[derive(Clone)]
 pub struct WorkItem {
     cancelled: std::rc::Rc<std::cell::Cell<bool>>,
-    work: std::rc::Rc<std::cell::RefCell<Option<Box<dyn FnOnce()>>>>,
+    work: std::rc::Rc<std::cell::RefCell<Option<PendingWork>>>,
 }
 
 impl WorkItem {

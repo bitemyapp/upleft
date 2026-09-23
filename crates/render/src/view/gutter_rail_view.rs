@@ -5,6 +5,10 @@
 //! Source-mode line numbers, and the contextual H1…H6 control. It is a plain
 //! `NSView` positioned from the layout manager's fragment geometry.
 
+// `!(a > b)` spells Swift's `guard a > b`, which is false for NaN; the
+// negated comparisons are deliberate.
+#![allow(clippy::neg_cmp_op_on_partial_ord)]
+
 use std::cell::RefCell;
 
 use block2::RcBlock;

@@ -6,6 +6,10 @@
 //! per-view display-link driver, and the morph cut. Every constant and every
 //! floating-point expression is kept as the Swift writes it.
 
+// `!(a > b)` spells Swift's `guard a > b`, which is false for NaN; the
+// negated comparisons are deliberate.
+#![allow(clippy::neg_cmp_op_on_partial_ord)]
+
 use std::cell::{Cell, RefCell};
 use std::rc::Rc;
 
@@ -967,7 +971,7 @@ pub fn run(
         context.setTimingFunction(Some(&timing(curve)));
         changes(context);
     });
-    let completion = completion.map(|completion| RcBlock::new(move || completion()));
+    let completion = completion.map(RcBlock::new);
     NSAnimationContext::runAnimationGroup_completionHandler(&changes, completion.as_deref());
 }
 

@@ -1,6 +1,10 @@
 //! Port of `View/FootnoteMarginView.swift`: presentation-only sidenotes
 //! anchored to their in-flow references.
 
+// `!(a > b)` spells Swift's `guard a > b`, which is false for NaN; the
+// negated comparisons are deliberate.
+#![allow(clippy::neg_cmp_op_on_partial_ord)]
+
 use objc2::rc::{Retained, Weak as ObjcWeak};
 use objc2::runtime::{AnyObject, NSObjectProtocol};
 use objc2_app_kit::NSAccessibility;

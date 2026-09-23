@@ -5,6 +5,10 @@
 //! Ported with the view layer because `ProseFragment` and `DownrightFragment`
 //! paint both in their own `draw(at:in:)`.
 
+// `!(a > b)` spells Swift's `guard a > b`, which is false for NaN; the
+// negated comparisons are deliberate.
+#![allow(clippy::neg_cmp_op_on_partial_ord)]
+
 use objc2_app_kit::{NSColor, NSTextLayoutFragment, NSTextLineFragment};
 use objc2_core_foundation::{CGFloat, CGPoint, CGRect};
 use objc2_core_graphics::{CGContext, CGPath};

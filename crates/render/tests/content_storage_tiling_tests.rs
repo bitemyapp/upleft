@@ -58,8 +58,8 @@ fn walk_elements(content: &NSTextContentStorage, length: isize) -> Vec<NSRange> 
         let block = StackBlock::new(|element: NonNull<NSTextElement>| -> Bool {
             let element = unsafe { element.as_ref() };
             if let Some(range) = element.elementRange() {
-                let location = content.offsetFromLocation_toLocation(&origin, &range.location()) as isize;
-                let length = content.offsetFromLocation_toLocation(&range.location(), &range.endLocation()) as isize;
+                let location = content.offsetFromLocation_toLocation(&origin, &range.location());
+                let length = content.offsetFromLocation_toLocation(&range.location(), &range.endLocation());
                 delivered.set(Some(NSRange::new(location, length)));
             }
             Bool::NO
@@ -69,7 +69,7 @@ fn walk_elements(content: &NSTextContentStorage, length: isize) -> Vec<NSRange> 
         let range = delivered.get().unwrap_or_else(|| panic!("no element delivered from offset {offset}"));
         ranges.push(range);
         let resume = resume.unwrap_or_else(|| panic!("no resume location returned from offset {offset}"));
-        let next = content.offsetFromLocation_toLocation(&origin, &resume) as isize;
+        let next = content.offsetFromLocation_toLocation(&origin, &resume);
         assert!(next > offset, "enumeration did not advance past offset {offset} — this is the launch hang");
         offset = next;
     }

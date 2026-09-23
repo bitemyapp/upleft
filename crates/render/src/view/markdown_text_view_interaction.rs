@@ -5,6 +5,10 @@
 //! The Objective-C overrides that reach these methods are registered in
 //! `markdown_text_view`'s `define_class!`.
 
+// `!(a > b)` spells Swift's `guard a > b`, which is false for NaN; the
+// negated comparisons are deliberate.
+#![allow(clippy::neg_cmp_op_on_partial_ord)]
+
 use std::cell::Cell;
 
 use objc2::rc::{Retained, Weak as ObjcWeak};

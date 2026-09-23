@@ -3,6 +3,10 @@
 //! (§6.1a) and the footnote margin, and leaves seams for a leading contents
 //! map, a trailing accessory and a top accessory.
 
+// `!(a > b)` spells Swift's `guard a > b`, which is false for NaN; the
+// negated comparisons are deliberate.
+#![allow(clippy::neg_cmp_op_on_partial_ord)]
+
 use std::cell::{Cell, RefCell};
 use std::ptr::NonNull;
 use std::rc::Rc;

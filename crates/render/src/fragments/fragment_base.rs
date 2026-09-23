@@ -19,6 +19,10 @@
 //! dump reads `CodeBlockFragment`, `TableRowFragment`, … exactly as Swift's
 //! `String(describing: type(of:))` does.
 
+// `!(a > b)` spells Swift's `guard a > b`, which is false for NaN; the
+// negated comparisons are deliberate.
+#![allow(clippy::neg_cmp_op_on_partial_ord)]
+
 use std::any::Any;
 use std::cell::{Cell, Ref, RefCell};
 use std::collections::HashMap;
@@ -493,8 +497,8 @@ pub fn element_source_range(fragment: &NSTextLayoutFragment, fallback: impl FnOn
         return fallback();
     };
     let document_start = manager.documentRange().location();
-    let location = manager.offsetFromLocation_toLocation(&document_start, &range.location()) as isize;
-    let end = manager.offsetFromLocation_toLocation(&document_start, &range.endLocation()) as isize;
+    let location = manager.offsetFromLocation_toLocation(&document_start, &range.location());
+    let end = manager.offsetFromLocation_toLocation(&document_start, &range.endLocation());
     NSRange::new(location, smax_i(0, end - location))
 }
 
@@ -725,7 +729,7 @@ pub fn clipped(string: &NSAttributedString, max_height: CGFloat, width: CGFloat)
     };
     let (mut low, mut high) = (0usize, length);
     while low < high {
-        let mid = (low + high + 1) / 2;
+        let mid = (low + high).div_ceil(2);
         if height(&candidate(mid)) <= max_height + 0.5 {
             low = mid;
         } else {
