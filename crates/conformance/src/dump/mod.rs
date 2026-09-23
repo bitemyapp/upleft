@@ -10,6 +10,7 @@ pub mod math;
 pub mod math_bench;
 pub mod parse;
 pub mod style_sheet;
+pub mod unicode;
 
 use std::path::PathBuf;
 
@@ -99,6 +100,7 @@ pub fn run(request: &Request) -> Result<(), Failure> {
         "markup" => markup::run(&request.input, &request.output),
         "parse" => parse::run(&request.input, &request.output),
         "core-text" => core_text::run(&request.input, &request.output),
+        "unicode" => unicode::run(&request.input, &request.output),
         "bench-core-text" => core_text::bench(&request.input, &request.output),
         "stylesheet" => {
             let value = style_sheet::dump(&request.theme, request.dark)?;

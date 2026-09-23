@@ -84,6 +84,9 @@ do {
         let text = try String(contentsOf: input, encoding: .utf8)
         try write(ParseDump.document(MarkdownParser.parse(text)), to: output)
 
+    case "unicode":
+        try write(UnicodeDump.document(input: String(contentsOf: input, encoding: .utf8)), to: output)
+
     case "core-text":
         try write(CoreTextDump.document(data: try Data(contentsOf: input), url: input), to: output)
 
