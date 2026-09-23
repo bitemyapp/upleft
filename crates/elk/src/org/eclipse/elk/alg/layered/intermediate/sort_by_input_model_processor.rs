@@ -32,6 +32,13 @@ pub mod _Keys {
     pub const targetNodeModelOrder: &str = "targetNode.modelOrder";
 }
 
+/// The string-key `getProperty(_ key:)` (stored value only, no default) for
+/// the `_Keys` that name a declared property: the same storage slot, looked
+/// up without matching the id string.
+fn stored<T: PropCast>(props: &PropertyMap, p: &Property) -> Option<T> {
+    props.get_stored(p).and_then(T::from_value)
+}
+
 /// `[ObjectIdentifier: Int]`: target node → minimal model order of the
 /// edges leading to it. Stored on nodes under `"targetNode.modelOrder"` as a
 /// `PropValue::Object`.
@@ -50,7 +57,7 @@ impl SortByInputModelProcessor {
     /// `"longEdgeTargetNode"`; returns (and caches on the node) the minimal
     /// model order of the non-reversed edges per target node.
     pub fn long_edge_target_node_preprocessing(lg: &mut LGraphArena, node: LNodeId) -> Rc<TargetNodeModelOrder> {
-        if let Some(existing) = lg[node].props.get_by_id(_Keys::targetNodeModelOrder).and_then(|v| v.downcast::<TargetNodeModelOrder>()) {
+        if let Some(existing) = lg[node].props.get_stored(&InternalProperties::TARGET_NODE_MODEL_ORDER).and_then(|v| v.downcast::<TargetNodeModelOrder>()) {
             return existing;
         }
 
@@ -60,7 +67,7 @@ impl SortByInputModelProcessor {
                 continue;
             }
             let target_node = Self::get_target_node(lg, port);
-            lg[port].props.set_by_id(_Keys::longEdgeTargetNode, target_node.map(PropValue::LNode));
+            lg[port].props.set_opt(&InternalProperties::LONG_EDGE_TARGET_NODE, target_node.map(PropValue::LNode));
 
             let Some(target_node) = target_node else { continue };
             let previous_order = target_node_model_order.get(&target_node).copied().unwrap_or(i64::MAX);
@@ -75,7 +82,7 @@ impl SortByInputModelProcessor {
         }
 
         let result = Rc::new(target_node_model_order);
-        lg[node].props.set_by_id(_Keys::targetNodeModelOrder, Some(PropValue::Object(result.clone())));
+        lg[node].props.set(&InternalProperties::TARGET_NODE_MODEL_ORDER, PropValue::Object(result.clone()));
         result
     }
 
@@ -136,15 +143,12 @@ impl SortByInputModelProcessor {
 
 impl ILayoutProcessor for SortByInputModelProcessor {
     fn process(&mut self, lg: &mut LGraphArena, graph: LGraphId, progress_monitor: &mut dyn IElkProgressMonitor) {
-        let ordering = lg[graph].props.get_by_id(_Keys::considerModelOrderStrategy).and_then(|v| v.cast::<OrderingStrategy>()).unwrap_or(OrderingStrategy::NONE);
+        let ordering = stored::<OrderingStrategy>(&lg[graph].props, &LayeredOptions::CONSIDER_MODEL_ORDER_STRATEGY).unwrap_or(OrderingStrategy::NONE);
         progress_monitor.begin(&format!("Sort By Input Model {}", ordering.name()), 1.0);
 
         let strategy = ordering;
-        let long_edge_strategy = lg[graph]
-            .props
-            .get_by_id(_Keys::considerModelOrderLongEdgeStrategy)
-            .and_then(|v| v.cast::<LongEdgeOrderingStrategy>())
-            .unwrap_or(LongEdgeOrderingStrategy::EQUAL);
+        let long_edge_strategy =
+            stored::<LongEdgeOrderingStrategy>(&lg[graph].props, &LayeredOptions::CONSIDER_MODEL_ORDER_LONG_EDGE_STRATEGY).unwrap_or(LongEdgeOrderingStrategy::EQUAL);
         let group_strategy = lg[graph]
             .props
             .get_as::<GroupOrderStrategy>(&LayeredOptions::CONSIDER_MODEL_ORDER_GROUP_MODEL_ORDER_CM_GROUP_ORDER_STRATEGY)
@@ -163,7 +167,7 @@ impl ILayoutProcessor for SortByInputModelProcessor {
             lg.layer_set_nodes(layer, nodes);
 
             for node in lg[layer].nodes.clone() {
-                let constraints = lg[node].props.get_by_id(_Keys::portConstraints).and_then(|v| v.cast::<PortConstraints>()).unwrap_or(PortConstraints::UNDEFINED);
+                let constraints = stored::<PortConstraints>(&lg[node].props, &LayeredOptions::PORT_CONSTRAINTS).unwrap_or(PortConstraints::UNDEFINED);
                 if constraints != PortConstraints::FIXED_ORDER && constraints != PortConstraints::FIXED_POS {
                     let target_node_model_order = Self::long_edge_target_node_preprocessing(lg, node);
                     let mut ports = lg[node].ports.clone();
@@ -722,8 +726,8 @@ impl _PortComparator {
                 reverse_order = -reverse_order;
             }
 
-            let p1_target_node = lg[p1].props.get_by_id(_Keys::longEdgeTargetNode).and_then(|v| v.cast::<LNodeId>());
-            let p2_target_node = lg[p2].props.get_by_id(_Keys::longEdgeTargetNode).and_then(|v| v.cast::<LNodeId>());
+            let p1_target_node = stored::<LNodeId>(&lg[p1].props, &InternalProperties::LONG_EDGE_TARGET_NODE);
+            let p2_target_node = stored::<LNodeId>(&lg[p2].props, &InternalProperties::LONG_EDGE_TARGET_NODE);
 
             if self.strategy == OrderingStrategy::PREFER_NODES {
                 if let (Some(p1_target_node), Some(p2_target_node)) = (p1_target_node, p2_target_node) {
