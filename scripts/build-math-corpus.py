@@ -27,6 +27,7 @@ OUT = os.path.join(ROOT, "corpus", "math")
 SWIFTMATH = os.path.join(ROOT, "vendor", "downright", "Vendor", "SwiftMath")
 DOWNRIGHT_TESTS = os.path.join(ROOT, "vendor", "downright", "Tests")
 
+sys.dont_write_bytecode = True
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from importlib import import_module  # noqa: E402
 
@@ -274,6 +275,18 @@ HARD = [
     ("unicode-cjk", "中文 x"),
     ("control-characters", "x\u0007y"),
     ("crlf", "a\r\nb"),
+    # Swift Character semantics: graphemes, canonical equivalence, NFC order
+    ("grapheme-command-mark", "\\alpha\u0301 + x"),
+    ("grapheme-text-decomposed", "\\text{e\u0301t\u00e9}"),
+    ("grapheme-enclosed", "x\u20dd + y"),
+    ("grapheme-color", "\\color{#A\u0301B}{x}"),
+    ("grapheme-cyrillic-decomposed", "\u0438\u0306 + \u0439"),
+    ("grapheme-cyrillic-delimiter", "\\left\u0430 x \\right)"),
+    ("grapheme-titlecase-command", "\\\u01c5 x"),
+    ("grapheme-letter-command", "\\\u00e9t\u00e9 x"),
+    ("grapheme-mathop-mark", "\\mathop\u0301{x}"),
+    ("grapheme-script-mark", "x^\u0301 + y_{a\u0301}"),
+    ("grapheme-emoji-flag", "x \U0001F1FA\U0001F1F8 y"),
     # Numbers and operators
     ("numbers", r"3.14159 + 1,000 + .5 + 2."),
     ("operators-unary", r"-x + (-y) = +z - -w"),

@@ -27,7 +27,7 @@ pub enum MTMathListSubIndexType {
 
 /// An index that points to a particular character in the MTMathList: a linked
 /// list of (atom index, branch) steps.
-#[derive(Clone, Debug, Hash)]
+#[derive(Clone, Debug)]
 pub struct MTMathListIndex {
     /// The index of the associated atom.
     pub atom_index: isize,
@@ -204,3 +204,11 @@ impl PartialEq for MTMathListIndex {
 }
 
 impl Eq for MTMathListIndex {}
+
+impl std::hash::Hash for MTMathListIndex {
+    fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
+        self.atom_index.hash(state);
+        self.sub_index_type.hash(state);
+        self.sub_index.hash(state);
+    }
+}

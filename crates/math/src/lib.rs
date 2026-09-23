@@ -15,6 +15,16 @@
 //! algorithms, the same floating-point order, and the same framework calls.
 //! The usual entry point is [`downright::math_renderer::MathRenderer::image`].
 
+// The port keeps SwiftMath's control flow (explicit returns, `if let … else
+// { return nil }`, duplicated early exits) so it can be read against the Swift.
+#![allow(
+    clippy::needless_return,
+    clippy::question_mark,
+    clippy::if_same_then_else,
+    clippy::needless_late_init,
+    clippy::neg_cmp_op_on_partial_ord
+)]
+
 pub mod downright;
 pub mod math_bundle;
 pub mod math_render;

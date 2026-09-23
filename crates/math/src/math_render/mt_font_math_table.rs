@@ -70,17 +70,11 @@ fn string(object: &AnyObject) -> Option<String> {
 }
 
 fn dictionary(object: &AnyObject) -> Option<&NSDictionary<AnyObject, AnyObject>> {
-    let dictionary = object.downcast_ref::<NSDictionary>()?;
-    // SAFETY: plist dictionaries hold objects; the generic parameters are
-    // only a view.
-    Some(unsafe {
-        &*(dictionary as *const NSDictionary as *const NSDictionary<AnyObject, AnyObject>)
-    })
+    object.downcast_ref::<NSDictionary>()
 }
 
 fn array(object: &AnyObject) -> Option<&NSArray<AnyObject>> {
-    let array = object.downcast_ref::<NSArray>()?;
-    Some(unsafe { &*(array as *const NSArray as *const NSArray<AnyObject>) })
+    object.downcast_ref::<NSArray>()
 }
 
 fn entries(dictionary: &NSDictionary<AnyObject, AnyObject>) -> Vec<(String, Retained<AnyObject>)> {
