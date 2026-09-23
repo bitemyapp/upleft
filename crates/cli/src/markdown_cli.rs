@@ -235,7 +235,7 @@ pub fn parse(arguments: &[String]) -> Result<Action, ParseError> {
 /// `MarkdownCLI.usage()`.
 pub fn usage() -> String {
     format!(
-        "down {VERSION} — open and inspect Markdown in Downright
+        "down {VERSION} — open and inspect Markdown in Upleft
 
 USAGE
   down [open options] [file ...]
@@ -250,7 +250,7 @@ USAGE
   … | down [command] -
 
 COMMANDS
-  open       Open files in Downright (the default)
+  open       Open files in Upleft (the default)
   read       Write Markdown source to stdout
   export     Write self-contained HTML to stdout or -o a file
   check      Run health and target checks (exit 1 when findings exist)
@@ -267,7 +267,7 @@ CHECK TARGETS
 
 OPEN OPTIONS
   -n, --new         open each file in a new window
-  -b, --background  do not bring Downright to the front
+  -b, --background  do not bring Upleft to the front
   -w, --wait        wait for the app to exit
   -e, --edit        open in Live mode instead of Read mode
   --line N          open at one-based line N
@@ -277,13 +277,13 @@ OPEN OPTIONS
   -v, --version     show the version
 
 AGENT OPTIONS
-  --focus           bring Downright forward (default: stay in background)
+  --focus           bring Upleft forward (default: stay in background)
   --dry-run         print what notify would open, without opening it
   --debounce ms     quiet period before reporting a burst (default 300)
   --scope           where `hook --install` writes: user or project
 
 AGENT SETUP
-  down hook --install            wire this project's agent to Downright
+  down hook --install            wire this project's agent to Upleft
   down hook --install --scope user   wire every project for this user"
     )
 }

@@ -305,7 +305,7 @@ pub enum Load {
 }
 
 /// `Preferences.didChange`.
-pub const DID_CHANGE: &str = "com.ezzy.downright.preferencesDidChange";
+pub const DID_CHANGE: &str = "com.bitemyapp.upleft.preferencesDidChange";
 
 type LoadFaultHandler = Box<dyn Fn(&Load) + Send + Sync>;
 type PersistenceFailureHandler = Box<dyn Fn(&str) + Send + Sync>;

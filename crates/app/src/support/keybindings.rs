@@ -359,7 +359,7 @@ impl KeybindingStore {
             vim_keys_enabled: false,
             is_loading: false,
             file,
-            writer: DispatchQueue::new("com.ezzy.downright.keybindings", None),
+            writer: DispatchQueue::new("com.bitemyapp.upleft.keybindings", None),
         };
         store.is_loading = true;
         store.load();

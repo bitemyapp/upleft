@@ -1,17 +1,17 @@
 {
  "files": [
   {
-   "path": "work/apps/Downright.app/Contents/Info.plist",
-   "text": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<!DOCTYPE plist PUBLIC \"-//Apple//DTD PLIST 1.0//EN\" \"http://www.apple.com/DTDs/PropertyList-1.0.dtd\">\n<plist version=\"1.0\"><dict><key>CFBundleIdentifier</key><string>com.ezzy.downright</string><key>CFBundleShortVersionString</key><string>9.8.7</string><key>CFBundleDocumentTypes</key><array><dict><key>CFBundleTypeExtensions</key><array><string>MD</string><string>markdown</string><string>mdown</string><string>mkd</string></array></dict><dict><key>CFBundleTypeExtensions</key><array><string>mdx</string><string>mdc</string><string>qmd</string><string>Rmd</string></array></dict></array><key>SUFeedURL</key><string>https://example.invalid/appcast.xml</string><key>SUPublicEDKey</key><string>abc123</string></dict></plist>\n"
+   "path": "work/apps/Upleft.app/Contents/Info.plist",
+   "text": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<!DOCTYPE plist PUBLIC \"-//Apple//DTD PLIST 1.0//EN\" \"http://www.apple.com/DTDs/PropertyList-1.0.dtd\">\n<plist version=\"1.0\"><dict><key>CFBundleIdentifier</key><string>com.bitemyapp.upleft</string><key>CFBundleShortVersionString</key><string>9.8.7</string><key>CFBundleDocumentTypes</key><array><dict><key>CFBundleTypeExtensions</key><array><string>MD</string><string>markdown</string><string>mdown</string><string>mkd</string></array></dict><dict><key>CFBundleTypeExtensions</key><array><string>mdx</string><string>mdc</string><string>qmd</string><string>Rmd</string></array></dict></array><key>SUFeedURL</key><string>https://example.invalid/appcast.xml</string><key>SUPublicEDKey</key><string>abc123</string></dict></plist>\n"
   },
   {
-   "path": "work/apps/Downright.app/Contents/MacOS/Downright",
+   "path": "work/apps/Upleft.app/Contents/MacOS/Upleft",
    "text": "#!/bin/sh\nexit 0\n",
    "mode": "755"
   },
   {
    "path": "home/Applications/Linked.app",
-   "symlink": "$SANDBOX/work/apps/Downright.app"
+   "symlink": "$SANDBOX/work/apps/Upleft.app"
   }
  ],
  "argv": [

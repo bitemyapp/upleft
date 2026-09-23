@@ -83,8 +83,8 @@ import AppIntents
 /// deliberately thin: all file policy and routing lives in the registry.
 @available(macOS 14.0, *)
 public struct OpenMarkdownIntent: AppIntent {
-    public static let title: LocalizedStringResource = "Open Markdown in Downright"
-    public static let description = IntentDescription("Open a Markdown document in Downright.")
+    public static let title: LocalizedStringResource = "Open Markdown in Upleft"
+    public static let description = IntentDescription("Open a Markdown document in Upleft.")
     public static let openAppWhenRun = true
 
     @Parameter(title: "File path")
@@ -113,7 +113,7 @@ public enum OpenMarkdownIntentError: LocalizedError {
     public var errorDescription: String? {
         switch self {
         case .unsupportedFile: "Choose a Markdown file."
-        case .unavailable: "Downright could not open that file."
+        case .unavailable: "Upleft could not open that file."
         }
     }
 }

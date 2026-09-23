@@ -70,7 +70,7 @@ impl PathResolver {
                 git_root,
                 lock: Mutex::new(CacheState { cache: HashMap::new(), generation: 0 }),
                 warm_queue: DispatchQueue::new_with_target(
-                    "com.ezzy.downright.path-resolve",
+                    "com.bitemyapp.upleft.path-resolve",
                     DispatchQueueAttr::SERIAL,
                     Some(&user_initiated),
                 ),

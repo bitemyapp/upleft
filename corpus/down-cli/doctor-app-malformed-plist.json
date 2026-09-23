@@ -1,11 +1,11 @@
 {
  "files": [
   {
-   "path": "work/apps/Downright.app/Contents/Info.plist",
+   "path": "work/apps/Upleft.app/Contents/Info.plist",
    "text": "<plist><dict><key>broken"
   },
   {
-   "path": "work/apps/Downright.app/Contents/MacOS/Downright",
+   "path": "work/apps/Upleft.app/Contents/MacOS/Upleft",
    "text": "#!/bin/sh\nexit 0\n",
    "mode": "755"
   }
@@ -13,6 +13,6 @@
  "argv": [
   "doctor",
   "--app",
-  "apps/Downright.app"
+  "apps/Upleft.app"
  ]
 }

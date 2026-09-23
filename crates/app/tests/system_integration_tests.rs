@@ -15,13 +15,13 @@ use upleft_app::support::system_integration::SystemIntegration;
 // broken.
 
 /// A registered, working extension. Five leading spaces, no flag.
-const AVAILABLE_LISTING: &str = "     com.ezzy.downright.quicklook(1.0)\t6DFDA989-A19F-510C-999F-175575BC16CF\t2026-07-23 03:00:13 +0000\t/Applications/Downright.app/Contents/PlugIns/DownrightQL.appex\n (1 plug-in)";
+const AVAILABLE_LISTING: &str = "     com.bitemyapp.upleft.quicklook(1.0)\t6DFDA989-A19F-510C-999F-175575BC16CF\t2026-07-23 03:00:13 +0000\t/Applications/Upleft.app/Contents/PlugIns/DownrightQL.appex\n (1 plug-in)";
 
 /// The user switched it on by hand in System Settings.
-const EXPLICITLY_ENABLED_LISTING: &str = "+    com.ezzy.downright.quicklook(1.0)\tUUID\t2026-07-23 03:00:13 +0000\t/Applications/Downright.app/Contents/PlugIns/DownrightQL.appex\n (1 plug-in)";
+const EXPLICITLY_ENABLED_LISTING: &str = "+    com.bitemyapp.upleft.quicklook(1.0)\tUUID\t2026-07-23 03:00:13 +0000\t/Applications/Upleft.app/Contents/PlugIns/DownrightQL.appex\n (1 plug-in)";
 
 /// The user switched it off.
-const DISABLED_LISTING: &str = "-    com.ezzy.downright.quicklook(1.0)\tUUID\t2026-07-23 03:00:13 +0000\t/Applications/Downright.app/Contents/PlugIns/DownrightQL.appex\n (1 plug-in)";
+const DISABLED_LISTING: &str = "-    com.bitemyapp.upleft.quicklook(1.0)\tUUID\t2026-07-23 03:00:13 +0000\t/Applications/Upleft.app/Contents/PlugIns/DownrightQL.appex\n (1 plug-in)";
 
 /// Never registered. `pluginkit` exits 0 for this.
 const NO_MATCHES_LISTING: &str = "  (no matches)\n";

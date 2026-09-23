@@ -61,8 +61,8 @@ fn commands_parse_their_options() {
     assert_eq!(parse(&["open", "--reveal", "doc.md"]).unwrap(), Action::Open(reveal_options, args(&["doc.md"])));
     assert_eq!(parse(&["doctor", "--json"]).unwrap(), Action::Doctor { json: true, app_path: None });
     assert_eq!(
-        parse(&["doctor", "--app", "/tmp/Downright.app"]).unwrap(),
-        Action::Doctor { json: false, app_path: Some("/tmp/Downright.app".into()) }
+        parse(&["doctor", "--app", "/tmp/Upleft.app"]).unwrap(),
+        Action::Doctor { json: false, app_path: Some("/tmp/Upleft.app".into()) }
     );
 }
 
@@ -280,11 +280,11 @@ fn outline_and_target_checks_use_core_parser() {
 #[test]
 fn doctor_plugin_parsing_only_accepts_our_enabled_registration() {
     assert!(DownDoctor::plugin_is_enabled(
-        "+ com.ezzy.downright.quicklook(1.0)\n- com.other.quicklook(1.0)",
-        "com.ezzy.downright.quicklook"
+        "+ com.bitemyapp.upleft.quicklook(1.0)\n- com.other.quicklook(1.0)",
+        "com.bitemyapp.upleft.quicklook"
     ));
-    assert!(!DownDoctor::plugin_is_enabled("- com.ezzy.downright.quicklook(1.0)", "com.ezzy.downright.quicklook"));
-    assert!(!DownDoctor::plugin_is_enabled("+ com.other.quicklook(1.0)", "com.ezzy.downright.quicklook"));
+    assert!(!DownDoctor::plugin_is_enabled("- com.bitemyapp.upleft.quicklook(1.0)", "com.bitemyapp.upleft.quicklook"));
+    assert!(!DownDoctor::plugin_is_enabled("+ com.other.quicklook(1.0)", "com.bitemyapp.upleft.quicklook"));
 }
 
 #[test]

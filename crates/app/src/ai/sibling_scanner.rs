@@ -149,7 +149,7 @@ impl SiblingScanner {
             extra_directories,
             watcher: RefCell::new(None),
             cache: RefCell::new(HashCache::default()),
-            scan_queue: DispatchQueue::new("com.ezzy.downright.sibling-scan", Some(&attribute)),
+            scan_queue: DispatchQueue::new("com.bitemyapp.upleft.sibling-scan", Some(&attribute)),
             scan_generation: Cell::new(0),
             document_state_store,
         });

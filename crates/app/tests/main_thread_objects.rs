@@ -61,7 +61,7 @@ fn services(mtm: MainThreadMarker) {
 
     let registry = IntegrationRegistry::shared(mtm);
     registry.set_open_handler(None);
-    assert_eq!(open_markdown(&provider, &pasteboard).as_deref(), Some("Downright is not ready to open this file."));
+    assert_eq!(open_markdown(&provider, &pasteboard).as_deref(), Some("Upleft is not ready to open this file."));
 
     let routed: Rc<RefCell<Vec<FileUrl>>> = Rc::new(RefCell::new(Vec::new()));
     let sink = Rc::clone(&routed);

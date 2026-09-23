@@ -112,7 +112,7 @@ impl ThemeStoreError {
             }
             ThemeStoreError::NotAVSCodeTheme => "That file is not a VS Code colour theme.".into(),
             ThemeStoreError::UserThemesUnavailable => {
-                "The Downright themes folder is unavailable.".into()
+                "The Upleft themes folder is unavailable.".into()
             }
             ThemeStoreError::Io(message) => message.clone(),
         }
@@ -334,7 +334,7 @@ impl ThemeStore {
             NSSearchPathDomainMask::UserDomainMask,
         );
         let base = urls.firstObject()?;
-        base.URLByAppendingPathComponent_isDirectory(&NSString::from_str("Downright/Themes"), true)
+        base.URLByAppendingPathComponent_isDirectory(&NSString::from_str("Upleft/Themes"), true)
     }
 
     // MARK: - Hot reload (§11.2)

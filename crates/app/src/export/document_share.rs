@@ -93,7 +93,7 @@ impl DocumentShareStaging {
     pub fn make_directory(root: &FileUrl) -> Result<FileUrl, DynError> {
         let uuid = Uuid::new_v4().hyphenated().to_string().to_uppercase();
         let directory = root
-            .appending_path_component_is_directory("Downright-Share", true)
+            .appending_path_component_is_directory("Upleft-Share", true)
             .appending_path_component_is_directory(&uuid, true);
         std::fs::create_dir_all(directory.path())?;
         Ok(directory)

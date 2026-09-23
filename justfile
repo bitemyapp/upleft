@@ -7,10 +7,11 @@ sdk_version := `xcrun --sdk macosx --show-sdk-version`
 default:
     @just --list --unsorted
 
-# Build downright-oracle, the Swift reference, from vendor/downright.
+# Build downright-oracle, the Swift reference, from the rebranded copy of
+# vendor/downright (see scripts/rebrand.py and AGENTS.md, "App identity").
 # `-enable-testing` lets the oracle `@testable import` Downright's modules to
 # dump internal state; it changes symbol visibility, not behaviour.
-oracle:
+oracle: rebrand
     cd oracle && swift build -c release -Xswiftc -enable-testing --scratch-path {{scratch}}/oracle
     just stamp {{scratch}}/oracle/release/downright-oracle
 
@@ -18,13 +19,13 @@ oracle:
 # Package.swift). It is separate from `just oracle` so the core suites never
 # need the whole app or Sparkle.
 # Build downright-app-oracle, the Swift reference for the app-layer suites.
-app-oracle:
+app-oracle: rebrand
     swift build --package-path oracle/app -c release -Xswiftc -enable-testing --scratch-path {{scratch}}/app-oracle
     just stamp {{scratch}}/app-oracle/release/downright-app-oracle
 
 # Build Downright's real `down` from the submodule, stamped, for `down-cli`.
-downright-cli:
-    cd vendor/downright && swift build -c release --scratch-path ../../target/downright-cli --product down
+downright-cli: rebrand
+    cd target/rebranded/downright && swift build -c release --scratch-path ../../downright-cli --product down
     just stamp {{scratch}}/downright-cli/release/down
 
 # Stamp a Swift binary with the canonical LC_BUILD_VERSION (minos 14.0, the
@@ -42,8 +43,8 @@ elklab:
 
 # Build Downright's own benchmark (drbench) from the submodule, stamped like
 # every other reference binary.
-drbench:
-    cd vendor/downright && swift build -c release --scratch-path ../../target/drbench --product drbench
+drbench: rebrand
+    cd target/rebranded/downright && swift build -c release --scratch-path ../../drbench --product drbench
     just stamp {{scratch}}/drbench/release/drbench
 
 # Compare drbench (Swift) with upleft-bench (Rust) stage by stage; fails on any
@@ -60,14 +61,19 @@ app-bench *args: app-oracle corpus
     python3 scripts/app-bench-compare.py {{args}}
 
 # Build the original Downright.app from the submodule (for window-level conformance).
-downright-app:
-    cd vendor/downright && SCRATCH=../../target/downright-app Scripts/bundle-app.sh
-    just stamp {{scratch}}/downright-app/bundle/Downright.app/Contents/MacOS/Downright
-    codesign --force --sign - {{scratch}}/downright-app/bundle/Downright.app
+downright-app: rebrand
+    cd target/rebranded/downright && SCRATCH=../../downright-app Scripts/bundle-app.sh
+    just stamp {{scratch}}/downright-app/bundle/Upleft.app/Contents/MacOS/Upleft
+    codesign --force --sign - {{scratch}}/downright-app/bundle/Upleft.app
 
 # Run the Rust test suite.
 test:
     cargo test --workspace
+
+# Build target/rebranded/downright: Downright with the Upleft identity applied
+# to visible strings only. Every Swift reference builds from it.
+rebrand:
+    python3 scripts/rebrand.py copy
 
 # Regenerate corpus/generated from the pinned submodules.
 corpus:

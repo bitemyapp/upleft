@@ -215,7 +215,7 @@ fn stdin_file() -> Option<FileUrl> {
     if data.is_empty() {
         return None;
     }
-    let directory = foundation_io::temporary_directory().appending_path_component_is_directory("Downright", true);
+    let directory = foundation_io::temporary_directory().appending_path_component_is_directory("Upleft", true);
     let _ = foundation_io::create_directory(&directory, true);
     let url = directory.appending_path_component(&format!("stdin-{}.md", foundation_io::uuid_string()));
     match foundation_io::write_atomically(&data, &url) {
@@ -226,9 +226,9 @@ fn stdin_file() -> Option<FileUrl> {
 
 fn locate_app() -> Option<FileUrl> {
     let candidates = [
-        "/Applications/Downright.app".to_owned(),
-        format!("{}/Applications/Downright.app", foundation_io::ns_home_directory()),
-        url::current_directory_path() + "/.build/bundle/Downright.app",
+        "/Applications/Upleft.app".to_owned(),
+        format!("{}/Applications/Upleft.app", foundation_io::ns_home_directory()),
+        url::current_directory_path() + "/.build/bundle/Upleft.app",
     ];
     if let Some(path) = candidates.iter().find(|path| foundation_io::file_exists(path)) {
         return Some(FileUrl::from_path(path));
@@ -237,7 +237,7 @@ fn locate_app() -> Option<FileUrl> {
         return None;
     }
     let output = Command::new("/usr/bin/mdfind")
-        .arg("kMDItemCFBundleIdentifier == 'com.ezzy.downright'")
+        .arg("kMDItemCFBundleIdentifier == 'com.bitemyapp.upleft'")
         .stdout(Stdio::piped())
         .stderr(Stdio::null())
         .output()
@@ -517,7 +517,7 @@ fn main() {
                 }
             }
             if locate_app().is_none() {
-                write_error("could not find Downright.app; install it in /Applications or run Scripts/bundle-app.sh", 69);
+                write_error("could not find Upleft.app; install it in /Applications or run Scripts/bundle-app.sh", 69);
             }
             exit(launch(&paths, &options));
         }
@@ -553,7 +553,7 @@ fn main() {
                 }
             }
             if locate_app().is_none() {
-                write_error("could not find Downright.app; install it in /Applications or run Scripts/bundle-app.sh", 69);
+                write_error("could not find Upleft.app; install it in /Applications or run Scripts/bundle-app.sh", 69);
             }
             let open_options = OpenOptions { background: !options.focus, ..OpenOptions::default() };
             let watcher = AgentWatcher::new(roots.clone(), options.debounce, move |urls| {
@@ -569,7 +569,7 @@ fn main() {
             }
             let scope: Vec<String> = roots.iter().map(FileUrl::last_path_component).collect();
             write_stderr(
-                format!("down: watching {} — Markdown changes open in Downright. ^C to stop.\n", scope.join(", ")).as_bytes(),
+                format!("down: watching {} — Markdown changes open in Upleft. ^C to stop.\n", scope.join(", ")).as_bytes(),
             );
             flush_printed();
             std::mem::forget(watcher);
@@ -597,7 +597,7 @@ fn main() {
                         print(&if options.mode == HookMode::Install {
                             format!("Already installed in {}", url.path())
                         } else {
-                            format!("No Downright hook found in {}", url.path())
+                            format!("No Upleft hook found in {}", url.path())
                         });
                         exit(0);
                     }
@@ -609,7 +609,7 @@ fn main() {
                         write_error(&format!("cannot write {}: {description}", url.path()), 73);
                     }
                     print(&if options.mode == HookMode::Install {
-                        format!("Installed in {} — agent edits to Markdown now open in Downright.", url.path())
+                        format!("Installed in {} — agent edits to Markdown now open in Upleft.", url.path())
                     } else {
                         format!("Removed from {}.", url.path())
                     });

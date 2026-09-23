@@ -39,6 +39,8 @@ By the owner's decision (2026-09-23), the app is always **Upleft**. It has its o
 
 Never run a long series of on-screen window captures; the owner stopped one on 2026-09-23 because it made the machine unusable. Every windowed oracle command (`render`, `probe`, the density suites, `bench-view`) runs headless by default. The app is never activated, the window sits outside every screen, and `cacheDisplay` records it. Nothing appears on screen and nothing takes focus.
 
+App-level window checks, of the real titled windows, use ScreenCaptureKit on a window placed off-screen and never activated. It gives true compositor pixels (title bar, materials, layers) with nothing on screen. This does not work for borderless windows: ScreenCaptureKit fails with -3811 on an off-screen borderless window, which is why the render harness uses `cacheDisplay`. An off-screen window always draws in its inactive appearance.
+
 `--capture screen` (activation plus a ScreenCaptureKit capture of the on-screen window) is opt-in. Use it only for a handful of representative cases, to confirm that headless and on-screen pixels still agree after a change to the capture path. Tests that need a window put it off-screen too.
 
 ## Gates

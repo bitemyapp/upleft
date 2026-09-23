@@ -2,6 +2,6 @@
  "argv": [
   "doctor",
   "--app",
-  "/nonexistent-upleft-root/Downright.app"
+  "/nonexistent-upleft-root/Upleft.app"
  ]
 }

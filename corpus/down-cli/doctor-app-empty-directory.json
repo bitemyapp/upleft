@@ -1,13 +1,13 @@
 {
  "files": [
   {
-   "path": "work/apps/Downright.app",
+   "path": "work/apps/Upleft.app",
    "directory": true
   }
  ],
  "argv": [
   "doctor",
   "--app",
-  "apps/Downright.app"
+  "apps/Upleft.app"
  ]
 }

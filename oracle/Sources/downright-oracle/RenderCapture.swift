@@ -166,7 +166,9 @@ final class CaptureSession: NSObject, NSApplicationDelegate {
     /// actually sees. ScreenCaptureKit captures this process's own window;
     /// the `screencapture` tool proved unreliable (it hangs intermittently).
     private func captureWindowFromScreen(to url: URL) async throws {
-        let content = try await SCShareableContent.excludingDesktopWindows(false, onScreenWindowsOnly: true)
+        // Not only on-screen windows: in `offscreen` mode the window sits
+        // outside every display and ScreenCaptureKit still composites it.
+        let content = try await SCShareableContent.excludingDesktopWindows(false, onScreenWindowsOnly: false)
         var image = try await captureImage(of: window, in: content)
         let extras = scene.extraWindows()
         if !extras.isEmpty {

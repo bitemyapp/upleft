@@ -75,7 +75,7 @@ fn staged_names_cannot_escape_the_staging_directory() {
     let source = DocumentShareSource::choose(None, true, "../../etc/passwd");
     assert_eq!(source, DocumentShareSource::BufferSnapshot { file_name: "etc-passwd.md".into() });
     let staged = DocumentShareStaging::file_url(&source, || "x\n".into(), ByteFidelity::DEFAULT, &directory).unwrap();
-    assert_eq!(staged.deleting_last_path_component().deleting_last_path_component().last_path_component(), "Downright-Share");
+    assert_eq!(staged.deleting_last_path_component().deleting_last_path_component().last_path_component(), "Upleft-Share");
 
     let pdf = DocumentShareStaging::pdf_url("notes/../secret", &directory).unwrap();
     assert_eq!(pdf.last_path_component(), "notes-..-secret.pdf");

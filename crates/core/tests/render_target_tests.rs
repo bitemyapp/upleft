@@ -11,7 +11,7 @@ fn built_in_profiles_have_intentional_differences() {
     assert_eq!(BuiltInRenderTarget::ALL_CASES.len(), 9);
     assert_eq!(
         BuiltInRenderTarget::ALL_CASES.iter().map(|t| t.display_name()).collect::<Vec<_>>(),
-        ["Downright", "CommonMark", "GitHub", "Obsidian", "Pandoc", "MultiMarkdown", "Jekyll", "Hugo", "Quarto"]
+        ["Upleft", "CommonMark", "GitHub", "Obsidian", "Pandoc", "MultiMarkdown", "Jekyll", "Hugo", "Quarto"]
     );
     assert_eq!(RenderTargetProfile::built_ins().iter().filter_map(|p| p.built_in).count(), 9);
     assert_eq!(RenderTargetProfile::downright().capabilities, MarkdownCapabilities::ALL);
@@ -113,7 +113,7 @@ fn duplicate_findings_are_deterministic_and_range_ordered() {
 fn side_by_side_comparison_exposes_capability_delta() {
     let source = MarkdownParser::parse("# H\n\n- [ ] task\n");
     let result = MarkdownCompatibility::compare(&source, &RenderTargetProfile::downright(), &RenderTargetProfile::common_mark());
-    assert_eq!(result.source.name, "Downright");
+    assert_eq!(result.source.name, "Upleft");
     assert_eq!(result.target.name, "CommonMark");
     assert!(result.only_in_source.contains(MarkdownCapabilities::TASK_LISTS));
     assert!(result.report.diagnostics.iter().any(|d| d.capability == MarkdownCapability::TaskLists));

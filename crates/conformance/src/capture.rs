@@ -294,8 +294,10 @@ fn capture_window_from_screen(window_numbers: Vec<u32>, output: PathBuf) {
         capture_next(Arc::new(filters), Arc::new(Mutex::new(Vec::new())), output.clone());
     });
     unsafe {
+        // Not only on-screen windows: in `offscreen` mode the window sits
+        // outside every display and ScreenCaptureKit still composites it.
         SCShareableContent::getShareableContentExcludingDesktopWindows_onScreenWindowsOnly_completionHandler(
-            false, true, &on_content,
+            false, false, &on_content,
         )
     };
 }

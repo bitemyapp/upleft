@@ -148,7 +148,7 @@ impl MarkdownParseCoordinator {
         MarkdownParseCoordinator {
             inner: Arc::new(Inner {
                 worker,
-                queue: DispatchQueue::new("com.ezzy.downright.parse-coordinator", None),
+                queue: DispatchQueue::new("com.bitemyapp.upleft.parse-coordinator", None),
                 state: Mutex::new(State::default()),
                 on_busy_change: OnceLock::new(),
             }),

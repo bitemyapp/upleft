@@ -248,7 +248,7 @@ impl SnapshotStore {
     pub fn new(history_directory: FileUrl) -> SnapshotStore {
         let history_directory = history_directory.standardized_file_url();
         let utility = DispatchQueue::global_queue(GlobalQueueIdentifier::QualityOfService(DispatchQoS::Utility));
-        let queue = DispatchQueue::new_with_target("com.ezzy.downright.history", DispatchQueueAttr::SERIAL, Some(&utility));
+        let queue = DispatchQueue::new_with_target("com.bitemyapp.upleft.history", DispatchQueueAttr::SERIAL, Some(&utility));
         let inner = Inner {
             queue,
             pending: Mutex::new(Pending {

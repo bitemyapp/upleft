@@ -65,9 +65,9 @@ impl PreviewAppearance {
 pub struct PreviewAppearanceStore;
 
 impl PreviewAppearanceStore {
-    pub const APPEARANCE_KEY: &str = "com.ezzy.downright.quickLook.appearance";
-    pub const LIGHT_THEME_KEY: &str = "com.ezzy.downright.quickLook.lightTheme";
-    pub const DARK_THEME_KEY: &str = "com.ezzy.downright.quickLook.darkTheme";
+    pub const APPEARANCE_KEY: &str = "com.bitemyapp.upleft.quickLook.appearance";
+    pub const LIGHT_THEME_KEY: &str = "com.bitemyapp.upleft.quickLook.lightTheme";
+    pub const DARK_THEME_KEY: &str = "com.bitemyapp.upleft.quickLook.darkTheme";
 
     fn domain() -> (&'static CFString, &'static CFString, &'static CFString) {
         // SAFETY: CoreFoundation exports these as immutable globals.

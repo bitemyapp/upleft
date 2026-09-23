@@ -48,7 +48,7 @@ pub enum MarkdownPastePayload {
 
 /// `NSPasteboard.PasteboardType.downrightMarkdown`.
 pub fn downright_markdown_type() -> Retained<NSString> {
-    NSString::from_str("com.ezzy.downright.markdown")
+    NSString::from_str("com.bitemyapp.upleft.markdown")
 }
 
 /// `NSPasteboard.PasteboardType.webArchive`.

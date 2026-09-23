@@ -235,7 +235,7 @@ impl BuiltInRenderTarget {
 
     pub fn display_name(&self) -> &'static str {
         match self {
-            BuiltInRenderTarget::Downright => "Downright",
+            BuiltInRenderTarget::Downright => "Upleft",
             BuiltInRenderTarget::CommonMark => "CommonMark",
             BuiltInRenderTarget::GitHub => "GitHub",
             BuiltInRenderTarget::Obsidian => "Obsidian",

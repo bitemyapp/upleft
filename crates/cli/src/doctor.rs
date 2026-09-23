@@ -106,10 +106,10 @@ struct CommandResult {
     output: String,
 }
 
-const APP_NAME: &str = "Downright.app";
-const BUNDLE_IDENTIFIER: &str = "com.ezzy.downright";
-const PREVIEW_IDENTIFIER: &str = "com.ezzy.downright.quicklook";
-const THUMBNAIL_IDENTIFIER: &str = "com.ezzy.downright.thumbnail";
+const APP_NAME: &str = "Upleft.app";
+const BUNDLE_IDENTIFIER: &str = "com.bitemyapp.upleft";
+const PREVIEW_IDENTIFIER: &str = "com.bitemyapp.upleft.quicklook";
+const THUMBNAIL_IDENTIFIER: &str = "com.bitemyapp.upleft.thumbnail";
 const MARKDOWN_EXTENSIONS: [&str; 8] = ["md", "markdown", "mdown", "mkd", "mdx", "mdc", "qmd", "rmd"];
 
 fn command_directories() -> Vec<String> {
@@ -195,7 +195,7 @@ impl DownDoctor {
                 checks: vec![DoctorCheck::new(
                     "installed-app",
                     DoctorStatus::Failure,
-                    "Downright.app was not found in /Applications, ~/Applications, or the current bundle.",
+                    "Upleft.app was not found in /Applications, ~/Applications, or the current bundle.",
                     vec!["Install the signed app, then run down doctor again.".into()],
                 )],
             };
@@ -235,7 +235,7 @@ impl DownDoctor {
     }
 
     pub fn human_readable(report: &DoctorReport) -> String {
-        let mut lines = vec!["Downright doctor".to_owned()];
+        let mut lines = vec!["Upleft doctor".to_owned()];
         if let Some(app_path) = &report.app_path {
             lines.push(format!("App: {app_path}"));
         }
@@ -308,7 +308,7 @@ fn bundle_check(app: &FileUrl, info: Option<&Plist>) -> DoctorCheck {
         return DoctorCheck::new("bundle", DoctorStatus::Failure, "Info.plist could not be read.", vec![]);
     };
     let identifier = info.get("CFBundleIdentifier").and_then(Plist::as_str);
-    let executable = app.appending_path_component("Contents/MacOS/Downright");
+    let executable = app.appending_path_component("Contents/MacOS/Upleft");
     if !identifier.is_some_and(|identifier| swift_text::str_eq(identifier, BUNDLE_IDENTIFIER)) {
         return DoctorCheck::new(
             "bundle",
@@ -335,7 +335,7 @@ fn application_location_check(app: &FileUrl) -> DoctorCheck {
             "application-location",
             DoctorStatus::Failure,
             "Bundle is running from App Translocation; Quick Look and CLI registration will not persist.",
-            vec!["Move Downright.app to /Applications and run doctor again.".into()],
+            vec!["Move Upleft.app to /Applications and run doctor again.".into()],
         );
     }
     DoctorCheck::new(
@@ -428,7 +428,7 @@ fn command_line_check(app: &FileUrl) -> DoctorCheck {
     }
     if matches.is_empty() {
         let mut details: Vec<String> = foreign.iter().map(|path| format!("Foreign or stale alias: {path}")).collect();
-        details.push("Install the CLI from Downright's setup panel to repair it.".into());
+        details.push("Install the CLI from Upleft's setup panel to repair it.".into());
         return DoctorCheck::new("cli-path", DoctorStatus::Warning, "No down/md alias points to this app.", details);
     }
     DoctorCheck::new("cli-path", DoctorStatus::Pass, "CLI aliases point to this app.", matches)
@@ -482,13 +482,13 @@ fn default_association_check(app: &FileUrl) -> DoctorCheck {
     let expected = app.resolving_symlinks_in_path().standardized_file_url();
     let actual = handler.resolving_symlinks_in_path().standardized_file_url();
     if actual == expected {
-        return DoctorCheck::new("default-markdown-app", DoctorStatus::Pass, "Downright is the default .md application.", vec![]);
+        return DoctorCheck::new("default-markdown-app", DoctorStatus::Pass, "Upleft is the default .md application.", vec![]);
     }
     DoctorCheck::new(
         "default-markdown-app",
         DoctorStatus::Warning,
         format!("macOS currently opens .md files with {}.", handler.last_path_component()),
-        vec!["The app still supports Open With; choose Downright if you want it as the default.".into()],
+        vec!["The app still supports Open With; choose Upleft if you want it as the default.".into()],
     )
 }
 

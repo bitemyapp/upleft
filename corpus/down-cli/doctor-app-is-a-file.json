@@ -1,7 +1,7 @@
 {
  "files": [
   {
-   "path": "work/Downright.app",
+   "path": "work/Upleft.app",
    "text": "not a bundle\n"
   }
  ],
@@ -9,6 +9,6 @@
   "doctor",
   "--json",
   "--app",
-  "Downright.app"
+  "Upleft.app"
  ]
 }

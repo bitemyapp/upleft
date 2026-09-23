@@ -142,7 +142,7 @@ fn mermaid_bridge_matches_known_good_path() {
 #[test]
 fn mermaid_bridge_trims_to_its_own_ink() {
     let sheet = sheet();
-    let source = "sequenceDiagram\n    Agent->>Disk: write temp file\n    Agent->>Disk: rename() over target\n    Disk->>Downright: FSEvents on parent directory";
+    let source = "sequenceDiagram\n    Agent->>Disk: write temp file\n    Agent->>Disk: rename() over target\n    Disk->>Upleft: FSEvents on parent directory";
     let image = bridge::image(source, &sheet).expect("diagram renders");
     let rep = bitmap_rep(&image.ns_image()).unwrap();
     let ink = ink_box(&rep).expect("diagram has ink");

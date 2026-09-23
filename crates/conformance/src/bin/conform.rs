@@ -443,6 +443,21 @@ fn alternatives(value: &Value) -> Option<&Vec<Value>> {
     object.get("alternatives")?.as_array()
 }
 
+/// `down open` finds the app through Spotlight (`mdfind` on the bundle id)
+/// when no standard location has it, and then launches it. A down-cli run
+/// must never launch a real app onto the user's screen, so the suite refuses
+/// to run while Spotlight can find any bundle with Upleft's identifier.
+/// (`target/.metadata_never_index` keeps the reference builds out of the
+/// index.)
+fn launchable_app_guard() -> Option<String> {
+    let output = Command::new("/usr/bin/mdfind")
+        .arg("kMDItemCFBundleIdentifier == 'com.bitemyapp.upleft'")
+        .output()
+        .ok()?;
+    let found = String::from_utf8_lossy(&output.stdout).trim().to_owned();
+    (!found.is_empty()).then(|| format!("Spotlight finds an app with Upleft's bundle id that `down open` would launch:\n{found}"))
+}
+
 fn main() -> ExitCode {
     let options = parse_options();
     let root = root();
@@ -496,6 +511,13 @@ fn main() -> ExitCode {
 
     let mut any_failure = false;
     for suite in selected {
+        if suite.name == "down-cli"
+            && let Some(message) = launchable_app_guard()
+        {
+            eprintln!("conform: refusing to run down-cli: {message}");
+            any_failure = true;
+            continue;
+        }
         let _ = fs::remove_dir_all(context.out.join(&suite.name));
         let files = corpus_files(&corpus, &suite.input);
         let mut cases: Vec<Case> = files

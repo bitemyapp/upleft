@@ -185,7 +185,7 @@ define_class!(
             let registry = IntegrationRegistry::shared(self.mtm());
             let opened = urls.iter().filter(|url| registry.open(url)).count();
             if opened == 0 {
-                set_error(error, "Downright is not ready to open this file.");
+                set_error(error, "Upleft is not ready to open this file.");
             }
         }
     }

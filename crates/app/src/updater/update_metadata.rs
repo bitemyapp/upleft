@@ -147,7 +147,7 @@ impl PartialEq for UpdateFailure {
 impl UpdateFailure {
     /// `UpdateFailure.generic`.
     pub fn generic() -> UpdateFailure {
-        UpdateFailure { message: "Downright couldn't update.".into(), technical_detail: None, code: -1, retryable: true }
+        UpdateFailure { message: "Upleft couldn't update.".into(), technical_detail: None, code: -1, retryable: true }
     }
 
     /// `init(error:)`. Swift bridges the error to `NSError` first (`error as
@@ -156,7 +156,7 @@ impl UpdateFailure {
     /// every caller hands over the `NSError` Swift would have seen.
     pub fn from_error(error: &NSError) -> UpdateFailure {
         let description = error.localizedDescription().to_string();
-        let message = if description.is_empty() { "Downright couldn't update.".to_owned() } else { description };
+        let message = if description.is_empty() { "Upleft couldn't update.".to_owned() } else { description };
         let technical_detail = error
             .localizedRecoverySuggestion()
             .or_else(|| error.localizedFailureReason())

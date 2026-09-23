@@ -132,7 +132,7 @@ fn run_in(scenario: &Map<String, Value>, sandbox: &Path, binary: &Path) -> Resul
     };
 
     let collect_temp = scenario.get("tempFiles").and_then(Value::as_bool) == Some(true);
-    let temp_directory = foundation_io::temporary_directory().appending_path_component("Downright").path();
+    let temp_directory = foundation_io::temporary_directory().appending_path_component("Upleft").path();
     let temp_before = directory_names(Path::new(&temp_directory));
 
     let (status, stdout, stderr) = spawn_and_wait(

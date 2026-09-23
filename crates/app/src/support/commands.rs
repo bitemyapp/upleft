@@ -756,7 +756,7 @@ impl Menu {
     /// The app menu is named after the app, not after the enum case;
     /// "Application" would be a lie in both the menu bar and Settings.
     pub fn title(self) -> String {
-        if self == Menu::Application { "Downright".to_owned() } else { swift_text::capitalized(self.raw_value()) }
+        if self == Menu::Application { "Upleft".to_owned() } else { swift_text::capitalized(self.raw_value()) }
     }
 }
 

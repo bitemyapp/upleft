@@ -142,7 +142,7 @@ impl SpotlightMetadataImporter {
         if ["md", "markdown", "mdown", "mkd"].iter().any(|name| swift_text::str_eq(name, &extension)) {
             "net.daringfireball.markdown"
         } else {
-            "com.ezzy.downright.markdown"
+            "com.bitemyapp.upleft.markdown"
         }
     }
 }

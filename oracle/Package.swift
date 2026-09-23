@@ -9,11 +9,11 @@ let package = Package(
     name: "DownrightOracle",
     platforms: [.macOS(.v14)],
     dependencies: [
-        .package(name: "downright", path: "../vendor/downright"),
+        .package(name: "downright", path: "../target/rebranded/downright"),
         .package(url: "https://github.com/apple/swift-markdown.git", revision: "27b7fc1a19068bcea3d2072db0ce86360d1400ed"),
         .package(url: "https://github.com/lukilabs/beautiful-mermaid-swift.git", exact: "1.0.4"),
         .package(url: "https://github.com/lukilabs/elk-swift", exact: "1.0.2"),
-        .package(path: "../vendor/downright/Vendor/SwiftMath"),
+        .package(path: "../target/rebranded/downright/Vendor/SwiftMath"),
     ],
     targets: [
         .executableTarget(

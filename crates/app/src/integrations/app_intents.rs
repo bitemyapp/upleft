@@ -19,9 +19,9 @@ use objc2::MainThreadMarker;
 use crate::integrations::native_integration::{IntegrationRegistry, NativeIntegrationPolicy};
 
 /// `OpenMarkdownIntent.title`.
-pub const OPEN_MARKDOWN_INTENT_TITLE: &str = "Open Markdown in Downright";
+pub const OPEN_MARKDOWN_INTENT_TITLE: &str = "Open Markdown in Upleft";
 /// `OpenMarkdownIntent.description`.
-pub const OPEN_MARKDOWN_INTENT_DESCRIPTION: &str = "Open a Markdown document in Downright.";
+pub const OPEN_MARKDOWN_INTENT_DESCRIPTION: &str = "Open a Markdown document in Upleft.";
 /// `OpenMarkdownIntent.openAppWhenRun`.
 pub const OPEN_MARKDOWN_INTENT_OPENS_APP: bool = true;
 
@@ -36,7 +36,7 @@ impl OpenMarkdownIntentError {
     pub fn error_description(self) -> Option<&'static str> {
         match self {
             OpenMarkdownIntentError::UnsupportedFile => Some("Choose a Markdown file."),
-            OpenMarkdownIntentError::Unavailable => Some("Downright could not open that file."),
+            OpenMarkdownIntentError::Unavailable => Some("Upleft could not open that file."),
         }
     }
 

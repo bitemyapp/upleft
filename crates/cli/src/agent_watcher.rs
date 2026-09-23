@@ -188,7 +188,7 @@ impl AgentWatcher {
     ///   files that changed. Never called with an empty array.
     pub fn new(roots: Vec<FileUrl>, debounce: f64, handler: impl Fn(Vec<FileUrl>) + Send + Sync + 'static) -> AgentWatcher {
         let attributes = DispatchQueueAttr::with_qos_class(None, DispatchQoS::Utility, 0);
-        let queue = DispatchQueue::new("com.ezzy.downright.agentwatcher", Some(&attributes));
+        let queue = DispatchQueue::new("com.bitemyapp.upleft.agentwatcher", Some(&attributes));
         queue.set_specific(NonNull::from(&QUEUE_KEY).cast(), || {});
         AgentWatcher {
             inner: Arc::new(Inner {

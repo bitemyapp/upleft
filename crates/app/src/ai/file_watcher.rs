@@ -172,7 +172,7 @@ impl FileWatcher {
         });
         let last_snapshot = snapshot(&url, true);
         let attribute = DispatchQueueAttr::with_qos_class(DispatchQueueAttr::SERIAL, DispatchQoS::Utility, 0);
-        let queue = DispatchQueue::new("com.ezzy.downright.filewatcher", Some(&attribute));
+        let queue = DispatchQueue::new("com.bitemyapp.upleft.filewatcher", Some(&attribute));
         let inner = Arc::new_cyclic(|me| Inner {
             me: me.clone(),
             url: Mutex::new(url),

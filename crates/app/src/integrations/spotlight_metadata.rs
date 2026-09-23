@@ -46,7 +46,7 @@ pub struct IndexedItem {
 pub struct SpotlightIndexer;
 
 impl SpotlightIndexer {
-    pub const DOMAIN_IDENTIFIER: &'static str = "com.ezzy.downright.documents";
+    pub const DOMAIN_IDENTIFIER: &'static str = "com.bitemyapp.upleft.documents";
 
     /// The item `indexOpenedDocument(at:)` indexes, or `None` where Swift's
     /// `guard` returns: the metadata cannot be read, or `UTType(contentType)`

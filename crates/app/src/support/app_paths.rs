@@ -6,7 +6,7 @@
 use objc2_foundation::{NSFileManager, NSSearchPathDirectory, NSSearchPathDomainMask};
 use upleft_foundation::url::FileUrl;
 
-pub const BUNDLE_IDENTIFIER: &str = "com.ezzy.downright";
+pub const BUNDLE_IDENTIFIER: &str = "com.bitemyapp.upleft";
 
 /// `AppPaths.supportDirectory`.
 pub fn support_directory() -> FileUrl {
@@ -24,7 +24,7 @@ pub fn support_directory() -> FileUrl {
         FileUrl::from_path(&objc2_foundation::NSHomeDirectory().to_string())
             .appending_path_component("Library/Application Support")
     });
-    base.appending_path_component_is_directory("Downright", true)
+    base.appending_path_component_is_directory("Upleft", true)
 }
 
 /// Content-addressed snapshot store for local time-travel (§8.3).
@@ -77,7 +77,7 @@ impl Purpose {
         }
     }
 
-    /// Reads as the tail of "Downright can't save …".
+    /// Reads as the tail of "Upleft can't save …".
     pub fn feature_description(self) -> &'static str {
         match self {
             Purpose::Support => "your settings, keyboard shortcuts, or the last session",

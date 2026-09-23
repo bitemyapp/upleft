@@ -138,7 +138,7 @@ private struct DownCLIScenario {
         let stdin: [UInt8]? = try (scenario["stdin"] as? [String: Any]).map { try bytes($0, substitute: substitute) }
 
         let collectTemp = scenario["tempFiles"] as? Bool == true
-        let tempDirectory = FileManager.default.temporaryDirectory.appendingPathComponent("Downright").path
+        let tempDirectory = FileManager.default.temporaryDirectory.appendingPathComponent("Upleft").path
         let tempBefore = Set((try? FileManager.default.contentsOfDirectory(atPath: tempDirectory)) ?? [])
 
         let result = try spawnAndWait(executable: sandbox + "/bin/down", argv: argv, environment: environment, cwd: cwd, stdin: stdin)

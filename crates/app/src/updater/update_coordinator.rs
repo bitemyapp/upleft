@@ -292,10 +292,10 @@ thread_local! {
 }
 
 impl UpdateCoordinator {
-    /// `Notification.Name("Downright.UpdateCoordinator.stateDidChange")`.
+    /// `Notification.Name("Upleft.UpdateCoordinator.stateDidChange")`.
     /// Fired whenever the machine phase, pill model, or release-notes state
     /// changes. Pills and the panel observe this; nothing polls.
-    pub const STATE_DID_CHANGE: &'static str = "Downright.UpdateCoordinator.stateDidChange";
+    pub const STATE_DID_CHANGE: &'static str = "Upleft.UpdateCoordinator.stateDidChange";
 
     /// `static let shared`, built with the private `init()` (no engine until
     /// `start()`).
@@ -991,7 +991,7 @@ impl UpdateCoordinator {
         let alert = NSAlert::new(mtm);
         alert.setMessageText(&NSString::from_str("Updates aren't available for this build."));
         alert.setInformativeText(&NSString::from_str(
-            "This copy of Downright doesn't carry the production update configuration.",
+            "This copy of Upleft doesn't carry the production update configuration.",
         ));
         alert.setAlertStyle(NSAlertStyle::Informational);
         alert.runModal();

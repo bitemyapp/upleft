@@ -72,8 +72,8 @@ fn perform_routes_through_policy_then_registry() {
 
 fn errors_describe_themselves_as_downright_does() {
     assert_eq!(OpenMarkdownIntentError::UnsupportedFile.error_description(), Some("Choose a Markdown file."));
-    assert_eq!(OpenMarkdownIntentError::Unavailable.error_description(), Some("Downright could not open that file."));
-    assert_eq!(OPEN_MARKDOWN_INTENT_TITLE, "Open Markdown in Downright");
+    assert_eq!(OpenMarkdownIntentError::Unavailable.error_description(), Some("Upleft could not open that file."));
+    assert_eq!(OPEN_MARKDOWN_INTENT_TITLE, "Open Markdown in Upleft");
     assert!(declarations_available(), "the shim is built against an SDK with AppIntents");
     register();
 }

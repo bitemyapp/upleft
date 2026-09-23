@@ -165,7 +165,7 @@ impl SystemIntegration {
             if !is_writable_file(&base.path()) {
                 continue;
             }
-            return Some(base.appending_path_component("Downright.app"));
+            return Some(base.appending_path_component("Upleft.app"));
         }
         None
     }
@@ -375,7 +375,7 @@ impl SystemIntegration {
 
             if occupied {
                 match &existing_link {
-                    Some(existing) if swift_text::contains_bridged(existing, "Downright.app/") => {}
+                    Some(existing) if swift_text::contains_bridged(existing, "Upleft.app/") => {}
                     _ => {
                         skipped.push(name.to_owned());
                         continue;
@@ -393,8 +393,8 @@ impl SystemIntegration {
 
     // MARK: - Quick Look
 
-    pub const PREVIEW_EXTENSION_IDENTIFIER: &'static str = "com.ezzy.downright.quicklook";
-    pub const THUMBNAIL_EXTENSION_IDENTIFIER: &'static str = "com.ezzy.downright.thumbnail";
+    pub const PREVIEW_EXTENSION_IDENTIFIER: &'static str = "com.bitemyapp.upleft.quicklook";
+    pub const THUMBNAIL_EXTENSION_IDENTIFIER: &'static str = "com.bitemyapp.upleft.thumbnail";
 
     fn plug_ins_directory() -> FileUrl {
         bundle_url().appending_path_component("Contents/PlugIns")
