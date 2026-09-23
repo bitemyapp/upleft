@@ -214,7 +214,9 @@ use crate::panels::task_progress_ring::TaskProgressRing;
 use crate::panels::update_status_pill::UpdateStatusPill;
 use crate::support::find_engine::{FindQuery, FindSession, SiblingHit, SiblingSearch};
 use crate::support::jump_history::JumpHistory;
+use crate::panels::document_quick_look::QuickLookHost;
 use crate::support::preferences::Preferences;
+use objc2_foundation::NSURL;
 
 pub use views::{DocumentRootView, FloatingOverlayHostView, FocusDimmingView};
 
@@ -465,6 +467,41 @@ define_class!(
             return_type: Option<&NSString>,
         ) -> Option<Retained<AnyObject>> {
             self.valid_requestor(send_type, return_type)
+        }
+
+        // `Panels/DocumentQuickLook.swift`: the Quick Look panel's
+        // responder-chain handshake (overrides of NSResponder's QuickLookUI
+        // category), its data source and its delegate, forwarding to
+        // `QuickLookHost` (implemented in `+Delegates`).
+
+        #[unsafe(method(acceptsPreviewPanelControl:))]
+        fn __accepts_preview_panel_control(&self, panel: &AnyObject) -> bool {
+            QuickLookHost::accepts_preview_panel_control(self, panel)
+        }
+
+        #[unsafe(method(beginPreviewPanelControl:))]
+        fn __begin_preview_panel_control(&self, panel: &AnyObject) {
+            QuickLookHost::begin_preview_panel_control(self, panel);
+        }
+
+        #[unsafe(method(endPreviewPanelControl:))]
+        fn __end_preview_panel_control(&self, panel: &AnyObject) {
+            QuickLookHost::end_preview_panel_control(self, panel);
+        }
+
+        #[unsafe(method(numberOfPreviewItemsInPreviewPanel:))]
+        fn __number_of_preview_items(&self, panel: &AnyObject) -> isize {
+            QuickLookHost::number_of_preview_items(self, panel)
+        }
+
+        #[unsafe(method_id(previewPanel:previewItemAtIndex:))]
+        fn __preview_item_at(&self, panel: &AnyObject, index: isize) -> Option<Retained<NSURL>> {
+            QuickLookHost::preview_item_at(self, panel, index)
+        }
+
+        #[unsafe(method(previewPanel:sourceFrameOnScreenForPreviewItem:))]
+        fn __source_frame_on_screen(&self, panel: &AnyObject, item: Option<&AnyObject>) -> NSRect {
+            QuickLookHost::source_frame_on_screen(self, panel, item)
         }
     }
 
