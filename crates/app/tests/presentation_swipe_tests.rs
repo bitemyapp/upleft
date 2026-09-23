@@ -14,11 +14,13 @@
 //!
 //! Skipped, with the reason:
 //! - `railTracksTheSwipeAndLandsWithoutSwitchingTwice`,
-//!   `railReturnsToWhereItStartedWhenTheSwipeIsAbandoned`: need
-//!   `ToolbarPresentationControl`, which is being ported elsewhere.
+//!   `railReturnsToWhereItStartedWhenTheSwipeIsAbandoned`: not skipped; they
+//!   test the rail alone (`ToolbarPresentationControl`, no stand-in) and run
+//!   in `toolbar_controls_tests.rs`.
 //! - `swipingLeftClaimsTheGestureAndLandsOnSource`,
 //!   `abandonedSwipeLeavesTheDocumentWhereItWas`: assert on
-//!   `controller.toolbarPresentationControl` (`ToolbarPresentationControl`).
+//!   `controller.toolbarPresentationControl`, which the window controller
+//!   wires to the swipe's rail callbacks (not ported).
 //! - `aSwipeInSplitViewCarriesBothPanes`: needs `DocumentWindowController`'s
 //!   `toggleSplitView()`, `splitContainer`, and its real presentation switch
 //!   (`textView.sourceFocus`).

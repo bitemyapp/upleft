@@ -245,3 +245,15 @@ harness = false
 [[test]]
 name = "settings_pane_tests"
 harness = false
+
+# The toolbar controls, `ToolbarGlassBand` and `DocumentWindow`
+# (`App/ToolbarControls.swift`, `App/ToolbarGlassBand.swift`,
+# `App/DocumentWindow.swift`): `@MainActor` suites over AppKit views, on the
+# main thread (tests/main_thread/mod.rs).
+[[test]]
+name = "window_chrome_tests"
+harness = false
+
+[[test]]
+name = "toolbar_controls_tests"
+harness = false
