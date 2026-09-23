@@ -7,7 +7,7 @@
 //! LGraphAdapters.adapt(graph, transparentNorthSouthEdges: false)).process(
 //! node: LGraphAdapters.adapt(dummy, transparentNorthSouthEdges: false))`:
 //!
-//! ```ignore
+//! ```text
 //! NodeDimensionCalculation::get_node_margin_calculator(LGraphAdapters::adapt_ns(graph, false))
 //!     .process_node(lg, &LGraphAdapters::adapt_node(dummy, false));
 //! ```
