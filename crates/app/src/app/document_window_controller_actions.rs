@@ -344,9 +344,8 @@ impl DocumentWindowController {
         let this = self.retain();
         self.authorize_local_effect(TrustEffect::ReadLocalAsset, &origin_file, move || {
             let panel = NSSavePanel::savePanel(this.actions_mtm());
-            if let Some(name) = origin.lastPathComponent() {
-                panel.setNameFieldStringValue(&name);
-            }
+            // `URL.lastPathComponent` is `""` where `NSURL` answers nil.
+            panel.setNameFieldStringValue(&origin.lastPathComponent().unwrap_or_else(|| NSString::from_str("")));
             if panel.runModal() != NSModalResponseOK {
                 return;
             }

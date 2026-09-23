@@ -293,3 +293,30 @@ harness = false
 [[test]]
 name = "toolbar_controls_tests"
 harness = false
+
+# `DocumentWindowController`'s `+Actions`, `+Commands` and `+Delegates`
+# (`App/DocumentWindowController+….swift`): `@MainActor` suites over a real
+# controller whose window is never ordered in (tests/controller_support).
+[[test]]
+name = "editing_key_repro_tests"
+harness = false
+
+[[test]]
+name = "command_palette_navigation_regression_tests"
+harness = false
+
+[[test]]
+name = "window_chrome_tests_controller"
+harness = false
+
+[[test]]
+name = "document_chrome_layout_tests_commands"
+harness = false
+
+[[test]]
+name = "document_quick_look_tests_controller"
+harness = false
+
+[[test]]
+name = "presentation_swipe_tests_controller"
+harness = false
