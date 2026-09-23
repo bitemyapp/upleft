@@ -154,7 +154,8 @@ unported code: `SpeechAccessibilityTests`' `DensityGutterView` assertions,
 The machine's screen was locked for the whole fragment session, so
 ScreenCaptureKit refused every window capture (`SCStreamErrorDomain -3811`)
 and the `render` suite itself could not run after the first three documents
-(agent-40 and agent-400 passed all four variants before the lock). The
+(agent-40 and agent-400 passed all four variants before the lock). Source
+mode renders no objects and was identical before this port. The
 oracles' `--capture view` path (`cacheDisplay`, the same scene, settle loop
 and layout dump) still works on a locked screen, so the port was checked with
 it, both oracles, document by document:
@@ -162,8 +163,8 @@ it, both oracles, document by document:
 | run | cases | identical (layout dump and PNG) |
 |---|---:|---:|
 | whole corpus, `--mode live` | 909 | 909 |
-| whole corpus, `--mode live --dark` | 909 | see the fragment report |
-| whole corpus, `--mode live --width 1400 --height 1000` | 909 | see the fragment report |
+| whole corpus, `--mode live --dark` | 909 | 909 |
+| whole corpus, `--mode live --width 1400 --height 1000` | 909 | 909 |
 | 50 fragment-heavy documents + `render-images`, live / dark / wide / Nord / Warm Dark / source | 285 | 285 |
 
 **Unverified until the screen is unlocked:** `just conform --suite render`
