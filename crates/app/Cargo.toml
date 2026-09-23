@@ -37,3 +37,13 @@ objc2-core-foundation = { workspace = true, features = ["CFArray", "CFBase", "CF
 
 [dev-dependencies]
 serde_json.workspace = true
+
+# Suites whose Swift originals run on the main actor own the main thread
+# (tests/main_thread/mod.rs).
+[[test]]
+name = "local_ai_tests"
+harness = false
+
+[[test]]
+name = "app_intents_tests"
+harness = false

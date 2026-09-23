@@ -61,7 +61,11 @@ let package = Package(
                 .product(name: "Sparkle", package: "Sparkle"),
             ],
             exclude: ["main.swift"],
-            swiftSettings: [.swiftLanguageMode(.v5)]
+            // `-enable-private-imports` lets LocalAIDump reach the Apple
+            // adapter's `private` prompt and result helpers through
+            // `@_private(sourceFile:) import`; like `-enable-testing`, it
+            // changes symbol visibility only.
+            swiftSettings: [.swiftLanguageMode(.v5), .unsafeFlags(["-enable-private-imports"])]
         ),
         .executableTarget(
             name: "downright-app-oracle",

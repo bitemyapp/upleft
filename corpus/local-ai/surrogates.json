@@ -1,0 +1,52 @@
+{
+ "requests": [
+  {
+   "task": "improveClarity",
+   "source": "😀abc in order to x",
+   "selection": [
+    1,
+    19
+   ],
+   "output": "y"
+  },
+  {
+   "task": "summarize",
+   "source": "ab😀",
+   "selection": [
+    0,
+    3
+   ],
+   "output": "z"
+  },
+  {
+   "task": "suggestTitle",
+   "source": "😀😁 word",
+   "selection": [
+    1,
+    2
+   ],
+   "output": "t"
+  }
+ ],
+ "previews": [
+  {
+   "range": [
+    0,
+    1
+   ],
+   "originalSource": "�",
+   "proposedSource": "x",
+   "current": "😀"
+  },
+  {
+   "range": [
+    1,
+    1
+   ],
+   "originalSource": "�",
+   "proposedSource": "�",
+   "current": "😀"
+  }
+ ],
+ "controller": []
+}
