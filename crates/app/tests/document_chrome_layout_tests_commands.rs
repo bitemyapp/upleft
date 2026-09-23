@@ -9,8 +9,14 @@
 //! layout, not these extensions; it belongs with that port.
 //!
 //! The Swift suite is `@MainActor` and `.serialized`: this binary owns the
-//! main thread (`harness = false`). No window is ordered in
-//! (`controller_support`); the Swift test never orders its window in either.
+//! main thread (`harness = false`).
+//!
+//! Written but not run: the Tasks panel opens as the floating surface, whose
+//! borderless child window (`addChildWindow(_:ordered:)` then `orderFront`)
+//! orders the titled document window in too, even parked at
+//! (-30000, -30000); titled windows must never reach a display
+//! (`controller_support`). It is registered once the floating path can run
+//! without ordering its parent in.
 
 mod controller_support;
 
@@ -38,6 +44,7 @@ fn make_document() -> (FileUrl, Removing) {
     (file, Removing(directory))
 }
 
+#[allow(dead_code)]
 fn menu_and_ring_open_tasks() {
     let (file, _cleanup) = make_document();
     let controller = Closing(new_controller());
@@ -50,6 +57,7 @@ fn menu_and_ring_open_tasks() {
     // SAFETY: the controller answers `performDownrightCommand:`.
     unsafe { menu_item.setTarget(Some(&controller.0)) };
     controller.perform_downright_command(Some(&menu_item));
+    controller_support::assert_document_window_never_shown(&controller);
     assert!(controller.floating_surface().is_some());
     controller.close_task_panel();
 
@@ -62,6 +70,7 @@ fn menu_and_ring_open_tasks() {
 
 fn main() {
     controller_support::prepare();
-    controller_support::main_thread::run(&[("menu_and_ring_open_tasks", menu_and_ring_open_tasks)]);
+    // `menu_and_ring_open_tasks` is not registered; see the module notes.
+    controller_support::main_thread::run(&[]);
     controller_support::finish();
 }

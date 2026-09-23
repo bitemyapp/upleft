@@ -8,6 +8,13 @@
 //! controller-free cases and `window_chrome_tests_document.rs` the main
 //! controller file's.
 //!
+//! Written but not run: `inspectorSelectionAndCloseStayInSyncWithToolbar`
+//! (`inspector_selection_and_close_stay_in_sync_with_toolbar`). Showing a
+//! section opens the floating surface, whose borderless child window
+//! (`addChildWindow(_:ordered:)` then `orderFront`) orders the titled parent
+//! in as well, even parked at (-30000, -30000) (seen once on 2026-09-23
+//! through `isVisible`); titled windows must never reach a display.
+//!
 //! Left to `window_chrome_tests_document.rs` (the main file's panels and
 //! layout, not these extensions): `missingFileRecovery…`,
 //! `documentBarsReserveSpace…`, `floatingTaskPanelFitsItsFooterRow`,
@@ -26,7 +33,7 @@ use controller_support::{Closing, Removing, descendants, new_controller, tempora
 use objc2::rc::Retained;
 use objc2::runtime::AnyObject;
 use objc2_app_kit::{
-    NSAccessibilityProtocol, NSButton, NSLayoutAttribute, NSTextField, NSTitlebarSeparatorStyle,
+    NSButton, NSLayoutAttribute, NSTextField, NSTitlebarSeparatorStyle,
     NSToolbarDisplayMode, NSToolbarFlexibleSpaceItemIdentifier, NSView, NSWindowStyleMask, NSWindowTitleVisibility,
     NSWindowToolbarStyle,
 };
@@ -37,7 +44,7 @@ use upleft_app::app::toolbar_controls::{
     ToolbarTrailingCluster,
 };
 use upleft_app::panels::activity_indicator_view::ActivityIndicatorView;
-use upleft_app::panels::appkit_support::{downcast, is};
+use upleft_app::panels::appkit_support::{self, downcast, is};
 use upleft_app::panels::task_progress_ring::TaskProgressRing;
 use upleft_app::panels::update_status_pill::UpdateStatusPill;
 use upleft_app::support::commands::Command;
@@ -49,7 +56,7 @@ fn same_object(a: &AnyObject, b: &AnyObject) -> bool {
 }
 
 fn accessibility_label(view: &NSView) -> Option<String> {
-    view.accessibilityLabel().map(|label| label.to_string())
+    appkit_support::accessibility_label(view)
 }
 
 fn find_button(label: &str, root: &NSView) -> Retained<NSButton> {
@@ -98,6 +105,7 @@ fn document_identity_shows_only_exceptional_states() {
     assert_eq!(tool_tip().map(|tip| tip.contains("File missing: File missing")), Some(false));
 }
 
+#[allow(dead_code)]
 fn inspector_selection_and_close_stay_in_sync_with_toolbar() {
     use upleft_app::panels::inspector_host_view::InspectorSection;
 
@@ -109,6 +117,7 @@ fn inspector_selection_and_close_stay_in_sync_with_toolbar() {
     // must not resurrect the old width-reserving inspector lane.
     let mtm = controller_support::mtm();
     controller.show_in_inspector(&NSView::new(mtm), InspectorSection::History);
+    controller_support::assert_document_window_never_shown(&controller);
     assert!(controller.floating_surface().is_some());
     assert_eq!(controller.inspector_host().and_then(|host| host.selected_section()), Some(InspectorSection::History));
 
@@ -145,7 +154,10 @@ fn toolbar_uses_native_centered_mode_and_trailing_menu() {
     assert!(controller.primary_container().trailing_accessory().is_none());
     assert_eq!(toolbar.displayMode(), NSToolbarDisplayMode::IconOnly);
     assert_eq!(toolbar.identifier().to_string(), "DownrightToolbar.v11");
-    assert_eq!(toolbar.centeredItemIdentifier().map(|identifier| identifier.to_string()).as_deref(), Some("presentation-mode"));
+    // Swift reads the (deprecated) single-identifier property too.
+    #[allow(deprecated)]
+    let centered = toolbar.centeredItemIdentifier();
+    assert_eq!(centered.map(|identifier| identifier.to_string()).as_deref(), Some("presentation-mode"));
     // SAFETY: AppKit's immutable identifier constant.
     let flexible_space = unsafe { NSToolbarFlexibleSpaceItemIdentifier }.to_string();
     let identifiers: Vec<String> =
@@ -272,17 +284,21 @@ fn local_find_uses_compact_document_bar() {
 
     let bar = controller.find_bar().expect("the find bar");
     let bar_stack = controller.bar_stack();
-    assert!(bar.superview().is_some());
-    assert!(!bar.superview().is_some_and(|superview| same_object(&superview, &bar_stack)));
+    // SAFETY: reading the view hierarchy on the main thread.
+    let superview = unsafe { bar.superview() };
+    assert!(superview.is_some());
+    assert!(!superview.is_some_and(|superview| same_object(&superview, &bar_stack)));
     assert_eq!(bar.intrinsicContentSize().height, FindBarDensity::BAR_HEIGHT);
     assert_eq!(bar.divider_count_for_testing(), 2);
     assert!(bar.has_close_button_for_testing());
     assert!(!bar.search_field_is_bezeled_for_testing());
 
     let find_button = controller.toolbar_find_button().expect("the toolbar's Find button");
-    find_button.performClick(None);
+    // SAFETY: a nil sender, as Swift passes.
+    unsafe { find_button.performClick(None) };
     assert!(controller.find_bar().is_none());
-    find_button.performClick(None);
+    // SAFETY: a nil sender, as Swift passes.
+    unsafe { find_button.performClick(None) };
     assert!(controller.find_bar().is_some());
 
     controller.dismiss_find_bar();
@@ -316,7 +332,8 @@ fn find_action_flushes_the_visible_query_before_the_debounce_fires() {
     let bar = controller.find_bar().expect("the find bar");
 
     bar.set_query_text("alpha", true);
-    find_button("Next match", &bar).performClick(None);
+    // SAFETY: a nil sender, as Swift passes.
+    unsafe { find_button("Next match", &bar).performClick(None) };
 
     assert_eq!(controller.current_find_query().text, "alpha");
     assert_eq!(bar.status_text(), "2 of 2");
@@ -325,12 +342,14 @@ fn find_action_flushes_the_visible_query_before_the_debounce_fires() {
     let replacement = find_text_field("Replace with", &bar);
     bar.set_query_text("beta", true);
     replacement.setStringValue(&NSString::from_str("gamma"));
-    find_button("Replace", &bar).performClick(None);
+    // SAFETY: a nil sender, as Swift passes.
+    unsafe { find_button("Replace", &bar).performClick(None) };
     assert_eq!(controller.markdown_document().text(), "alpha gamma alpha\n");
 
     bar.set_query_text("alpha", true);
     replacement.setStringValue(&NSString::from_str("omega"));
-    find_button("All", &bar).performClick(None);
+    // SAFETY: a nil sender, as Swift passes.
+    unsafe { find_button("All", &bar).performClick(None) };
     assert_eq!(controller.markdown_document().text(), "omega gamma omega\n");
 }
 
@@ -339,7 +358,6 @@ fn main() {
     controller_support::main_thread::run(&[
         ("document_identity_shows_only_exceptional_states", document_identity_shows_only_exceptional_states),
         ("toolbar_uses_native_centered_mode_and_trailing_menu", toolbar_uses_native_centered_mode_and_trailing_menu),
-        ("inspector_selection_and_close_stay_in_sync_with_toolbar", inspector_selection_and_close_stay_in_sync_with_toolbar),
         ("split_view_mirrors_presentation_state", split_view_mirrors_presentation_state),
         ("local_find_uses_compact_document_bar", local_find_uses_compact_document_bar),
         ("selection_find_ignores_an_empty_selection", selection_find_ignores_an_empty_selection),

@@ -416,7 +416,7 @@ impl DocumentWindowController {
             let changes = self.markdown_document().changes();
             bar.configure(
                 message,
-                Summary::new(&changes.unread_marks(), self.markdown_document().storage().length() as isize),
+                Summary::from_marks(&changes.unread_marks(), self.markdown_document().storage().length() as isize),
             );
         }
         root.setNeedsLayout(true);

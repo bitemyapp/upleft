@@ -17,7 +17,7 @@ use std::rc::Rc;
 
 use controller_support::{Closing, new_controller};
 use objc2::rc::Retained;
-use objc2_app_kit::NSEvent;
+use objc2_app_kit::{NSAppearanceCustomization, NSEvent};
 use objc2_core_foundation::CGFloat;
 use objc2_core_graphics::{CGEvent, CGEventField, CGMomentumScrollPhase, CGScrollEventUnit, CGScrollPhase};
 use objc2_foundation::{NSNotification, NSPoint, NSRect, NSSize};

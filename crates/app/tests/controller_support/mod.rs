@@ -89,6 +89,16 @@ pub fn park(controller: &DocumentWindowController) {
     }
 }
 
+/// The titled document window must never reach a display: it is never
+/// ordered in, and nothing the controller does (a floating panel's child
+/// window, a sheet) may order it in either. Tests call this after anything
+/// that orders a window of the controller's in.
+pub fn assert_document_window_never_shown(controller: &DocumentWindowController) {
+    if let Some(window) = controller.window() {
+        assert!(!window.isVisible(), "the titled document window was ordered in");
+    }
+}
+
 /// `DocumentWindowController()`, parked.
 pub fn new_controller() -> Retained<DocumentWindowController> {
     let controller = DocumentWindowController::new(mtm());
@@ -111,6 +121,13 @@ pub struct Closing(pub Retained<DocumentWindowController>);
 
 impl Drop for Closing {
     fn drop(&mut self) {
+        // The window-never-shown rule, checked for every test: a titled
+        // window that was ordered in has already reached a display, so stop
+        // the run rather than let the next test do it again.
+        if self.0.window().is_some_and(|window| window.isVisible()) {
+            eprintln!("the titled document window was ordered in; stopping");
+            std::process::exit(102);
+        }
         self.0.close();
     }
 }
