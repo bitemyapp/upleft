@@ -9,6 +9,8 @@ publish.workspace = true
 [dependencies]
 serde_json.workspace = true
 png = "0.18"
+upleft-markup.workspace = true
+upleft-core.workspace = true
 
 [[bin]]
 name = "conform"

@@ -15,18 +15,19 @@
 //! (`scripts/gen-unicode-tables.swift`), so `Character.isLetter` and friends
 //! agree with Downright by construction.
 //!
-//! Grapheme segmentation uses `unicode-segmentation`. Checked exhaustively
-//! against Swift 6.4 over every scalar in 22 contexts, it differs in exactly
-//! two places, both exotic: Swift's GB9c only treats the six Indic viramas
-//! (U+094D, U+09CD, U+0ACD, U+0B4D, U+0C4D, U+0D4D) as InCB linkers, and it
-//! does not give the Kirat Rai vowel signs (U+16D63, U+16D67–U+16D6A)
+//! Grapheme segmentation ([`graphemes`]) reimplements the stdlib's breaking
+//! state machine over break classes recovered from the Swift runtime. Stock
+//! Unicode segmenters differ from Swift: its GB9c only treats the six Indic
+//! viramas (U+094D, U+09CD, U+0ACD, U+0B4D, U+0C4D, U+0D4D) as linkers, and
+//! it does not give the Kirat Rai vowel signs (U+16D63, U+16D67–U+16D6A)
 //! Grapheme_Cluster_Break=V.
 
+pub mod grapheme_tables;
+pub mod graphemes;
 pub mod ns;
 pub mod tables;
 
 use unicode_normalization::UnicodeNormalization;
-use unicode_segmentation::UnicodeSegmentation;
 
 // MARK: - Property tables
 
@@ -187,13 +188,13 @@ pub fn graphemes(s: &str) -> Graphemes<'_> {
     if s.is_ascii() {
         Graphemes::Ascii { s, front: 0, back: s.len() }
     } else {
-        Graphemes::Unicode(s.graphemes(true))
+        Graphemes::Unicode { s, front: 0, back: s.len() }
     }
 }
 
 pub enum Graphemes<'a> {
     Ascii { s: &'a str, front: usize, back: usize },
-    Unicode(unicode_segmentation::Graphemes<'a>),
+    Unicode { s: &'a str, front: usize, back: usize },
 }
 
 impl<'a> Iterator for Graphemes<'a> {
@@ -216,7 +217,15 @@ impl<'a> Iterator for Graphemes<'a> {
                 *front = end;
                 Some(&s[start..end])
             }
-            Graphemes::Unicode(inner) => inner.next(),
+            Graphemes::Unicode { s, front, back } => {
+                if *front >= *back {
+                    return None;
+                }
+                let start = *front;
+                let end = graphemes::next_boundary(s, start).min(*back);
+                *front = end;
+                Some(&s[start..end])
+            }
         }
     }
 }
@@ -239,7 +248,15 @@ impl<'a> DoubleEndedIterator for Graphemes<'a> {
                 *back = start;
                 Some(&s[start..end])
             }
-            Graphemes::Unicode(inner) => inner.next_back(),
+            Graphemes::Unicode { s, front, back } => {
+                if *front >= *back {
+                    return None;
+                }
+                let end = *back;
+                let start = graphemes::previous_boundary(s, end).max(*front);
+                *back = start;
+                Some(&s[start..end])
+            }
         }
     }
 }
@@ -270,8 +287,7 @@ pub fn is_grapheme_boundary(s: &str, index: usize) -> bool {
         // GB999 unless the next scalar extends, and ASCII never does.
         return !(bytes[index - 1] == b'\r' && bytes[index] == b'\n');
     }
-    let mut cursor = unicode_segmentation::GraphemeCursor::new(index, s.len(), true);
-    cursor.is_boundary(s, 0).unwrap_or(false)
+    graphemes::is_boundary(s, index)
 }
 
 /// `String.count`.
@@ -282,7 +298,13 @@ pub fn count(s: &str) -> usize {
         let pairs = bytes.windows(2).filter(|w| w[0] == b'\r' && w[1] == b'\n').count();
         return bytes.len() - pairs;
     }
-    s.graphemes(true).count()
+    let mut count = 0;
+    let mut position = 0;
+    while position < s.len() {
+        position = graphemes::next_boundary(s, position);
+        count += 1;
+    }
+    count
 }
 
 /// `String.utf16.count`.
@@ -509,6 +531,44 @@ fn characters_end_with(s: &str, p: &str) -> bool {
         }
     }
     true
+}
+
+/// `String.contains(_: String)` on a string whose provenance is known only as
+/// "bridged from an `NSString` or not" (see [`contains_bridged`]).
+#[inline]
+pub fn contains_with(s: &str, needle: &str, bridged: bool) -> bool {
+    if bridged { contains_bridged(s, needle) } else { contains(s, needle) }
+}
+
+/// `String.contains(_: String)` on an `NSString`-backed string.
+///
+/// Swift's `contains` answers differently depending on how the string was
+/// made. On a native Swift string it is Character-wise ([`contains`]). On a
+/// string bridged from an `NSString` — in Downright, any
+/// `(text as NSString).substring(with:)` (and anything Foundation derives
+/// from it: `trimmingCharacters`, `replacingOccurrences`, `components`) when
+/// the document holds a non-ASCII character — it is Foundation's non-literal
+/// search: `"é\r\nb"`-derived text contains `"\n"`, and `"<\u{200D}"`
+/// contains `"<"`. `lowercased()` always returns a native string.
+pub fn contains_bridged(s: &str, needle: &str) -> bool {
+    if needle.is_empty() {
+        return false;
+    }
+    if s.is_ascii() && needle.is_ascii() {
+        return memfind(s.as_bytes(), needle.as_bytes()).is_some();
+    }
+    if needle.is_ascii() && !s.contains(needle) && !has_ascii_singleton(s) {
+        return false;
+    }
+    ns::foundation::contains(s, needle)
+}
+
+/// Whether a document's `NSString` hands out bridged substrings: true when
+/// the document holds any non-ASCII character (a native ASCII string's
+/// substrings come back native).
+#[inline]
+pub fn bridges_substrings(document: &[u16]) -> bool {
+    !document.iter().all(|&unit| unit < 0x80)
 }
 
 /// `String.contains(_: String)` — a Character-wise substring search.

@@ -14,6 +14,32 @@
       "variants": [[]]
     },
     {
+      "name": "core-text",
+      "command": "core-text",
+      "output": "json",
+      "variants": [[]]
+    },
+    {
+      "name": "core-io",
+      "command": "core-text",
+      "output": "json",
+      "variants": [[]],
+      "input": "txt"
+    },
+    {
+      "name": "parse-io",
+      "command": "parse",
+      "output": "json",
+      "variants": [[]],
+      "input": "txt",
+      "only": [
+        "core-io/adversarial.txt", "core-io/adversarial-crlf.txt", "core-io/utf8.txt", "core-io/utf8-bom.txt",
+        "core-io/utf8-double-bom.txt", "core-io/crlf.txt", "core-io/cr.txt", "core-io/mixed.txt",
+        "core-io/crlf-no-trailing.txt", "core-io/trailing-cr.txt", "core-io/only-newlines.txt", "core-io/one-byte.txt",
+        "core-io/nul-bytes.txt", "core-io/mostly-nul.txt"
+      ]
+    },
+    {
       "name": "decorate",
       "command": "decorate",
       "output": "json",
