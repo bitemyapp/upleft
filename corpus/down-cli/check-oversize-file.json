@@ -1,0 +1,13 @@
+{
+ "files": [
+  {
+   "path": "work/big.md",
+   "repeat": "a",
+   "count": 10485761
+  }
+ ],
+ "argv": [
+  "check",
+  "big.md"
+ ]
+}

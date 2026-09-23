@@ -1,0 +1,432 @@
+{
+ "kind": "driver",
+ "metadata": {
+  "sample": {
+   "versionString": "47",
+   "displayVersionString": "1.1.0",
+   "title": "Downright 1.1.0",
+   "itemDescription": "## What's new\n- Faster parsing",
+   "infoURL": "https://github.com/ezzy1630/Downright/releases/tag/v1.1.0",
+   "contentLength": "4000000"
+  },
+  "informational": {
+   "versionString": "50",
+   "displayVersionString": "1.2.0",
+   "infoURL": "https://github.com/ezzy1630/Downright/releases/tag/v1.2.0",
+   "contentLength": "0",
+   "isInformationOnly": true
+  },
+  "informationalNoURL": {
+   "versionString": "51",
+   "displayVersionString": "1.2.1",
+   "isInformationOnly": true
+  },
+  "informationalHTTP": {
+   "versionString": "52",
+   "displayVersionString": "1.2.2",
+   "isInformationOnly": true,
+   "infoURL": "http://github.com/ezzy1630/Downright/releases"
+  },
+  "critical": {
+   "versionString": "49",
+   "displayVersionString": "1.1.2",
+   "title": "Downright 1.1.2 (security)",
+   "contentLength": "4060000",
+   "isCritical": true
+  },
+  "major": {
+   "versionString": "60",
+   "displayVersionString": "2.0.0",
+   "title": "Downright 2.0",
+   "releaseNotesURL": "https://updates.example.invalid/notes/2.0.0.html",
+   "contentLength": "5000000",
+   "isMajorUpgrade": true,
+   "minimumSystemVersion": "27.0"
+  },
+  "nonAscii": {
+   "versionString": "47",
+   "displayVersionString": "1.1.0‑été",
+   "title": "Downright 1.1.0 « Été » 夏 🌞",
+   "itemDescription": "## Nouveautés\n- Analyse plus rapide\n- 👨‍👩‍👧 🇫🇷",
+   "contentLength": "4000000"
+  },
+  "nonAsciiNFD": {
+   "versionString": "47",
+   "displayVersionString": "1.1.0‑été",
+   "title": "Downright 1.1.0 « Été » 夏 🌞",
+   "itemDescription": "## Nouveautés\n- Analyse plus rapide\n- 👨‍👩‍👧 🇫🇷",
+   "contentLength": "4000000"
+  },
+  "huge": {
+   "versionString": "",
+   "displayVersionString": "",
+   "contentLength": "18446744073709551615"
+  },
+  "oddURLs": {
+   "versionString": "99",
+   "displayVersionString": "9.9.9",
+   "releaseNotesURL": "not a URL",
+   "infoURL": "",
+   "contentLength": "1"
+  }
+ },
+ "scripts": [
+  {
+   "name": "permission request",
+   "steps": [
+    {
+     "do": "permissionRequest"
+    }
+   ]
+  },
+  {
+   "name": "user check then cancel",
+   "steps": [
+    {
+     "do": "showUserInitiatedUpdateCheck"
+    },
+    {
+     "do": "coordinator",
+     "step": {
+      "do": "userDidCancelCheck"
+     }
+    }
+   ]
+  },
+  {
+   "name": "not found flags",
+   "steps": [
+    {
+     "do": "showUpdateNotFoundWithError",
+     "error": {
+      "domain": "SUSparkleErrorDomain",
+      "code": 1001,
+      "userInfo": {
+       "SPUNoUpdateUserInitiated": true
+      }
+     }
+    },
+    {
+     "do": "coordinator",
+     "step": {
+      "do": "userDidChooseLater"
+     }
+    },
+    {
+     "do": "showUpdateNotFoundWithError",
+     "error": {
+      "domain": "SUSparkleErrorDomain",
+      "code": 1001,
+      "userInfo": {
+       "SPUNoUpdateUserInitiated": false
+      }
+     }
+    },
+    {
+     "do": "showUpdateNotFoundWithError",
+     "error": {
+      "domain": "SUSparkleErrorDomain",
+      "code": 1001,
+      "userInfo": {}
+     }
+    },
+    {
+     "do": "showUpdateNotFoundWithError",
+     "error": {
+      "domain": "SUSparkleErrorDomain",
+      "code": 1001,
+      "userInfo": {
+       "SPUNoUpdateUserInitiated": 1
+      }
+     }
+    },
+    {
+     "do": "coordinator",
+     "step": {
+      "do": "userDidDismissPanel"
+     }
+    },
+    {
+     "do": "showUpdateNotFoundWithError",
+     "error": {
+      "domain": "SUSparkleErrorDomain",
+      "code": 1001,
+      "userInfo": {
+       "SPUNoUpdateUserInitiated": 0
+      }
+     }
+    },
+    {
+     "do": "showUpdateNotFoundWithError",
+     "error": {
+      "domain": "SUSparkleErrorDomain",
+      "code": 1001,
+      "userInfo": {
+       "SPUNoUpdateUserInitiated": 2
+      }
+     }
+    },
+    {
+     "do": "coordinator",
+     "step": {
+      "do": "userDidAcknowledge"
+     }
+    },
+    {
+     "do": "showUpdateNotFoundWithError",
+     "error": {
+      "domain": "SUSparkleErrorDomain",
+      "code": 1001,
+      "userInfo": {
+       "SPUNoUpdateUserInitiated": "yes"
+      }
+     }
+    },
+    {
+     "do": "showUpdateNotFoundWithError",
+     "error": {
+      "domain": "SUSparkleErrorDomain",
+      "code": 1001,
+      "userInfo": {
+       "SPUNoUpdateUserInitiated": 0.5
+      }
+     }
+    },
+    {
+     "do": "coordinator",
+     "step": {
+      "do": "userDidAcknowledge"
+     }
+    },
+    {
+     "do": "showUpdateNotFoundWithError",
+     "error": {
+      "domain": "SUSparkleErrorDomain",
+      "code": 1001,
+      "userInfo": {
+       "SUNoUpdateFoundReason": 2,
+       "SPUNoUpdateUserInitiated": true
+      }
+     }
+    },
+    {
+     "do": "coordinator",
+     "step": {
+      "do": "userDidAcknowledge"
+     }
+    }
+   ]
+  },
+  {
+   "name": "download to relaunch",
+   "steps": [
+    {
+     "do": "showUserInitiatedUpdateCheck"
+    },
+    {
+     "do": "coordinator",
+     "step": {
+      "do": "driverDidFindUpdate",
+      "metadata": "sample",
+      "stage": "notDownloaded",
+      "userInitiated": true
+     }
+    },
+    {
+     "do": "coordinator",
+     "step": {
+      "do": "userDidChooseInstall"
+     }
+    },
+    {
+     "do": "showDownloadInitiated"
+    },
+    {
+     "do": "showDownloadDidReceiveExpectedContentLength",
+     "length": "4000000"
+    },
+    {
+     "do": "showDownloadDidReceiveData",
+     "length": "1000000"
+    },
+    {
+     "do": "showDownloadDidReceiveData",
+     "length": "5000000"
+    },
+    {
+     "do": "showDownloadDidStartExtractingUpdate"
+    },
+    {
+     "do": "showExtractionReceivedProgress",
+     "progress": 0.4
+    },
+    {
+     "do": "showExtractionReceivedProgress",
+     "progress": -1
+    },
+    {
+     "do": "showReadyToInstallAndRelaunch"
+    },
+    {
+     "do": "coordinator",
+     "step": {
+      "do": "userDidChooseInstall"
+     }
+    },
+    {
+     "do": "showInstallingUpdate",
+     "applicationTerminated": false
+    },
+    {
+     "do": "coordinator",
+     "step": {
+      "do": "userDidPressUpdateNow"
+     }
+    },
+    {
+     "do": "showInstallingUpdate",
+     "applicationTerminated": true
+    },
+    {
+     "do": "showUpdateInstalledAndRelaunched",
+     "relaunched": true
+    }
+   ]
+  },
+  {
+   "name": "ready replies map to Sparkle choices",
+   "steps": [
+    {
+     "do": "showReadyToInstallAndRelaunch"
+    },
+    {
+     "do": "coordinator",
+     "step": {
+      "do": "userDidChooseLater"
+     }
+    },
+    {
+     "do": "showReadyToInstallAndRelaunch"
+    },
+    {
+     "do": "coordinator",
+     "step": {
+      "do": "userDidDismissPanel"
+     }
+    },
+    {
+     "do": "showReadyToInstallAndRelaunch"
+    },
+    {
+     "do": "coordinator",
+     "step": {
+      "do": "userDidChooseInstall"
+     }
+    },
+    {
+     "do": "showReadyToInstallAndRelaunch"
+    },
+    {
+     "do": "dismissUpdateInstallation"
+    },
+    {
+     "do": "coordinator",
+     "step": {
+      "do": "userDidChooseInstall"
+     }
+    }
+   ]
+  },
+  {
+   "name": "errors and notes",
+   "steps": [
+    {
+     "do": "showUserInitiatedUpdateCheck"
+    },
+    {
+     "do": "showUpdateReleaseNotesFailedToDownloadWithError",
+     "error": {
+      "domain": "NSURLErrorDomain",
+      "code": -1009
+     }
+    },
+    {
+     "do": "showUpdaterError",
+     "error": {
+      "domain": "Sparkle",
+      "code": 2001,
+      "userInfo": {
+       "NSLocalizedDescription": "Nope"
+      }
+     }
+    },
+    {
+     "do": "coordinator",
+     "step": {
+      "do": "userDidRetry"
+     }
+    },
+    {
+     "do": "coordinator",
+     "step": {
+      "do": "drain"
+     }
+    },
+    {
+     "do": "showUpdaterError",
+     "error": {
+      "domain": "Sparkle",
+      "code": 2002
+     }
+    }
+   ]
+  },
+  {
+   "name": "focus and dismissal",
+   "steps": [
+    {
+     "do": "showUpdateInFocus"
+    },
+    {
+     "do": "showDownloadInitiated"
+    },
+    {
+     "do": "dismissUpdateInstallation"
+    },
+    {
+     "do": "showUpdateInFocus"
+    }
+   ]
+  },
+  {
+   "name": "a detached host forwards nothing",
+   "steps": [
+    {
+     "do": "detachHost"
+    },
+    {
+     "do": "showUserInitiatedUpdateCheck"
+    },
+    {
+     "do": "showDownloadInitiated"
+    },
+    {
+     "do": "showReadyToInstallAndRelaunch"
+    },
+    {
+     "do": "showUpdaterError",
+     "error": {
+      "domain": "Sparkle",
+      "code": 1
+     }
+    },
+    {
+     "do": "dismissUpdateInstallation"
+    },
+    {
+     "do": "permissionRequest"
+    }
+   ]
+  }
+ ]
+}

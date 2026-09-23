@@ -1,0 +1,187 @@
+{
+ "palettes": [
+  {
+   "commands": "all",
+   "bindings": "defaults",
+   "document": "---\ntitle: Demo\n---\n\n# Plan\n\n- [ ] Write [docs](https://example.com).\n- [x] Ship the *thing* <https://auto.example.org>\n![logo](images/logo.png)\n![](images/untitled.png)\n\n## Second heading with `code`\n\nSome text[^note] and [a link](other.md \"Title\") and [empty]().\nAnother ref[^2] and [^note] again.\n\n### Café résumé 日本語\n\n1. [ ] Nested task with ![inline](pic.jpg)\n   - [ ] Deeper task\n2. Plain item\n\n[^note]: The note.\n[^2]: Second note.\n[^Zeta]: Capital.\n[^alpha]: Lower.\n\n#### Heading 4\n##### Heading 5\n###### Heading 6\n\nSetext Heading\n==============\n\n> # Quoted heading\n> - [ ] quoted task [q](q.md)\n\n| a | b |\n|---|---|\n| [cell](cell.md) | ![c](c.png) |\n",
+   "recentFiles": [
+    "/tmp/notes/design.md",
+    "/tmp/notes/Plan.md",
+    "/tmp/résumé.md",
+    "/tmp/a b/c.markdown",
+    "/"
+   ],
+   "workspace": {
+    "files": [
+     "/tmp/ws/README.md",
+     "/tmp/ws/docs/plan.md",
+     "/tmp/ws/docs/Plan Two.md",
+     "/tmp/ws/.hidden.md",
+     "/tmp/ws/no-extension"
+    ],
+    "symbols": [
+     {
+      "id": "symbol:1",
+      "title": "Project Symbol",
+      "subtitle": "docs/plan.md",
+      "path": "/tmp/ws/docs/plan.md",
+      "location": 3,
+      "length": 2
+     },
+     {
+      "id": "workspace-heading:a:0",
+      "title": "Plan",
+      "subtitle": "README.md",
+      "path": "/tmp/ws/README.md",
+      "location": 0,
+      "length": 6,
+      "score": 5
+     },
+     {
+      "id": "workspace-heading:b:9",
+      "title": "Setup",
+      "subtitle": "docs/plan.md",
+      "searchText": "install configure",
+      "path": "/tmp/ws/docs/plan.md",
+      "location": 9,
+      "length": 7,
+      "score": -3
+     }
+    ]
+   },
+   "recents": [
+    "find",
+    "sourceMode"
+   ],
+   "queries": [
+    "",
+    "plan",
+    "Plan",
+    "#",
+    "# plan",
+    "#plan",
+    "@plan",
+    "@",
+    "@project",
+    "#task",
+    "#tasks write",
+    "task: ship",
+    "task:",
+    "link:",
+    "link: docs",
+    "link: example",
+    "asset:",
+    "asset: logo",
+    "asset: png",
+    "file:",
+    "file: notes",
+    "file: plan",
+    "file: tmp",
+    "file: ws docs",
+    ">",
+    "> plan",
+    "footnote",
+    "note",
+    "zeta",
+    "heading",
+    "café",
+    "resume",
+    "日本",
+    "setup",
+    "install",
+    "configure",
+    "q",
+    "cell",
+    "design",
+    "notes",
+    "résumé",
+    "a b",
+    "c.mark",
+    "untitled",
+    "https",
+    "example.com"
+   ],
+   "steps": [
+    {
+     "query": ""
+    },
+    {
+     "move": 1
+    },
+    {
+     "move": -3
+    },
+    {
+     "select": 5
+    },
+    {
+     "select": 9999
+    },
+    {
+     "select": -1
+    },
+    {
+     "move": 100
+    },
+    {
+     "query": "plan"
+    },
+    {
+     "move": -1
+    },
+    {
+     "record": "save"
+    },
+    {
+     "query": ""
+    },
+    {
+     "query": "file: notes"
+    },
+    {
+     "move": 1
+    },
+    {
+     "query": "zzzzqqq"
+    },
+    {
+     "move": 1
+    },
+    {
+     "select": 0
+    }
+   ]
+  },
+  {
+   "document": "",
+   "queries": [
+    "",
+    "#",
+    "@x"
+   ]
+  },
+  {
+   "commands": [],
+   "document": "# Intro\n\n- [ ] ship it\n",
+   "queries": [
+    "#intro",
+    "#task fix",
+    "#tasks",
+    "",
+    "@intro"
+   ]
+  },
+  {
+   "commands": [],
+   "recentFiles": [
+    "/tmp/notes/design.md"
+   ],
+   "queries": [
+    "file: notes",
+    "notes",
+    "",
+    "design"
+   ]
+  }
+ ]
+}

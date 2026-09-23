@@ -1,0 +1,14 @@
+{
+ "files": [
+  {
+   "path": "work/Downright.app",
+   "text": "not a bundle\n"
+  }
+ ],
+ "argv": [
+  "doctor",
+  "--json",
+  "--app",
+  "Downright.app"
+ ]
+}

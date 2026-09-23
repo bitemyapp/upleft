@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<rss version="2.0" xmlns:sparkle="http://www.andymatuschak.org/xml-namespaces/sparkle">
+  <channel>
+    <title>Downright</title>
+    <item>
+      <title>Downright 1.2.0 is available on the web</title>
+      <sparkle:version>50</sparkle:version>
+      <sparkle:shortVersionString>1.2.0</sparkle:shortVersionString>
+      <link>https://github.com/ezzy1630/Downright/releases/tag/v1.2.0</link>
+      <sparkle:informationalUpdate><sparkle:belowVersion>50</sparkle:belowVersion></sparkle:informationalUpdate>
+    </item>
+    <item>
+      <title>Downright 2.0 (major upgrade)</title>
+      <sparkle:version>60</sparkle:version>
+      <sparkle:shortVersionString>2.0</sparkle:shortVersionString>
+      <sparkle:majorUpgrade/>
+      <enclosure url="https://updates.example.invalid/Downright-2.0.zip" length="5000000" type="application/octet-stream" sparkle:edSignature="OOOO"/>
+    </item>
+  </channel>
+</rss>

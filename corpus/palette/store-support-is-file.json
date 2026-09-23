@@ -1,0 +1,20 @@
+{
+ "store": {
+  "supportIsFile": true,
+  "onLoadFailure": true,
+  "operations": [
+   {
+    "set": "save",
+    "binding": {
+     "key": "s",
+     "modifiers": [
+      "command"
+     ]
+    }
+   },
+   {
+    "vim": true
+   }
+  ]
+ }
+}

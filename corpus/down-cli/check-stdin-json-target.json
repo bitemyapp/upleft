@@ -1,0 +1,11 @@
+{
+ "argv": [
+  "check",
+  "--json",
+  "--target",
+  "hugo"
+ ],
+ "stdin": {
+  "text": "- [ ] t\n\n$$x$$\n"
+ }
+}

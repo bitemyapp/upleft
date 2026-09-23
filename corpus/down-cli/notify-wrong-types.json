@@ -1,0 +1,35 @@
+{
+ "files": [
+  {
+   "path": "work/notes.md",
+   "text": "# notes\n"
+  },
+  {
+   "path": "work/main.swift",
+   "text": "print(1)\n"
+  },
+  {
+   "path": "work/nb.ipynb",
+   "text": "{}\n"
+  },
+  {
+   "path": "work/other.markdown",
+   "text": "o\n"
+  },
+  {
+   "path": "home/home.md",
+   "text": "h\n"
+  },
+  {
+   "path": "work/é.md",
+   "text": "nfc\n"
+  }
+ ],
+ "argv": [
+  "notify",
+  "--dry-run"
+ ],
+ "stdin": {
+  "text": "{\"tool_input\": {\"file_path\": 123, \"filePath\": null, \"path\": [\"$SANDBOX/work/notes.md\"], \"notebook_path\": {\"x\": 1}, \"notebookPath\": \"\"}}"
+ }
+}

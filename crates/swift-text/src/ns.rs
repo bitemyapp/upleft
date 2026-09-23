@@ -264,6 +264,16 @@ pub mod foundation {
         })
     }
 
+    /// `localizedStandardCompare(_:)`: Finder-style ordering in the current
+    /// locale (case- and diacritic-insensitive, numbers compared by value).
+    pub fn localized_standard_compare(a: &str, b: &str) -> std::cmp::Ordering {
+        objc2::rc::autoreleasepool(|_| match ns(a).localizedStandardCompare(&ns(b)) {
+            NSComparisonResult::Ascending => std::cmp::Ordering::Less,
+            NSComparisonResult::Descending => std::cmp::Ordering::Greater,
+            _ => std::cmp::Ordering::Equal,
+        })
+    }
+
     pub fn capitalized(s: &str) -> String {
         objc2::rc::autoreleasepool(|_| to_string(&ns(s).capitalizedString()))
     }

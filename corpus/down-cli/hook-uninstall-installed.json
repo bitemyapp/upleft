@@ -1,0 +1,12 @@
+{
+ "files": [
+  {
+   "path": "work/.claude/settings.json",
+   "text": "{\n    \"model\": \"sonnet\",\n    \"hooks\": {\n        \"PostToolUse\": [\n            {\n                \"matcher\": \"Write|Edit|MultiEdit|NotebookEdit\",\n                \"hooks\": [\n                    {\n                        \"type\": \"command\",\n                        \"command\": \"'$SANDBOX/bin/down' notify\"\n                    }\n                ]\n            }\n        ]\n    }\n}"
+  }
+ ],
+ "argv": [
+  "hook",
+  "--uninstall"
+ ]
+}

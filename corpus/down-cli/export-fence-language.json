@@ -1,0 +1,12 @@
+{
+ "files": [
+  {
+   "path": "work/f.md",
+   "text": "```  c++ <x> \nint a;\n```\n``` \n```\n````\nfour\n````\n"
+  }
+ ],
+ "argv": [
+  "export",
+  "f.md"
+ ]
+}

@@ -1,0 +1,23 @@
+{
+ "files": [
+  {
+   "path": "work/a.md",
+   "text": "# A\n"
+  },
+  {
+   "path": "work/b.md",
+   "text": "no trailing newline"
+  },
+  {
+   "path": "work/c.md",
+   "text": "crlf\r\n"
+  }
+ ],
+ "argv": [
+  "read",
+  "a.md",
+  "b.md",
+  "c.md",
+  "b.md"
+ ]
+}

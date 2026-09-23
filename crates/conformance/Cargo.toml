@@ -23,11 +23,10 @@ upleft-app.workspace = true
 objc2.workspace = true
 objc2-foundation = { workspace = true, features = [
     "NSArray", "NSAttributedString", "NSData", "NSDictionary", "NSEnumerator", "NSError", "NSGeometry",
-    "NSNotification", "NSRange", "NSString", "NSValue",
-    "NSURL", "block2",
+    "NSJSONSerialization", "NSNotification", "NSRange", "NSString", "NSURL", "NSURLCache", "NSURLProtocol", "NSURLRequest", "NSURLResponse", "NSURLSession", "NSUUID", "NSUserDefaults", "NSValue", "block2",
 ] }
 objc2-app-kit = { workspace = true, features = [
-    "NSAppearance", "NSApplication", "NSBitmapImageRep", "NSClipView", "NSColor", "NSColorList", "NSColorSpace",
+    "NSAppearance", "NSApplication", "NSBitmapImageRep", "NSEvent", "NSClipView", "NSColor", "NSColorList", "NSColorSpace",
     "NSFont", "NSFontDescriptor", "NSGraphics", "NSGraphicsContext", "NSImage", "NSImageRep", "NSResponder",
     "NSRunningApplication", "NSScreen", "NSScrollView", "NSText", "NSTextView", "NSView", "NSWindow", "NSLayoutConstraint",
     "objc2-core-graphics",
@@ -42,6 +41,7 @@ objc2-screen-capture-kit = { version = "0.3.2", default-features = false, featur
 ] }
 block2.workspace = true
 dispatch2 = "0.3.1"
+libc = "0.2"
 
 [[bin]]
 name = "conform"

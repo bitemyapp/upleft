@@ -1,0 +1,13 @@
+{
+ "files": [
+  {
+   "path": "work/a.md",
+   "text": "a\n"
+  }
+ ],
+ "argv": [
+  "--reveal",
+  "a.md",
+  "./sub/../b.md"
+ ]
+}

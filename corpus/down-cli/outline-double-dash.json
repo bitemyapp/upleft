@@ -1,0 +1,13 @@
+{
+ "files": [
+  {
+   "path": "work/-draft.md",
+   "text": "# Draft\n"
+  }
+ ],
+ "argv": [
+  "outline",
+  "--",
+  "-draft.md"
+ ]
+}

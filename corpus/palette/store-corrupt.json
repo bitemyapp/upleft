@@ -1,0 +1,23 @@
+{
+ "store": {
+  "file": "{ this is not json",
+  "onLoadFailure": true,
+  "operations": [
+   {
+    "vim": true
+   },
+   {
+    "set": "save",
+    "binding": {
+     "key": "s",
+     "modifiers": [
+      "command"
+     ]
+    }
+   },
+   {
+    "vim": false
+   }
+  ]
+ }
+}

@@ -1,0 +1,261 @@
+{
+ "palettes": [
+  {
+   "commands": "enabled",
+   "context": {},
+   "queries": [
+    "",
+    "o",
+    "s",
+    "update",
+    "settings"
+   ]
+  },
+  {
+   "commands": "enabled",
+   "context": {
+    "hasDocument": true
+   },
+   "recents": [
+    "save",
+    "open"
+   ],
+   "queries": [
+    "",
+    "s",
+    "sa",
+    "share",
+    "quick",
+    "next change"
+   ]
+  },
+  {
+   "commands": "enabled",
+   "context": {
+    "hasDocument": true,
+    "documentHasFile": true,
+    "hasSelection": true,
+    "hasChangeMarks": true,
+    "canCheckForUpdates": true
+   },
+   "queries": [
+    "",
+    "rev",
+    "change",
+    "reveal",
+    "sel",
+    "update"
+   ]
+  },
+  {
+   "commands": [
+    "documentLens"
+   ],
+   "bindings": "none",
+   "queries": [
+    "",
+    "outline",
+    "contents",
+    "lens",
+    "doc"
+   ]
+  },
+  {
+   "entries": [
+    {
+     "command": "find",
+     "title": "Find…",
+     "synonyms": [
+      "search",
+      "locate"
+     ],
+     "binding": "⌘F",
+     "scopes": [
+      "read",
+      "live",
+      "source"
+     ]
+    },
+    {
+     "command": "frontMatterEditor",
+     "title": "Front Matter…",
+     "synonyms": [
+      "metadata",
+      "yaml"
+     ],
+     "binding": null,
+     "scopes": [
+      "read",
+      "live",
+      "source"
+     ]
+    },
+    {
+     "command": "tableEditor",
+     "title": "Edit Table…",
+     "synonyms": [
+      "grid",
+      "cells"
+     ],
+     "binding": "⌥T",
+     "scopes": [
+      "read",
+      "live",
+      "source"
+     ]
+    }
+   ],
+   "dumpEntries": true,
+   "queries": [
+    "yaml",
+    "edit cells",
+    "find",
+    "fm",
+    "e",
+    "",
+    "> find",
+    "cells grid",
+    "zz"
+   ]
+  },
+  {
+   "entries": [
+    {
+     "command": "find",
+     "title": "Find…",
+     "synonyms": [
+      "search",
+      "locate"
+     ],
+     "binding": "⌘F",
+     "scopes": [
+      "read",
+      "live",
+      "source"
+     ]
+    },
+    {
+     "command": "frontMatterEditor",
+     "title": "Front Matter…",
+     "synonyms": [
+      "metadata",
+      "yaml"
+     ],
+     "scopes": [
+      "read",
+      "live",
+      "source"
+     ]
+    },
+    {
+     "command": "tableEditor",
+     "title": "Edit Table…",
+     "synonyms": [
+      "grid",
+      "cells"
+     ],
+     "binding": "⌥T",
+     "scopes": [
+      "read",
+      "live",
+      "source"
+     ]
+    }
+   ],
+   "recents": [
+    "tableEditor",
+    "find"
+   ],
+   "queries": [
+    "",
+    "e"
+   ],
+   "steps": [
+    {
+     "record": "frontMatterEditor"
+    },
+    {
+     "query": ""
+    },
+    {
+     "query": "e"
+    }
+   ]
+  },
+  {
+   "entries": [
+    {
+     "command": "documentLens",
+     "title": "Outline A",
+     "synonyms": [],
+     "scopes": [
+      "live"
+     ]
+    },
+    {
+     "command": "taskPanel",
+     "title": "Outline B",
+     "synonyms": [],
+     "scopes": [
+      "live"
+     ]
+    },
+    {
+     "command": "save",
+     "title": "outline a",
+     "synonyms": [],
+     "scopes": [
+      "source",
+      "live",
+      "read"
+     ]
+    },
+    {
+     "command": "open",
+     "title": "Outline 10",
+     "synonyms": [],
+     "scopes": [
+      "source"
+     ]
+    },
+    {
+     "command": "close",
+     "title": "Outline 9",
+     "synonyms": [],
+     "scopes": [
+      "read",
+      "source",
+      "read"
+     ]
+    },
+    {
+     "command": "find",
+     "title": "Outlíne",
+     "synonyms": [],
+     "scopes": []
+    }
+   ],
+   "dumpEntries": true,
+   "queries": [
+    "outline",
+    "",
+    "out",
+    "o 1"
+   ],
+   "steps": [
+    {
+     "record": "taskPanel"
+    },
+    {
+     "query": "outline"
+    },
+    {
+     "record": "open"
+    },
+    {
+     "query": ""
+    }
+   ]
+  }
+ ]
+}

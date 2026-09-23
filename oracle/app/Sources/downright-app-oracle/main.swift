@@ -28,10 +28,21 @@ func write(_ json: JSON, to path: String) throws {
     try json.text.write(toFile: path, atomically: true, encoding: .utf8)
 }
 
-/// The repository root, found from this binary's location
-/// (`target/app-oracle/release/downright-app-oracle`).
-let repositoryRoot: URL = URL(fileURLWithPath: CommandLine.arguments[0]).resolvingSymlinksInPath()
-    .deletingLastPathComponent().deletingLastPathComponent().deletingLastPathComponent().deletingLastPathComponent()
+/// The repository root: the nearest directory above this binary that holds
+/// `Cargo.toml` and `vendor/downright`. (`target/app-oracle/release` is a
+/// symbolic link into SwiftPM's `out/Products/Release`, so a fixed number of
+/// components is wrong.)
+let repositoryRoot: URL = {
+    var directory = URL(fileURLWithPath: CommandLine.arguments[0]).resolvingSymlinksInPath().deletingLastPathComponent().path
+    while directory != "/" && !directory.isEmpty {
+        if FileManager.default.fileExists(atPath: directory + "/Cargo.toml"),
+           FileManager.default.fileExists(atPath: directory + "/vendor/downright") {
+            return URL(fileURLWithPath: directory, isDirectory: true)
+        }
+        directory = (directory as NSString).deletingLastPathComponent
+    }
+    return URL(fileURLWithPath: FileManager.default.currentDirectoryPath, isDirectory: true)
+}()
 
 struct AppOracleError: Error, CustomStringConvertible {
     var description: String

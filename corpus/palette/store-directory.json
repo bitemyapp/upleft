@@ -1,0 +1,20 @@
+{
+ "store": {
+  "fileIsDirectory": true,
+  "onLoadFailure": true,
+  "operations": [
+   {
+    "set": "save",
+    "binding": {
+     "key": "s",
+     "modifiers": [
+      "command"
+     ]
+    }
+   },
+   {
+    "reset": true
+   }
+  ]
+ }
+}

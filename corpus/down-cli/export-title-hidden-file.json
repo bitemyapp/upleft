@@ -1,0 +1,16 @@
+{
+ "files": [
+  {
+   "path": "work/.hidden.md",
+   "text": "x\n"
+  },
+  {
+   "path": "work/.md",
+   "text": "y\n"
+  }
+ ],
+ "argv": [
+  "export",
+  ".hidden.md"
+ ]
+}

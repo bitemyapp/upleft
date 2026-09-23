@@ -1,0 +1,18 @@
+{
+ "files": [
+  {
+   "path": "work/-weird.md",
+   "text": "weird\n"
+  },
+  {
+   "path": "work/--json",
+   "text": "not json\n"
+  }
+ ],
+ "argv": [
+  "read",
+  "--",
+  "-weird.md",
+  "--json"
+ ]
+}

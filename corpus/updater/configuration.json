@@ -1,0 +1,435 @@
+{
+ "kind": "configuration",
+ "cases": [
+  {
+   "name": "valid",
+   "info": {
+    "SUFeedURL": "https://updates.example.test/appcast.xml",
+    "SUPublicEDKey": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA="
+   }
+  },
+  {
+   "name": "missing everything",
+   "info": {}
+  },
+  {
+   "name": "null info",
+   "info": null
+  },
+  {
+   "name": "missing key",
+   "info": {
+    "SUFeedURL": "https://updates.example.test/appcast.xml"
+   }
+  },
+  {
+   "name": "missing feed",
+   "info": {
+    "SUPublicEDKey": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA="
+   }
+  },
+  {
+   "name": "feed is a number",
+   "info": {
+    "SUFeedURL": 42,
+    "SUPublicEDKey": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA="
+   }
+  },
+  {
+   "name": "key is a number",
+   "info": {
+    "SUFeedURL": "https://updates.example.test/appcast.xml",
+    "SUPublicEDKey": 32
+   }
+  },
+  {
+   "name": "feed is an array",
+   "info": {
+    "SUFeedURL": [
+     "https://updates.example.test/appcast.xml"
+    ],
+    "SUPublicEDKey": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA="
+   }
+  },
+  {
+   "name": "key is null",
+   "info": {
+    "SUFeedURL": "https://updates.example.test/appcast.xml",
+    "SUPublicEDKey": null
+   }
+  },
+  {
+   "name": "extra keys",
+   "info": {
+    "SUFeedURL": "https://updates.example.test/appcast.xml",
+    "SUPublicEDKey": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=",
+    "SUEnableAutomaticChecks": true,
+    "CFBundleVersion": "47"
+   }
+  },
+  {
+   "name": "feed \"http://updates.example.test/appcast.xml\"",
+   "info": {
+    "SUFeedURL": "http://updates.example.test/appcast.xml",
+    "SUPublicEDKey": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA="
+   }
+  },
+  {
+   "name": "feed \"not a URL\"",
+   "info": {
+    "SUFeedURL": "not a URL",
+    "SUPublicEDKey": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA="
+   }
+  },
+  {
+   "name": "feed \"\"",
+   "info": {
+    "SUFeedURL": "",
+    "SUPublicEDKey": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA="
+   }
+  },
+  {
+   "name": "feed \"HTTPS://Host/x\"",
+   "info": {
+    "SUFeedURL": "HTTPS://Host/x",
+    "SUPublicEDKey": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA="
+   }
+  },
+  {
+   "name": "feed \"hTtPs://h/appcast.xml\"",
+   "info": {
+    "SUFeedURL": "hTtPs://h/appcast.xml",
+    "SUPublicEDKey": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA="
+   }
+  },
+  {
+   "name": "feed \"https://\"",
+   "info": {
+    "SUFeedURL": "https://",
+    "SUPublicEDKey": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA="
+   }
+  },
+  {
+   "name": "feed \"https:///path\"",
+   "info": {
+    "SUFeedURL": "https:///path",
+    "SUPublicEDKey": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA="
+   }
+  },
+  {
+   "name": "feed \"https://:443/\"",
+   "info": {
+    "SUFeedURL": "https://:443/",
+    "SUPublicEDKey": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA="
+   }
+  },
+  {
+   "name": "feed \"https://%41/\"",
+   "info": {
+    "SUFeedURL": "https://%41/",
+    "SUPublicEDKey": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA="
+   }
+  },
+  {
+   "name": "feed \"https://[::1]/a\"",
+   "info": {
+    "SUFeedURL": "https://[::1]/a",
+    "SUPublicEDKey": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA="
+   }
+  },
+  {
+   "name": "feed \"https://user@/x\"",
+   "info": {
+    "SUFeedURL": "https://user@/x",
+    "SUPublicEDKey": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA="
+   }
+  },
+  {
+   "name": "feed \"https://ex ample.com/\"",
+   "info": {
+    "SUFeedURL": "https://ex ample.com/",
+    "SUPublicEDKey": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA="
+   }
+  },
+  {
+   "name": "feed \"https://例え.jp/\"",
+   "info": {
+    "SUFeedURL": "https://例え.jp/",
+    "SUPublicEDKey": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA="
+   }
+  },
+  {
+   "name": "feed \"https://host:99999/\"",
+   "info": {
+    "SUFeedURL": "https://host:99999/",
+    "SUPublicEDKey": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA="
+   }
+  },
+  {
+   "name": "feed \" https://host/\"",
+   "info": {
+    "SUFeedURL": " https://host/",
+    "SUPublicEDKey": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA="
+   }
+  },
+  {
+   "name": "feed \"https:host\"",
+   "info": {
+    "SUFeedURL": "https:host",
+    "SUPublicEDKey": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA="
+   }
+  },
+  {
+   "name": "feed \"https://h%00/\"",
+   "info": {
+    "SUFeedURL": "https://h%00/",
+    "SUPublicEDKey": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA="
+   }
+  },
+  {
+   "name": "feed \"https://a b\"",
+   "info": {
+    "SUFeedURL": "https://a b",
+    "SUPublicEDKey": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA="
+   }
+  },
+  {
+   "name": "feed \"ftp://h\"",
+   "info": {
+    "SUFeedURL": "ftp://h",
+    "SUPublicEDKey": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA="
+   }
+  },
+  {
+   "name": "feed \"https://h?x#y\"",
+   "info": {
+    "SUFeedURL": "https://h?x#y",
+    "SUPublicEDKey": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA="
+   }
+  },
+  {
+   "name": "feed \"https://#frag\"",
+   "info": {
+    "SUFeedURL": "https://#frag",
+    "SUPublicEDKey": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA="
+   }
+  },
+  {
+   "name": "feed \"https://?q\"",
+   "info": {
+    "SUFeedURL": "https://?q",
+    "SUPublicEDKey": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA="
+   }
+  },
+  {
+   "name": "feed \"file:///Users/x/appcast.xml\"",
+   "info": {
+    "SUFeedURL": "file:///Users/x/appcast.xml",
+    "SUPublicEDKey": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA="
+   }
+  },
+  {
+   "name": "feed \"https://h/été.xml\"",
+   "info": {
+    "SUFeedURL": "https://h/été.xml",
+    "SUPublicEDKey": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA="
+   }
+  },
+  {
+   "name": "feed \"https://updates.example.invalid\"",
+   "info": {
+    "SUFeedURL": "https://updates.example.invalid",
+    "SUPublicEDKey": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA="
+   }
+  },
+  {
+   "name": "feed \"//updates.example.test/appcast.xml\"",
+   "info": {
+    "SUFeedURL": "//updates.example.test/appcast.xml",
+    "SUPublicEDKey": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA="
+   }
+  },
+  {
+   "name": "feed \"https:́//h/\"",
+   "info": {
+    "SUFeedURL": "https:́//h/",
+    "SUPublicEDKey": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA="
+   }
+  },
+  {
+   "name": "key \"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\"",
+   "info": {
+    "SUFeedURL": "https://updates.example.test/appcast.xml",
+    "SUPublicEDKey": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+   }
+  },
+  {
+   "name": "key \"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==\"",
+   "info": {
+    "SUFeedURL": "https://updates.example.test/appcast.xml",
+    "SUPublicEDKey": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=="
+   }
+  },
+  {
+   "name": "key \" AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=\"",
+   "info": {
+    "SUFeedURL": "https://updates.example.test/appcast.xml",
+    "SUPublicEDKey": " AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA="
+   }
+  },
+  {
+   "name": "key \"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=\\n\"",
+   "info": {
+    "SUFeedURL": "https://updates.example.test/appcast.xml",
+    "SUPublicEDKey": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=\n"
+   }
+  },
+  {
+   "name": "key \"AAAAAAAAAAAAAAAAAAAAAAAAAAAA\\nAAAAAAAAAAAAAAA=\"",
+   "info": {
+    "SUFeedURL": "https://updates.example.test/appcast.xml",
+    "SUPublicEDKey": "AAAAAAAAAAAAAAAAAAAAAAAAAAAA\nAAAAAAAAAAAAAAA="
+   }
+  },
+  {
+   "name": "key \"-_-_AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=\"",
+   "info": {
+    "SUFeedURL": "https://updates.example.test/appcast.xml",
+    "SUPublicEDKey": "-_-_AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA="
+   }
+  },
+  {
+   "name": "key \"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAB=\"",
+   "info": {
+    "SUFeedURL": "https://updates.example.test/appcast.xml",
+    "SUPublicEDKey": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAB="
+   }
+  },
+  {
+   "name": "key \"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==\"",
+   "info": {
+    "SUFeedURL": "https://updates.example.test/appcast.xml",
+    "SUPublicEDKey": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=="
+   }
+  },
+  {
+   "name": "key \"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=\"",
+   "info": {
+    "SUFeedURL": "https://updates.example.test/appcast.xml",
+    "SUPublicEDKey": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA="
+   }
+  },
+  {
+   "name": "key \"AAA=AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\"",
+   "info": {
+    "SUFeedURL": "https://updates.example.test/appcast.xml",
+    "SUPublicEDKey": "AAA=AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+   }
+  },
+  {
+   "name": "key \"=AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\"",
+   "info": {
+    "SUFeedURL": "https://updates.example.test/appcast.xml",
+    "SUPublicEDKey": "=AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+   }
+  },
+  {
+   "name": "key \"\"",
+   "info": {
+    "SUFeedURL": "https://updates.example.test/appcast.xml",
+    "SUPublicEDKey": ""
+   }
+  },
+  {
+   "name": "key \"PLACEHOLDER_DOWNRIGHT_ED25519_PUBLIC_KEY\"",
+   "info": {
+    "SUFeedURL": "https://updates.example.test/appcast.xml",
+    "SUPublicEDKey": "PLACEHOLDER_DOWNRIGHT_ED25519_PUBLIC_KEY"
+   }
+  },
+  {
+   "name": "key \"11qYAYKxCrfVS/7TyWQHOg7hcvPapiMlrwIaaPcHURo=\"",
+   "info": {
+    "SUFeedURL": "https://updates.example.test/appcast.xml",
+    "SUPublicEDKey": "11qYAYKxCrfVS/7TyWQHOg7hcvPapiMlrwIaaPcHURo="
+   }
+  },
+  {
+   "name": "key \"11qYAYKxCrfVS/7TyWQHOg7hcvPapiMlrwIaaPcHURo\"",
+   "info": {
+    "SUFeedURL": "https://updates.example.test/appcast.xml",
+    "SUPublicEDKey": "11qYAYKxCrfVS/7TyWQHOg7hcvPapiMlrwIaaPcHURo"
+   }
+  },
+  {
+   "name": "key \"11qYAYKxCrfVS/7TyWQHOg7hcvPapiMlrwIaaPcHURo===\"",
+   "info": {
+    "SUFeedURL": "https://updates.example.test/appcast.xml",
+    "SUPublicEDKey": "11qYAYKxCrfVS/7TyWQHOg7hcvPapiMlrwIaaPcHURo==="
+   }
+  },
+  {
+   "name": "key \"11qYAYKxCrfVS/7TyWQHOg7hcvPapiMlrwIaaPcHURo=====\"",
+   "info": {
+    "SUFeedURL": "https://updates.example.test/appcast.xml",
+    "SUPublicEDKey": "11qYAYKxCrfVS/7TyWQHOg7hcvPapiMlrwIaaPcHURo====="
+   }
+  },
+  {
+   "name": "key \"11qYAYKxCrfVS/7TyWQHOg7hcvPapiMlrwIaaPcHURo=AAAA\"",
+   "info": {
+    "SUFeedURL": "https://updates.example.test/appcast.xml",
+    "SUPublicEDKey": "11qYAYKxCrfVS/7TyWQHOg7hcvPapiMlrwIaaPcHURo=AAAA"
+   }
+  },
+  {
+   "name": "key \"11qYAYKxCrfVS_7TyWQHOg7hcvPapiMlrwIaaPcHURo=\"",
+   "info": {
+    "SUFeedURL": "https://updates.example.test/appcast.xml",
+    "SUPublicEDKey": "11qYAYKxCrfVS_7TyWQHOg7hcvPapiMlrwIaaPcHURo="
+   }
+  },
+  {
+   "name": "key \"１１qYAYKxCrfVS/7TyWQHOg7hcvPapiMlrwIaaPcHURo=\"",
+   "info": {
+    "SUFeedURL": "https://updates.example.test/appcast.xml",
+    "SUPublicEDKey": "１１qYAYKxCrfVS/7TyWQHOg7hcvPapiMlrwIaaPcHURo="
+   }
+  },
+  {
+   "name": "key \"11qYAYKxCrfVS/7TyWQHOg7hcvPapiMlrwIaaPcHUR==\"",
+   "info": {
+    "SUFeedURL": "https://updates.example.test/appcast.xml",
+    "SUPublicEDKey": "11qYAYKxCrfVS/7TyWQHOg7hcvPapiMlrwIaaPcHUR=="
+   }
+  },
+  {
+   "name": "key \"11qYAYKxCrfVS/7TyWQHOg7hcvPapiMlrwIaaPcHUR8=\"",
+   "info": {
+    "SUFeedURL": "https://updates.example.test/appcast.xml",
+    "SUPublicEDKey": "11qYAYKxCrfVS/7TyWQHOg7hcvPapiMlrwIaaPcHUR8="
+   }
+  },
+  {
+   "name": "key \"11qYAYKxCrfVS/7TyWQHOg7hcvPapiMlrwIaaPcHURo=\\u0000\"",
+   "info": {
+    "SUFeedURL": "https://updates.example.test/appcast.xml",
+    "SUPublicEDKey": "11qYAYKxCrfVS/7TyWQHOg7hcvPapiMlrwIaaPcHURo=\u0000"
+   }
+  },
+  {
+   "name": "key \"\\t11qYAYKxCrfVS/7TyWQHOg7hcvPapiMlrwIaaPcHURo=\"",
+   "info": {
+    "SUFeedURL": "https://updates.example.test/appcast.xml",
+    "SUPublicEDKey": "\t11qYAYKxCrfVS/7TyWQHOg7hcvPapiMlrwIaaPcHURo="
+   }
+  },
+  {
+   "name": "key \"11qYAYKxCrfVS/7TyWQHOg7hcvPapiMlrwIaaPcHURo=\\r\\n\"",
+   "info": {
+    "SUFeedURL": "https://updates.example.test/appcast.xml",
+    "SUPublicEDKey": "11qYAYKxCrfVS/7TyWQHOg7hcvPapiMlrwIaaPcHURo=\r\n"
+   }
+  }
+ ]
+}

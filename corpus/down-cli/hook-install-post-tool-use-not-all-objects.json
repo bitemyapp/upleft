@@ -1,0 +1,12 @@
+{
+ "files": [
+  {
+   "path": "work/.claude/settings.json",
+   "text": "{\"hooks\": {\"PostToolUse\": [{\"matcher\": \"Bash\", \"hooks\": []}, \"stray string\", 7]}}"
+  }
+ ],
+ "argv": [
+  "hook",
+  "--install"
+ ]
+}

@@ -267,6 +267,18 @@ dependencies = [
  "objc2-core-foundation",
  "objc2-core-graphics",
  "objc2-foundation",
+ "objc2-uniform-type-identifiers",
+]
+
+[[package]]
+name = "objc2-avf-audio"
+version = "0.3.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "13a380031deed8e99db00065c45937da434ca987c034e13b87e4441f9e4090be"
+dependencies = [
+ "bitflags",
+ "objc2",
+ "objc2-foundation",
 ]
 
 [[package]]
@@ -291,6 +303,16 @@ dependencies = [
  "objc2",
  "objc2-core-foundation",
  "objc2-io-surface",
+]
+
+[[package]]
+name = "objc2-core-services"
+version = "0.3.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "583300ad934cba24ff5292aee751ecc070f7ca6b39a574cc21b7b5e588e06a0b"
+dependencies = [
+ "dispatch2",
+ "objc2-core-foundation",
 ]
 
 [[package]]
@@ -542,6 +564,7 @@ dependencies = [
  "libc",
  "objc2",
  "objc2-app-kit",
+ "objc2-avf-audio",
  "objc2-core-foundation",
  "objc2-foundation",
  "objc2-uniform-type-identifiers",
@@ -577,7 +600,9 @@ dependencies = [
  "objc2",
  "objc2-app-kit",
  "objc2-core-foundation",
+ "objc2-core-services",
  "objc2-foundation",
+ "objc2-uniform-type-identifiers",
  "upleft-core",
  "upleft-foundation",
  "upleft-swift-text",
@@ -596,6 +621,7 @@ version = "0.1.0"
 dependencies = [
  "block2",
  "dispatch2",
+ "libc",
  "objc2",
  "objc2-app-kit",
  "objc2-core-foundation",
@@ -690,6 +716,19 @@ dependencies = [
 ]
 
 [[package]]
+name = "upleft-quicklook"
+version = "0.1.0"
+dependencies = [
+ "libc",
+ "objc2",
+ "objc2-app-kit",
+ "objc2-foundation",
+ "upleft-core",
+ "upleft-render",
+ "upleft-swift-text",
+]
+
+[[package]]
 name = "upleft-render"
 version = "0.1.0"
 dependencies = [
@@ -714,6 +753,7 @@ version = "0.1.0"
 dependencies = [
  "objc2",
  "objc2-core-foundation",
+ "objc2-core-services",
  "objc2-foundation",
  "upleft-core",
  "upleft-foundation",

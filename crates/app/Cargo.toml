@@ -21,19 +21,76 @@ sha2 = "0.10"
 objc2-foundation = { workspace = true, features = [
     "NSAppleEventDescriptor", "NSAppleScript", "NSArray", "NSAttributedString", "NSBundle", "NSCharacterSet", "NSData", "NSDate", "NSDateFormatter",
     "NSDictionary", "NSEnumerator", "NSError", "NSFileCoordinator", "NSFileManager", "NSFilePresenter",
-    "NSFileVersion", "NSFileWrapper", "NSFormatter", "NSISO8601DateFormatter", "NSIndexSet", "NSJSONSerialization",
+    "NSFileVersion", "NSFileWrapper", "NSFormatter", "NSHTTPCookieStorage", "NSISO8601DateFormatter", "NSIndexSet", "NSJSONSerialization",
     "NSLocale", "NSLock", "NSNotification", "NSNull", "NSObjCRuntime", "NSObject", "NSOperation", "NSPathUtilities",
-    "NSProcessInfo", "NSRange", "NSRegularExpression", "NSRunLoop", "NSString", "NSTextCheckingResult", "NSThread", "NSTimer",
-    "NSUndoManager", "NSURL", "NSURLRequest", "NSURLResponse", "NSURLSession", "NSUserDefaults", "NSUUID",
+    "NSProcessInfo", "NSRange", "NSRegularExpression", "NSRunLoop", "NSString", "NSTextCheckingResult", "NSThread", "NSTimer", "NSURL", "NSURLCache", "NSURLRequest", "NSURLResponse", "NSURLSession", "NSUUID", "NSUndoManager", "NSUserDefaults",
     "NSValue", "NSXMLDocument", "NSXMLElement", "NSXMLNode", "NSXMLParser", "block2",
 ] }
 objc2-app-kit = { workspace = true, features = [
-    "NSAppearance", "NSApplication", "NSAttributedString", "NSColor", "NSFont", "NSImage", "NSParagraphStyle",
-    "NSPasteboard", "NSResponder", "NSSpeechSynthesizer", "NSText", "NSTextStorage", "NSWorkspace", "block2",
-    "objc2-core-foundation",
+    "NSAlert", "NSAppearance", "NSApplication", "NSAttributedString", "NSColor", "NSEvent", "NSFont", "NSGraphics", "NSImage", "NSParagraphStyle", "NSPasteboard", "NSResponder", "NSRunningApplication", "NSSpeechSynthesizer", "NSText", "NSTextStorage", "NSWorkspace", "block2", "objc2-core-foundation", "objc2-uniform-type-identifiers",
 ] }
+objc2-avf-audio = { version = "0.3.2", default-features = false, features = ["std", "AVSpeechSynthesis"] }
 objc2-uniform-type-identifiers = { version = "0.3.2", default-features = false, features = ["std", "UTType", "UTCoreTypes"] }
 objc2-core-foundation = { workspace = true, features = ["CFArray", "CFBase", "CFDate", "CFRunLoop", "CFString", "CFURL"] }
 
 [dev-dependencies]
 serde_json.workspace = true
+objc2-foundation = { workspace = true, features = ["NSURLProtocol"] }
+
+# The updater's main-actor objects hop through the main dispatch queue, so
+# these tests own the main thread (no libtest harness) and run its run loop.
+[[test]]
+name = "update_coordinator_tests"
+harness = false
+
+[[test]]
+name = "release_watch_probe_tests"
+harness = false
+
+# AppKit objects that must be created on the main thread: the test binary's
+# own `main` runs there.
+[[test]]
+name = "main_thread_objects"
+harness = false
+
+# Suites whose Swift originals run on the main actor own the main thread
+# (tests/main_thread/mod.rs).
+[[test]]
+name = "local_ai_tests"
+harness = false
+
+[[test]]
+name = "app_intents_tests"
+harness = false
+
+[[test]]
+name = "file_watcher_tests"
+harness = false
+
+[[test]]
+name = "async_parse_tests"
+harness = false
+
+[[test]]
+name = "document_trust_state_tests"
+harness = false
+
+[[test]]
+name = "review_baseline_document_tests"
+harness = false
+
+[[test]]
+name = "app_layer_document_tests"
+harness = false
+
+[[test]]
+name = "autosave_lifecycle_tests"
+harness = false
+
+[[test]]
+name = "document_edit_projection_tests"
+harness = false
+
+[[test]]
+name = "markdown_document_tests"
+harness = false

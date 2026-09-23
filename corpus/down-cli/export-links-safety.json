@@ -1,0 +1,12 @@
+{
+ "files": [
+  {
+   "path": "work/links.md",
+   "text": "[relative](guide.md) [anchor](#part) [web](https://example.com) [mail](mailto:a@example.com)\n[script](JaVaScRiPt:alert(1)) [data](data:text/html,bad) [editor](vscode://file/tmp/a)\n[bad](javascript/foo:alert(1)) [spaced]( javascript:x ) [ws]( javascript:x) [colon](:x) [https](HTTPS://X)\n[tab](java\tscript:alert(1)) [cr](j\rascript:alert(2))\n[nl](ja\nscript:alert(1))\n[plus](a+b.c-d:x) [digits](123:x) [unicode](é:x) [math](𝟘ab:x)\n"
+  }
+ ],
+ "argv": [
+  "export",
+  "links.md"
+ ]
+}
