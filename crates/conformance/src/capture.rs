@@ -230,7 +230,8 @@ fn check_settled() {
         let request = session.request.clone();
         session.scene.write_extras(&rep, &request)?;
         if !request.capture_from_screen {
-            std::fs::write(&request.output_png, &png).map_err(|error| format!("write failed: {error}"))?;
+            let data = view_capture(&*session.scene, &rep, png)?;
+            std::fs::write(&request.output_png, &data).map_err(|error| format!("write failed: {error}"))?;
             return Ok(Next::Written);
         }
         let window = session.window.as_ref().expect("window");
@@ -244,6 +245,27 @@ fn check_settled() {
         Ok(Next::Written) => std::process::exit(0),
         Ok(Next::Capture { window_numbers, output }) => capture_window_from_screen(window_numbers, output),
     }
+}
+
+/// See `viewCapture` in the Swift oracle: `--capture view` with each extra
+/// window's content view cached and stacked beneath the settle view.
+fn view_capture(scene: &dyn CaptureScene, main: &NSBitmapImageRep, png: Vec<u8>) -> Result<Vec<u8>, String> {
+    let extras = scene.extra_windows();
+    let Some(first) = main.CGImage() else { return Ok(png) };
+    if extras.is_empty() {
+        return Ok(png);
+    }
+    let mut images = vec![first];
+    for extra in &extras {
+        let view = extra.contentView().ok_or("no bitmap representation for an extra window")?;
+        let bounds = view.bounds();
+        let rep = view.bitmapImageRepForCachingDisplayInRect(bounds).ok_or("no bitmap representation for an extra window")?;
+        view.cacheDisplayInRect_toBitmapImageRep(bounds, &rep);
+        images.push(rep.CGImage().ok_or("no image for an extra window")?);
+    }
+    let stacked = stack_images(&images)?;
+    let rep = NSBitmapImageRep::initWithCGImage(NSBitmapImageRep::alloc(), &stacked);
+    png_data(&rep).ok_or_else(|| "PNG encoding of the stacked capture failed".to_owned())
 }
 
 /// See `captureWindowFromScreen` in the Swift oracle: the main window, then
@@ -318,7 +340,7 @@ fn capture_next(filters: Arc<Vec<Retained<SCContentFilter>>>, images: Captured, 
 
 /// See `stackImages` in the Swift oracle: the captures one above the other,
 /// left-aligned, in the first capture's colour space.
-fn stack_images(images: &[objc2_core_foundation::CFRetained<CGImage>]) -> Result<objc2_core_foundation::CFRetained<CGImage>, String> {
+fn stack_images<T: std::ops::Deref<Target = CGImage>>(images: &[T]) -> Result<objc2_core_foundation::CFRetained<CGImage>, String> {
     let width = images.iter().map(|image| CGImage::width(Some(image))).max().unwrap_or(0);
     let height: usize = images.iter().map(|image| CGImage::height(Some(image))).sum();
     let space = images.first().and_then(|image| CGImage::color_space(Some(image))).ok_or("cannot make the stacking context")?;

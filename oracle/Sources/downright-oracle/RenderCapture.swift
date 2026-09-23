@@ -134,7 +134,7 @@ final class CaptureSession: NSObject, NSApplicationDelegate {
         do {
             try scene.writeExtras(bitmap: rep, request: request)
             if !request.captureFromScreen {
-                try png.write(to: request.outputPNG)
+                try viewCapture(main: rep, png: png).write(to: request.outputPNG)
                 exit(0)
             }
         } catch {
@@ -170,6 +170,27 @@ final class CaptureSession: NSObject, NSApplicationDelegate {
             throw OracleError.usage("PNG encoding of the window capture failed")
         }
         try png.write(to: url)
+    }
+
+    /// `--capture view`: the settle view's cached display, with each extra
+    /// window's content view cached and stacked beneath it.
+    private func viewCapture(main: NSBitmapImageRep, png: Data) throws -> Data {
+        let extras = scene.extraWindows()
+        guard !extras.isEmpty, let first = main.cgImage else { return png }
+        var images = [first]
+        for extra in extras {
+            guard let view = extra.contentView,
+                  let rep = view.bitmapImageRepForCachingDisplay(in: view.bounds) else {
+                throw OracleError.usage("no bitmap representation for an extra window")
+            }
+            view.cacheDisplay(in: view.bounds, to: rep)
+            guard let image = rep.cgImage else { throw OracleError.usage("no image for an extra window") }
+            images.append(image)
+        }
+        guard let data = NSBitmapImageRep(cgImage: try stackImages(images)).representation(using: .png, properties: [:]) else {
+            throw OracleError.usage("PNG encoding of the stacked capture failed")
+        }
+        return data
     }
 
     private func captureImage(of window: NSWindow, in content: SCShareableContent) async throws -> CGImage {
