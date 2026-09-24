@@ -3,10 +3,13 @@
 //!
 //! swift-markdown converts the tree cmark-gfm builds (with
 //! `CMARK_OPT_TABLE_SPANS | CMARK_OPT_SOURCEPOS` and the `table`,
-//! `strikethrough` and `tasklist` extensions). Upleft parses with
-//! pulldown-cmark instead and builds the same markup tree from its events:
-//! the same element kinds and children, the same strings, and the source
-//! ranges cmark would have reported, including cmark's quirks:
+//! `strikethrough` and `tasklist` extensions). Upleft parses with its fork of
+//! pulldown-cmark instead (`vendor/pulldown-cmark`), whose
+//! `ENABLE_CMARK_GFM_COMPAT` option parses as cmark-gfm does wherever
+//! CommonMark 0.31 and cmark-gfm disagree (the fork's `UPLEFT.md` lists
+//! them), and builds the same markup tree from its events: the same element
+//! kinds and children, the same strings, and the source ranges cmark would
+//! have reported, including cmark's quirks:
 //!
 //! - Tight list items keep their paragraphs.
 //! - Adjacent text nodes are one node (`cmark_consolidate_text_nodes`); a text
@@ -27,12 +30,12 @@
 //!   line that closes them, multi-line HTML blocks of kinds 1–5 on the line
 //!   before their end marker.
 //! - Tables use the GFM extension's cell offsets, column and row spans, and
-//!   its positions when a table interrupts a paragraph.
-//! - Task items are recognised by the extension's own pattern.
-//!
-//! Where pulldown-cmark parses differently from cmark-gfm (CommonMark 0.31
-//! versus 0.29 plus GFM), the tree follows pulldown-cmark; docs/KNOWN-DIFFERENCES.md
-//! lists those cases.
+//!   its positions when a table interrupts a paragraph (the text before the
+//!   table has no position, and its inlines count lines and columns from
+//!   0 with `\|` unescaped).
+//! - Inline attributes (`^[text](attributes)`) come from the fork as links
+//!   of type `LinkType::InlineAttributes`; cmark puts them on the line of
+//!   their closing bracket.
 
 use std::ops::Range;
 
@@ -42,7 +45,7 @@ use crate::base::document::Document;
 use crate::base::raw_markup::{Checkbox, NodeId, RawMarkupArena, RawMarkupData};
 use crate::infrastructure::source_location::{SourceLocation, SourceRange};
 use crate::nodes::tables::ColumnAlignment;
-use crate::parser::cmark_lines::{Line, Prefix, SourceLines};
+use crate::parser::cmark_lines::{self, Line, Prefix, SourceLines};
 use crate::parser::cmark_table::{self, Row};
 use crate::parser::parse_options::ParseOptions;
 use crate::utility::swift_string::swift_contains_character;
@@ -65,7 +68,8 @@ impl MarkupParser {
             // ending on; pulldown-cmark misreads lone `\r`s, so they become
             // `\n`s (the same length, so offsets and lines are unchanged).
             let bytes = text.as_bytes();
-            let lone = (0..bytes.len()).any(|index| bytes[index] == b'\r' && bytes.get(index + 1) != Some(&b'\n'));
+            let lone = (0..bytes.len())
+                .any(|index| bytes[index] == b'\r' && bytes.get(index + 1) != Some(&b'\n'));
             if lone {
                 let mut normalized = String::with_capacity(text.len());
                 let mut characters = text.chars().peekable();
@@ -79,7 +83,9 @@ impl MarkupParser {
                 text = std::borrow::Cow::Owned(normalized);
             }
         }
-        Converter::new(&text, options).run()
+        let mut converter = Converter::new(&text, options);
+        converter.input_length = string.len();
+        converter.run()
     }
 }
 
@@ -165,8 +171,26 @@ struct SubjectLine {
     /// Source offset where the line's text starts (after container prefixes
     /// and, unless the line is a lazy continuation, leading whitespace).
     source_start: usize,
-    /// Position of that offset in the concatenated text.
+    /// Position of the line's start in the concatenated text.
     subject_start: i64,
+    /// Spaces cmark's `add_line` puts first for a tab that a container's
+    /// prefix partly consumed on a lazy line (`source_start` is then just
+    /// after the tab).
+    lead: i64,
+    /// The inline parser's line and column base when it went on to this
+    /// line, if it did (a backslash hard break keeps both).
+    entered: Option<(i64, i64)>,
+}
+
+impl SubjectLine {
+    /// The position of `offset`, on this line, in the concatenated text.
+    fn subject(&self, offset: usize) -> i64 {
+        if self.lead > 0 && offset < self.source_start {
+            // The partly consumed tab: where its spaces start.
+            return self.subject_start;
+        }
+        self.subject_start + self.lead + offset.saturating_sub(self.source_start) as i64
+    }
 }
 
 /// The inline parser's position state for one paragraph, heading or cell
@@ -190,8 +214,6 @@ struct InlineContext {
     /// lazy continuation line that no `handle_newline` skipped (after a
     /// backslash hard break, or first once definitions are removed).
     kept_whitespace: Option<usize>,
-    /// Where an ATX heading's content ends after `chop_trailing_hashtags`.
-    content_end: Option<usize>,
     /// The source offsets of the line last looked up, and its index.
     cached: (usize, usize, usize),
 }
@@ -233,16 +255,16 @@ enum FrameKind<'a> {
     Link {
         destination: Option<CowStr<'a>>,
         title: CowStr<'a>,
-        collapsed: bool,
-        /// `[text](destination)`, which after a `^` is an attribute span.
-        inline: bool,
         /// `<scheme:…>` or `<address@…>`, whose text cmark decodes.
         autolink: bool,
+    },
+    /// swift-cmark's `^[text](attributes)`.
+    Attributes {
+        attributes: CowStr<'a>,
     },
     Image {
         source: CowStr<'a>,
         title: CowStr<'a>,
-        collapsed: bool,
     },
 }
 
@@ -316,6 +338,10 @@ struct ClosedParagraph {
 
 struct Converter<'a> {
     text: &'a str,
+    /// The length of the text as cmark receives it (before NUL replacement
+    /// and without a byte order mark removed): its reference expansion
+    /// limit depends on it.
+    input_length: usize,
     bytes: &'a [u8],
     options: ParseOptions,
     lines: SourceLines,
@@ -348,18 +374,17 @@ struct Converter<'a> {
     /// Code spans and inline HTML whose end column cmark measured without
     /// the block offset (they span lines).
     unshifted_ends: Vec<NodeId>,
+    /// Text nodes whose end the strikethrough extension left unset, with
+    /// their line and start column (a table's shift can make them valid).
+    tilde_texts: Vec<(NodeId, i64, i64)>,
+    /// Lazy lines where cmark's tasklist extension skipped 3 bytes.
+    task_skips: Vec<Range<usize>>,
     /// Every code span and its backtick count, which its range includes.
     code_ticks: Vec<(NodeId, i64)>,
     /// A subject line buffer to reuse for the next inline context.
     spare_lines: Vec<SubjectLine>,
     /// Where the code block's last text event ended.
     code_text_end: usize,
-    /// Whether the source has `^[`, which may start swift-markdown's inline
-    /// attributes; only then are text and link sources recorded.
-    attributes_possible: bool,
-    /// Source offsets of text nodes and inline links, by node, when
-    /// `attributes_possible`.
-    inline_sources: Vec<(NodeId, usize, usize)>,
     /// The first line's indentation of the HTML block being read, used
     /// unless pulldown-cmark reports it.
     html_indentation: Option<String>,
@@ -369,6 +394,7 @@ impl<'a> Converter<'a> {
     fn new(text: &'a str, options: ParseOptions) -> Converter<'a> {
         Converter {
             text,
+            input_length: text.len(),
             bytes: text.as_bytes(),
             options,
             lines: SourceLines::new(text.as_bytes()),
@@ -390,25 +416,33 @@ impl<'a> Converter<'a> {
             containers_opened: 0,
             gap_from: 0,
             unshifted_ends: Vec::new(),
+            tilde_texts: Vec::new(),
+            task_skips: Vec::new(),
             code_ticks: Vec::new(),
             spare_lines: Vec::new(),
             code_text_end: 0,
-            attributes_possible: memchr::memmem::find(text.as_bytes(), b"^[").is_some(),
-            inline_sources: Vec::new(),
             html_indentation: None,
         }
     }
 
     fn run(mut self) -> Document {
-        let mut pulldown_options =
-            Options::ENABLE_TABLES | Options::ENABLE_STRIKETHROUGH | Options::ENABLE_TASKLISTS;
+        let mut pulldown_options = Options::ENABLE_TABLES
+            | Options::ENABLE_STRIKETHROUGH
+            | Options::ENABLE_TASKLISTS
+            | Options::ENABLE_CMARK_GFM_COMPAT;
         if !self.options.contains(ParseOptions::DISABLE_SMART_OPTS) {
             pulldown_options |= Options::ENABLE_SMART_PUNCTUATION;
         }
         // cmark skips a UTF-8 byte order mark at the start of the first line;
         // pulldown-cmark would read it as text.
-        let bom = if self.text.starts_with('\u{FEFF}') { 3 } else { 0 };
-        let parser = Parser::new_ext(&self.text[bom..], pulldown_options).into_offset_iter();
+        let bom = if self.text.starts_with('\u{FEFF}') {
+            3
+        } else {
+            0
+        };
+        let parser = Parser::new_ext(&self.text[bom..], pulldown_options)
+            .cmark_input_length(self.input_length)
+            .into_offset_iter();
 
         self.frames.push(Frame {
             kind: FrameKind::Document,
@@ -432,9 +466,7 @@ impl<'a> Converter<'a> {
                 Event::HardBreak => self.line_break(range, true),
                 Event::Rule => self.rule(range),
                 Event::TaskListMarker(checked) => self.task_list_marker(checked, range),
-                Event::FootnoteReference(_)
-                | Event::InlineMath(_)
-                | Event::DisplayMath(_) => {
+                Event::FootnoteReference(_) | Event::InlineMath(_) | Event::DisplayMath(_) => {
                     unreachable!("pulldown-cmark option not enabled")
                 }
             }
@@ -452,9 +484,13 @@ impl<'a> Converter<'a> {
         };
         let range = cmark_range(1, 1, end.0, end.1, 0);
         let root = self.container(&frame, RawMarkupData::Document, range);
-        self.record(root, 0, Some((1, 1)), 0..self.text.len(), EndRule::Done {
-            n: Finalize::Eof,
-        });
+        self.record(
+            root,
+            0,
+            Some((1, 1)),
+            0..self.text.len(),
+            EndRule::Done { n: Finalize::Eof },
+        );
         self.resolve_open_blocks(root);
         Document {
             arena: self.arena,
@@ -476,7 +512,10 @@ impl<'a> Converter<'a> {
     /// The raw cmark start of a block beginning at `offset`.
     fn block_start(&self, offset: usize) -> (i64, i64) {
         let line = self.line_of(offset);
-        (line as i64 + 1, (offset - self.lines.start(line)) as i64 + 1)
+        (
+            line as i64 + 1,
+            (offset - self.lines.start(line)) as i64 + 1,
+        )
     }
 
     /// The last line of `range` that is not blank once the current
@@ -487,11 +526,14 @@ impl<'a> Converter<'a> {
         while last > first {
             let start = self.lines.start(last);
             let end = self.lines.end(last);
-            let blank = self.bytes[start..end].iter().all(|&byte| is_space_or_tab(byte)) || {
-                let line = self.line(last);
-                let (scan, all_matched) = line.match_prefixes(&self.prefixes);
-                all_matched && line.first_nonspace(&scan).blank
-            };
+            let blank = self.bytes[start..end]
+                .iter()
+                .all(|&byte| is_space_or_tab(byte))
+                || {
+                    let line = self.line(last);
+                    let (scan, all_matched) = line.match_prefixes(&self.prefixes);
+                    all_matched && line.first_nonspace(&scan).blank
+                };
             if blank {
                 last -= 1;
             } else {
@@ -600,8 +642,11 @@ impl<'a> Converter<'a> {
                             || self.line_of(container_end.saturating_sub(1)) + 1,
                             |next| next.first_line,
                         );
-                        let definition =
-                            self.definition_line(self.line_of(record.range_end), bound, record.container);
+                        let definition = self.definition_line(
+                            self.line_of(record.range_end),
+                            bound,
+                            record.container,
+                        );
                         let candidate = match (next.map(|next| next.first_line), definition) {
                             (Some(a), Some(b)) => Some(a.min(b)),
                             (a, b) => a.or(b),
@@ -627,7 +672,9 @@ impl<'a> Converter<'a> {
     /// The first line of a link reference definition in lines `from..to`
     /// that is directly in `container`.
     fn definition_line(&self, from: usize, to: usize, container: u32) -> Option<usize> {
-        let index = self.definitions.partition_point(|&(line, _, _)| line < from);
+        let index = self
+            .definitions
+            .partition_point(|&(line, _, _)| line < from);
         self.definitions[index..]
             .iter()
             .take_while(|&&(line, _, _)| line < to)
@@ -645,10 +692,9 @@ impl<'a> Converter<'a> {
         }
         for line_index in from_line..to.min(self.lines.count()) {
             let line = self.line(line_index);
-            let (scan, all_matched) = line.match_prefixes(&self.prefixes);
-            if !all_matched {
-                continue;
-            }
+            // A line that misses a container's prefix is a lazy continuation
+            // of the definitions.
+            let (scan, _) = line.match_prefixes(&self.prefixes);
             let mut scan = scan;
             if scan.offset < self.gap_from {
                 let distance = self.gap_from - scan.offset;
@@ -656,10 +702,14 @@ impl<'a> Converter<'a> {
             }
             let first = line.first_nonspace(&scan);
             if !first.blank && first.offset < self.lines.end(line_index) {
-                self.definitions.push((line_index, first.offset, self.container));
+                self.definitions
+                    .push((line_index, first.offset, self.container));
             }
         }
-        self.gap_from = self.lines.start(to.min(self.lines.count() - 1)).max(self.gap_from);
+        self.gap_from = self
+            .lines
+            .start(to.min(self.lines.count() - 1))
+            .max(self.gap_from);
         if to >= self.lines.count() {
             self.gap_from = self.bytes.len();
         }
@@ -703,7 +753,9 @@ impl<'a> Converter<'a> {
     }
 
     fn top_is(&self, predicate: impl Fn(&FrameKind<'a>) -> bool) -> bool {
-        self.frames.last().is_some_and(|frame| predicate(&frame.kind))
+        self.frames
+            .last()
+            .is_some_and(|frame| predicate(&frame.kind))
     }
 
     // MARK: Inline contexts
@@ -720,6 +772,8 @@ impl<'a> Converter<'a> {
         lines.push(SubjectLine {
             source_start: first_offset,
             subject_start: 0,
+            lead: 0,
+            entered: Some((start_line, 0)),
         });
         InlineContext {
             first_source_line: self.line_of(first_offset),
@@ -731,7 +785,6 @@ impl<'a> Converter<'a> {
             previous_end: first_offset,
             single_line,
             kept_whitespace: None,
-            content_end: None,
             cached: (0, 0, 0),
         }
     }
@@ -766,7 +819,7 @@ impl<'a> Converter<'a> {
         // Most lookups fall on the line of the previous one.
         if (context.cached.0..context.cached.1).contains(&offset) {
             let subject_line = context.lines[context.cached.2];
-            return subject_line.subject_start + offset.saturating_sub(subject_line.source_start) as i64;
+            return subject_line.subject(offset);
         }
         let line = self.lines.line_of(offset);
         if line < context.first_source_line {
@@ -786,7 +839,7 @@ impl<'a> Converter<'a> {
         let context = self.inline.as_mut().unwrap();
         context.cached = (line_start, next_start, index);
         let subject_line = context.lines[index];
-        subject_line.subject_start + offset.saturating_sub(subject_line.source_start) as i64
+        subject_line.subject(offset)
     }
 
     /// Computes the next line of the current inline container's text:
@@ -799,14 +852,22 @@ impl<'a> Converter<'a> {
         let previous = context.lines[previous_index];
         let previous_line = context.first_source_line + previous_index;
         let next_line = previous_line + 1;
-        let subject_start = previous.subject_start
-            + (self.lines.end(previous_line) as i64 - previous.source_start as i64)
-            + 1;
+        let subject_start = previous.subject(self.lines.end(previous_line)) + 1;
+        let mut lead = 0;
         let source_start = if next_line < self.lines.count() {
             let line = self.line(next_line);
             let (scan, all_matched) = line.match_prefixes(&self.prefixes);
             if all_matched {
                 line.first_nonspace(&scan).offset
+            } else if let Some(skip) = self
+                .task_skips
+                .iter()
+                .find(|skip| skip.start == scan.offset)
+            {
+                skip.end
+            } else if scan.partially_consumed_tab {
+                lead = cmark_lines::tab_remainder(&scan);
+                scan.offset + 1
             } else {
                 scan.offset
             }
@@ -816,7 +877,22 @@ impl<'a> Converter<'a> {
         self.inline.as_mut().unwrap().lines.push(SubjectLine {
             source_start,
             subject_start,
+            lead,
+            entered: None,
         });
+    }
+
+    /// The spaces a partly consumed tab at `offset` stands for, if it is one
+    /// (see `SubjectLine::lead`); 0 otherwise.
+    fn tab_lead(&self, offset: usize) -> i64 {
+        let Some(context) = self.inline.as_ref() else {
+            return 0;
+        };
+        let line = self.line_of(offset);
+        line.checked_sub(context.first_source_line)
+            .and_then(|index| context.lines.get(index))
+            .filter(|subject_line| subject_line.lead > 0 && subject_line.source_start == offset + 1)
+            .map_or(0, |subject_line| subject_line.lead)
     }
 
     /// The raw cmark column of the character at `offset`.
@@ -840,6 +916,7 @@ impl<'a> Converter<'a> {
         let context = self.inline.as_mut().unwrap();
         context.base = context.lines[index].subject_start;
         context.line += 1;
+        context.lines[index].entered = Some((context.line, context.base));
     }
 
     /// `adjust_subj_node_newlines`: after a code span or inline HTML that
@@ -865,6 +942,7 @@ impl<'a> Converter<'a> {
         let end_line = context.line + newlines;
         context.line += newlines;
         context.base = last_start;
+        context.lines[index].entered = Some((context.line, context.base));
         Some((end_line, since_newline))
     }
 
@@ -914,7 +992,16 @@ impl<'a> Converter<'a> {
     fn add_text_piece(&mut self, text: &str, range: Range<usize>) {
         if self.pending.is_none() {
             let mut start = range.start;
-            if start > 0
+            if start >= 2
+                && self.bytes[start] == b'|'
+                && self.bytes[start - 1] == b'\\'
+                && self.bytes[start - 2] == b'\\'
+            {
+                // `\\|` where cmark unescapes pipes (a table cell, or text
+                // before a table): it removed the second backslash, and the
+                // first escapes the pipe.
+                start -= 2;
+            } else if start > 0
                 && start < self.bytes.len()
                 && self.bytes[start - 1] == b'\\'
                 && self.bytes[start].is_ascii_punctuation()
@@ -948,7 +1035,10 @@ impl<'a> Converter<'a> {
         let line = self.inline_line();
         let end = pending.end;
         let end_column = if let Some(line_end) = line_end.filter(|&line_end| {
-            line_end > end && self.bytes[end..line_end].iter().all(|&byte| is_space_or_tab(byte))
+            line_end > end
+                && self.bytes[end..line_end]
+                    .iter()
+                    .all(|&byte| is_space_or_tab(byte))
         }) {
             self.column(line_end - 1)
         } else if end <= pending.start {
@@ -959,18 +1049,22 @@ impl<'a> Converter<'a> {
             if Self::is_emphasis_delimiter(byte) && !self.is_escaped(last) {
                 let run_end = self.run_end(last);
                 self.column(run_end - 1)
-            } else if byte == b'~' && !self.is_escaped(self.run_start(last)) {
-                // The strikethrough extension never sets a text node's end.
+            } else if byte == b'~'
+                && !self.is_escaped(self.run_start(last))
+                && !self.top_is(|kind| matches!(kind, FrameKind::Link { autolink: true, .. }))
+            {
+                // The strikethrough extension never sets a text node's end
+                // (an autolink's text is not its).
                 0
             } else {
-                self.column(last)
+                self.column(last) + (self.tab_lead(last) - 1).max(0)
             }
         };
         let string = self.arena.str_since(pending.string_start);
         let range = cmark_range(line, start_column, line, end_column, 0);
         let node = self.arena.create(RawMarkupData::Text(string), range, &[]);
-        if self.attributes_possible {
-            self.inline_sources.push((node, pending.start, end));
+        if end_column == 0 && end > pending.start {
+            self.tilde_texts.push((node, line, start_column));
         }
         self.children.push(node);
         if let Some(context) = self.inline.as_mut() {
@@ -999,8 +1093,15 @@ impl<'a> Converter<'a> {
         if self.skip_inlines {
             return;
         }
+        if text.is_empty() && range.is_empty() {
+            // What pulldown-cmark leaves of trimmed heading text: nothing
+            // for cmark.
+            return;
+        }
         self.ensure_inline_container(range.start);
-        if text.contains('&') && self.top_is(|kind| matches!(kind, FrameKind::Link { autolink: true, .. })) {
+        if text.contains('&')
+            && self.top_is(|kind| matches!(kind, FrameKind::Link { autolink: true, .. }))
+        {
             // `make_str_with_entities`.
             let decoded = decode_entities(&text);
             self.add_text_piece(&decoded, range.clone());
@@ -1042,10 +1143,13 @@ impl<'a> Converter<'a> {
         // cmark reads the span from the paragraph's text, where continuation
         // lines have lost their indentation.
         let code = if unshifted {
-            CowStr::from(normalize_code(&self.subject_text(content_start, content_end)))
-        } else if !self.inline.as_ref().unwrap().removed.is_empty() && code.contains("\\|") {
-            // cmark unescapes `\|` in a table cell before parsing its inlines.
-            CowStr::from(code.replace("\\|", "|"))
+            let mut text = self.subject_text(content_start, content_end);
+            if text.matches("\\|").count() > code.matches("\\|").count() {
+                // pulldown-cmark unescaped the pipes, as cmark does in the
+                // text before a table.
+                text = text.replace("\\|", "|");
+            }
+            CowStr::from(normalize_code(&text))
         } else {
             code
         };
@@ -1084,9 +1188,16 @@ impl<'a> Converter<'a> {
             let line_start = if line == first {
                 from
             } else {
+                for _ in 0..context.lines[index].lead {
+                    text.push(' ');
+                }
                 context.lines[index].source_start
             };
-            let line_end = if line == last { to } else { self.lines.end(line) };
+            let line_end = if line == last {
+                to
+            } else {
+                self.lines.end(line)
+            };
             text.push_str(&self.text[line_start.min(line_end)..line_end]);
             if line != last {
                 text.push('\n');
@@ -1114,8 +1225,13 @@ impl<'a> Converter<'a> {
         }
         let parsed_range = cmark_range(line, start_column, end_line, end_column, 0);
         let literal = if unshifted {
-            let html = self.subject_text(range.start, range.end);
-            self.arena.push_str(&html)
+            let mut text = self.subject_text(range.start, range.end);
+            if text.matches("\\|").count() > html.matches("\\|").count() {
+                // pulldown-cmark unescaped the pipes, as cmark does in the
+                // text before a table.
+                text = text.replace("\\|", "|");
+            }
+            self.arena.push_str(&text)
         } else {
             self.arena.push_str(&html)
         };
@@ -1183,7 +1299,11 @@ impl<'a> Converter<'a> {
                     self.extend_subject();
                 }
                 let context = self.inline.as_mut().unwrap();
-                context.kept_whitespace = Some(context.lines[index].source_start);
+                let subject_line = context.lines[index];
+                // A partly consumed tab's spaces start at the tab.
+                context.kept_whitespace =
+                    Some(subject_line.source_start - usize::from(subject_line.lead > 0));
+                context.lines[index].entered = Some((context.line, context.base));
             }
         } else {
             self.count_newline(newline_line);
@@ -1223,9 +1343,55 @@ impl<'a> Converter<'a> {
         let Some(start) = context.kept_whitespace.take() else {
             return;
         };
-        if start < offset && self.bytes[start..offset].iter().all(|&byte| is_space_or_tab(byte)) {
-            let whitespace = &self.text[start..offset];
-            self.add_text_piece(whitespace, start..offset);
+        // A backslash escape starts at its backslash.
+        let offset = if offset > start
+            && self.bytes[offset - 1] == b'\\'
+            && self.bytes.get(offset).is_some_and(u8::is_ascii_punctuation)
+        {
+            offset - 1
+        } else {
+            offset
+        };
+        // After a `]` that closed no attribute span, cmark dropped the label
+        // that followed it and put the `]` where that label ended.
+        let whitespace_end = start
+            + self.bytes[start..offset]
+                .iter()
+                .take_while(|&&b| is_space_or_tab(b))
+                .count();
+        let offset = if whitespace_end + 1 < offset
+            && self.bytes[whitespace_end] == b']'
+            && self.bytes[whitespace_end + 1] == b'['
+            && self.bytes[offset] == b']'
+            && !self.bytes[whitespace_end + 2..offset]
+                .iter()
+                .any(|&b| b == b'[' || b == b']')
+        {
+            whitespace_end
+        } else {
+            offset
+        };
+        if start < offset
+            && self.bytes[start..offset]
+                .iter()
+                .all(|&byte| is_space_or_tab(byte))
+        {
+            // A lazy line's partly consumed tab is spaces in cmark's text.
+            let lead = context
+                .lines
+                .iter()
+                .find(|line| line.lead > 0 && line.source_start == start + 1)
+                .map(|line| line.lead as usize);
+            match lead {
+                Some(lead) => {
+                    let whitespace = " ".repeat(lead) + &self.text[start + 1..offset];
+                    self.add_text_piece(&whitespace, start..offset);
+                }
+                None => {
+                    let whitespace = &self.text[start..offset];
+                    self.add_text_piece(whitespace, start..offset);
+                }
+            }
         }
     }
 
@@ -1250,18 +1416,37 @@ impl<'a> Converter<'a> {
         );
         let mut context = self.new_inline_context(offset, block_start.0, block_start.1 - 1, false);
         if start != offset {
-            // Definitions came first: the text's first line is where the
-            // paragraph's content now starts, which on a lazy continuation
-            // line includes its indentation.
-            let line = self.line(self.line_of(offset));
-            let (scan, all_matched) = line.match_prefixes(&self.prefixes);
-            if !all_matched && scan.offset < offset {
-                context.lines[0].source_start = scan.offset;
-                context.kept_whitespace = Some(scan.offset);
-            }
+            self.lazy_first_line(&mut context, offset);
         }
         self.inline = Some(context);
         self.last_inline_end = offset;
+    }
+
+    /// Definitions came first: the text's first line is where the
+    /// paragraph's content now starts, which on a lazy continuation line
+    /// includes its indentation (and the rest of a partly consumed tab as
+    /// spaces), unless cmark's tasklist extension skipped 3 bytes there.
+    fn lazy_first_line(&self, context: &mut InlineContext, offset: usize) {
+        let line = self.line(self.line_of(offset));
+        let (scan, all_matched) = line.match_prefixes(&self.prefixes);
+        if all_matched || scan.offset >= offset {
+            return;
+        }
+        if let Some(skip) = self
+            .task_skips
+            .iter()
+            .find(|skip| skip.start == scan.offset)
+        {
+            context.lines[0].source_start = skip.end;
+            context.kept_whitespace = Some(skip.end);
+        } else if scan.partially_consumed_tab {
+            context.lines[0].source_start = scan.offset + 1;
+            context.lines[0].lead = cmark_lines::tab_remainder(&scan);
+            context.kept_whitespace = Some(scan.offset);
+        } else {
+            context.lines[0].source_start = scan.offset;
+            context.kept_whitespace = Some(scan.offset);
+        }
     }
 
     /// Where cmark's paragraph starts when its text starts at `offset`: at
@@ -1282,13 +1467,12 @@ impl<'a> Converter<'a> {
 
     fn close_paragraph(&mut self, end: usize) {
         self.flush_text(None);
-        let children_start = self.frames.last().expect("a paragraph frame").children_start;
-        self.rewrite_inline_attributes(children_start);
         self.gap_from = self.gap_from.max(end);
         let frame = self.frames.pop().expect("a paragraph frame");
         let context = self.inline.take().expect("a paragraph's inline context");
         let first_line = self.line_of(frame.range.start);
-        let last_line = self.last_content_line(&(frame.range.start..end.max(frame.range.start + 1)));
+        let last_line =
+            self.last_content_line(&(frame.range.start..end.max(frame.range.start + 1)));
         let n = self.after(last_line);
         let node = self.container(&frame, RawMarkupData::Paragraph, None);
         self.finish_block(node, Some(frame.start), first_line, n, false);
@@ -1310,32 +1494,74 @@ impl<'a> Converter<'a> {
         self.children.push(node);
     }
 
+    /// Where cmark's content of a closed paragraph's `line` starts.
+    fn paragraph_line_start(&self, paragraph: &ClosedParagraph, line: usize) -> usize {
+        let context = &paragraph.context;
+        let index = line.wrapping_sub(context.first_source_line);
+        let start = match (line >= context.first_source_line)
+            .then(|| context.lines.get(index))
+            .flatten()
+        {
+            Some(subject_line) => subject_line.source_start,
+            None => {
+                let text_line = self.line(line);
+                let (scan, all_matched) = text_line.match_prefixes(&self.prefixes);
+                if all_matched {
+                    text_line.first_nonspace(&scan).offset
+                } else {
+                    scan.offset
+                }
+            }
+        };
+        start.min(self.lines.end(line))
+    }
+
     /// cmark's content of a closed paragraph: each line's text plus `\n`.
+    /// It starts where the paragraph's text does: the definitions that can
+    /// come before it were resolved (at a setext underline), and cmark
+    /// dropped them from the content.
     fn paragraph_content(&self, paragraph: &ClosedParagraph) -> Vec<u8> {
         let mut content = Vec::new();
         let context = &paragraph.context;
-        for line in paragraph.first_line..=paragraph.last_line {
-            let index = line.wrapping_sub(context.first_source_line);
-            let start = match (line >= context.first_source_line)
-                .then(|| context.lines.get(index))
+        for line in context.first_source_line.max(paragraph.first_line)..=paragraph.last_line {
+            let lead = (line >= context.first_source_line)
+                .then(|| context.lines.get(line - context.first_source_line))
                 .flatten()
-            {
-                Some(subject_line) => subject_line.source_start,
-                None => {
-                    let text_line = self.line(line);
-                    let (scan, all_matched) = text_line.match_prefixes(&self.prefixes);
-                    if all_matched {
-                        text_line.first_nonspace(&scan).offset
-                    } else {
-                        scan.offset
-                    }
-                }
-            };
-            let end = self.lines.end(line);
-            content.extend_from_slice(&self.bytes[start.min(end)..end]);
+                .map_or(0, |subject_line| subject_line.lead);
+            content.extend(std::iter::repeat_n(b' ', lead as usize));
+            let start = self.paragraph_line_start(paragraph, line);
+            content.extend_from_slice(&self.bytes[start..self.lines.end(line)]);
             content.push(b'\n');
         }
         content
+    }
+
+    /// The backslashes cmark's `unescape_pipes` removes from a closed
+    /// paragraph before the table that interrupts it (each one right before
+    /// a `|`), as cmark lines and 0-based positions in them.
+    fn unescaped_pipes(&self, paragraph: &ClosedParagraph) -> Vec<(i64, i64)> {
+        let context = &paragraph.context;
+        let first = self.lines.start(paragraph.first_line);
+        let last = self.lines.end(paragraph.last_line);
+        if !contains(&self.bytes[first..last], b"\\|") {
+            return Vec::new();
+        }
+        let mut removed = Vec::new();
+        for line in context.first_source_line..=paragraph.last_line {
+            let Some(subject_line) = context.lines.get(line - context.first_source_line) else {
+                continue;
+            };
+            let Some((cmark_line, base)) = subject_line.entered else {
+                continue;
+            };
+            let start = subject_line.source_start.min(self.lines.end(line));
+            for position in start..self.lines.end(line).saturating_sub(1) {
+                if self.bytes[position] == b'\\' && self.bytes[position + 1] == b'|' {
+                    removed.push((cmark_line, subject_line.subject(position) - base));
+                }
+            }
+        }
+        removed
     }
 
     // MARK: Start events
@@ -1368,7 +1594,11 @@ impl<'a> Converter<'a> {
             }
             Tag::Heading { level, .. } => {
                 let level = level as i64;
-                let setext = !self.is_atx_heading(range.start);
+                // A setext heading spans its text's lines and the underline;
+                // its text may itself look like an ATX heading.
+                let setext = self.line_of(range.end.saturating_sub(1).max(range.start))
+                    > self.line_of(range.start)
+                    || !self.is_atx_heading(range.start);
                 let start = if setext {
                     self.block_start(self.definitions_before(range.start))
                 } else {
@@ -1378,7 +1608,9 @@ impl<'a> Converter<'a> {
                     let content = range.start + self.atx_internal_offset(range.start);
                     let end = self.lines.end(line);
                     let blank = content <= end
-                        && self.bytes[content.min(end)..end].iter().all(|&byte| is_space_or_tab(byte));
+                        && self.bytes[content.min(end)..end]
+                            .iter()
+                            .all(|&byte| is_space_or_tab(byte));
                     if !blank {
                         let length = self.chopped_length(line);
                         self.lines.set_len(line, length);
@@ -1399,8 +1631,8 @@ impl<'a> Converter<'a> {
                     start.1 - 1 + internal_offset as i64,
                     !setext,
                 );
-                if !setext {
-                    context.content_end = Some(self.lines.start(line) + self.lines.len(line));
+                if setext && self.definitions_before(range.start) != range.start {
+                    self.lazy_first_line(&mut context, range.start);
                 }
                 self.inline = Some(context);
             }
@@ -1477,7 +1709,11 @@ impl<'a> Converter<'a> {
                     indentation.push_str(&" ".repeat(4 - scan.column % 4));
                     from += 1;
                 }
-                if from < range.start && self.bytes[from..range.start].iter().all(|&byte| is_space_or_tab(byte)) {
+                if from < range.start
+                    && self.bytes[from..range.start]
+                        .iter()
+                        .all(|&byte| is_space_or_tab(byte))
+                {
                     indentation.push_str(&self.text[from..range.start]);
                 }
                 self.html_indentation = Some(indentation);
@@ -1494,7 +1730,11 @@ impl<'a> Converter<'a> {
             | Tag::MetadataBlock(_)
             | Tag::Superscript
             | Tag::Subscript => unreachable!("pulldown-cmark option not enabled"),
-            Tag::Emphasis | Tag::Strong | Tag::Strikethrough | Tag::Link { .. } | Tag::Image { .. } => {
+            Tag::Emphasis
+            | Tag::Strong
+            | Tag::Strikethrough
+            | Tag::Link { .. }
+            | Tag::Image { .. } => {
                 unreachable!()
             }
         }
@@ -1503,7 +1743,9 @@ impl<'a> Converter<'a> {
     /// The first byte at or after `offset` that is not whitespace (a list's
     /// range can start at the line ending before its first marker).
     fn skip_whitespace(&self, mut offset: usize) -> usize {
-        while offset < self.bytes.len() && matches!(self.bytes[offset], b' ' | b'\t' | b'\n' | b'\r') {
+        while offset < self.bytes.len()
+            && matches!(self.bytes[offset], b' ' | b'\t' | b'\n' | b'\r')
+        {
             offset += 1;
         }
         offset
@@ -1576,9 +1818,28 @@ impl<'a> Converter<'a> {
         self.flush_text(None);
         let line = self.inline_line();
         let (kind, start_offset, content_start) = match tag {
-            Tag::Emphasis => (FrameKind::Emphasis, self.run_start(range.start), range.start + 1),
-            Tag::Strong => (FrameKind::Strong, self.run_start(range.start), range.start + 2),
+            Tag::Emphasis => (
+                FrameKind::Emphasis,
+                self.run_start(range.start),
+                range.start + 1,
+            ),
+            Tag::Strong => (
+                FrameKind::Strong,
+                self.run_start(range.start),
+                range.start + 2,
+            ),
             Tag::Strikethrough => (FrameKind::Strikethrough, range.start, range.start + 1),
+            Tag::Link {
+                link_type: LinkType::InlineAttributes,
+                dest_url,
+                ..
+            } => (
+                FrameKind::Attributes {
+                    attributes: dest_url,
+                },
+                range.start,
+                range.start + 2,
+            ),
             Tag::Link {
                 link_type,
                 dest_url,
@@ -1590,16 +1851,15 @@ impl<'a> Converter<'a> {
                         "mailto:{}",
                         decode_entities(trim_cmark_space(&dest_url))
                     ))),
-                    LinkType::Autolink => Some(CowStr::from(decode_entities(trim_cmark_space(&dest_url)))),
+                    LinkType::Autolink => {
+                        Some(CowStr::from(decode_entities(trim_cmark_space(&dest_url))))
+                    }
                     _ => Some(dest_url),
                 };
-                let collapsed = matches!(link_type, LinkType::Collapsed | LinkType::CollapsedUnknown);
                 (
                     FrameKind::Link {
                         destination,
                         title,
-                        collapsed,
-                        inline: link_type == LinkType::Inline,
                         autolink: matches!(link_type, LinkType::Autolink | LinkType::Email),
                     },
                     range.start,
@@ -1607,15 +1867,11 @@ impl<'a> Converter<'a> {
                 )
             }
             Tag::Image {
-                link_type,
-                dest_url,
-                title,
-                ..
+                dest_url, title, ..
             } => (
                 FrameKind::Image {
                     source: dest_url,
                     title,
-                    collapsed: matches!(link_type, LinkType::Collapsed | LinkType::CollapsedUnknown),
                 },
                 range.start,
                 range.start + 2,
@@ -1672,7 +1928,13 @@ impl<'a> Converter<'a> {
                 let n = self.after(last_line);
                 let node = self.container(&frame, RawMarkupData::BlockQuote, None);
                 self.finish_block(node, Some(frame.start), first_line, n, false);
-                self.record(node, first_line, Some(frame.start), frame.range, EndRule::Done { n });
+                self.record(
+                    node,
+                    first_line,
+                    Some(frame.start),
+                    frame.range,
+                    EndRule::Done { n },
+                );
                 self.children.push(node);
             }
             TagEnd::List(_) => {
@@ -1739,10 +2001,12 @@ impl<'a> Converter<'a> {
                 let after_definitions = last_definition
                     .filter(|_| no_children)
                     .map(|line| line + 1)
-                    .filter(|&line| line < self.lines.count() && {
-                        let text_line = self.line(line);
-                        let (scan, all_matched) = text_line.match_prefixes(&self.prefixes);
-                        all_matched && text_line.first_nonspace(&scan).blank
+                    .filter(|&line| {
+                        line < self.lines.count() && {
+                            let text_line = self.line(line);
+                            let (scan, all_matched) = text_line.match_prefixes(&self.prefixes);
+                            all_matched && text_line.first_nonspace(&scan).blank
+                        }
                     });
                 let rule = if empty {
                     let n = self.empty_item_end(first_line, width);
@@ -1798,8 +2062,6 @@ impl<'a> Converter<'a> {
             return;
         }
         self.flush_text(None);
-        let children_start = self.frames.last().expect("an inline frame").children_start;
-        self.rewrite_inline_attributes(children_start);
         let frame = self.frames.pop().expect("an inline frame");
         let (start_line, start_column) = frame.start;
         let line = self.inline_line();
@@ -1811,25 +2073,31 @@ impl<'a> Converter<'a> {
             // The strikethrough node is the opener's text node: it keeps the
             // opener's line.
             TagEnd::Strikethrough => (start_line, self.column(range.end - 1)),
+            TagEnd::Link if matches!(frame.kind, FrameKind::Attributes { .. }) => {
+                let subject = self.subject(range.end);
+                let context = self.inline.as_ref().unwrap();
+                (line, subject - context.base + context.block_offset)
+            }
             _ => {
-                // A collapsed reference's `[]` is part of the link for cmark.
-                let collapsed = matches!(
-                    frame.kind,
-                    FrameKind::Link { collapsed: true, .. } | FrameKind::Image { collapsed: true, .. }
-                );
-                let end = if collapsed && self.bytes[range.end..].starts_with(b"[]") {
-                    range.end + 2
-                } else {
-                    range.end
-                };
+                let end = range.end;
                 // `subj->pos + subj->column_offset + subj->block_offset`.
                 let subject = self.subject(end);
                 let context = self.inline.as_ref().unwrap();
                 (line, subject - context.base + context.block_offset)
             }
         };
+        // `handle_close_bracket_attribute` puts an attribute span on the line
+        // of its closing bracket.
+        let start_line = if matches!(frame.kind, FrameKind::Attributes { .. }) {
+            end_line
+        } else {
+            start_line
+        };
         let parsed_range = cmark_range(start_line, start_column, end_line, end_column, 0);
         let data = match frame.kind {
+            FrameKind::Attributes { ref attributes } => RawMarkupData::InlineAttributes {
+                attributes: self.arena.push_str(attributes),
+            },
             FrameKind::Emphasis => RawMarkupData::Emphasis,
             FrameKind::Strong => RawMarkupData::Strong,
             FrameKind::Strikethrough => RawMarkupData::Strikethrough,
@@ -1838,9 +2106,10 @@ impl<'a> Converter<'a> {
                 ref title,
                 ..
             } => {
+                // pulldown-cmark cleans destinations as `cmark_clean_url`
+                // does (trimmed before entities are decoded).
                 let destination = destination
                     .as_deref()
-                    .map(trim_cmark_space)
                     .filter(|destination| !destination.is_empty())
                     .map(|destination| self.arena.push_str(destination));
                 let title = (!title.is_empty()).then(|| self.arena.push_str(title));
@@ -1851,7 +2120,7 @@ impl<'a> Converter<'a> {
                 ref title,
                 ..
             } => {
-                let source = Some(trim_cmark_space(source))
+                let source = Some(source.as_ref())
                     .filter(|source| !source.is_empty())
                     .map(|source| self.arena.push_str(source));
                 let title = (!title.is_empty()).then(|| self.arena.push_str(title));
@@ -1859,273 +2128,14 @@ impl<'a> Converter<'a> {
             }
             _ => unreachable!(),
         };
-        let inline_link = matches!(frame.kind, FrameKind::Link { inline: true, .. });
         let node = self.container(&frame, data, parsed_range);
-        if self.attributes_possible && inline_link {
-            self.inline_sources.push((node, range.start, range.end));
-        }
         self.children.push(node);
         self.inline.as_mut().unwrap().previous_end = range.end;
         self.note_inline_end(range.end);
     }
 
-    // MARK: Inline attributes
-
-    fn inline_source(&self, node: NodeId) -> Option<(usize, usize)> {
-        self.inline_sources
-            .binary_search_by_key(&node, |&(id, _, _)| id)
-            .ok()
-            .map(|index| (self.inline_sources[index].1, self.inline_sources[index].2))
-    }
-
-    /// `manual_scan_attribute_attributes`: from `from`, the offset of the
-    /// `)` that closes the attributes (parentheses nest; backslash escapes
-    /// skip), if it comes before `to`.
-    fn attributes_end(&self, from: usize, to: usize) -> Option<usize> {
-        let mut index = from;
-        let mut depth = 0;
-        while index < to {
-            match self.bytes[index] {
-                b'\\' if index + 1 < to && self.bytes[index + 1].is_ascii_punctuation() => index += 2,
-                b'(' => {
-                    depth += 1;
-                    if depth > 32 {
-                        return None;
-                    }
-                    index += 1;
-                }
-                b')' if depth == 0 => return Some(index),
-                b')' => {
-                    depth -= 1;
-                    index += 1;
-                }
-                _ => index += 1,
-            }
-        }
-        None
-    }
-
-    /// swift-markdown's inline attributes, `^[text](attributes)`: cmark-gfm
-    /// opens an attribute span at `^[`. pulldown-cmark reads it as a `^`
-    /// before a link, or as text. Rewrites the children of the inline
-    /// container being closed accordingly.
-    fn rewrite_inline_attributes(&mut self, children_start: usize) {
-        if !self.attributes_possible {
-            return;
-        }
-        let mut index = children_start;
-        while index < self.children.len() {
-            let node = self.children[index];
-            let data = self.arena.nodes[node as usize].data;
-            match data {
-                RawMarkupData::Link { .. } => {
-                    if self.link_to_attributes(node, index, children_start) {
-                        index = index.saturating_sub(1).max(children_start);
-                        continue;
-                    }
-                }
-                RawMarkupData::Text(_) => {
-                    if self.split_attributes(node, index) {
-                        continue;
-                    }
-                }
-                _ => {}
-            }
-            index += 1;
-        }
-    }
-
-    /// A `^` before an inline link: the link is an attribute span, and the
-    /// `^` leaves the text before it. Returns whether it rewrote anything.
-    fn link_to_attributes(&mut self, node: NodeId, index: usize, children_start: usize) -> bool {
-        let Some((start, end)) = self.inline_source(node) else {
-            return false;
-        };
-        if start == 0 || self.bytes[start - 1] != b'^' || self.is_escaped(start - 1) || index == children_start {
-            return false;
-        }
-        let previous = self.children[index - 1];
-        let RawMarkupData::Text(previous_string) = self.arena.nodes[previous as usize].data else {
-            return false;
-        };
-        if self.inline_source(previous).map(|(_, previous_end)| previous_end) != Some(start)
-            || !self.arena.str(previous_string).ends_with('^')
-        {
-            return false;
-        }
-        // The `(` that opens the destination: the last one the closing `)`
-        // balances.
-        let mut depth = 0;
-        let mut open = None;
-        for position in (start..end - 1).rev() {
-            match self.bytes[position] {
-                b')' if !self.is_escaped(position) => depth += 1,
-                b'(' if !self.is_escaped(position) => {
-                    if depth == 0 {
-                        open = Some(position);
-                        break;
-                    }
-                    depth -= 1;
-                }
-                _ => {}
-            }
-        }
-        let Some(open) = open else {
-            return false;
-        };
-        if self.attributes_end(open + 1, end) != Some(end - 1) {
-            return false;
-        }
-        let attributes = self.arena.push_str(&self.text[open + 1..end - 1]);
-        let link = &mut self.arena.nodes[node as usize];
-        link.data = RawMarkupData::InlineAttributes { attributes };
-        // `handle_close_bracket_attribute` puts the span on the line of its
-        // closing bracket, at the opener's column.
-        link.parsed_range = link.parsed_range.and_then(|range| {
-            let lower = SourceLocation::new(range.upper_bound.line, range.lower_bound.column - 1);
-            (lower <= range.upper_bound).then(|| SourceRange::new(lower, range.upper_bound))
-        });
-        // The text before loses its `^`.
-        let shortened = previous_string.shortened(1);
-        if self.arena.str(previous_string).len() == 1 {
-            self.children.remove(index - 1);
-        } else {
-            let text = &mut self.arena.nodes[previous as usize];
-            text.data = RawMarkupData::Text(shortened);
-            text.parsed_range = text.parsed_range.and_then(|range| {
-                let upper = SourceLocation::new(range.upper_bound.line, range.upper_bound.column - 1);
-                (range.lower_bound <= upper).then(|| SourceRange::new(range.lower_bound, upper))
-            });
-            if let Some(entry) = self
-                .inline_sources
-                .iter_mut()
-                .find(|(id, _, _)| *id == previous)
-            {
-                entry.2 -= 1;
-            }
-        }
-        true
-    }
-
-    /// `^[text](attributes)` all inside one text node, which pulldown-cmark
-    /// left as text: splits it around an attribute span. Only a node whose
-    /// string is its source (no escapes or entities) is split.
-    fn split_attributes(&mut self, node: NodeId, index: usize) -> bool {
-        let Some((start, end)) = self.inline_source(node) else {
-            return false;
-        };
-        let RawMarkupData::Text(string) = self.arena.nodes[node as usize].data else {
-            return false;
-        };
-        if self.arena.str(string) != &self.text[start..end] {
-            return false;
-        }
-        let Some(range) = self.arena.nodes[node as usize].parsed_range else {
-            return false;
-        };
-        let line = range.lower_bound.line;
-        let start_column = range.lower_bound.column;
-        let column = |offset: usize| start_column + (offset - start) as i64;
-        let mut position = start;
-        while position + 1 < end {
-            let found = memchr::memmem::find(&self.bytes[position..end], b"^[").map(|found| position + found);
-            let Some(caret) = found else {
-                return false;
-            };
-            position = caret + 1;
-            if self.is_escaped(caret) {
-                continue;
-            }
-            // The matching `]`.
-            let mut depth = 0;
-            let mut close = None;
-            let mut scan = caret + 2;
-            while scan < end {
-                match self.bytes[scan] {
-                    b'\\' => scan += 1,
-                    b'[' => depth += 1,
-                    b']' if depth == 0 => {
-                        close = Some(scan);
-                        break;
-                    }
-                    b']' => depth -= 1,
-                    _ => {}
-                }
-                scan += 1;
-            }
-            let Some(close) = close else {
-                continue;
-            };
-            if self.bytes.get(close + 1) != Some(&b'(') {
-                continue;
-            }
-            let Some(closing) = self.attributes_end(close + 2, end) else {
-                continue;
-            };
-            // Split: text before, the span with its text, text after.
-            let upper = range.upper_bound;
-            let mut replacement = Vec::with_capacity(3);
-            let text_node = |this: &mut Self, from: usize, to: usize, end_column: i64| {
-                let string = this.arena.push_str(&this.text[from..to]);
-                let range = cmark_range(line, column(from), line, end_column, 0);
-                let id = this.arena.create(RawMarkupData::Text(string), range, &[]);
-                this.inline_sources.push((id, from, to));
-                id
-            };
-            if caret > start {
-                replacement.push(text_node(self, start, caret, column(caret - 1)));
-            }
-            let inner = (close > caret + 2).then(|| text_node(self, caret + 2, close, column(close - 1)));
-            let attributes = self.arena.push_str(&self.text[close + 2..closing]);
-            let span_range = cmark_range(line, column(caret), line, column(closing), 0);
-            let children: Vec<NodeId> = inner.into_iter().collect();
-            let span = self
-                .arena
-                .create(RawMarkupData::InlineAttributes { attributes }, span_range, &children);
-            replacement.push(span);
-            if closing + 1 < end {
-                let rest = self.arena.push_str(&self.text[closing + 1..end]);
-                let rest_range = Some(SourceRange::new(
-                    SourceLocation::new(line, column(closing + 1)),
-                    upper,
-                ))
-                .filter(|range| range.lower_bound <= range.upper_bound);
-                let id = self.arena.create(RawMarkupData::Text(rest), rest_range, &[]);
-                self.inline_sources.push((id, closing + 1, end));
-                replacement.push(id);
-            }
-            self.inline_sources.sort_unstable_by_key(|&(id, _, _)| id);
-            self.children.splice(index..index + 1, replacement);
-            return true;
-        }
-        false
-    }
-
     fn end_heading(&mut self, range: Range<usize>) {
-        let content_end = self.inline.as_ref().and_then(|context| context.content_end);
-        if let (Some(content_end), Some(pending)) = (content_end, self.pending.as_mut())
-            && pending.end > content_end
-        {
-            // cmark's heading content stops where `chop_trailing_hashtags`
-            // cut the line; pulldown-cmark keeps a closing sequence after a
-            // tab, and trailing tabs.
-            let cut = &self.text[content_end.max(pending.start)..pending.end];
-            if self.arena.strings.ends_with(cut) && self.arena.strings.len() - cut.len() >= pending.string_start {
-                let length = self.arena.strings.len() - cut.len();
-                self.arena.strings.truncate(length);
-                pending.end = content_end.max(pending.start);
-            } else if cut.bytes().all(is_space_or_tab) {
-                // Whitespace pulldown-cmark counted in a decoded piece's range.
-                pending.end = content_end.max(pending.start);
-            }
-            if pending.string_start == self.arena.strings.len() {
-                // Nothing of the text was inside the heading's content.
-                self.pending = None;
-            }
-        }
         self.flush_text(None);
-        let children_start = self.frames.last().expect("a heading frame").children_start;
-        self.rewrite_inline_attributes(children_start);
         self.drop_inline();
         let frame = self.frames.pop().expect("a heading frame");
         let FrameKind::Heading { level, setext } = frame.kind else {
@@ -2143,7 +2153,13 @@ impl<'a> Converter<'a> {
             self.finish_block(node, Some(frame.start), first_line, n, false);
             n
         };
-        self.record(node, first_line, Some(frame.start), frame.range, EndRule::Done { n });
+        self.record(
+            node,
+            first_line,
+            Some(frame.start),
+            frame.range,
+            EndRule::Done { n },
+        );
         self.children.push(node);
     }
 
@@ -2157,17 +2173,27 @@ impl<'a> Converter<'a> {
         let start = self.block_start(range.start);
         let first_line = self.line_of(range.start);
         let node = self.arena.create(RawMarkupData::ThematicBreak, None, &[]);
-        self.record(node, first_line, Some(start), range, EndRule::Absorbing { fenced: false });
+        self.record(
+            node,
+            first_line,
+            Some(start),
+            range,
+            EndRule::Absorbing { fenced: false },
+        );
         self.children.push(node);
     }
 
     fn end_code_block(&mut self, range: Range<usize>) {
         let first_line = self.line_of(range.start);
-        let unclosed_fence_at_end = self
-            .frames
-            .last()
-            .is_some_and(|frame| matches!(frame.kind, FrameKind::CodeBlock { fenced: Some(_), .. }))
-            && range.end == self.bytes.len()
+        let unclosed_fence_at_end = self.frames.last().is_some_and(|frame| {
+            matches!(
+                frame.kind,
+                FrameKind::CodeBlock {
+                    fenced: Some(_),
+                    ..
+                }
+            )
+        }) && range.end == self.bytes.len()
             && !self.bytes.ends_with(b"\n")
             && !self.bytes.ends_with(b"\r")
             && self.lines.count() - 1 > first_line
@@ -2187,11 +2213,18 @@ impl<'a> Converter<'a> {
                 fence_offset -= 1;
             }
             let end = self.lines.end(last);
-            let content = &self.text[scan.offset.min(end)..end];
+            // `add_line` turns the rest of a partly consumed tab into spaces.
+            let (lead, content_start) = if scan.partially_consumed_tab {
+                (cmark_lines::tab_remainder(&scan) as usize, scan.offset + 1)
+            } else {
+                (0, scan.offset)
+            };
+            let content = &self.text[content_start.min(end)..end];
             if all_matched && content.bytes().all(is_space_or_tab) {
                 if !self.literal.is_empty() && !self.literal.ends_with('\n') {
                     self.literal.push('\n');
                 }
+                self.literal.extend(std::iter::repeat_n(' ', lead));
                 self.literal.push_str(content);
                 self.literal.push('\n');
             }
@@ -2201,35 +2234,18 @@ impl<'a> Converter<'a> {
             unreachable!()
         };
         let code = self.push_literal();
+        // pulldown-cmark cleans the info string as cmark's `finalize` does.
         let language = info
             .as_deref()
-            .map(str::trim)
             .filter(|info| !info.is_empty())
-            .map(decode_entities);
-        let language = language.map(|language| self.arena.push_str(&language));
+            .map(|language| self.arena.push_str(language));
         let node = self
             .arena
             .create(RawMarkupData::CodeBlock { code, language }, None, &[]);
         let rule = match fenced {
             Some((fence, length)) => {
                 let last = self.line_of(range.end.saturating_sub(1).max(range.start));
-                let last_is_content = self.code_text_end > self.lines.start(last);
-                if last > first_line && last_is_content && self.is_closing_fence(last, fence, length) {
-                    // pulldown-cmark kept a closing fence followed by a tab
-                    // as a line of code; cmark closes the block there.
-                    let code = self.arena.str(code);
-                    let without = code[..code.len() - 1].rfind('\n').map_or(0, |newline| newline + 1);
-                    let trimmed = code.len() - without;
-                    if let RawMarkupData::CodeBlock { code, language } = self.arena.nodes[node as usize].data {
-                        self.arena.nodes[node as usize].data = RawMarkupData::CodeBlock {
-                            code: code.shortened(trimmed),
-                            language,
-                        };
-                    }
-                    let n = Finalize::Line(last);
-                    self.finish_block(node, Some(frame.start), first_line, n, true);
-                    EndRule::Done { n }
-                } else if last > first_line && self.is_closing_fence(last, fence, length) {
+                if last > first_line && self.is_closing_fence(last, fence, length) {
                     let n = Finalize::Line(last);
                     self.finish_block(node, Some(frame.start), first_line, n, true);
                     EndRule::Done { n }
@@ -2300,7 +2316,9 @@ impl<'a> Converter<'a> {
         let frame = self.frames.pop().expect("an HTML block frame");
         let first_line = self.line_of(frame.range.start);
         let literal = self.push_literal();
-        let node = self.arena.create(RawMarkupData::HtmlBlock(literal), None, &[]);
+        let node = self
+            .arena
+            .create(RawMarkupData::HtmlBlock(literal), None, &[]);
         let kind = html_block_kind(&self.bytes[frame.range.start..]);
         let rule = if (1..=5).contains(&kind) {
             let last = self.line_of(frame.range.end.saturating_sub(1).max(frame.range.start));
@@ -2335,8 +2353,9 @@ impl<'a> Converter<'a> {
 
     // MARK: Task list items
 
+    /// pulldown-cmark reports a task only where cmark-gfm's tasklist
+    /// extension finds one, checked as cmark checks it.
     fn task_list_marker(&mut self, checked: bool, range: Range<usize>) {
-        let _ = checked;
         let item_index = self
             .frames
             .iter()
@@ -2345,44 +2364,20 @@ impl<'a> Converter<'a> {
         let FrameKind::Item { first_line, .. } = self.frames[item_index].kind else {
             unreachable!()
         };
-        let line_start = self.lines.start(first_line);
-        let line_end = self.lines.end(first_line);
-        let line = &self.bytes[line_start..line_end];
-        let is_task = self.line_of(range.start) == first_line && is_cmark_task_line(line);
-        if is_task {
+        if self.line_of(range.start) == first_line {
             self.gap_from = self.gap_from.max(range.end);
-            let checked = contains(line, b"[x]") || contains(line, b"[X]");
-            if let FrameKind::Item { checkbox, .. } = &mut self.frames[item_index].kind {
-                *checkbox = Some(if checked {
-                    Checkbox::Checked
-                } else {
-                    Checkbox::Unchecked
-                });
-            }
-            return;
-        }
-        // cmark's pattern does not match (a task inside a block quote, or no
-        // space after the box): the box is paragraph text.
-        if self.top_is(|kind| matches!(kind, FrameKind::Paragraph { synthetic: false }))
-            && self.pending.is_none()
-            && self.children.len() == self.frames.last().unwrap().children_start
-        {
-            // A loose item: pulldown-cmark's paragraph starts after the box.
-            let frame = self.frames.pop().unwrap();
-            self.drop_inline();
-            self.open_paragraph(range.start, false);
-            self.frames.last_mut().unwrap().range.end = frame.range.end;
         } else {
-            self.ensure_inline_container(range.start);
+            // A lazy line made the item a task, and cmark skipped the 3 bytes
+            // in `range` before taking that line as text.
+            self.task_skips.push(range);
         }
-        let mut end = range.end;
-        while end < line_end && is_space_or_tab(self.bytes[end]) {
-            end += 1;
+        if let FrameKind::Item { checkbox, .. } = &mut self.frames[item_index].kind {
+            *checkbox = Some(if checked {
+                Checkbox::Checked
+            } else {
+                Checkbox::Unchecked
+            });
         }
-        let end = if end >= line_end { range.end } else { end };
-        let piece = &self.text[range.start..end];
-        self.add_text_piece(piece, range.start..end);
-        self.note_inline_end(end);
     }
 
     // MARK: Tables
@@ -2417,18 +2412,71 @@ impl<'a> Converter<'a> {
             // started at line 0, column 0: their lines count from 0 and their
             // columns lose the paragraph's offset.
             self.arena.nodes[paragraph.node as usize].parsed_range = None;
+            // cmark also unescapes `\|` in that text, shifting what follows
+            // on the line: where each removed backslash was, in raw cmark
+            // coordinates.
+            let removed = self.unescaped_pipes(paragraph);
+            let block_offset = paragraph.context.block_offset;
+            // Removed backslashes before a raw column; an unshifted end is
+            // measured without the block offset.
+            let before = |line: i64, column: i64, unshifted: bool| {
+                let position = if unshifted {
+                    column
+                } else {
+                    column - 1 - block_offset
+                };
+                removed
+                    .iter()
+                    .filter(|&&(removed_line, removed_position)| {
+                        removed_line == line && removed_position < position
+                    })
+                    .count() as i64
+            };
             for id in paragraph.first_node..paragraph.node {
                 let unshifted_end = self.unshifted_ends.contains(&id);
                 let ticks = self
                     .code_ticks
                     .binary_search_by_key(&id, |&(node, _)| node)
                     .map_or(0, |index| self.code_ticks[index].1);
+                let tilde = self
+                    .tilde_texts
+                    .iter()
+                    .find(|&&(node, _, _)| node == id)
+                    .map(|&(_, line, column)| (line, column));
+                if let Some((text_line, text_column)) = tilde {
+                    // The unset end stays 0, but the shifted start may now
+                    // come before it.
+                    let (line, column) = paragraph.start;
+                    self.arena.nodes[id as usize].parsed_range = cmark_range(
+                        text_line - line,
+                        text_column - column - before(text_line, text_column, false),
+                        text_line - line,
+                        0,
+                        0,
+                    );
+                    continue;
+                }
+                let shift = |range: SourceRange| {
+                    let start = before(
+                        range.lower_bound.line,
+                        range.lower_bound.column + ticks,
+                        false,
+                    );
+                    let end = before(
+                        range.upper_bound.line,
+                        range.upper_bound.column - 1 - ticks,
+                        unshifted_end,
+                    );
+                    (start, end)
+                };
+                let shifts = self.arena.nodes[id as usize].parsed_range.map(shift);
                 let node = &mut self.arena.nodes[id as usize];
                 node.parsed_range = node.parsed_range.and_then(|range| {
                     let (line, column) = paragraph.start;
+                    let (start_shift, end_shift) = shifts.unwrap_or((0, 0));
                     // Back to cmark's raw positions, shifted.
-                    let start_column = range.lower_bound.column + ticks - column;
-                    let mut end_column = range.upper_bound.column - 1 - ticks;
+                    let start_column = range.lower_bound.column + ticks - column - start_shift;
+                    let mut end_column = range.upper_bound.column - 1 - ticks - end_shift;
                     if !unshifted_end {
                         end_column -= column;
                     }
@@ -2450,8 +2498,19 @@ impl<'a> Converter<'a> {
                 record.start = None;
             }
         } else {
-            start = self.block_start(range.start);
-            first_line = header_line;
+            // The table is the paragraph node cmark started, which keeps its
+            // start when definitions at its start were resolved (at a setext
+            // underline that then became the header).
+            let paragraph_start = self.definitions_before(range.start);
+            start = self.block_start(paragraph_start);
+            first_line = self.line_of(paragraph_start);
+        }
+        // A lazy header line whose tab the containers partly consumed starts
+        // with the rest of the tab as spaces.
+        let (scan, all_matched) = self.line(header_line).match_prefixes(&self.prefixes);
+        if !all_matched && scan.partially_consumed_tab && scan.offset + 1 == range.start {
+            let lead = cmark_lines::tab_remainder(&scan) as usize;
+            header_string.extend(std::iter::repeat_n(b' ', lead));
         }
         let header_line_start = header_string.len();
         header_string.extend_from_slice(&self.row_string(range.start));
@@ -2609,8 +2668,15 @@ impl<'a> Converter<'a> {
             self.skip_inlines = cell_state.cleared;
             // The source offset of a row-string offset.
             let to_source = |offset: usize| source_base + offset.saturating_sub(string_base);
-            let content_start = to_source(cell.content_start);
             let content_end = to_source(cell.content_end).min(self.bytes.len());
+            // cmark parses the trimmed content (the first cell of a lazy
+            // header line can start with its indentation).
+            let mut content_start = to_source(cell.content_start);
+            while content_start < content_end
+                && matches!(self.bytes[content_start], b' ' | b'\t' | 0x0B | 0x0C)
+            {
+                content_start += 1;
+            }
             let mut context = self.new_inline_context(
                 content_start,
                 line,
@@ -2629,10 +2695,6 @@ impl<'a> Converter<'a> {
 
     fn end_table_cell(&mut self) {
         self.flush_text(None);
-        if self.inline.is_some() {
-            let children_start = self.frames.last().expect("a table cell frame").children_start;
-            self.rewrite_inline_attributes(children_start);
-        }
         self.drop_inline();
         self.skip_inlines = false;
         let frame = self.frames.pop().expect("a table cell frame");
@@ -2714,9 +2776,12 @@ impl<'a> Converter<'a> {
         });
         let body = self.arena.table_body(body_range, &state.body_rows);
         self.children.truncate(frame.children_start);
-        let node = self
-            .arena
-            .table(&state.alignments[..state.alignments.len().min(state.columns)], table_range, header, body);
+        let node = self.arena.table(
+            &state.alignments[..state.alignments.len().min(state.columns)],
+            table_range,
+            header,
+            body,
+        );
         self.record(
             node,
             self.line_of(frame.range.start).min(state.first_line),
@@ -2730,7 +2795,9 @@ impl<'a> Converter<'a> {
 
 /// `cmark_chunk_trim`: leading and trailing `cmark_isspace` bytes.
 fn trim_cmark_space(text: &str) -> &str {
-    text.trim_matches(|character| matches!(character, ' ' | '\t' | '\n' | '\r' | '\u{0B}' | '\u{0C}'))
+    text.trim_matches(|character| {
+        matches!(character, ' ' | '\t' | '\n' | '\r' | '\u{0B}' | '\u{0C}')
+    })
 }
 
 /// Decodes HTML entities the way `houdini_unescape_html_f` does for an info
@@ -2745,12 +2812,17 @@ fn decode_entities(text: &str) -> String {
     while let Some(ampersand) = rest.find('&') {
         decoded.push_str(&rest[..ampersand]);
         rest = &rest[ampersand..];
-        let end = rest.find(';').filter(|&end| end <= 33 && rest[1..end].bytes().all(|byte| byte.is_ascii_alphanumeric() || byte == b'#'));
+        let end = rest.find(';').filter(|&end| {
+            end <= 33
+                && rest[1..end]
+                    .bytes()
+                    .all(|byte| byte.is_ascii_alphanumeric() || byte == b'#')
+        });
         match end {
             Some(end) => {
                 let entity = &rest[..=end];
                 let mut replacement = None;
-                for event in Parser::new(entity) {
+                for event in Parser::new_ext(entity, Options::ENABLE_CMARK_GFM_COMPAT) {
                     if let Event::Text(text) = event {
                         replacement.get_or_insert_with(String::new).push_str(&text);
                     }
@@ -2793,61 +2865,9 @@ fn normalize_code(text: &str) -> String {
 }
 
 fn contains(haystack: &[u8], needle: &[u8]) -> bool {
-    haystack.windows(needle.len()).any(|window| window == needle)
-}
-
-/// The tasklist extension's pattern, matched from the start of the line:
-/// `spacechar* ([-+*] | [0-9]+ .) spacechar+ "[" [ xX] "]" spacechar`, with
-/// `spacechar = [ \t\v\f]` and `.` any character but a line ending.
-fn is_cmark_task_line(line: &[u8]) -> bool {
-    fn spacechar(byte: u8) -> bool {
-        matches!(byte, b' ' | b'\t' | 0x0B | 0x0C)
-    }
-    let mut position = 0;
-    while position < line.len() && spacechar(line[position]) {
-        position += 1;
-    }
-    let Some(&marker) = line.get(position) else {
-        return false;
-    };
-    let after_marker: Vec<usize> = if matches!(marker, b'-' | b'+' | b'*') {
-        vec![position + 1]
-    } else if marker.is_ascii_digit() {
-        // `[0-9]+` then any one character; the digits may end anywhere.
-        let mut ends = Vec::new();
-        let mut end = position;
-        while end < line.len() && line[end].is_ascii_digit() {
-            end += 1;
-            if end < line.len() {
-                let width = utf8_width(line[end]);
-                ends.push(end + width);
-            }
-        }
-        ends
-    } else {
-        return false;
-    };
-    after_marker.into_iter().any(|mut position| {
-        let spaces_start = position;
-        while position < line.len() && spacechar(line[position]) {
-            position += 1;
-        }
-        position > spaces_start
-            && line.len() >= position + 4
-            && line[position] == b'['
-            && matches!(line[position + 1], b' ' | b'x' | b'X')
-            && line[position + 2] == b']'
-            && spacechar(line[position + 3])
-    })
-}
-
-fn utf8_width(byte: u8) -> usize {
-    match byte {
-        0x00..=0x7F => 1,
-        0xC0..=0xDF => 2,
-        0xE0..=0xEF => 3,
-        _ => 4,
-    }
+    haystack
+        .windows(needle.len())
+        .any(|window| window == needle)
 }
 
 /// The HTML block kind (`scan_html_block_start`, kinds 1–6; 7 for anything
@@ -2862,7 +2882,10 @@ fn html_block_kind(text: &[u8]) -> u8 {
     for tag in [&b"script"[..], b"pre", b"textarea", b"style"] {
         if starts_with_ignoring_case(&text[1..], tag) {
             let next = text.get(1 + tag.len()).copied();
-            if matches!(next, Some(b' ' | b'\t' | 0x0B | 0x0C | b'\r' | b'\n' | b'>') | None) {
+            if matches!(
+                next,
+                Some(b' ' | b'\t' | 0x0B | 0x0C | b'\r' | b'\n' | b'>') | None
+            ) {
                 return 1;
             }
         }

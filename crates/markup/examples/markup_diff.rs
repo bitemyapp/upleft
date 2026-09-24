@@ -8,22 +8,28 @@
 //!
 //! ```sh
 //! cargo run --release -p upleft-markup --features cmark-oracle --example markup_diff -- \
-//!     [--corpus] [--spec] [--incremental] [--mutations N] [--random N] [--show K]
-//!     [--category TEXT] [--source NAME] [--minimize] [FILE...]
+//!     [--corpus] [--spec] [--incremental] [--mutations N] [--random N] [--lines N] [--seed N]
+//!     [--show K] [--category TEXT] [--source NAME] [--minimize] [--dump]
+//!     [--text MARKDOWN] [FILE...]
 //! ```
 //!
 //! With no source flags and no files it checks the corpus, the spec examples,
 //! the texts the `incremental` suite parses after each edit, and 2,000
-//! mutated and 2,000 random documents. `--source NAME` prints one input;
-//! `--minimize` shrinks every differing input to a minimal repro and counts
-//! identical repros together.
+//! mutated and 2,000 random documents. `--lines N` adds documents built line
+//! by line behind random container prefixes. `--seed N` changes the generator's
+//! seed. `--source NAME` prints one input; `--text MARKDOWN` adds an input
+//! given on the command line; `--dump` prints both trees of every differing
+//! input; `--minimize` shrinks every differing input to a minimal repro and
+//! counts identical repros together.
 
 use std::collections::BTreeMap;
 use std::path::{Path, PathBuf};
 
 use serde_json::{Map, Value};
 use upleft_markup::parser::cmark_oracle;
-use upleft_markup::{Checkbox, ColumnAlignment, Document, Markup, MarkupData, ParseOptions, SourceRange};
+use upleft_markup::{
+    Checkbox, ColumnAlignment, Document, Markup, MarkupData, ParseOptions, SourceRange,
+};
 
 // MARK: The markup dump (crates/conformance/src/dump/markup.rs)
 
@@ -89,7 +95,10 @@ fn markup(markup: Markup<'_>) -> Value {
             );
             object.insert(
                 "maxColumnCount".into(),
-                markup.max_column_count().expect("a table has a column count").into(),
+                markup
+                    .max_column_count()
+                    .expect("a table has a column count")
+                    .into(),
             );
         }
         MarkupData::TableCell { colspan, rowspan } => {
@@ -143,6 +152,30 @@ fn dump(document: &Document) -> Value {
     markup(document.root())
 }
 
+/// One line per node: kind, range and the properties that tell nodes apart.
+fn outline(value: &Value, depth: usize, into: &mut String) {
+    let mut line = format!("{}{} {}", "  ".repeat(depth), kind(value), value["range"]);
+    if let Some(object) = value.as_object() {
+        for (key, property) in object {
+            if matches!(
+                key.as_str(),
+                "kind" | "range" | "children" | "indexInParent" | "plainText"
+            ) {
+                continue;
+            }
+            line.push_str(&format!(" {key}={property}"));
+        }
+        if let Some(text) = object.get("plainText").filter(|_| children(value).is_empty()) {
+            line.push_str(&format!(" {text}"));
+        }
+    }
+    into.push_str(&line);
+    into.push('\n');
+    for child in children(value) {
+        outline(child, depth + 1, into);
+    }
+}
+
 // MARK: Comparison
 
 #[derive(Default)]
@@ -179,7 +212,11 @@ fn compare(reference: &Value, candidate: &Value, path: &str, found: &mut Vec<(St
     if kind(reference) != kind(candidate) {
         found.push((
             format!("shape: {} became {}", kind(reference), kind(candidate)),
-            format!("{path}: cmark {} | pulldown {}", short(reference), short(candidate)),
+            format!(
+                "{path}: cmark {} | pulldown {}",
+                short(reference),
+                short(candidate)
+            ),
         ));
         return;
     }
@@ -212,11 +249,17 @@ fn compare(reference: &Value, candidate: &Value, path: &str, found: &mut Vec<(St
         };
         found.push((
             category,
-            format!("{path}: cmark {reference_range} | pulldown {candidate_range} {}", short(candidate)),
+            format!(
+                "{path}: cmark {reference_range} | pulldown {candidate_range} {}",
+                short(candidate)
+            ),
         ));
     }
     for (key, value) in a {
-        if matches!(key.as_str(), "kind" | "range" | "children" | "indexInParent") {
+        if matches!(
+            key.as_str(),
+            "kind" | "range" | "children" | "indexInParent"
+        ) {
             continue;
         }
         if b.get(key) != Some(value) {
@@ -240,7 +283,8 @@ fn compare(reference: &Value, candidate: &Value, path: &str, found: &mut Vec<(St
             .position(|(p, q)| kind(p) != kind(q))
             .unwrap_or(x.len().min(y.len()));
         let describe = |list: &[Value]| {
-            list.get(first).map_or("nothing".to_owned(), |value| kind(value).to_owned())
+            list.get(first)
+                .map_or("nothing".to_owned(), |value| kind(value).to_owned())
         };
         found.push((
             format!(
@@ -307,10 +351,88 @@ impl Random {
 }
 
 const FRAGMENTS: &[&str] = &[
-    "*", "**", "_", "__", "~", "~~", "`", "``", "[", "]", "(", ")", "![", "<", ">", "&amp;", "&#42;",
-    "\\", "\\*", "|", "- ", "* ", "1. ", "> ", "# ", "## ", "```", "~~~", "    ", "\t", "  \n", "\n",
-    "\n\n", "[x]", "[ ]", "<div>", "</div>", "<!-- ", " -->", "<span>", "http://x.y", "<http://a.b>",
-    "[a]", "[a]: /url", "\"t\"", "^", "  ", "---", "===", ":--", "--:", "é", "日本", "😀", "a", "word ",
+    "*",
+    "**",
+    "_",
+    "__",
+    "~",
+    "~~",
+    "`",
+    "``",
+    "[",
+    "]",
+    "(",
+    ")",
+    "![",
+    "<",
+    ">",
+    "&amp;",
+    "&#42;",
+    "\\",
+    "\\*",
+    "|",
+    "- ",
+    "* ",
+    "1. ",
+    "> ",
+    "# ",
+    "## ",
+    "```",
+    "~~~",
+    "    ",
+    "\t",
+    "  \n",
+    "\n",
+    "\n\n",
+    "[x]",
+    "[ ]",
+    "<div>",
+    "</div>",
+    "<!-- ",
+    " -->",
+    "<span>",
+    "http://x.y",
+    "<http://a.b>",
+    "[a]",
+    "[a]: /url",
+    "\"t\"",
+    "^",
+    "  ",
+    "---",
+    "===",
+    ":--",
+    "--:",
+    "é",
+    "日本",
+    "😀",
+    "a",
+    "word ",
+    // Chat-style text and cmark-gfm's edge cases.
+    "✅",
+    "🚀",
+    "\u{a0}",
+    "\r\n",
+    "~~~",
+    "&#10;",
+    "\\|",
+    "-:",
+    ":-",
+    "^[",
+    "[^",
+    "<!",
+    "<?",
+    "]]>",
+    "-->",
+    "<a b=\"c\">",
+    "1) ",
+    "\t- ",
+    "> > ",
+    "```\n",
+    "\\\n",
+    "[x] ",
+    "`` ",
+    "***",
+    " | ",
 ];
 
 const BLOCKS: &[&str] = &[
@@ -429,7 +551,15 @@ fn incremental_texts(source: &str) -> Vec<String> {
                     (p, 0, "")
                 } else {
                     let c = text[p as usize];
-                    (p, if (0xD800..=0xDBFF).contains(&c) && p + 1 < n { 2 } else { 1 }, "")
+                    (
+                        p,
+                        if (0xD800..=0xDBFF).contains(&c) && p + 1 < n {
+                            2
+                        } else {
+                            1
+                        },
+                        "",
+                    )
                 }
             }
             2 => (snap(n / 2, &text), 0, "\n"),
@@ -462,7 +592,12 @@ fn incremental_texts(source: &str) -> Vec<String> {
                     e += 1;
                 }
                 if e < n {
-                    e += if text[e as usize] == 0x0D && e + 1 < n && text[(e + 1) as usize] == 0x0A { 2 } else { 1 };
+                    e += if text[e as usize] == 0x0D && e + 1 < n && text[(e + 1) as usize] == 0x0A
+                    {
+                        2
+                    } else {
+                        1
+                    };
                 }
                 (s, e - s, "")
             }
@@ -507,6 +642,77 @@ fn generate(random: &mut Random) -> String {
         if random.below(3) != 0 {
             text.push('\n');
         }
+    }
+    text
+}
+
+/// Line bodies for `--lines`: block starts, table rows, definitions and
+/// inline constructs that interact across lines.
+const LINE_BODIES: &[&str] = &[
+    "a",
+    "text *em* **strong** `code`",
+    "a | b",
+    "| a | b |",
+    "|a|",
+    "-|-",
+    "|---|:-:|",
+    ":-",
+    "--",
+    "---",
+    "===",
+    "***",
+    "# h",
+    "## h ##",
+    "```",
+    "~~~ x",
+    "    code",
+    "<div>",
+    "</div>",
+    "<!-- c",
+    "-->",
+    "<a href=\"x\">",
+    "[a]: /url",
+    "[a]: /u \"t\"",
+    "[a]:",
+    "\"title\"",
+    "[a]",
+    "[x] task",
+    "- [ ] t",
+    "1) x",
+    "* y",
+    "> q",
+    "text\\",
+    "text  ",
+    "~~s~~ ~t~",
+    "H~2~O",
+    "**✅**x",
+    "^[a](b: 1)",
+    "[l](u \"t\")",
+    "<http://a.b>",
+    "&amp; &#42;",
+    "\\| x",
+    "`a|b`",
+    "",
+    " ",
+    "\t",
+];
+
+/// A few lines, each behind a random stack of container prefixes, so that
+/// laziness, indentation, tabs and paragraph interruptions meet.
+fn generate_lines(random: &mut Random) -> String {
+    const PREFIXES: &[&str] = &[
+        "> ", ">", "- ", "1. ", "* ", "  ", "   ", "    ", "\t", " \t", "-\t",
+    ];
+    let mut text = String::new();
+    for _ in 0..1 + random.below(7) {
+        for _ in 0..random.below(4) {
+            text.push_str(random.pick(PREFIXES));
+        }
+        text.push_str(random.pick(LINE_BODIES));
+        if random.below(4) == 0 {
+            text.push_str(random.pick(FRAGMENTS));
+        }
+        text.push('\n');
     }
     text
 }
@@ -563,10 +769,14 @@ fn main() {
     let mut use_incremental = false;
     let mut mutations = 0;
     let mut random_documents = 0;
+    let mut line_documents = 0;
     let mut show = 3;
     let mut category_filter: Option<String> = None;
     let mut print_source: Option<String> = None;
     let mut minimize_differences = false;
+    let mut dump_trees = false;
+    let mut seed: u64 = 0x5EED_CAFE_F00D;
+    let mut texts: Vec<String> = Vec::new();
     let mut files = Vec::new();
     let mut index = 0;
     while index < arguments.len() {
@@ -582,6 +792,10 @@ fn main() {
                 index += 1;
                 random_documents = arguments[index].parse().expect("a count");
             }
+            "--lines" => {
+                index += 1;
+                line_documents = arguments[index].parse().expect("a count");
+            }
             "--show" => {
                 index += 1;
                 show = arguments[index].parse().expect("a count");
@@ -591,6 +805,15 @@ fn main() {
                 category_filter = Some(arguments[index].clone());
             }
             "--minimize" => minimize_differences = true,
+            "--dump" => dump_trees = true,
+            "--seed" => {
+                index += 1;
+                seed = arguments[index].parse().expect("a seed");
+            }
+            "--text" => {
+                index += 1;
+                texts.push(arguments[index].clone());
+            }
             "--source" => {
                 index += 1;
                 print_source = Some(arguments[index].clone());
@@ -600,11 +823,13 @@ fn main() {
         index += 1;
     }
     let default = files.is_empty()
+        && texts.is_empty()
         && !use_corpus
         && !use_spec
         && !use_incremental
         && mutations == 0
-        && random_documents == 0;
+        && random_documents == 0
+        && line_documents == 0;
     if default {
         use_corpus = true;
         use_spec = true;
@@ -627,6 +852,9 @@ fn main() {
             inputs.push((path.display().to_string(), text, "files"));
         }
     }
+    for (number, text) in texts.iter().enumerate() {
+        inputs.push((format!("text-{number}"), text.clone(), "texts"));
+    }
     if use_corpus {
         for path in &rest {
             if let Some(text) = read(path) {
@@ -645,21 +873,40 @@ fn main() {
         for path in rest.iter().chain(&spec) {
             if let Some(text) = read(path) {
                 for (step, edited) in incremental_texts(&text).into_iter().enumerate() {
-                    inputs.push((format!("{} edit {step}", path.display()), edited, "incremental"));
+                    inputs.push((
+                        format!("{} edit {step}", path.display()),
+                        edited,
+                        "incremental",
+                    ));
                 }
             }
         }
     }
-    let seeds: Vec<String> = rest.iter().chain(&spec).filter_map(|path| read(path)).collect();
-    let mut random = Random(0x5EED_CAFE_F00D);
+    let seeds: Vec<String> = rest
+        .iter()
+        .chain(&spec)
+        .filter_map(|path| read(path))
+        .collect();
+    let mut random = Random(seed);
     for number in 0..mutations {
         let source = random.pick(&seeds).clone();
         // Long documents make mutations slow to compare and hard to read.
         let source: String = source.chars().take(4000).collect();
-        inputs.push((format!("mutation-{number}"), mutate(&mut random, &source), "mutations"));
+        inputs.push((
+            format!("mutation-{number}"),
+            mutate(&mut random, &source),
+            "mutations",
+        ));
     }
     for number in 0..random_documents {
         inputs.push((format!("random-{number}"), generate(&mut random), "random"));
+    }
+    for number in 0..line_documents {
+        inputs.push((
+            format!("lines-{number}"),
+            generate_lines(&mut random),
+            "lines",
+        ));
     }
 
     if let Some(wanted) = &print_source {
@@ -704,9 +951,18 @@ fn main() {
             entry.1 += 1;
             continue;
         }
+        if dump_trees {
+            let (mut a, mut b) = (String::new(), String::new());
+            outline(&reference, 0, &mut a);
+            outline(&candidate, 0, &mut b);
+            println!("== {name} {text:?}\n-- cmark\n{a}-- pulldown\n{b}");
+        }
         let mut found = Vec::new();
         compare(&reference, &candidate, "", &mut found);
-        if !found.iter().any(|(category, _)| category.starts_with("shape")) {
+        if !found
+            .iter()
+            .any(|(category, _)| category.starts_with("shape"))
+        {
             same_shape.entry(source).or_default().push(name);
         }
         let mut seen = std::collections::BTreeSet::new();
@@ -728,7 +984,11 @@ fn main() {
     }
     println!("\nsame shape, other differences:");
     for (source, names) in &same_shape {
-        println!("  {source:<10} {:>6}  {}", names.len(), names.iter().cloned().collect::<Vec<_>>().join(", "));
+        println!(
+            "  {source:<10} {:>6}  {}",
+            names.len(),
+            names.iter().cloned().collect::<Vec<_>>().join(", ")
+        );
     }
     let mut categories: Vec<_> = tally.documents.iter().collect();
     categories.sort_by(|a, b| b.1.cmp(a.1).then(a.0.cmp(b.0)));

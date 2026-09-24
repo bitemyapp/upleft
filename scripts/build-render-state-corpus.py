@@ -9,7 +9,7 @@ crates/conformance/src/dump/render_state.rs). The set covers what the plain
 appearance, Read mode, scroll positions below the fold, narrow and wide
 measures, render configuration, search hits, change marks, speech highlight,
 selection, source focus, folding, structural zoom, collapsed code, streamed
-appends (the Omperor use case) and in-place edits, and motion with Reduce
+appends (how chat transcripts arrive) and in-place edits, and motion with Reduce
 Motion off.
 
 Heading slugs and code-block offsets come from `upleft-oracle parse`, whose
@@ -228,7 +228,7 @@ def main():
             scenario(f"zoom-{label}-{name}", document, zoom=level)
 
     # Streams: appends at line boundaries, and token-sized appends that leave
-    # fences, tables, math and diagrams open mid-stream (the Omperor case).
+    # fences, tables, math and diagrams open mid-stream (how language-model output arrives).
     for name, document, pieces in (("sample", sample, 12), ("readme", readme, 10), ("agent400", agent400, 8),
                                    ("math", math, 8), ("matrix", matrix, 6), ("welcome", welcome, 8)):
         initial, edits = chunked_appends(read(document), pieces)

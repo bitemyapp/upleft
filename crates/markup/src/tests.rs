@@ -803,9 +803,22 @@ fn documents_are_send_and_sync() {
 fn assert_same_tree(source: &str) {
     fn walk(path: &str, a: crate::Markup<'_>, b: crate::Markup<'_>, source: &str) {
         assert_eq!(a.data(), b.data(), "{source:?} at {path}: data");
-        assert_eq!(a.range(), b.range(), "{source:?} at {path}: range of {}", a.data().type_name());
-        assert_eq!(a.plain_text(), b.plain_text(), "{source:?} at {path}: plain text");
-        assert_eq!(a.child_count(), b.child_count(), "{source:?} at {path}: children");
+        assert_eq!(
+            a.range(),
+            b.range(),
+            "{source:?} at {path}: range of {}",
+            a.data().type_name()
+        );
+        assert_eq!(
+            a.plain_text(),
+            b.plain_text(),
+            "{source:?} at {path}: plain text"
+        );
+        assert_eq!(
+            a.child_count(),
+            b.child_count(),
+            "{source:?} at {path}: children"
+        );
         for (index, (x, y)) in a.children().zip(b.children()).enumerate() {
             walk(&format!("{path}/{index}"), x, y, source);
         }
@@ -872,11 +885,239 @@ fn adapter_matches_cmark_quirks() {
     }
 }
 
+/// Differences between CommonMark 0.31 and cmark-gfm that pulldown-cmark's
+/// `ENABLE_CMARK_GFM_COMPAT` covers, as minimal repros from the
+/// differential tool.
+#[test]
+fn adapter_matches_cmark_gfm_compat() {
+    let cases = [
+        // Emoji and other symbols next to emphasis delimiters.
+        "Tests**✅** passed",
+        "**Ship it 🚀**now",
+        "a*😀*",
+        "**😀*-",
+        "*)*😀",
+        // Single and double tildes in words.
+        "H~2~O and CO~2~",
+        "a~e~",
+        "~t~x",
+        "y~~&~~",
+        "3~5 retries and 10~20 s",
+        "~**[*",
+        "<tp:~>",
+        // Emphasis matching (process_emphasis).
+        "**f*o****",
+        "*]**~",
+        ":**~r\n** z*",
+        // Tables found at the delimiter row.
+        "Summary:\na | b\n--|--\n1 | 2\n",
+        "x\na||\n-|-",
+        "]\n-:",
+        ">t\n||\n>-|",
+        ">t\n |\n>-|",
+        "- e\n ^|||\n  -|-|-",
+        "* [X] g\n  -|",
+        // Delimiter row syntax and retrying.
+        "a||\n-|:",
+        "|\n-|\n|||\n-|-",
+        // What ends a table.
+        "a||\n-|-\n    e",
+        "a||\n-|-\n\te",
+        "| a | b |\n|---|---|\n| 1 | 2 |\n<details>\n",
+        "a||\n-|-\n<!-- c -->",
+        // Text before a table: pipes and definitions.
+        "[a]: /u\nb|c\n-|-\n\n[a]",
+        "[||\n-|-\n]:\"",
+        "[f]:||\n-|-",
+        "[a]:\n-:",
+        "`\\|`\na||\n-|-",
+        "|\n\\|*d*\na||\n-|-",
+        "\\\n|\n`\\|`\ne||\n-|-",
+        "`\n\\|`|\nx||\n-|-",
+        "o\n_~_\ne||\n-|-",
+        "[r]:u\n-\na||\n-|-",
+        // Pipes in table cells.
+        "a||\n-|-\n\\\\|",
+        "a||\n-|-\n`\\\\|`",
+        "|||\n-|-\n<ps:\\|>",
+        "c||\n-|-\n^[](\\|)",
+        "-<!--\\|-->|||\n-|-|-",
+        // Link reference definitions.
+        "[a]:(",
+        "[bar]:l\n\"r\"[bar]",
+        ">[f]:\"\n ]",
+        ">[o]:\n/\nl",
+        "[a]:&#10;\n[a]",
+        "[foo]:l '\r\n'\n[foo]",
+        "[o]:l\n\\*",
+        "[a]: /u\n===\nb",
+        // Reference links.
+        "[foo][ ]\n\n[foo]:l",
+        "[]\\[bar]\n\n[bar]:l",
+        "[ref]:\"\n[~\\\n][ref]",
+        // Link destinations, nesting, images.
+        "[js](JavaScript:alert(1 ))",
+        "```\n```\n[]((\n)",
+        "[[]()[]]()",
+        "![^](x)",
+        "[](\\\\:)",
+        "[*\\\n]()",
+        "[](<\\\r\n~>)",
+        // Inline attributes.
+        "^[a]:-",
+        "^[][]",
+        "^[[]()]()",
+        "^[](<n>1)",
+        "^[\n](: 1)",
+        "^[*t*[]](: 1)",
+        "^[](\n )",
+        "^[](()()\n\\:)",
+        "~^[]()",
+        // Task items.
+        "- [x]\ng",
+        "- [ ]\nnext line\n",
+        "- [x]\n",
+        "  - \t[ ] ",
+        "* [X] [a]:g",
+        "- [x] [a]:l\n\n\n  y",
+        // HTML.
+        "<!doctype html>",
+        "o<!A>",
+        "<ul>>",
+        "- m\n<n>",
+        ">e\n<n>",
+        "><!--\n>",
+        "1. <!--\n ",
+        // Code spans and fences.
+        "`` `e` `2`",
+        "~~~\n~~~\t\n\n",
+        "```\u{a0}",
+        ">~~~\n>\t",
+        ">\t~~~\n>\t\n",
+        "-\n\t```\n    \n",
+        // Lists, quotes and tabs.
+        "-\n  \n  n",
+        "1.\n   \n   e",
+        ">\n\t>",
+        ">\t*",
+        "1. >\t1.",
+        "1. [a]:`\n\n\n   >",
+        "- [a]:.\n-\n\n  n",
+        "-\n  1) n\n\t\\\\",
+        "1.\n\t- \\\n\t\\",
+        "1. >\\\n\tn",
+        "- >\\\n\t<tp:>",
+        ">\\\n \\<",
+        // Lazy lines that make an item a task, and a table header after a
+        // partly used tab.
+        "1. [x] \n   >t\n       - [ ] ",
+        "1. [x] ~\n   >t\n       - [ ] ",
+        "1. >=\n       - [ ] \n\t\t- [ ] ",
+        "* 1. \"\n\t|\n    \t-|",
+        "* 1. :\n\t|\n\t\t:-",
+        // Headings and entities.
+        "# ```o``` #",
+        "# *e*\t",
+        "&#87654321;",
+    ];
+    for source in cases {
+        assert_same_tree(source);
+    }
+    // A line opens list items only among its first 99 new containers.
+    assert_same_tree(&("- ".repeat(101) + "x"));
+}
+
+/// Patterns language models write all the time, including text that is
+/// still streaming in.
+#[test]
+fn adapter_matches_cmark_on_chat_patterns() {
+    let cases = [
+        ("approx-tilde", "It takes ~5 ms, versus ~12 ms before.\n"),
+        ("autolink", "Visit https://example.com or <https://x.y>.\n"),
+        ("backticks-talk", "Use `` ` `` for code, or `a` and `b`.\n"),
+        ("backticks-unmatched", "Type `` then `x` and `y`.\n"),
+        ("callout", "> [!NOTE]\n> Something.\n"),
+        (
+            "details-after-list",
+            "- first\n- second\n<details>\n<summary>More</summary>\n\nHidden\n</details>\n",
+        ),
+        (
+            "doctype-bare",
+            "<!doctype html>\n<html><body>hi</body></html>\n",
+        ),
+        (
+            "doctype-fenced",
+            "```html\n<!doctype html>\n<html></html>\n```\n",
+        ),
+        ("emoji-after-bold", "**Done**✅ then *maybe*🤔 later.\n"),
+        (
+            "emoji-bold-glued",
+            "Tests**✅** passed and lint**❌** failed.\n",
+        ),
+        ("emoji-bold-lead", "**✅ Done** and **❌ Failed**\n"),
+        ("emoji-inside-end", "**Ship it 🚀**now\n"),
+        (
+            "emoji-list",
+            "- ✅ **Parser**: done\n- ⚠️ *Renderer*: close\n",
+        ),
+        ("footnote", "Claim.[^1]\n\n[^1]: Source.\n"),
+        ("hard-breaks", "line one  \nline two\\\nline three\n"),
+        ("html-comment", "Text\n<!-- note -->\nMore\n"),
+        ("html-inline", "Press <kbd>Cmd</kbd>+<kbd>K</kbd>.\n"),
+        ("image", "![alt](img.png) and ![^](x)\n"),
+        ("link-space-paren", "See [f](https://ex.com/a(b c)).\n"),
+        (
+            "math-inline",
+            "Energy $E = mc^2$ and $$\\int_0^1 x\\,dx$$\n",
+        ),
+        (
+            "nested-emph",
+            "***bold italic*** and **bold *italic* bold**\n",
+        ),
+        ("ordered-nested", "1. one\n   - a\n   - b\n2. two\n"),
+        ("path-tilde", "Copy ~/.config/foo to ~/work/bar~ now.\n"),
+        ("quote-lazy", "> quoted line\ncontinued lazily\n"),
+        ("range-tilde", "Expect 3~5 retries and 10~20 s total.\n"),
+        ("setext", "Title\n=====\n"),
+        ("stream-bold-open", "This is **important"),
+        ("stream-fence-open", "Code:\n\n```rust\nfn main() {\n"),
+        ("stream-link-open", "See [the docs](https://exa"),
+        ("stream-table-open", "| a | b |\n|---|"),
+        ("strike-ok", "This is ~~wrong~~ right.\n"),
+        ("sub-tilde", "Water is H~2~O and carbon dioxide is CO~2~.\n"),
+        ("table-no-lead-pipe", "Summary:\na | b\n--|--\n1 | 2\n"),
+        (
+            "table-then-html",
+            "| a | b |\n|---|---|\n| 1 | 2 |\n<details>\n",
+        ),
+        (
+            "table-then-indented",
+            "| a | b |\n|---|---|\n| 1 | 2 |\n    code?\n",
+        ),
+        (
+            "table-tight-after",
+            "Here is the table:\n\n| a | b |\n|---|---|\n| 1 | 2 |\nNext paragraph right after.\n",
+        ),
+        ("task-empty-stream", "- [x]\n"),
+        ("task-empty-then", "- [ ]\nnext line\n"),
+        ("tasks", "- [x] one\n- [ ] two\n"),
+        (
+            "wiki-link",
+            "See [Rust](https://en.wikipedia.org/wiki/Rust_(programming_language)).\n",
+        ),
+    ];
+    for (name, source) in cases {
+        let _ = name;
+        assert_same_tree(source);
+    }
+}
+
 /// Every cmark spec example the corpus generator extracted (when
 /// `just corpus` has run) parses to the tree cmark-gfm builds.
 #[test]
 fn adapter_matches_cmark_on_spec_examples() {
-    let directory = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("../../corpus/generated/spec");
+    let directory =
+        std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("../../corpus/generated/spec");
     let Ok(entries) = std::fs::read_dir(&directory) else {
         return;
     };

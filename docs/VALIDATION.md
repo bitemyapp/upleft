@@ -1,8 +1,8 @@
 # Validating the renderer
 
-`upleft-render` and the crates beneath it (`upleft-core`, `upleft-markup`, `upleft-math`, `upleft-mermaid`, `upleft-elk`, `upleft-swift-text`) are the parts meant for reuse, Omperor included. This page covers how they are checked against Downright, what the checks cover, and how long they take.
+`upleft-render` and the crates beneath it (`upleft-core`, `upleft-markup`, `upleft-math`, `upleft-mermaid`, `upleft-elk`, `upleft-swift-text`) are the parts meant for reuse in other applications. This page covers how they are checked against Downright, what the checks cover, and how long they take.
 
-Upleft parses Markdown with pulldown-cmark, not the cmark-gfm C library Downright uses. The adapter in `upleft-markup` rebuilds the tree and source ranges swift-markdown gets from cmark-gfm, so every check below still compares against Downright's real parse. Where the two parsers genuinely disagree the suites show it; "Parser differential" below says how to tell those cases apart.
+Upleft parses Markdown with its fork of pulldown-cmark, not the cmark-gfm C library Downright uses. The fork's `ENABLE_CMARK_GFM_COMPAT` option parses as cmark-gfm does, and the adapter in `upleft-markup` rebuilds the tree and source ranges swift-markdown gets from cmark-gfm, so every check below still compares against Downright's real parse. "Parser differential" below says how the parser alone is checked.
 
 ## Principles
 
@@ -37,7 +37,7 @@ Upleft parses Markdown with pulldown-cmark, not the cmark-gfm C library Downrigh
 - source focus;
 - folding and all four structural zoom levels;
 - motion with Reduce Motion off;
-- **streamed appends**, both at line boundaries and in token-sized pieces that leave fences, tables, math and diagrams open mid-stream. This is how a chat transcript arrives in Omperor. Every append goes through reparse, `ASTDiff`, `update(document:dirty:)`, and a frame.
+- **streamed appends**, both at line boundaries and in token-sized pieces that leave fences, tables, math and diagrams open mid-stream. This is how a chat transcript arrives from a language model. Every append goes through reparse, `ASTDiff`, `update(document:dirty:)`, and a frame.
 - in-place edits.
 
 Every scenario is one capture compared against Downright pixel for pixel.
@@ -48,26 +48,30 @@ Every scenario is one capture compared against Downright pixel for pixel.
 
 ```sh
 cargo run --release -p upleft-markup --features cmark-oracle --example markup_diff -- \
-    [--corpus] [--spec] [--incremental] [--mutations N] [--random N] [--minimize] [FILE...]
+    [--corpus] [--spec] [--incremental] [--mutations N] [--random N] [--lines N] [--seed N] \
+    [--minimize] [--dump] [--text MARKDOWN] [FILE...]
 ```
 
-`--incremental` applies the `incremental` suite's eight edits to every corpus document (the suite itself skips `workspace/`, `spotlight/` and `quicklook-thumbnail/`) and checks each edited text; `--mutations` and `--random` generate seeded documents; `--minimize` shrinks every differing input to a minimal repro. `cargo test -p upleft-markup` runs the same comparison on every quirk the tool has found and on the spec examples.
+`--incremental` applies the `incremental` suite's eight edits to every corpus document (the suite itself skips `workspace/`, `spotlight/` and `quicklook-thumbnail/`) and checks each edited text; `--mutations` and `--random` generate documents, and `--lines` builds documents line by line behind random container prefixes (list markers, quotes, tabs); `--seed` changes the generators' seed; `--text` adds an input given on the command line; `--dump` prints both trees of every differing input; `--minimize` shrinks every differing input to a minimal repro. With no source flags it checks the corpus, the spec examples, the edited texts and 2,000 mutated and 2,000 random documents. `cargo test -p upleft-markup` runs the same comparison on every quirk the tool has found, on patterns common in chat transcripts, and on the spec examples.
 
-Baseline (2026-09-23):
+Baseline (2026-09-24):
 
 | Inputs | Identical to cmark-gfm |
 |---|---:|
 | corpus documents | 251/251 |
 | cmark spec examples | 744/744 |
-| corpus documents after each `incremental` edit | 7923/7960 |
-| mutated documents (seeded) | 19808/20000 |
-| random documents (seeded) | 19786/20000 |
+| corpus documents after each `incremental` edit | 7960/7960 |
+| mutated documents, seeds 1–5 | 1,000,000/1,000,000 |
+| random documents, seeds 1–5 | 1,000,000/1,000,000 |
+| line-built documents, seeds 1–5 | 2,000,000/2,000,000 |
 
-All 443 differing inputs minimize to one of the genuine parser differences in docs/KNOWN-DIFFERENCES.md ("Markdown parser"). That fixes what the suites should report:
+Seeds 21–32 (line-built, 400,000 each) and 41–46 (200,000 mutated and 200,000 random each) also minimize to nothing. The parser has no known difference from cmark-gfm (docs/KNOWN-DIFFERENCES.md, "Markdown parser"), so every suite that parses should pass:
 
-- `markup` and `parse`: 915/915. The corpus contains none of the residual constructs. A new corpus document that does will fail both; check it against the ledger before treating it as a bug.
-- `incremental`: 2718/2745. The 27 failures are nine documents (in three modes each) whose edited texts hit a residual difference: `fixtures/MarkdownRenderTests__LayoutFillerTests-001.md` (a task box with no text, then a less indented line), `spec/regression-0006.md`, `-0009.md`, `-0014.md` and `spec/spec-0140.md` (an HTML tag line right after a list item), `spec/regression-0011.md` and `-0024.md` (single tildes inside a word), and `spec/spec-0647.md` and `spec-0648.md` (a declaration with a lowercase name).
+- `markup` and `parse`: 915/915.
+- `incremental`: 2745/2745.
 - Every other suite: 100%.
+
+A difference the tool or a suite finds is a bug in the fork's `ENABLE_CMARK_GFM_COMPAT` option or in the adapter. Minimize it, add it to the regression tests, and fix it.
 
 ## Selector audit
 

@@ -115,7 +115,6 @@ impl SourceLines {
     pub(crate) fn set_len(&mut self, line: usize, length: usize) {
         self.lengths[line] = length as u32;
     }
-
 }
 
 fn memchr_line_end(bytes: &[u8]) -> Option<usize> {
@@ -129,7 +128,10 @@ pub(crate) enum Prefix {
     /// A list item: `marker_offset + padding` columns of indentation, except
     /// on the line with its marker (`first_line`), where the marker and its
     /// padding are the prefix.
-    Item { width: usize, first_line: usize },
+    Item {
+        width: usize,
+        first_line: usize,
+    },
 }
 
 /// cmark's per-line scanning state: `offset` (bytes), `column` (tab-expanded)
@@ -139,6 +141,12 @@ pub(crate) struct LineScan {
     pub(crate) offset: usize,
     pub(crate) column: usize,
     pub(crate) partially_consumed_tab: bool,
+}
+
+/// The columns left of a tab the scan stopped inside (`chars_to_tab` in
+/// `add_line`).
+pub(crate) fn tab_remainder(scan: &LineScan) -> i64 {
+    (TAB_STOP - scan.column % TAB_STOP) as i64
 }
 
 /// `S_find_first_nonspace`'s results.
