@@ -795,3 +795,94 @@ fn documents_are_send_and_sync() {
     fn assert_send_sync<T: Send + Sync>() {}
     assert_send_sync::<Document>();
 }
+
+// MARK: - The pulldown-cmark adapter against the cmark-gfm converter
+
+/// Walks both trees and fails with the path of the first difference in kind,
+/// properties, range, plain text or child count.
+fn assert_same_tree(source: &str) {
+    fn walk(path: &str, a: crate::Markup<'_>, b: crate::Markup<'_>, source: &str) {
+        assert_eq!(a.data(), b.data(), "{source:?} at {path}: data");
+        assert_eq!(a.range(), b.range(), "{source:?} at {path}: range of {}", a.data().type_name());
+        assert_eq!(a.plain_text(), b.plain_text(), "{source:?} at {path}: plain text");
+        assert_eq!(a.child_count(), b.child_count(), "{source:?} at {path}: children");
+        for (index, (x, y)) in a.children().zip(b.children()).enumerate() {
+            walk(&format!("{path}/{index}"), x, y, source);
+        }
+    }
+    let cmark = crate::parser::cmark_oracle::parse(source, ParseOptions::DISABLE_SMART_OPTS);
+    let pulldown = Document::parse(source, ParseOptions::DISABLE_SMART_OPTS);
+    walk("", cmark.root(), pulldown.root(), source);
+}
+
+/// cmark-gfm's conventions the adapter reproduces, each found by the
+/// differential tool (`examples/markup_diff.rs`).
+#[test]
+fn adapter_matches_cmark_quirks() {
+    let cases = [
+        // Tight items keep paragraphs; task items by the extension's pattern.
+        "- a\n- b\n  - c\n",
+        "- [ ] task\n- [x] done\n- [X] big\n\n> - [ ] quoted\n\n1. [ ]\n2. loose\n\n   para\n",
+        "- [ ] see [x] here\n",
+        "- \n  \n\n- a\n",
+        "1. [bar\\\\]: /uri\n\n[bar\\\\]\n",
+        // Containers ending at blank lines; thematic breaks stay open.
+        "- a\n\n- b\n\n\nfoo\n",
+        "***\n\n\n# h\n",
+        "* foo\n  * bar\n\n  baz\n",
+        // Setext headings end on the next line; ATX lines are trimmed.
+        "Foo\n===\nbar\n",
+        "  # Head ##  \n## \n#\n### ###\n# tab\t#\n",
+        // Definitions stay in the paragraph until it is finalized.
+        "[a]: /u\n[b]: /v\ntext [a]\n\n[a]: /dup\n[a] again\n",
+        "  - -\n\n[ref]: http://example.com \"Title\"\n[ref] and [other][ref]\n",
+        "> [ref]: /x\n  [ref] lazy\n",
+        // Code blocks.
+        "1.     indented code\n\n   paragraph\n\n       more code\n",
+        ">\t\tfoo\n",
+        "- ```\n  code\n\nafter\n",
+        "> ```\n> code\nfoo\n",
+        "```\ncode\n  ",
+        "``` a&#42;b\nx\n```\n",
+        // HTML blocks.
+        "  <div>\n  hi\n\n<!-- c\nd -->\n\n>\t<!-- x\n> y -->\n",
+        "1. third\n    <div>``\n",
+        // Tables: spans, markers, escaped pipes, short and long rows,
+        // interrupting a paragraph.
+        "| a | b |\n|---|:-:|\n| c |\n| d \\| e | f | g |\n| ^ | x||\n\nx\n",
+        "|| 1 | 2 |\n|---|---|\n| `a\\|b` | c |\n",
+        "Intro text\n| a | b |\n|---|---|\n| c | d |\n",
+        "one\n**two** `x\ny` three\n| a |\n|---|\n| b |\n",
+        // Inlines: delimiter runs, strikethrough, trailing tilde, breaks.
+        "***foo** bar***\n**x*** ~~s~~ ~t~ ~~~u~~~ end ~\n",
+        "Hello! `code` line  \nhard \\\nback *em*  \nx `c` \ny\nfoo \t \nbar\n",
+        "a <span\nclass=\"x\">b</span> `c\nd` e\n\n> `code\n>   spanning` and <a\n>   href=\"x\">\n",
+        "> quote\nlazy\n\n- item\nlazy2\n\n> a\\\n     b\n",
+        "<http://a&amp;b> <a@b.co> ![i](<u w >) [foo][] \\*x\n\n[foo]: /f\n",
+        "^[Hello, world!](rainbow: 'extreme') and ^[attrs](x: 1).\n",
+        // Line endings, NUL, byte order mark.
+        "a\rb\r\r```\rc\r```\r",
+        "a\0b\n",
+        "\u{FEFF}---\ntitle: x\n---\n",
+        "",
+        "\n",
+    ];
+    for source in cases {
+        assert_same_tree(source);
+    }
+}
+
+/// Every cmark spec example the corpus generator extracted (when
+/// `just corpus` has run) parses to the tree cmark-gfm builds.
+#[test]
+fn adapter_matches_cmark_on_spec_examples() {
+    let directory = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("../../corpus/generated/spec");
+    let Ok(entries) = std::fs::read_dir(&directory) else {
+        return;
+    };
+    for entry in entries.flatten() {
+        if let Ok(source) = std::fs::read_to_string(entry.path()) {
+            assert_same_tree(&source);
+        }
+    }
+}

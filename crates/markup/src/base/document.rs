@@ -16,8 +16,8 @@ pub struct Document {
 }
 
 impl Document {
-    /// `Document(parsing:options:)`: parses `string` with cmark-gfm and
-    /// converts the result the way swift-markdown's `MarkupParser` does.
+    /// `Document(parsing:options:)`: parses `string` with pulldown-cmark and
+    /// builds the tree swift-markdown's `MarkupParser` builds from cmark-gfm.
     ///
     /// Downright calls this as
     /// `Document::parse(body, ParseOptions::DISABLE_SMART_OPTS)`.

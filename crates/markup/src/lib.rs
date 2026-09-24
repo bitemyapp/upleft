@@ -3,10 +3,14 @@
 //! `27b7fc1a19068bcea3d2072db0ce86360d1400ed`) that Downright uses.
 //!
 //! Downright parses with `Document(parsing: body, options: [.disableSmartOpts])`
-//! and walks the resulting `Markup` tree. The port runs the same cmark-gfm
-//! (`upleft-cmark-gfm-sys`) with the same options and extensions and
-//! converts its node tree the way `CommonMarkConverter.swift` does, so every
-//! kind, child order, source range, string and property matches.
+//! and walks the resulting `Markup` tree. swift-markdown parses with
+//! cmark-gfm; the port parses with pulldown-cmark and builds the tree
+//! swift-markdown would ([`parser::common_mark_converter`]): the same kinds,
+//! children, strings and properties, and the source ranges cmark reports,
+//! quirks included. Where pulldown-cmark's parse genuinely differs from
+//! cmark-gfm's, the tree follows pulldown-cmark (docs/KNOWN-DIFFERENCES.md).
+//! The original cmark-gfm converter survives as a test oracle
+//! ([`parser::cmark_oracle`], behind the `cmark-oracle` feature).
 //!
 //! ```
 //! use upleft_markup::{Document, MarkupData, ParseOptions};
@@ -23,7 +27,7 @@
 //!
 //! | swift-markdown | here |
 //! |---|---|
-//! | `Parser/CommonMarkConverter.swift` | [`parser::common_mark_converter`] |
+//! | `Parser/CommonMarkConverter.swift` | [`parser::common_mark_converter`] (on pulldown-cmark; the cmark-gfm original is [`parser::cmark_oracle`]) |
 //! | `Parser/ParseOptions.swift` | [`parser::parse_options`] |
 //! | `Base/Document.swift` | [`base::document`] |
 //! | `Base/RawMarkup.swift` | [`base::raw_markup`] |
@@ -57,6 +61,10 @@ pub mod nodes {
 }
 
 pub mod parser {
+    #[cfg(any(test, feature = "cmark-oracle"))]
+    pub mod cmark_oracle;
+    pub(crate) mod cmark_lines;
+    pub(crate) mod cmark_table;
     pub mod common_mark_converter;
     pub mod parse_options;
 }

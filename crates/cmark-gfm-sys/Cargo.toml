@@ -1,6 +1,6 @@
 [package]
 name = "upleft-cmark-gfm-sys"
-description = "cmark-gfm at the exact swift-cmark revision Downright's swift-markdown resolves to"
+description = "cmark-gfm at the exact swift-cmark revision Downright's swift-markdown resolves to; the test oracle for upleft-markup's pulldown-cmark adapter, linked by no shipped binary"
 version.workspace = true
 edition.workspace = true
 license.workspace = true

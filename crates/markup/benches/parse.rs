@@ -6,6 +6,9 @@
 //! `downright-oracle markup-bench <file> <out.json>`.
 //!
 //!   cargo bench -p upleft-markup [-- <file.md> [runs]]
+//!
+//! With `--features cmark-oracle` it also times the cmark-gfm converter the
+//! pulldown-cmark adapter replaced, on the same document.
 
 use std::hint::black_box;
 use std::path::PathBuf;
@@ -34,19 +37,7 @@ fn main() {
     let text = std::fs::read_to_string(&path)
         .unwrap_or_else(|error| panic!("{}: {error} (run `just corpus` first)", path.display()));
 
-    // One warm-up so first-call initialisation isn't charged to the p50.
-    drop(black_box(Document::parse(
-        black_box(&text),
-        ParseOptions::DISABLE_SMART_OPTS,
-    )));
-    let mut samples = Vec::with_capacity(runs);
-    for _ in 0..runs {
-        let start = Instant::now();
-        let document = Document::parse(black_box(&text), ParseOptions::DISABLE_SMART_OPTS);
-        drop(black_box(document));
-        samples.push(start.elapsed().as_secs_f64() * 1000.0);
-    }
-    samples.sort_by(f64::total_cmp);
+    let samples = time(runs, || Document::parse(black_box(&text), ParseOptions::DISABLE_SMART_OPTS));
     println!(
         "upleft-markup Document::parse  {} ({} bytes, {} lines)\n  p50 {:.3} ms  p95 {:.3} ms  min {:.3} ms  (n={runs})",
         path.display(),
@@ -56,4 +47,31 @@ fn main() {
         percentile(&samples, 0.95),
         samples[0],
     );
+    #[cfg(feature = "cmark-oracle")]
+    {
+        let samples = time(runs, || {
+            upleft_markup::parser::cmark_oracle::parse(black_box(&text), ParseOptions::DISABLE_SMART_OPTS)
+        });
+        println!(
+            "cmark-gfm converter (oracle)\n  p50 {:.3} ms  p95 {:.3} ms  min {:.3} ms  (n={runs})",
+            percentile(&samples, 0.50),
+            percentile(&samples, 0.95),
+            samples[0],
+        );
+    }
+}
+
+/// One warm-up so first-call initialisation isn't charged to the p50, then
+/// `runs` timed parses, ascending.
+fn time(runs: usize, parse: impl Fn() -> Document) -> Vec<f64> {
+    drop(black_box(parse()));
+    let mut samples = Vec::with_capacity(runs);
+    for _ in 0..runs {
+        let start = Instant::now();
+        let document = parse();
+        drop(black_box(document));
+        samples.push(start.elapsed().as_secs_f64() * 1000.0);
+    }
+    samples.sort_by(f64::total_cmp);
+    samples
 }
