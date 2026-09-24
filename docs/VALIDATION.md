@@ -51,7 +51,7 @@ cargo run --release -p upleft-markup --features cmark-oracle --example markup_di
     [--corpus] [--spec] [--incremental] [--mutations N] [--random N] [--minimize] [FILE...]
 ```
 
-`--incremental` checks the texts the `incremental` suite parses after each of its eight edits; `--mutations` and `--random` generate seeded documents; `--minimize` shrinks every differing input to a minimal repro. `cargo test -p upleft-markup` runs the same comparison on every quirk the tool has found and on the spec examples.
+`--incremental` applies the `incremental` suite's eight edits to every corpus document (the suite itself skips `workspace/`, `spotlight/` and `quicklook-thumbnail/`) and checks each edited text; `--mutations` and `--random` generate seeded documents; `--minimize` shrinks every differing input to a minimal repro. `cargo test -p upleft-markup` runs the same comparison on every quirk the tool has found and on the spec examples.
 
 Baseline (2026-09-23):
 
@@ -59,14 +59,14 @@ Baseline (2026-09-23):
 |---|---:|
 | corpus documents | 251/251 |
 | cmark spec examples | 744/744 |
-| texts the `incremental` suite parses | 7923/7960 |
+| corpus documents after each `incremental` edit | 7923/7960 |
 | mutated documents (seeded) | 19808/20000 |
 | random documents (seeded) | 19786/20000 |
 
 All 443 differing inputs minimize to one of the genuine parser differences in docs/KNOWN-DIFFERENCES.md ("Markdown parser"). That fixes what the suites should report:
 
 - `markup` and `parse`: 915/915. The corpus contains none of the residual constructs. A new corpus document that does will fail both; check it against the ledger before treating it as a bug.
-- `incremental`: 2718/2745. The 27 failures are nine documents (in three modes each) whose edited texts hit a residual difference: `MarkdownRenderTests__LayoutFillerTests-001.md` and `quicklook-thumbnail/tasks-half.md` (a task box with no text, then a less indented line), `spec/regression-0006.md`, `-0009.md` and `-0014.md` (an HTML tag line right after a list item), `spec/regression-0011.md` (single-tilde strikethrough inside a word), `spec/spec-0647.md` and `spec-0648.md` (a declaration with a lowercase name), and `workspace/export/fragments.md` (a link destination with an unbalanced parenthesis and a space).
+- `incremental`: 2718/2745. The 27 failures are nine documents (in three modes each) whose edited texts hit a residual difference: `fixtures/MarkdownRenderTests__LayoutFillerTests-001.md` (a task box with no text, then a less indented line), `spec/regression-0006.md`, `-0009.md`, `-0014.md` and `spec/spec-0140.md` (an HTML tag line right after a list item), `spec/regression-0011.md` and `-0024.md` (single tildes inside a word), and `spec/spec-0647.md` and `spec-0648.md` (a declaration with a lowercase name).
 - Every other suite: 100%.
 
 ## Selector audit

@@ -92,7 +92,7 @@ This ledger lists every place where Upleft is known or suspected to behave diffe
 
 By the owner's decision (2026-09-23) Upleft parses with pulldown-cmark instead of linking cmark-gfm's C sources. `upleft-markup`'s adapter reproduces cmark-gfm's conventions: paragraphs in tight list items, consolidated text nodes, delimiter-run extents, columns measured in prefix-stripped paragraph text, `finalize()`'s end positions, the table extension's cell offsets and spans, the tasklist pattern, inline attributes, and cmark's handling of NUL, CR and a byte order mark. What remains are inputs the two parsers read differently. None occurs in the corpus: `markup` and `parse` are 915/915. The `incremental` suite parses edited texts, and nine of its documents (27 cases) hit one of the rows below.
 
-Counts come from `examples/markup_diff.rs --incremental --mutations 20000 --random 20000 --minimize` (2026-09-23): 443 differing inputs out of 47,960, each shrunk to a minimal repro and assigned to one cause. "Incremental" counts are edited texts of the `incremental` suite.
+Counts come from `examples/markup_diff.rs --incremental --mutations 20000 --random 20000 --minimize` (2026-09-23): 443 differing inputs out of 47,960, each shrunk to a minimal repro and assigned to one cause. "Incremental" counts are corpus documents after one of the `incremental` suite's edits.
 
 | Difference | Minimal example | cmark-gfm (Downright) | pulldown-cmark (Upleft) | Inputs (incremental / mutated / random) | Effect downstream |
 |---|---|---|---|---:|---|
