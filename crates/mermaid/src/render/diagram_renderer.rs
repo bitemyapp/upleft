@@ -72,8 +72,12 @@ impl DiagramRenderer {
     /// `_italicSystemFont(size:weight:)`: `NSFontManager.shared.convert(_:toHaveTrait: .italicFontMask)`.
     pub(crate) fn italic_system_font(&self, size: CGFloat, weight: CGFloat) -> Retained<NSFont> {
         let base_font = NSFont::systemFontOfSize_weight(size, weight as NSFontWeight);
-        // The Swift reaches `NSFontManager.shared` from whatever thread renders.
-        let mtm = unsafe { MainThreadMarker::new_unchecked() };
+        let Some(mtm) = MainThreadMarker::new() else {
+            // Off the main thread (a hosted view's worker), where
+            // `NSFontManager` must not be used: the same italic through the
+            // font descriptor. `hosted_transcript` checks the two agree.
+            return italic_by_descriptor(&base_font);
+        };
         let manager = NSFontManager::sharedFontManager(mtm);
         manager.convertFont_toHaveTrait(&base_font, NSFontTraitMask::ItalicFontMask)
     }
@@ -130,4 +134,13 @@ impl DiagramRenderer {
         draw(context);
         ctx.restore_g_state();
     }
+}
+
+/// `font` with the italic trait, through `NSFontDescriptor` (thread-safe),
+/// or `font` itself when no italic face exists.
+pub fn italic_by_descriptor(font: &NSFont) -> Retained<NSFont> {
+    let descriptor = font.fontDescriptor();
+    let traits = descriptor.symbolicTraits() | objc2_app_kit::NSFontDescriptorSymbolicTraits::TraitItalic;
+    NSFont::fontWithDescriptor_size(&descriptor.fontDescriptorWithSymbolicTraits(traits), font.pointSize())
+        .unwrap_or_else(|| objc2::Message::retain(font))
 }

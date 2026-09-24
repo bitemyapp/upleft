@@ -105,4 +105,9 @@ pub trait MarkdownTextViewDelegate {
     fn wants_quick_look_for(&self, view: &MarkdownTextView, target: &ContextTarget) -> bool {
         false
     }
+    /// A hosted view's height changed (Upleft extension, docs/EMBEDDING.md).
+    /// Called synchronously from inside `update`, `set_hosted_width` or the
+    /// relayout that follows an asynchronous diagram or formula, so the host
+    /// can restack its rows in the same run-loop pass.
+    fn did_change_content_height(&self, view: &MarkdownTextView, height: f64) {}
 }

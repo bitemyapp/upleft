@@ -14,10 +14,10 @@ use std::collections::HashMap;
 use objc2::rc::Retained;
 use objc2_foundation::{NSAttributedString, NSMutableAttributedString, NSString};
 use upleft_core::safe_html::SafeHTMLKind;
-use upleft_core::{BlockContent, NSRange, ParsedDocument};
+use upleft_core::{BlockContent, BlockRef, NSRange, ParsedDocument};
 
 use crate::engine::decoration_engine::DecorationEngine;
-use crate::engine::display_map::{DisplayMap, DisplaySubstitution, ParagraphIndex};
+use crate::engine::display_map::{DisplayMap, DisplaySubstitution, ParagraphIndex, RangeSet};
 use crate::engine::hard_wrap_reflow::{HardWrapReflow, Plan};
 use crate::engine::{keys, ns_range};
 use crate::fragments::footnote_reference_display::FootnoteReferenceDisplay;
@@ -175,8 +175,14 @@ fn utf16_of(string: &NSString) -> Vec<u16> {
 /// `containsHardWrappedParagraph(in:text:)`: whether any paragraph's source
 /// holds a character of `CharacterSet.newlines`.
 pub fn contains_hard_wrapped_paragraph(document: &ParsedDocument, text: &[u16]) -> bool {
+    contains_hard_wrapped_paragraph_in(std::slice::from_ref(&document.root), text)
+}
+
+/// `containsHardWrappedParagraph(in:text:)` over `blocks` and their
+/// descendants only.
+pub fn contains_hard_wrapped_paragraph_in(blocks: &[BlockRef], text: &[u16]) -> bool {
     let mut found = false;
-    document.root.walk(&mut |block| {
+    let mut visit = |block: &BlockRef| {
         if found || !matches!(block.content, BlockContent::Paragraph) || block.range.length <= 0 {
             return;
         }
@@ -186,15 +192,24 @@ pub fn contains_hard_wrapped_paragraph(document: &ParsedDocument, text: &[u16]) 
         found = text[lo.min(hi)..hi]
             .iter()
             .any(|&unit| (0x0A..=0x0D).contains(&unit) || unit == 0x85 || unit == 0x2028 || unit == 0x2029);
-    });
+    };
+    for block in blocks {
+        block.walk(&mut visit);
+    }
     found
 }
 
 /// `safeHTMLLineBreakSubstitutions(in:excluding:)`: source-preserving
 /// display replacements for README tags that break lines.
 pub fn safe_html_line_break_substitutions(document: &ParsedDocument, excluded: Option<NSRange>) -> Vec<DisplaySubstitution> {
+    safe_html_line_break_substitutions_in(std::slice::from_ref(&document.root), excluded)
+}
+
+/// `safeHTMLLineBreakSubstitutions(in:excluding:)` over `blocks` and their
+/// descendants only.
+pub fn safe_html_line_break_substitutions_in(blocks: &[BlockRef], excluded: Option<NSRange>) -> Vec<DisplaySubstitution> {
     let mut substitutions = Vec::new();
-    document.root.walk(&mut |block| {
+    let mut visit = |block: &BlockRef| {
         let Some(html) = &block.safe_html else { return };
         if !html.is_safe {
             return;
@@ -237,7 +252,10 @@ pub fn safe_html_line_break_substitutions(document: &ParsedDocument, excluded: O
             let replacement = NSAttributedString::from_nsstring(&NSString::from_str(&replacement));
             substitutions.push(DisplaySubstitution::new(range, range.length, Some(replacement), false, false, true));
         }
-    });
+    };
+    for block in blocks {
+        block.walk(&mut visit);
+    }
     substitutions.sort_by_key(|sub| sub.source_range.location);
     substitutions
 }
@@ -352,4 +370,178 @@ pub fn layout_filler(
     );
     styled.replaceCharactersInRange_withString(objc2_foundation::NSRange::new(0, 1), &run);
     Retained::into_super(styled)
+}
+
+// MARK: - Hosted incremental rebuild (Upleft extension)
+
+/// What a hosted view's base display map was built from, for reuse after
+/// an edit (`MarkdownTextView::new_hosted`, docs/EMBEDDING.md).
+///
+/// Every producer `rebuild_base_display_map` merges is local to a top-level
+/// block: marker ranges, safe-HTML line breaks, inline math, footnote
+/// references and hard-wrap groups all lie inside the block (a group reaches
+/// only its own trailing separator and line prefix). The only cross-block
+/// inputs are the reference and footnote definitions, which are cheap and
+/// produced again every time. So after an edit that leaves everything before
+/// some offset unchanged — an append, above all — each producer's output for
+/// the top-level blocks before that offset is kept, the rest is produced
+/// again, and the merge runs over the concatenation exactly as the full
+/// build does. The layout map's fillers, the expensive part, are reused the
+/// same way.
+#[derive(Default)]
+pub struct HostedBaseMap {
+    /// The inputs the kept outputs were produced under.
+    key: Option<HostedBaseKey>,
+    /// Each producer's output for the whole document, in document order.
+    block_hidden: Vec<NSRange>,
+    line_breaks: Vec<DisplaySubstitution>,
+    math_ranges: Vec<NSRange>,
+    math_substitutions: Vec<DisplaySubstitution>,
+    footnote_ranges: Vec<NSRange>,
+    footnote_substitutions: Vec<DisplaySubstitution>,
+    /// Start of the first paragraph with a line break inside it.
+    first_hard_wrapped: Option<isize>,
+    hard_wrap_ranges: Vec<NSRange>,
+    /// Only the reflow substitutions, as `rebuild_base_display_map` keeps.
+    hard_wrap_substitutions: Vec<DisplaySubstitution>,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq)]
+struct HostedBaseKey {
+    policy: DecorationPolicy,
+    reflow: bool,
+    style_token: i64,
+}
+
+impl HostedBaseMap {
+    /// `rebuild_base_display_map`, reusing what the blocks before `floor`
+    /// produced last time. `floor` is the first offset whose text or
+    /// decoration may have changed; `None` rebuilds everything.
+    /// `previous_layout` is the view's current base layout map.
+    pub fn rebuild(
+        &mut self,
+        inputs: &BaseDisplayMapInputs,
+        joiners: &mut WordJoinerRuns,
+        floor: Option<isize>,
+        previous_layout: &DisplayMap,
+    ) -> BaseDisplayMaps {
+        let document = inputs.document;
+        if inputs.source_focus.range().is_some() {
+            // Source focus filters every producer by the focused range; it is
+            // rare in a hosted view, so it takes the full path.
+            self.key = None;
+            return rebuild_base_display_map(inputs, joiners);
+        }
+        let key = HostedBaseKey {
+            policy: inputs.effective_policy,
+            reflow: inputs.reflow_hard_wrapped_paragraphs,
+            style_token: crate::fragments::fragment_base::StyleToken::of(inputs.style_sheet),
+        };
+        let children = &document.root.children;
+        // The first top-level block the edit may have reached, and the cut
+        // before which everything is kept.
+        let (first_changed, cut) = match floor {
+            Some(floor) if self.key == Some(key) => {
+                let index = children.partition_point(|child| child.range.upper_bound() < floor);
+                let cut = children.get(index).map_or(floor, |child| floor.min(child.range.location));
+                (index, cut.max(0))
+            }
+            _ => (0, 0),
+        };
+        self.key = Some(key);
+        let changed = &children[first_changed..];
+        let kept = |range: NSRange| range.location < cut && range.upper_bound() <= cut;
+
+        self.block_hidden.retain(|range| kept(*range));
+        self.block_hidden.extend(inputs.engine.block_hidden_ranges(document, changed));
+        let renders_fragments = inputs.effective_policy.renders_fragments;
+        let hides_inline_markers = inputs.effective_policy.hides_inline_markers;
+        self.line_breaks.retain(|sub| kept(sub.source_range));
+        self.math_ranges.retain(|range| kept(*range));
+        self.math_substitutions.retain(|sub| kept(sub.source_range));
+        self.footnote_ranges.retain(|range| kept(*range));
+        self.footnote_substitutions.retain(|sub| kept(sub.source_range));
+        if renders_fragments {
+            self.line_breaks.extend(safe_html_line_break_substitutions_in(changed, None));
+            let math = InlineMathDisplay::ranges_in(changed);
+            self.math_ranges.extend(math.iter().copied());
+            self.math_substitutions.extend(InlineMathDisplay::substitutions_for(document, math, inputs.style_sheet, None));
+        }
+        if hides_inline_markers {
+            let references = FootnoteReferenceDisplay::references_in(changed);
+            self.footnote_ranges.extend(references.iter().map(|reference| reference.range));
+            self.footnote_substitutions
+                .extend(FootnoteReferenceDisplay::substitutions_for(references, inputs.style_sheet, None));
+        }
+
+        // The merge, as `rebuild_base_display_map` does it.
+        let mut hidden = inputs.engine.definition_hidden_ranges(document);
+        hidden.extend(self.block_hidden.iter().copied());
+        let mut hidden = RangeSet::disjoint(&hidden);
+        if !self.line_breaks.is_empty() {
+            let exclusions: Vec<NSRange> = self.line_breaks.iter().map(|sub| sub.source_range).collect();
+            hidden = removing_overlaps(hidden, &exclusions);
+        }
+        hidden = removing_overlaps(hidden, &self.math_ranges);
+        hidden = removing_overlaps(hidden, &self.footnote_ranges);
+        let base_hidden_ranges = hidden.clone();
+
+        self.hard_wrap_ranges.retain(|range| kept(*range));
+        self.hard_wrap_substitutions.retain(|sub| kept(sub.source_range));
+        if inputs.reflow_hard_wrapped_paragraphs {
+            let source = utf16_of(&inputs.storage.string());
+            if self.first_hard_wrapped.is_some_and(|location| location >= cut) {
+                self.first_hard_wrapped = None;
+            }
+            if self.first_hard_wrapped.is_none() {
+                self.first_hard_wrapped = changed
+                    .iter()
+                    .find(|child| contains_hard_wrapped_paragraph_in(std::slice::from_ref(*child), &source))
+                    .map(|child| child.range.location);
+            }
+            if self.first_hard_wrapped.is_some() {
+                let plan = HardWrapReflow::plan_in(changed, &source, &hidden, &[], true);
+                self.hard_wrap_ranges.extend(plan.ranges);
+                self.hard_wrap_substitutions
+                    .extend(plan.substitutions.into_iter().filter(|sub| sub.is_hard_wrap_reflow));
+            }
+        } else {
+            self.first_hard_wrapped = None;
+        }
+
+        let mut substitutions: Vec<DisplaySubstitution> = hidden.into_iter().map(DisplaySubstitution::hide).collect();
+        substitutions.extend(self.math_substitutions.iter().cloned());
+        substitutions.extend(self.footnote_substitutions.iter().cloned());
+        substitutions.extend(self.line_breaks.iter().cloned());
+        substitutions.extend(self.hard_wrap_substitutions.iter().cloned());
+        let base_display_map = DisplayMap::new(inputs.paragraph_index.clone(), substitutions);
+
+        // Layout substitutions before the cut are the ones built last time.
+        let mut reusable = previous_layout.base_substitutions().iter().peekable();
+        let layout: Vec<DisplaySubstitution> = base_display_map
+            .base_substitutions()
+            .iter()
+            .map(|sub| {
+                if cut > 0 && kept(sub.source_range) {
+                    while reusable.next_if(|old| old.source_range.location < sub.source_range.location).is_some() {}
+                    if let Some(old) = reusable.peek()
+                        && old.source_range == sub.source_range
+                        && old.is_hidden == sub.is_hidden
+                        && old.is_hard_wrap_reflow == sub.is_hard_wrap_reflow
+                    {
+                        return (*old).clone();
+                    }
+                }
+                layout_substitution(sub, inputs.storage, joiners)
+            })
+            .collect();
+        let base_layout_map = DisplayMap::new(inputs.paragraph_index.clone(), layout);
+        BaseDisplayMaps {
+            base_hidden_ranges,
+            hard_wrap_ranges: self.hard_wrap_ranges.clone(),
+            hard_wrap_substitutions: self.hard_wrap_substitutions.clone(),
+            base_display_map,
+            base_layout_map,
+        }
+    }
 }

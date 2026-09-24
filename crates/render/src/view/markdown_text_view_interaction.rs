@@ -338,6 +338,11 @@ impl MarkdownTextView {
     }
 
     fn confirm_checkbox_toggle(&self, block_range: NSRange, checked: bool) {
+        // A hosted view shows only the state its text holds: the host may
+        // decline the toggle, and then nothing on screen should change.
+        if self.is_hosted() {
+            return;
+        }
         if self.style_sheet().reduce_motion {
             self.setNeedsDisplayInRect(self.pulse_invalidation_rect(&[block_range]));
             return;

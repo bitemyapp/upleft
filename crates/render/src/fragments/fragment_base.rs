@@ -166,6 +166,9 @@ pub struct FragmentContext {
     pub table_layouts: RefCell<HashMap<TableLayoutKey, Rc<dyn Any>>>,
     /// Bumped every time the text storage changes.
     pub text_revision: Cell<isize>,
+    /// Hosted views (Upleft extension): Mermaid diagrams and display math
+    /// render on a worker and draw a placeholder until they land.
+    pub renders_objects_async: Cell<bool>,
 }
 
 impl FragmentContext {
@@ -193,6 +196,7 @@ impl FragmentContext {
             document_has_h1: Cell::new(false),
             table_layouts: RefCell::new(HashMap::new()),
             text_revision: Cell::new(0),
+            renders_objects_async: Cell::new(false),
         })
     }
 
@@ -444,7 +448,8 @@ impl DownrightFragment {
 
     /// Width of the reading column alone.
     pub fn prose_content_width(&self) -> CGFloat {
-        smax(1.0, self.content_width() - render_metrics::CODE_BLEED)
+        let bleed = self.style_sheet().map_or(render_metrics::CODE_BLEED, |style| style.code_bleed());
+        smax(1.0, self.content_width() - bleed)
     }
 
     /// Rect of this fragment in its own drawing space, anchored at `point`.

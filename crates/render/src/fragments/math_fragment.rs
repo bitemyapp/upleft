@@ -21,6 +21,9 @@ use objc2_core_graphics::CGContext;
 use upleft_math::MathRenderer;
 
 use crate::appkit_compat::{RectExt, rect};
+use crate::fragments::async_objects::{self, ObjectImage};
+use crate::fragments::mermaid_fragment::draw_placeholder;
+use crate::theme::style_sheet::StyleSheet;
 use crate::engine::render_metrics;
 use crate::fragments::fragment_base::{DownrightFragment, FailedObject, FragmentBehavior, FragmentContext, draw_ns_image};
 use crate::render_contracts::FragmentPayload;
@@ -62,6 +65,19 @@ impl FragmentBehavior for MathFragment {
         }
         let style = fragment.style_sheet()?;
         let grid = smax(1.0, style.baseline_grid);
+        if let Some(object) = hosted_object(fragment, &style) {
+            let height = match object {
+                ObjectImage::Ready(image) => image.size().height,
+                ObjectImage::Pending(size) => size.height,
+                ObjectImage::Failed => {
+                    return Some(render_metrics::snap_up(
+                        fragment.failed_object_height(&failure(fragment), &style) + style.line_height * 0.5,
+                        grid,
+                    ));
+                }
+            };
+            return Some(render_metrics::snap_up(height + style.line_height * 0.7, grid));
+        }
         let Some(image) = rendered_image(fragment) else {
             return Some(render_metrics::snap_up(
                 fragment.failed_object_height(&failure(fragment), &style) + style.line_height * 0.5,
@@ -76,6 +92,26 @@ impl FragmentBehavior for MathFragment {
             return;
         }
         let Some(style) = fragment.style_sheet() else { return };
+        if let Some(object) = hosted_object(fragment, &style) {
+            match object {
+                ObjectImage::Ready(image) => {
+                    let frame = fragment.layoutFragmentFrame();
+                    let size = image.size();
+                    let origin = CGPoint::new(
+                        point.x + smax(0.0, (fragment.content_width() - size.width) / 2.0),
+                        point.y + smax(0.0, (frame.height() - size.height) / 2.0),
+                    );
+                    draw_image_at(&image, origin, cg);
+                }
+                ObjectImage::Pending(size) => draw_placeholder(fragment, point, size, &style, cg),
+                ObjectImage::Failed => {
+                    let failure = failure(fragment);
+                    let height = fragment.failed_object_height(&failure, &style);
+                    fragment.draw_failed_object(&failure, rect(point.x, point.y, fragment.content_width(), height), &style, cg);
+                }
+            }
+            return;
+        }
         let Some(image) = rendered_image(fragment) else {
             let failure = failure(fragment);
             let height = fragment.failed_object_height(&failure, &style);
@@ -94,6 +130,15 @@ impl FragmentBehavior for MathFragment {
     fn as_any(&self) -> &dyn Any {
         self
     }
+}
+
+/// A hosted view's formula, from `async_objects`; `None` elsewhere.
+fn hosted_object(fragment: &DownrightFragment, style: &StyleSheet) -> Option<ObjectImage> {
+    let context = fragment.context()?;
+    if !context.renders_objects_async.get() {
+        return None;
+    }
+    Some(async_objects::math(fragment, fragment.payload().detail(), style.math_point_size * 1.12, &style.text))
 }
 
 fn rendered_image(fragment: &DownrightFragment) -> Option<Retained<NSImage>> {

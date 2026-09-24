@@ -412,7 +412,7 @@ impl BlockStyleFactory {
 
         // Prose is held back off the bleed lane; a full-bleed block gets it.
         if !BlockStyleFactory::is_full_bleed(&block.content) {
-            style.setTailIndent(-render_metrics::CODE_BLEED);
+            style.setTailIndent(-self.style_sheet.code_bleed());
         }
 
         let indent = self.indent(&block.content, context);
@@ -467,16 +467,33 @@ impl BlockStyleFactory {
             }
             _ => {
                 // Paragraphs inside a list are the body of a list item.
-                style.setParagraphSpacing(render_metrics::snap_up(
-                    h * (if context.list_depth > 0 { 0.15 } else { 0.45 }),
-                    self.grid,
-                ));
+                match self.style_sheet.host.paragraph_spacing {
+                    Some(spacing) if context.list_depth == 0 => style.setParagraphSpacing(spacing),
+                    _ => style.setParagraphSpacing(render_metrics::snap_up(
+                        h * (if context.list_depth > 0 { 0.15 } else { 0.45 }),
+                        self.grid,
+                    )),
+                }
                 if context.list_depth > 0 {
                     let content_edge = indent + self.marker_column(context, context.task);
                     style.setFirstLineHeadIndent(content_edge);
                     style.setHeadIndent(content_edge);
                 }
             }
+        }
+
+        // A host may hyphenate prose (`HostTypography::hyphenation_factor`).
+        if let Some(factor) = self.style_sheet.host.hyphenation_factor
+            && matches!(
+                block.content,
+                BlockContent::Paragraph
+                    | BlockContent::ListItem { .. }
+                    | BlockContent::BlockQuote
+                    | BlockContent::Callout { .. }
+                    | BlockContent::FootnoteDefinition { .. }
+            )
+        {
+            style.setHyphenationFactor(factor);
         }
 
         // Code wraps at word boundaries with a continuation indent and

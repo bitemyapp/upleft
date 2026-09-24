@@ -255,6 +255,13 @@ impl ThemeStore {
         state.themes = bundled;
     }
 
+    /// The themes Upleft ships, decoded from the binary. A pure function: it
+    /// reads no preferences and touches no directory, so a host embedding
+    /// the renderer can list themes without `shared()` (docs/EMBEDDING.md).
+    pub fn bundled_themes() -> Vec<Theme> {
+        ThemeStore::load_bundled_themes()
+    }
+
     fn load_bundled_themes() -> Vec<Theme> {
         // `decode(_:)` sorts by file name and skips empty or oversized files;
         // the embedded list is already in that order and every file qualifies.

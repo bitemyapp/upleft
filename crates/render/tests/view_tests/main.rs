@@ -21,6 +21,7 @@ mod decoration_view_tests;
 mod density_rail_tests;
 mod drop_and_quick_look_tests;
 mod fragment_seam_tests;
+mod hosted_embedding_tests;
 mod layout_filler_tests;
 mod list_ornament_tests;
 mod smart_paste_integration_tests;
@@ -72,6 +73,7 @@ fn main() {
     tests.extend(typing_invalidation_tests::TESTS);
     tests.extend(decoration_view_tests::TESTS);
     tests.extend(bounded_image_cache_tests::TESTS);
+    tests.extend(hosted_embedding_tests::TESTS);
 
     let selected: Vec<&Test> = tests
         .iter()

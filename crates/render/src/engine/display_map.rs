@@ -124,6 +124,40 @@ impl ParagraphIndex {
         ParagraphIndex::new(starts, n)
     }
 
+    /// The index of `text` after an edit that left its first `edit_floor`
+    /// UTF-16 units unchanged (an Upleft extension for hosted streaming).
+    /// Paragraphs up to the one holding the unit before the edit are kept;
+    /// the rest of `text` is scanned again. The result equals `from_text`.
+    pub fn rebuilt_after_edit(&self, text: &NSString, edit_floor: isize) -> ParagraphIndex {
+        let n = text.length() as isize;
+        let floor = edit_floor.max(0).min(self.length.min(n));
+        // The unit before the edit may be a `\r` the edit completes into `\r\n`,
+        // so that paragraph is scanned again too.
+        let keep = self.index_containing((floor - 1).max(0));
+        let rescan_from = self.starts[keep];
+        let mut starts: Vec<isize> = self.starts[..=keep].to_vec();
+        let mut pending_cr = false;
+        const CHUNK_SIZE: isize = 8192;
+        let mut buffer = vec![0u16; CHUNK_SIZE.min((n - rescan_from).max(1)) as usize];
+        let mut base = rescan_from;
+        while base < n {
+            let count = (buffer.len() as isize).min(n - base);
+            // SAFETY: `buffer` holds at least `count` units.
+            unsafe {
+                text.getCharacters_range(
+                    NonNull::new(buffer.as_mut_ptr()).unwrap(),
+                    ns_range(NSRange::new(base, count)),
+                );
+            }
+            ParagraphIndex::scan(&buffer[..count as usize], base, &mut starts, &mut pending_cr);
+            base += count;
+        }
+        if pending_cr {
+            starts.push(n);
+        }
+        ParagraphIndex::new(starts, n)
+    }
+
     /// `init(text:)` over UTF-16 units already in hand.
     pub fn from_utf16(units: &[u16]) -> ParagraphIndex {
         let n = units.len() as isize;

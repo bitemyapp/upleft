@@ -69,7 +69,7 @@ impl FragmentBehavior for FrontMatterFragment {
         if self.fields.is_empty() {
             return Some(0.0);
         }
-        let prose_width = fragment.prose_content_width();
+        let prose_width = card_width(fragment);
         let key_width = smin(112.0, smax(64.0, prose_width * 0.20));
         let value_width = smax(80.0, prose_width - key_width - 18.0 - HORIZONTAL_INSET);
         let font = style.body_font().fontWithSize(style.body_font().pointSize() * 0.86);
@@ -89,7 +89,7 @@ impl FragmentBehavior for FrontMatterFragment {
         if self.fields.is_empty() {
             return;
         }
-        let card = rect(point.x, point.y, fragment.prose_content_width(), fragment.layoutFragmentFrame().height());
+        let card = rect(point.x, point.y, card_width(fragment), fragment.layoutFragmentFrame().height());
         let key_width = smin(112.0, smax(64.0, card.width() * 0.20));
         let value_x = card.min_x() + key_width + 18.0;
         let value_width = smax(80.0, card.max_x() - value_x - HORIZONTAL_INSET);
@@ -219,4 +219,11 @@ mod tests {
         // `.whitespaces` does not trim newlines.
         assert_eq!(single_line("\n"), "\n");
     }
+}
+
+/// The card spans the prose measure from the fragment's code inset. With
+/// Downright's bleed lane that always fits the column; a host that narrows
+/// the lane (`HostTypography::code_bleed`) keeps it inside the column.
+fn card_width(fragment: &DownrightFragment) -> CGFloat {
+    smin(fragment.prose_content_width(), smax(1.0, fragment.content_width() - render_metrics::CODE_INSET_X))
 }

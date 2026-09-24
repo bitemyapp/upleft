@@ -37,13 +37,7 @@ impl MathRenderer {
         if !MathFontBundle::is_available() {
             return None;
         }
-        let key = MathRendererCacheKey {
-            display,
-            point_size: (point_size * 4.0).round() / 4.0,
-            color_token: Self::color_token(color),
-            padding: (padding * 2.0).round(),
-            source: trimmed,
-        };
+        let key = Self::key(trimmed, display, point_size, color, padding);
         let key_cost = key.source.len();
         MATH.image(&key, key_cost, || {
             let mut renderer = MTMathImage::new(
@@ -89,6 +83,44 @@ impl MathRenderer {
             padded.unlockFocus();
             Some(padded)
         })
+    }
+
+    fn key(
+        trimmed: String,
+        display: bool,
+        point_size: CGFloat,
+        color: &NSColor,
+        padding: CGFloat,
+    ) -> MathRendererCacheKey {
+        MathRendererCacheKey {
+            display,
+            point_size: (point_size * 4.0).round() / 4.0,
+            color_token: Self::color_token(color),
+            padding: (padding * 2.0).round(),
+            source: trimmed,
+        }
+    }
+
+    /// The key `image` files this formula under in the shared cache, or
+    /// `None` for a blank one. An Upleft extension for hosted views, which
+    /// look an image up without typesetting it.
+    pub fn cache_key(
+        latex: &str,
+        display: bool,
+        point_size: CGFloat,
+        color: &NSColor,
+        padding: CGFloat,
+    ) -> Option<MathRendererCacheKey> {
+        let trimmed = trimming_whitespaces_and_newlines(latex);
+        if trimmed.is_empty() {
+            return None;
+        }
+        Some(Self::key(trimmed, display, point_size, color, padding))
+    }
+
+    /// The cached image for `key`, never typesetting (see `cache_key`).
+    pub fn cached_image(key: &MathRendererCacheKey) -> Option<Retained<NSImage>> {
+        MATH.cached(key)
     }
 
     /// SwiftMath does not implement TeX's `\mathop{...}` wrapper; dropping the

@@ -21,9 +21,10 @@ use objc2::rc::Retained;
 use objc2::runtime::AnyObject;
 use objc2_app_kit::{
     NSAppearance, NSColor, NSColorSpace, NSFont, NSFontDescriptor, NSFontDescriptorSymbolicTraits,
-    NSFontDescriptorSystemDesignSerif, NSFontFeatureSelectorIdentifierKey,
-    NSFontFeatureSettingsAttribute, NSFontFeatureTypeIdentifierKey, NSFontWeight, NSFontWeightBold,
-    NSFontWeightMedium, NSFontWeightRegular, NSFontWeightSemibold, NSWorkspace,
+    NSFontDescriptorSystemDesignSerif, NSFontFamilyAttribute, NSFontFeatureSelectorIdentifierKey,
+    NSFontFeatureSettingsAttribute, NSFontFeatureTypeIdentifierKey, NSFontTraitsAttribute,
+    NSFontWeight, NSFontWeightBold, NSFontWeightMedium, NSFontWeightRegular, NSFontWeightSemibold,
+    NSFontWeightTrait, NSWorkspace,
 };
 use objc2_core_foundation::CGSize;
 use objc2_core_text::{
@@ -100,6 +101,55 @@ pub struct StyleSheet {
     pub reduce_motion: bool,
     pub increase_contrast: bool,
     pub reduce_transparency: bool,
+
+    /// Host-only typography (`for_host`); the default is Downright's.
+    pub host: HostTypography,
+}
+
+/// Typography a host sets on top of a theme (an Upleft extension; see
+/// docs/EMBEDDING.md). Every field is optional and `None` keeps Downright's
+/// behaviour, so theme JSON and every Downright style sheet are unchanged.
+#[derive(Debug, Clone, Default, PartialEq)]
+pub struct HostTypography {
+    /// The face of body text and headings. `None` follows the theme's preset
+    /// (Working is the system font, Reading is New York).
+    pub body_family: Option<BodyFamily>,
+    /// Body size in points, in place of the theme's `bodySize`. Everything
+    /// derived from the body size (heading scale, code size, math size,
+    /// indents) follows it.
+    pub body_size: Option<f64>,
+    /// Heading sizes for H1–H6 in points, in place of the modular scale.
+    pub heading_sizes: [Option<f64>; 6],
+    /// Code size in points, in place of `bodySize × monoSizeAdjust`
+    /// normalised to SF Mono's x-height.
+    pub code_size: Option<f64>,
+    /// Line height as a multiple of the body size, exact rather than rounded
+    /// to Downright's baseline grid (to the half point). The grid becomes a
+    /// quarter of it, so vertical rhythm keeps its proportions.
+    pub line_height_multiple: Option<f64>,
+    /// Space after a top-level paragraph, in points, in place of
+    /// 0.45 × line height on the grid.
+    pub paragraph_spacing: Option<f64>,
+    /// `NSParagraphStyle.hyphenationFactor` for prose (0–1).
+    pub hyphenation_factor: Option<f32>,
+    /// The lane code blocks, tables, math and diagrams may use past the
+    /// prose's trailing edge (`RenderMetrics.codeBleed`, 88 pt). A chat
+    /// column usually wants 0: prose as wide as code.
+    pub code_bleed: Option<f64>,
+}
+
+/// A body face (`HostTypography::body_family`).
+#[derive(Debug, Clone, PartialEq)]
+pub enum BodyFamily {
+    /// SF Pro, the system font.
+    System,
+    /// New York, the system serif.
+    NewYork,
+    /// SF Mono, the monospaced system font.
+    Monospaced,
+    /// A family by name (`"Charter"`), falling back to the system font when
+    /// it is not installed.
+    Named(String),
 }
 
 /// `NSFont.Weight` values, read from AppKit's own constants.
@@ -149,6 +199,40 @@ impl StyleSheet {
         reduce_motion_override: Option<bool>,
     ) -> StyleSheet {
         let revision = ThemeStore::shared().revision();
+        StyleSheet::build(
+            theme,
+            appearance,
+            reduce_motion_override,
+            revision,
+            HostTypography::default(),
+        )
+    }
+
+    /// A style sheet for a host embedding the renderer (docs/EMBEDDING.md).
+    /// Unlike `new`, it never touches `ThemeStore`: no preferences are read
+    /// or written and no directory is created or watched. `revision` is 0.
+    /// Increase Contrast and Reduce Transparency come from `NSWorkspace`, as
+    /// in `new`. Build a new one, and hand it to `set_style_sheet`, when the
+    /// appearance changes.
+    pub fn for_host(
+        theme: Theme,
+        appearance: &NSAppearance,
+        reduce_motion: bool,
+        typography: HostTypography,
+    ) -> StyleSheet {
+        StyleSheet::build(theme, appearance, Some(reduce_motion), 0, typography)
+    }
+
+    fn build(
+        mut theme: Theme,
+        appearance: &NSAppearance,
+        reduce_motion_override: Option<bool>,
+        revision: i64,
+        host: HostTypography,
+    ) -> StyleSheet {
+        if let Some(body_size) = host.body_size {
+            theme.typography.body_size = body_size;
+        }
 
         let workspace = NSWorkspace::sharedWorkspace();
         let reduce_motion = reduce_motion_override
@@ -159,8 +243,11 @@ impl StyleSheet {
         let typography = &theme.typography;
 
         // Fonts, built through locals.
-        let body_font =
-            StyleSheet::system_font(typography.preset, typography.body_size, weight_regular());
+        let face = |size: f64, weight: NSFontWeight| match &host.body_family {
+            None => StyleSheet::system_font(typography.preset, size, weight),
+            Some(family) => StyleSheet::family_font(family, size, weight),
+        };
+        let body_font = face(typography.body_size, weight_regular());
         let headings: [Retained<NSFont>; 6] = std::array::from_fn(|index| {
             let level = index as i64 + 1;
             let weight = if level <= 3 {
@@ -170,11 +257,9 @@ impl StyleSheet {
             } else {
                 weight_semibold()
             };
-            let font = StyleSheet::system_font(
-                typography.preset,
-                StyleSheet::heading_size(level, typography),
-                weight,
-            );
+            let size = host.heading_sizes[index]
+                .unwrap_or_else(|| StyleSheet::heading_size(level, typography));
+            let font = face(size, weight);
             if level == 6 {
                 StyleSheet::applying(false, true, &font)
             } else {
@@ -183,7 +268,8 @@ impl StyleSheet {
         });
         let mono = StyleSheet::mono_font_named(
             &typography.mono_family,
-            StyleSheet::mono_point_size(typography),
+            host.code_size
+                .unwrap_or_else(|| StyleSheet::mono_point_size(typography)),
             typography.mono_ligatures,
         );
         let emphasis = [
@@ -195,10 +281,19 @@ impl StyleSheet {
 
         // Metrics. The grid is quantised in half units so the line height can
         // land on an even point (26pt at a 16pt body).
-        let ideal_line_height = typography.body_size * typography.line_height_multiple;
-        let grid = smax(2.0, (ideal_line_height / 2.0).round() / 2.0);
-        let baseline_grid = grid;
-        let line_height = grid * 4.0;
+        let (baseline_grid, line_height) = match host.line_height_multiple {
+            // A host's multiple is kept to the half point, and the grid
+            // divides it.
+            Some(multiple) => {
+                let line_height = smax(2.0, (typography.body_size * multiple * 2.0).round() / 2.0);
+                (line_height / 4.0, line_height)
+            }
+            None => {
+                let ideal_line_height = typography.body_size * typography.line_height_multiple;
+                let grid = smax(2.0, (ideal_line_height / 2.0).round() / 2.0);
+                (grid, grid * 4.0)
+            }
+        };
         let advance = StyleSheet::average_character_width_of(&body_font);
         let average_character_width = advance;
         let measure_width = advance * smin(72.0, smax(68.0, typography.measure_characters));
@@ -305,6 +400,57 @@ impl StyleSheet {
             increase_contrast,
             reduce_transparency,
             theme,
+            host,
+        }
+    }
+
+    /// `RenderMetrics.codeBleed`, unless a host set its own
+    /// (`HostTypography::code_bleed`).
+    pub fn code_bleed(&self) -> f64 {
+        self.host
+            .code_bleed
+            .unwrap_or(crate::engine::render_metrics::CODE_BLEED)
+    }
+
+    /// A host's body face (`HostTypography::body_family`) at a size and
+    /// weight.
+    fn family_font(family: &BodyFamily, size: f64, weight: NSFontWeight) -> Retained<NSFont> {
+        match family {
+            BodyFamily::System => StyleSheet::system_font(BodyPreset::Working, size, weight),
+            BodyFamily::NewYork => StyleSheet::system_font(BodyPreset::Reading, size, weight),
+            BodyFamily::Monospaced => NSFont::monospacedSystemFontOfSize_weight(size, weight),
+            BodyFamily::Named(name) => {
+                // SAFETY: AppKit exports these keys as immutable globals.
+                let (family_key, traits_key, weight_key) = unsafe {
+                    (
+                        NSFontFamilyAttribute,
+                        NSFontTraitsAttribute,
+                        NSFontWeightTrait,
+                    )
+                };
+                let weight_value = NSNumber::new_f64(weight);
+                let traits: Retained<NSDictionary<NSString, AnyObject>> = NSDictionary::from_slices(
+                    &[weight_key],
+                    &[weight_value.as_ref() as &AnyObject],
+                );
+                let family_name = NSString::from_str(name);
+                let attributes: Retained<NSDictionary<NSString, AnyObject>> =
+                    NSDictionary::from_slices(
+                        &[family_key, traits_key],
+                        &[family_name.as_ref() as &AnyObject, traits.as_ref()],
+                    );
+                // SAFETY: the attributes map descriptor keys to values of
+                // the types AppKit documents for them.
+                let descriptor = unsafe {
+                    NSFontDescriptor::fontDescriptorWithFontAttributes(Some(&attributes))
+                };
+                NSFont::fontWithDescriptor_size(&descriptor, size)
+                    .filter(|font| {
+                        font.familyName()
+                            .is_some_and(|resolved| resolved.to_string() == *name)
+                    })
+                    .unwrap_or_else(|| NSFont::systemFontOfSize_weight(size, weight))
+            }
         }
     }
 

@@ -5,6 +5,7 @@
 //! math, Mermaid, thematic breaks) plug into `view::fragment_provider`
 //! through its object-fragment constructors.
 
+pub mod async_objects;
 pub mod bounded_image_cache;
 pub mod callout_fragment;
 pub mod code_block_fragment;

@@ -207,6 +207,15 @@ pub struct DecorationEngine {
     cached_separator_style: Option<Retained<NSParagraphStyle>>,
     values: EngineValues,
     fonts: RefCell<FontMemo>,
+    /// Hosted streaming (Upleft extension): a Mermaid or math fence the
+    /// stream has not closed yet decorates as a plain code block.
+    renders_open_fences_as_code: bool,
+    /// Hosted views (Upleft extension) decorate every block live. A replayed
+    /// program restyles only its block's own range, where the live path also
+    /// restyles the physical paragraph around it (a list item's marker), so
+    /// with the cache a block's attributes depend on how often it was
+    /// decorated before; a streamed message must end up as if decorated once.
+    uses_program_cache: bool,
 }
 
 impl DecorationEngine {
@@ -230,6 +239,8 @@ impl DecorationEngine {
             cached_separator_style: None,
             values,
             fonts: RefCell::new(FontMemo::default()),
+            renders_open_fences_as_code: false,
+            uses_program_cache: true,
         }
     }
 
@@ -271,6 +282,36 @@ impl DecorationEngine {
 
     pub fn set_code_collapse_line_count(&mut self, value: isize) {
         self.collapse_line_count = 10_000.min(1.max(value));
+    }
+
+    /// See `uses_program_cache`.
+    pub fn set_uses_program_cache(&mut self, enabled: bool) {
+        self.uses_program_cache = enabled;
+        if !enabled {
+            self.program_cache.clear();
+            self.program_seen.clear();
+        }
+    }
+
+    /// See `MarkdownTextView::set_streaming`.
+    pub fn set_renders_open_fences_as_code(&mut self, enabled: bool) {
+        self.renders_open_fences_as_code = enabled;
+    }
+
+    /// An open Mermaid or math fence at the end of a streaming message, as
+    /// the code block it will be decorated as until it closes.
+    fn open_fence_as_code(&self, block: &MDBlock, document: &ParsedDocument) -> Option<MDBlock> {
+        if !self.renders_open_fences_as_code || !is_open_fence_at_end(block, document) {
+            return None;
+        }
+        let (language, content_range) = match block.content {
+            BlockContent::Mermaid { source_range } => ("mermaid", source_range),
+            BlockContent::MathBlock { latex_range } => ("math", latex_range),
+            _ => return None,
+        };
+        let mut code = block.clone();
+        code.content = BlockContent::CodeBlock { language: Some(language.to_owned()), is_fenced: true, content_range };
+        Some(code)
     }
 
     /// The policy shape Source mode uses: markers styled in place rather than
@@ -568,6 +609,13 @@ impl DecorationEngine {
 
             BlockContent::CodeBlock { language, content_range, .. } => {
                 self.decorate_code_block(block, language.as_deref(), *content_range, context, state);
+            }
+
+            BlockContent::Mermaid { .. } | BlockContent::MathBlock { .. }
+                if let Some(code) = self.open_fence_as_code(block, state.document) =>
+            {
+                let BlockContent::CodeBlock { language, content_range, .. } = &code.content else { unreachable!() };
+                self.decorate_code_block(&code, language.as_deref(), *content_range, context, state);
             }
 
             BlockContent::Mermaid { source_range } => {
@@ -1411,7 +1459,7 @@ impl DecorationEngine {
     // MARK: - Program cache
 
     fn cached_program(&mut self, block: &MDBlock, context: BlockContext) -> Option<Rc<Vec<AttributeOp>>> {
-        if block.safe_html.is_some() {
+        if !self.uses_program_cache || block.safe_html.is_some() {
             return None;
         }
         if !(block.subtree_hash != 0 && block.children.is_empty() && block.content.is_leaf_text()) {
@@ -1504,6 +1552,19 @@ impl DecorationEngine {
     /// given the current policy and caret. Ascending, non-overlapping.
     pub fn hidden_ranges(&self, document: &ParsedDocument, caret: Option<isize>, selections: &[NSRange]) -> Vec<NSRange> {
         MarkerPolicy::hidden_ranges(document, self.policy, caret, selections)
+    }
+
+    /// `hidden_ranges` in two parts, for a hosted view's incremental base
+    /// map: the definitions (before `disjoint`) and what `blocks` produce.
+    pub fn definition_hidden_ranges(&self, document: &ParsedDocument) -> Vec<NSRange> {
+        if !self.policy.hides_block_markers {
+            return Vec::new();
+        }
+        MarkerPolicy::definition_ranges(document)
+    }
+
+    pub fn block_hidden_ranges(&self, document: &ParsedDocument, blocks: &[upleft_core::BlockRef]) -> Vec<NSRange> {
+        MarkerPolicy::block_ranges(document, blocks, self.policy, None, &[])
     }
 
     // MARK: - Gutter markers (§6.1a)
@@ -1669,6 +1730,30 @@ fn paragraph_with_alignment(state: &DecorateState, at: isize, alignment: SafeHTM
 }
 
 /// Smallest range covering every leaf block that intersects `range`.
+/// A fence whose closing marker has not arrived: it runs to the end of the
+/// document, with at most whitespace after it.
+fn is_open_fence_at_end(block: &MDBlock, document: &ParsedDocument) -> bool {
+    if block.marker_range.is_none() || block.trailing_marker_range.is_some() {
+        return false;
+    }
+    let end = block.range.upper_bound().max(0) as usize;
+    document.utf16.get(end..).is_some_and(|rest| rest.iter().all(|&unit| matches!(unit, 0x09..=0x0D | 0x20)))
+}
+
+/// The range of a Mermaid or math fence still open at the end of the
+/// document, if there is one (`MarkdownTextView::set_streaming`).
+pub fn open_fence_at_end(document: &ParsedDocument) -> Option<NSRange> {
+    let mut found = None;
+    document.root.walk(&mut |block| {
+        if matches!(block.content, BlockContent::Mermaid { .. } | BlockContent::MathBlock { .. })
+            && is_open_fence_at_end(block, document)
+        {
+            found = Some(block.range);
+        }
+    });
+    found
+}
+
 fn block_bounds(range: NSRange, document: &ParsedDocument) -> NSRange {
     let mut bounds = range;
     document.root.walk_pruning(&mut |block| {

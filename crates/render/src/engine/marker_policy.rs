@@ -7,7 +7,7 @@
 
 use upleft_core::ns_range::ns_intersection_range;
 use upleft_core::safe_html::SafeHTMLKind;
-use upleft_core::{BlockContent, InlineSpan, MDBlock, NSRange, ParsedDocument};
+use upleft_core::{BlockContent, BlockRef, InlineSpan, MDBlock, NSRange, ParsedDocument};
 
 use super::display_map::RangeSet;
 use crate::render_contracts::DecorationPolicy;
@@ -36,25 +36,64 @@ impl MarkerPolicy {
         let mut out: Vec<NSRange> = Vec::with_capacity(256);
 
         if policy.hides_block_markers {
-            // Reference and footnote definitions are document metadata, not
-            // body prose. Display substitutions cannot cross a physical
-            // paragraph boundary, so split multi-line definitions first.
-            // (Dictionary order is irrelevant: `disjoint` sorts.)
-            let definitions = document
-                .link_references
-                .values()
-                .map(|reference| reference.range)
-                .chain(document.footnotes.values().map(|footnote| footnote.range));
-            for definition in definitions {
-                out.extend(paragraph_local_ranges(definition, document));
-            }
+            out.extend(MarkerPolicy::definition_ranges(document));
         }
+        MarkerPolicy::collect_block_ranges(document, std::slice::from_ref(&document.root), policy, caret, selections, &mut out);
+        // `disjoint`, not `normalized`: a marker has to keep its own range so a
+        // caret reveal can name it.
+        RangeSet::disjoint(&out)
+    }
 
+    /// The definitions part of `hidden_ranges`, before `disjoint`.
+    pub fn definition_ranges(document: &ParsedDocument) -> Vec<NSRange> {
+        // Reference and footnote definitions are document metadata, not
+        // body prose. Display substitutions cannot cross a physical
+        // paragraph boundary, so split multi-line definitions first.
+        // (Dictionary order is irrelevant: `disjoint` sorts.)
+        let mut out = Vec::new();
+        let definitions = document
+            .link_references
+            .values()
+            .map(|reference| reference.range)
+            .chain(document.footnotes.values().map(|footnote| footnote.range));
+        for definition in definitions {
+            out.extend(paragraph_local_ranges(definition, document));
+        }
+        out
+    }
+
+    /// The part of `hidden_ranges` that `blocks` and their descendants
+    /// produce, `disjoint`, without the definitions. Every range lies inside
+    /// its block, so the parts of consecutive runs of top-level blocks
+    /// concatenate (hosted streaming, `HostedBaseMap`).
+    pub fn block_ranges(
+        document: &ParsedDocument,
+        blocks: &[BlockRef],
+        policy: DecorationPolicy,
+        caret: Option<isize>,
+        selections: &[NSRange],
+    ) -> Vec<NSRange> {
+        if !(policy.hides_block_markers || policy.hides_inline_markers) {
+            return Vec::new();
+        }
+        let mut out: Vec<NSRange> = Vec::with_capacity(64);
+        MarkerPolicy::collect_block_ranges(document, blocks, policy, caret, selections, &mut out);
+        RangeSet::disjoint(&out)
+    }
+
+    fn collect_block_ranges(
+        document: &ParsedDocument,
+        blocks: &[BlockRef],
+        policy: DecorationPolicy,
+        caret: Option<isize>,
+        selections: &[NSRange],
+        out: &mut Vec<NSRange>,
+    ) {
         // Selection is observation, not edit intent. Only a real insertion
         // caret reveals inline markers.
         let reveal_anchors = anchors(policy, caret, selections);
 
-        document.root.walk(&mut |block| {
+        let mut visit = |block: &BlockRef| {
             if policy.hides_inline_markers
                 && let Some(html) = &block.safe_html
                 && html.is_safe
@@ -93,12 +132,12 @@ impl MarkerPolicy {
                 return;
             }
             for span in &block.inlines {
-                collect_inline_markers(span, &reveal_anchors, &mut out);
+                collect_inline_markers(span, &reveal_anchors, out);
             }
-        });
-        // `disjoint`, not `normalized`: a marker has to keep its own range so a
-        // caret reveal can name it.
-        RangeSet::disjoint(&out)
+        };
+        for block in blocks {
+            block.walk(&mut visit);
+        }
     }
 
     /// Exactly the ranges `hidden_ranges` leaves out because of the caret — the

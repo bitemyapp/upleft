@@ -818,6 +818,7 @@ dependencies = [
  "serde_json",
  "upleft-core",
  "upleft-math",
+ "upleft-mermaid",
  "upleft-swift-text",
 ]
 

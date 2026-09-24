@@ -306,6 +306,49 @@ pub struct MarkdownTextViewIvars {
     scroll_spring_clip: RefCell<ObjcWeak<NSClipView>>,
     pending_scroll_y: Cell<Option<CGFloat>>,
     pending_motion_invalidation: Cell<Option<NSRect>>,
+
+    /// Hosted embedding (docs/EMBEDDING.md): `None` for Downright's document
+    /// surface.
+    hosted: RefCell<Option<HostedState>>,
+}
+
+/// State only a hosted view has. An Upleft extension with no Swift
+/// counterpart: see `MarkdownTextView::new_hosted` and docs/EMBEDDING.md.
+struct HostedState {
+    /// Text container width the host set.
+    width: CGFloat,
+    /// The host is still appending to this message.
+    streaming: bool,
+    /// Last height handed to `did_change_content_height`.
+    reported_height: Option<CGFloat>,
+    /// Incremental inputs of the base display map.
+    base_map: base_display_map::HostedBaseMap,
+    /// `drElided` ranges currently applied to the storage, when known.
+    applied_elisions: Option<Vec<NSRange>>,
+    /// Accessibility children by `(kind, block range)`.
+    accessibility: Vec<((u8, NSRange), Retained<FragmentAccessibilityElement>)>,
+    /// Bumped by every synchronous relayout, so a scheduled one can tell it
+    /// is stale.
+    relayout_generation: u64,
+    relayout_scheduled: bool,
+    /// The source selection as the last update or the reader left it.
+    selection: Vec<NSRange>,
+    /// The lowest source offset whose layout TextKit may have dropped since
+    /// the last relayout: every storage edit (characters or attributes) and
+    /// every fragment invalidation lowers it. `None` when layout is complete.
+    layout_floor: Option<isize>,
+    /// `NSTextStorageDidProcessEditingNotification`, for `layout_floor`.
+    edit_observer: Option<Retained<ProtocolObject<dyn NSObjectProtocol>>>,
+    /// Every layout fragment's height, by its element's TextKit offset, in
+    /// document order: `content_height` is their sum.
+    fragment_heights: std::collections::BTreeMap<isize, CGFloat>,
+}
+
+impl HostedState {
+    fn lower_layout_floor(&mut self, offset: isize) {
+        let offset = offset.max(0);
+        self.layout_floor = Some(self.layout_floor.map_or(offset, |floor| floor.min(offset)));
+    }
 }
 
 impl Drop for MarkdownTextViewIvars {
@@ -315,6 +358,9 @@ impl Drop for MarkdownTextViewIvars {
             unsafe { center.removeObserver(observer.as_ref()) };
         }
         if let Some(observer) = self.resign_key_observer.get_mut().take() {
+            unsafe { center.removeObserver(observer.as_ref()) };
+        }
+        if let Some(observer) = self.hosted.get_mut().as_mut().and_then(|hosted| hosted.edit_observer.take()) {
             unsafe { center.removeObserver(observer.as_ref()) };
         }
         for item in [
@@ -361,6 +407,17 @@ define_class!(
                 || ivars.is_performing_source_edit.get()
                 || ivars.is_tracking_mouse_selection.get()
                 || still_selecting
+            {
+                return;
+            }
+            // A hosted view's storage is edited by the host, and AppKit moves
+            // the selection with the edit before `update` runs. That is not
+            // the reader's selection (`update` sets it), and the parse it
+            // would be read against is already stale.
+            if self.is_hosted()
+                && self
+                    .text_storage()
+                    .is_some_and(|storage| storage.length() as isize != ivars.parsed_document.borrow().length)
             {
                 return;
             }
@@ -634,6 +691,27 @@ define_class!(
         fn __quick_look(&self, event: &NSEvent) {
             self.quick_look(event);
         }
+
+        // MARK: Hosted embedding (Upleft extension, docs/EMBEDDING.md)
+
+        /// A hosted view hands links to its delegate only (`mouse_down`);
+        /// AppKit's default would open them with NSWorkspace.
+        #[unsafe(method(clickedOnLink:atIndex:))]
+        fn __clicked_on_link(&self, link: &AnyObject, char_index: usize) {
+            if self.is_hosted() {
+                return;
+            }
+            let _: () = unsafe { msg_send![super(self), clickedOnLink: link, atIndex: char_index] };
+        }
+
+        /// A hosted view never scrolls the host's scroll view.
+        #[unsafe(method(scrollRangeToVisible:))]
+        fn __scroll_range_to_visible(&self, range: objc2_foundation::NSRange) {
+            if self.is_hosted() {
+                return;
+            }
+            let _: () = unsafe { msg_send![super(self), scrollRangeToVisible: range] };
+        }
     }
 );
 
@@ -751,6 +829,7 @@ impl MarkdownTextView {
             scroll_spring_clip: RefCell::new(ObjcWeak::default()),
             pending_scroll_y: Cell::new(None),
             pending_motion_invalidation: Cell::new(None),
+            hosted: RefCell::new(None),
         });
         let this: Retained<MarkdownTextView> =
             unsafe { msg_send![super(this), initWithFrame: frame, textContainer: Some(&*container)] };
@@ -822,6 +901,297 @@ impl MarkdownTextView {
     pub fn fallback_style_sheet() -> Rc<StyleSheet> {
         let appearance = objc2_app_kit::NSAppearance::currentDrawingAppearance();
         Rc::new(StyleSheet::new(crate::render_contracts::Theme::fallback(), &appearance, None))
+    }
+
+    // MARK: - Hosted embedding (Upleft extension, docs/EMBEDDING.md)
+
+    /// A view for one message in a host's own scroll view: Read mode, sized
+    /// to its content, never scrolling anything. `width` is the text
+    /// container width; the frame adds the text container inset (zero until
+    /// the host sets one) on each side.
+    ///
+    /// Mermaid diagrams and display math render on a worker; the view
+    /// reports every height change to `did_change_content_height`.
+    pub fn new_hosted(
+        storage: &NSTextStorage,
+        style_sheet: Rc<StyleSheet>,
+        width: CGFloat,
+        mtm: MainThreadMarker,
+    ) -> Retained<MarkdownTextView> {
+        let this = Self::new(rect(0.0, 0.0, width, 0.0), storage, style_sheet, mtm);
+        *this.ivars().hosted.borrow_mut() = Some(HostedState {
+            width,
+            streaming: false,
+            reported_height: None,
+            base_map: base_display_map::HostedBaseMap::default(),
+            applied_elisions: None,
+            accessibility: Vec::new(),
+            relayout_generation: 0,
+            relayout_scheduled: false,
+            selection: vec![NSRange::new(0, 0)],
+            layout_floor: Some(0),
+            edit_observer: None,
+            fragment_heights: std::collections::BTreeMap::new(),
+        });
+        // Every edit of the storage, the host's or the decorator's, may drop
+        // TextKit layout from its first character on.
+        let weak: ObjcWeak<MarkdownTextView> = ObjcWeak::from(&*this);
+        let block = RcBlock::new(move |note: NonNull<NSNotification>| {
+            let Some(view) = weak.load() else { return };
+            let Some(storage) = (unsafe { note.as_ref() }).object() else { return };
+            let Ok(storage) = storage.downcast::<NSTextStorage>() else { return };
+            let edited = storage.editedRange();
+            if edited.location != usize::MAX {
+                view.with_hosted(|hosted| hosted.lower_layout_floor(edited.location as isize));
+            }
+            // The host changed characters: until `update` publishes the new
+            // display map, TextKit must build the edited paragraphs from the
+            // storage itself, not from elements and substitutions made for
+            // the old text (what `begin_source_edit` does for Downright's own
+            // edits).
+            if storage.editedMask().contains(objc2_app_kit::NSTextStorageEditActions::EditedCharacters) {
+                view.ivars().substitution.set_display_map(DisplayMap::identity());
+                view.ivars().content_storage.suspend_custom_layout();
+            }
+        });
+        let observer = unsafe {
+            NSNotificationCenter::defaultCenter().addObserverForName_object_queue_usingBlock(
+                Some(objc2_app_kit::NSTextStorageDidProcessEditingNotification),
+                Some(storage),
+                None,
+                &block,
+            )
+        };
+        this.with_hosted(|hosted| hosted.edit_observer = Some(observer));
+        this.ivars().fragment_context.renders_objects_async.set(true);
+        this.ivars().engine.borrow_mut().set_uses_program_cache(false);
+        this.setVerticallyResizable(false);
+        this.setHorizontallyResizable(false);
+        this.setAutoresizingMask(objc2_app_kit::NSAutoresizingMaskOptions::ViewNotSizable);
+        this.setTextContainerInset(NSSize::new(0.0, 0.0));
+        // `set_mode(.read)` without its rebuild and viewport repair: the
+        // host's first `update` decorates wholesale.
+        let ivars = this.ivars();
+        ivars.mode.set(RenderMode::Read);
+        ivars.engine.borrow_mut().set_policy(this.effective_policy());
+        let threshold = ivars.configuration.borrow().code_collapse_threshold() as isize;
+        ivars.engine.borrow_mut().set_code_collapse_line_count(threshold);
+        ivars.fragment_context.mode.set(RenderMode::Read);
+        this.apply_measure();
+        this.apply_mode_chrome();
+        this.hosted_relayout();
+        this
+    }
+
+    /// True for a view made by `new_hosted`.
+    pub fn is_hosted(&self) -> bool {
+        self.ivars().hosted.borrow().is_some()
+    }
+
+    fn with_hosted<R>(&self, body: impl FnOnce(&mut HostedState) -> R) -> Option<R> {
+        self.ivars().hosted.borrow_mut().as_mut().map(body)
+    }
+
+    /// The text container width a hosted view lays out at.
+    pub fn hosted_width(&self) -> Option<CGFloat> {
+        self.ivars().hosted.borrow().as_ref().map(|hosted| hosted.width)
+    }
+
+    /// Sets the text container width directly: no measure, no gutter. Lays
+    /// out again and reports the new height synchronously.
+    pub fn set_hosted_width(&self, width: CGFloat) {
+        let Some(previous) = self.with_hosted(|hosted| std::mem::replace(&mut hosted.width, width)) else { return };
+        self.apply_measure();
+        if (previous - width).abs() > 0.001 {
+            self.ivars().fragment_context.invalidate_derived_layout();
+            self.invalidate_all_fragments();
+        }
+        self.hosted_relayout();
+    }
+
+    /// The hosted view's own margins around its text (`textContainerInset`).
+    pub fn set_hosted_insets(&self, insets: NSSize) {
+        if !self.is_hosted() {
+            return;
+        }
+        self.setTextContainerInset(insets);
+        self.hosted_relayout();
+    }
+
+    /// The laid-out height plus the vertical insets, from TextKit's own
+    /// layout of the whole message. For a hosted view only the part an edit
+    /// or an invalidation reached since the last call is laid out again,
+    /// from the paragraph before it to the end; everything before keeps its
+    /// layout. In a stream the edit is at the end, so that is the last few
+    /// paragraphs.
+    ///
+    /// The height is the sum of the layout fragments' heights, kept per
+    /// fragment. TextKit 2's own usage bounds are not exact here: after a
+    /// fragment changes height, the fragments below keep the origins they
+    /// had until viewport layout reaches them (drawing is right; the bounds
+    /// made of those origins are not).
+    pub fn content_height(&self) -> CGFloat {
+        let Some(layout_manager) = self.textLayoutManager() else { return 0.0 };
+        let inset = self.textContainerInset().height;
+        if !self.is_hosted() {
+            layout_manager.ensureLayoutForRange(&layout_manager.documentRange());
+            return inset + smax(0.0, layout_manager.usageBoundsForTextContainer().max_y()) + inset;
+        }
+        // TextKit lays out an empty line for empty text; an empty message
+        // has no content.
+        if self.text_storage().is_none_or(|storage| storage.length() == 0) {
+            self.with_hosted(|hosted| {
+                hosted.layout_floor = None;
+                hosted.fragment_heights.clear();
+            });
+            return inset + inset;
+        }
+        if let Some(floor) = self.with_hosted(|hosted| hosted.layout_floor.take()).flatten() {
+            let document = layout_manager.documentRange();
+            let document_start = document.location();
+            // From the paragraph before the edit's: TextKit rebuilds the
+            // element an insertion follows, and tiles the edited one against
+            // that element's frame, which is only an estimate until it is
+            // laid out again.
+            let start = self.paragraph_index().start_containing((floor - 1).max(0));
+            let text_kit = self.current_display_map().text_kit_offset_for_source(start);
+            let storage = &self.ivars().content_storage;
+            let range = storage
+                .locationFromLocation_withOffset(&document_start, text_kit)
+                .and_then(|location| {
+                    NSTextRange::initWithLocation_endLocation(NSTextRange::alloc(), &location, Some(&document.endLocation()))
+                })
+                .unwrap_or_else(|| document.clone());
+            layout_manager.invalidateLayoutForRange(&range);
+            layout_manager.ensureLayoutForRange(&range);
+            // The heights of the fragments from there on, by their element's
+            // TextKit offset.
+            let laid_out: RefCell<Vec<(isize, CGFloat)>> = RefCell::new(Vec::new());
+            let block = block2::StackBlock::new(|fragment: NonNull<objc2_app_kit::NSTextLayoutFragment>| -> Bool {
+                use objc2_app_kit::NSTextSelectionDataSource;
+                let fragment = unsafe { fragment.as_ref() };
+                let offset = layout_manager.offsetFromLocation_toLocation(&document_start, &fragment.rangeInElement().location());
+                laid_out.borrow_mut().push((offset, fragment.layoutFragmentFrame().height()));
+                Bool::YES
+            });
+            layout_manager.enumerateTextLayoutFragmentsFromLocation_options_usingBlock(
+                Some(&range.location()),
+                objc2_app_kit::NSTextLayoutFragmentEnumerationOptions(0),
+                &block,
+            );
+            let laid_out = laid_out.into_inner();
+            let first = laid_out.first().map_or(text_kit, |(offset, _)| (*offset).min(text_kit));
+            self.with_hosted(|hosted| {
+                hosted.fragment_heights.split_off(&first);
+                hosted.fragment_heights.extend(laid_out);
+            });
+        }
+        let total = self
+            .ivars()
+            .hosted
+            .borrow()
+            .as_ref()
+            .map_or(0.0, |hosted| hosted.fragment_heights.values().fold(0.0, |sum, height| sum + height));
+        inset + total + inset
+    }
+
+    /// Whether the host is still appending to this message.
+    pub fn is_streaming(&self) -> bool {
+        self.ivars().hosted.borrow().as_ref().is_some_and(|hosted| hosted.streaming)
+    }
+
+    /// While streaming, a fenced block the stream has not closed yet (a
+    /// Mermaid diagram, a math fence) renders as plain code, so an append
+    /// never re-renders it. Turning streaming off renders it as what it is.
+    pub fn set_streaming(&self, streaming: bool) {
+        let Some(previous) = self.with_hosted(|hosted| std::mem::replace(&mut hosted.streaming, streaming)) else {
+            return;
+        };
+        if previous == streaming {
+            return;
+        }
+        self.ivars().engine.borrow_mut().set_renders_open_fences_as_code(streaming);
+        let document = self.parsed_document();
+        if let Some(open) = crate::engine::decoration_engine::open_fence_at_end(&document) {
+            self.update(document, &DirtySet::new(vec![open], false), true);
+        }
+    }
+
+    /// Lays out, sizes the frame to the content and tells the delegate when
+    /// the height changed. Synchronous.
+    pub(crate) fn hosted_relayout(&self) {
+        let Some(width) = self.with_hosted(|hosted| {
+            hosted.relayout_generation = hosted.relayout_generation.wrapping_add(1);
+            hosted.width
+        }) else {
+            return;
+        };
+        let height = self.content_height();
+        let inset = self.textContainerInset();
+        let size = NSSize::new(width + inset.width * 2.0, height);
+        let frame = self.frame().size;
+        if frame.width != size.width || frame.height != size.height {
+            self.setFrameSize(size);
+        }
+        let changed = self.with_hosted(|hosted| {
+            let changed = hosted.reported_height != Some(height);
+            hosted.reported_height = Some(height);
+            changed
+        });
+        if changed == Some(true)
+            && let Some(delegate) = self.delegate()
+        {
+            delegate.did_change_content_height(self, height);
+        }
+    }
+
+    /// A relayout on the next main-queue turn, for invalidations that come
+    /// from outside `update` (an image that finished loading).
+    fn schedule_hosted_relayout(&self) {
+        let Some(generation) = self.with_hosted(|hosted| {
+            if hosted.relayout_scheduled {
+                return None;
+            }
+            hosted.relayout_scheduled = true;
+            Some(hosted.relayout_generation)
+        }) else {
+            return;
+        };
+        let Some(generation) = generation else { return };
+        let weak: ObjcWeak<MarkdownTextView> = ObjcWeak::from(self);
+        main_async(move || {
+            let Some(view) = weak.load() else { return };
+            let current = view.with_hosted(|hosted| {
+                hosted.relayout_scheduled = false;
+                hosted.relayout_generation
+            });
+            if current == Some(generation) {
+                view.hosted_relayout();
+            }
+        });
+    }
+
+    /// A worker finished a Mermaid diagram or display formula: lay out again
+    /// every block whose (trimmed) source it was.
+    pub(crate) fn object_render_landed(&self, mermaid: bool, trimmed_source: &str) {
+        let document = self.parsed_document();
+        let mut ranges = Vec::new();
+        document.root.walk(&mut |block| {
+            let source = match &block.content {
+                BlockContent::Mermaid { source_range } if mermaid => *source_range,
+                BlockContent::MathBlock { latex_range } if !mermaid => *latex_range,
+                _ => return,
+            };
+            if crate::swift_compat::trim_whitespaces_and_newlines(&document.substring(source)) == trimmed_source {
+                ranges.push(block.range);
+            }
+        });
+        for range in ranges {
+            if let Some(range) = self.clamp_to_storage(range) {
+                self.invalidate_fragments(Some(range));
+            }
+        }
+        self.hosted_relayout();
     }
 
     // MARK: - Accessors
@@ -974,7 +1344,12 @@ impl MarkdownTextView {
         unsafe { self.textStorage() }
     }
 
-    fn scroll_view(&self) -> Option<Retained<NSScrollView>> {
+    /// The document scroller. A hosted view has none: the enclosing scroll
+    /// view belongs to the host.
+    pub(crate) fn scroll_view(&self) -> Option<Retained<NSScrollView>> {
+        if self.is_hosted() {
+            return None;
+        }
         self.enclosingScrollView()
     }
 
@@ -1282,6 +1657,10 @@ impl MarkdownTextView {
 
     /// Re-decorates only what the AST diff says changed (§3.5).
     pub fn update(&self, document: Arc<ParsedDocument>, dirty: &DirtySet, preserving_selection: bool) {
+        if self.is_hosted() {
+            self.hosted_update(document, dirty, preserving_selection);
+            return;
+        }
         let ivars = self.ivars();
         let is_initial_update = ivars.update_generation.get() == 0;
         let selection = if !preserving_selection || is_initial_update {
@@ -1399,6 +1778,297 @@ impl MarkdownTextView {
                 repair();
             });
         }
+    }
+
+    /// `update` for a hosted view: the same passes in the same order, minus
+    /// every viewport anchor and deferred resize, with the whole-document
+    /// passes limited to what the edit and the AST diff touched. Ends with a
+    /// synchronous relayout, so `did_change_content_height` fires before this
+    /// returns.
+    fn hosted_update(&self, document: Arc<ParsedDocument>, dirty: &DirtySet, preserving_selection: bool) {
+        let ivars = self.ivars();
+        let is_initial_update = ivars.update_generation.get() == 0;
+        let previous = self.parsed_document();
+        // Every paragraph style carries the document's direction, from its
+        // first strong letter: a change restyles everything.
+        let direction_changed = !is_initial_update
+            && crate::engine::block_style::WritingDirection::of(&previous.text, 1024)
+                != crate::engine::block_style::WritingDirection::of(&document.text, 1024);
+        let is_wholesale_update = is_initial_update || dirty.is_wholesale || direction_changed;
+        // The edit, as the unchanged prefix and suffix of the old text.
+        let (edit_floor, changed) = if is_wholesale_update {
+            (0, NSRange::new(0, document.length))
+        } else {
+            let previous = ivars.parsed_document.borrow();
+            let prefix = common_prefix_length(&previous.utf16, &document.utf16);
+            let suffix = common_suffix_length(&previous.utf16[prefix..], &document.utf16[prefix..]);
+            (prefix as isize, NSRange::new(prefix as isize, (document.utf16.len() - prefix - suffix) as isize))
+        };
+        let selection = if !preserving_selection || is_initial_update {
+            vec![NSRange::new(0, 0)]
+        } else {
+            self.hosted_selection_across_edit(edit_floor)
+        };
+        *ivars.parsed_document.borrow_mut() = document.clone();
+        ivars.hovered_link_range.set(None);
+        ivars.update_generation.set(ivars.update_generation.get().wrapping_add(1));
+        if is_wholesale_update {
+            ivars.path_existence.borrow_mut().clear();
+            ivars.code_collapse_overrides.borrow_mut().clear();
+            *ivars.fragment_context.collapse_overrides.borrow_mut() = ivars.code_collapse_overrides.borrow().clone();
+        }
+        *ivars.fragment_context.front_matter_fields.borrow_mut() = document
+            .front_matter
+            .as_ref()
+            .map(|front_matter| {
+                front_matter.fields.iter().map(|field| (field.key.clone(), field.value.clone())).collect()
+            })
+            .unwrap_or_default();
+        ivars.fragment_context.document_has_h1.set(document.headings.iter().any(|heading| heading.level == 1));
+        ivars.fragment_context.invalidate_derived_layout();
+        if is_wholesale_update {
+            self.rebuild_paragraph_index();
+        } else {
+            self.extend_paragraph_index(edit_floor);
+        }
+
+        // What to decorate, so that the storage ends up exactly as a
+        // whole-text update would leave it (docs/EMBEDDING.md, "Streaming"):
+        let dirty = &if is_wholesale_update {
+            DirtySet::wholesale()
+        } else {
+            let mut ranges = dirty.ranges.clone();
+            // - the inserted text itself, which took the attributes of the
+            //   character before it: a blank line or separator the diff sees
+            //   no block for would keep them;
+            if changed.length > 0 {
+                ranges.push(changed);
+            }
+            // - blocks whose parse changed because of text after them — an
+            //   inline span resolved by a definition that came or went (a
+            //   footnote defined at the end of the answer), safe HTML paired
+            //   with a closing tag in a later block — which the diff,
+            //   comparing each block's own bytes, sees as clean;
+            let inserted_html = document.utf16[changed.location as usize..changed.upper_bound() as usize]
+                .iter()
+                .any(|&unit| unit == u16::from(b'<') || unit == u16::from(b'>'));
+            ranges.extend(blocks_reparsed_by_later_text(&previous, &document, edit_floor, inserted_html));
+            // - whole physical paragraphs, because a paragraph style belongs
+            //   to the paragraph: a leaf block that starts after its list
+            //   marker would leave the marker's style stale.
+            let index = self.paragraph_index();
+            let ranges = ranges
+                .into_iter()
+                .map(|range| {
+                    let start = index.start_containing(range.location);
+                    let last = index.index_containing(range.location.max(range.upper_bound() - 1));
+                    NSRange::new(start, index.end_of_paragraph_at(last) - start)
+                })
+                .collect();
+            DirtySet::new(ranges, false)
+        };
+        let dirty_scopes = if is_wholesale_update { Vec::new() } else { self.source_scopes(dirty) };
+
+        let Some(storage) = self.text_storage() else { return };
+        let length = storage.length() as isize;
+        ivars.engine.borrow_mut().decorate(&storage, &document, dirty);
+        self.apply_source_presentation(if is_wholesale_update { None } else { Some(&dirty_scopes) });
+        if ivars.configuration.borrow().show_invisibles || ivars.invisibles_applied.get() {
+            self.apply_invisibles(if is_wholesale_update { None } else { Some(&dirty_scopes) });
+        }
+        let decorated_scopes = if is_wholesale_update {
+            Vec::new()
+        } else {
+            ivars.engine.borrow().decorated_bounds(dirty, &document, length)
+        };
+        // The first offset whose presentation may have changed.
+        let floor = decorated_scopes.iter().map(|scope| scope.location).fold(edit_floor, isize::min);
+        self.hosted_rebuild_base_display_map(&document, if is_wholesale_update { None } else { Some(floor) });
+        self.hosted_refresh_elision(if is_wholesale_update { None } else { Some(&decorated_scopes) });
+        // The edited paragraph onwards, so grouped elements the edit
+        // reshaped are rebuilt even where the diff saw no block change.
+        let mut invalidated = decorated_scopes.clone();
+        if !is_wholesale_update && edit_floor < length {
+            let start = self.paragraph_index().start_containing(edit_floor);
+            invalidated.push(NSRange::new(start, length - start));
+        }
+        let invalidated = RangeSet::normalized(&invalidated);
+        self.rebuild_display_map(is_wholesale_update, &invalidated);
+        self.apply_overlays(if is_wholesale_update { None } else { Some(&decorated_scopes) });
+        self.apply_path_existence(if is_wholesale_update { None } else { Some(&decorated_scopes) });
+        if is_wholesale_update {
+            self.invalidate_all_fragments();
+        }
+        self.hosted_refresh_fragment_accessibility();
+        let bounded_selection: Vec<NSRange> = selection
+            .iter()
+            .map(|range| {
+                let location = range.location.max(0).min(document.length);
+                let end = location.max(range.upper_bound()).min(document.length);
+                NSRange::new(location, end - location)
+            })
+            .collect();
+        self.set_source_selected_ranges(&bounded_selection);
+        self.with_hosted(|hosted| hosted.selection = bounded_selection);
+        self.hosted_relayout();
+    }
+
+    /// The selection to keep through an edit. The text view shifts its
+    /// selection when the storage changes under it: an empty selection at
+    /// the end of a message grows over every append. A range wholly before
+    /// the edit is kept as the host or the reader last left it.
+    fn hosted_selection_across_edit(&self, edit_floor: isize) -> Vec<NSRange> {
+        let current = self.source_selected_ranges();
+        let recorded = self.with_hosted(|hosted| hosted.selection.clone()).unwrap_or_default();
+        if !recorded.is_empty() && recorded.iter().all(|range| range.upper_bound() <= edit_floor) {
+            return recorded;
+        }
+        current
+    }
+
+    /// `rebuildParagraphIndex()` after an edit that kept `edit_floor` UTF-16
+    /// units: only the paragraphs from the one before the edit are scanned.
+    fn extend_paragraph_index(&self, edit_floor: isize) {
+        let Some(storage) = self.text_storage() else { return };
+        let index = self.ivars().paragraph_index.borrow().rebuilt_after_edit(&storage.string(), edit_floor);
+        *self.ivars().paragraph_index.borrow_mut() = index.clone();
+        *self.ivars().fragment_context.paragraph_index.borrow_mut() = index;
+    }
+
+    /// The hosted `rebuildBaseDisplayMap(document:)`: blocks before `floor`
+    /// keep what the previous build made for them. `None` rebuilds it all.
+    fn hosted_rebuild_base_display_map(&self, document: &ParsedDocument, floor: Option<isize>) {
+        let Some(storage) = self.text_storage() else { return };
+        let paragraph_index = self.paragraph_index();
+        let style_sheet = self.style_sheet();
+        let Some(mut cache) = self.with_hosted(|hosted| std::mem::take(&mut hosted.base_map)) else { return };
+        let maps = {
+            let engine = self.ivars().engine.borrow();
+            let inputs = BaseDisplayMapInputs {
+                document,
+                engine: &engine,
+                effective_policy: self.effective_policy(),
+                source_focus: self.source_focus(),
+                reflow_hard_wrapped_paragraphs: self.ivars().configuration.borrow().reflow_hard_wrapped_paragraphs,
+                style_sheet: &style_sheet,
+                storage: &storage,
+                paragraph_index: &paragraph_index,
+            };
+            let previous_layout = self.ivars().base_layout_map.borrow().clone();
+            cache.rebuild(&inputs, &mut self.ivars().word_joiner_runs.borrow_mut(), floor, &previous_layout)
+        };
+        self.with_hosted(|hosted| hosted.base_map = cache);
+        let ivars = self.ivars();
+        *ivars.base_hidden_ranges.borrow_mut() = maps.base_hidden_ranges;
+        *ivars.hard_wrap_ranges.borrow_mut() = maps.hard_wrap_ranges;
+        *ivars.hard_wrap_substitutions.borrow_mut() = maps.hard_wrap_substitutions;
+        *ivars.base_display_map.borrow_mut() = maps.base_display_map;
+        *ivars.base_layout_map.borrow_mut() = maps.base_layout_map.clone();
+        *ivars.display_map.borrow_mut() = maps.base_layout_map;
+    }
+
+    /// `refreshElision(rebuildingMap: false)` for `hosted_update`: the plan is
+    /// rebuilt, but `drElided` is only written where it changed or where
+    /// `decorate` just wiped it.
+    fn hosted_refresh_elision(&self, wiped: Option<&[NSRange]>) {
+        let ivars = self.ivars();
+        let elision = ElisionPlan::make(
+            &self.parsed_document(),
+            self.zoom_level(),
+            &ivars.folded_heading_slugs.borrow(),
+            &ivars.search_hits.borrow(),
+            self.primary_source_caret(),
+            &ivars.expanded_elision_ranges.borrow(),
+        );
+        *ivars.elision.borrow_mut() = elision.clone();
+        *ivars.fragment_context.cue_elision.borrow_mut() = elision.clone();
+        let mut elided = elision.elided_ranges.clone();
+        elided.extend(self.definition_elisions());
+        *ivars.fragment_context.elision.borrow_mut() =
+            ElisionPlan::new(RangeSet::normalized(&elided), elision.forced_visible_ranges.clone());
+        self.apply_elided_attribute_scoped(wiped);
+    }
+
+    /// Structural children for rendered objects (VoiceOver), reusing the
+    /// element of every object block that kept its kind and range.
+    fn hosted_refresh_fragment_accessibility(&self) {
+        if self.mode() == RenderMode::Source {
+            self.refresh_fragment_accessibility();
+            return;
+        }
+        let document = self.parsed_document();
+        let mut wanted: Vec<(u8, NSRange)> = Vec::new();
+        document.root.walk(&mut |block| {
+            let kind = match &block.content {
+                BlockContent::Table(_) => 0,
+                BlockContent::MathBlock { .. } => 1,
+                BlockContent::Mermaid { .. } => 2,
+                BlockContent::FrontMatter(_) => 3,
+                _ => return,
+            };
+            wanted.push((kind, block.range));
+        });
+        let unchanged = self
+            .ivars()
+            .hosted
+            .borrow()
+            .as_ref()
+            .is_some_and(|hosted| hosted.accessibility.iter().map(|(key, _)| *key).eq(wanted.iter().copied()));
+        if unchanged {
+            return;
+        }
+        let mut previous: HashMap<(u8, NSRange), Retained<FragmentAccessibilityElement>> =
+            self.with_hosted(|hosted| std::mem::take(&mut hosted.accessibility)).unwrap_or_default().into_iter().collect();
+        let mut elements = Vec::with_capacity(wanted.len());
+        for key in wanted {
+            let element = match previous.remove(&key) {
+                Some(element) => element,
+                None => self.fragment_accessibility_element(key.0, key.1),
+            };
+            elements.push((key, element));
+        }
+        let children: Vec<Retained<AnyObject>> = elements
+            .iter()
+            .map(|(_, element)| Retained::into_super(Retained::into_super(element.clone())).into())
+            .collect();
+        *self.ivars().fragment_accessibility_elements.borrow_mut() =
+            elements.iter().map(|(_, element)| element.clone()).collect();
+        self.with_hosted(|hosted| hosted.accessibility = elements);
+        let array = NSArray::from_retained_slice(&children);
+        unsafe { self.setAccessibilityChildren(Some(&array)) };
+    }
+
+    /// One structural child, as `refresh_fragment_accessibility` builds it.
+    fn fragment_accessibility_element(&self, kind: u8, range: NSRange) -> Retained<FragmentAccessibilityElement> {
+        let (label, role, help): (&str, &NSString, &str) = unsafe {
+            match kind {
+                0 => ("Markdown table", objc2_app_kit::NSAccessibilityGroupRole, "Rendered markdown table"),
+                1 => ("Display math", objc2_app_kit::NSAccessibilityGroupRole, "Rendered display math"),
+                2 => ("Mermaid diagram", objc2_app_kit::NSAccessibilityGroupRole, "Rendered mermaid diagram"),
+                _ => (
+                    "Edit document metadata",
+                    objc2_app_kit::NSAccessibilityButtonRole,
+                    "Edit title, author, tags, status, and other front matter",
+                ),
+            }
+        };
+        let element = FragmentAccessibilityElement::new(self, range.location);
+        element.setAccessibilityRole(Some(role));
+        element.setAccessibilityLabel(Some(&NSString::from_str(label)));
+        unsafe { element.setAccessibilityParent(Some(self)) };
+        element.setAccessibilityHelp(Some(&NSString::from_str(help)));
+        element.setAccessibilityEnabled(true);
+        if kind == 3 {
+            let weak: ObjcWeak<MarkdownTextView> = ObjcWeak::from(self);
+            *element.ivars().on_press.borrow_mut() = Some(Box::new(move || {
+                let Some(view) = weak.load() else { return false };
+                if let Some(delegate) = view.delegate() {
+                    delegate.did_activate_front_matter_at(&view, range);
+                }
+                true
+            }));
+        }
+        element
     }
 
     /// Structural children for rendered objects (VoiceOver).
@@ -1621,6 +2291,10 @@ impl MarkdownTextView {
     }
 
     fn resize_to_fit_content_scoped(&self, layout_scope: ContentLayoutScope) {
+        if self.is_hosted() {
+            self.hosted_relayout();
+            return;
+        }
         let Some(layout_manager) = self.textLayoutManager() else { return };
         if layout_scope == ContentLayoutScope::Viewport {
             self.repair_content_height_from_viewport(&layout_manager);
@@ -1703,7 +2377,7 @@ impl MarkdownTextView {
     fn animate_structural_zoom_height(&self, previous_height: CGFloat) {
         self.resize_to_fit_content_scoped(ContentLayoutScope::Document);
         let target_height = self.frame().size.height;
-        if !((target_height - previous_height).abs() > 0.5) {
+        if !((target_height - previous_height).abs() > 0.5) || self.is_hosted() {
             return;
         }
         if self.style_sheet().reduce_motion {
@@ -1766,6 +2440,11 @@ impl MarkdownTextView {
 
     /// Schedules a height pass.
     fn request_content_resize(&self, request: ContentResizeRequest, anchor: Option<ViewportAnchor>, viewport_y: Option<CGFloat>) {
+        if self.is_hosted() {
+            // No deferral and no anchor: the height is the content's.
+            self.hosted_relayout();
+            return;
+        }
         let ivars = self.ivars();
         if let Some(anchor) = anchor {
             ivars.pending_resize_anchor.set(Some(anchor));
@@ -1840,6 +2519,7 @@ impl MarkdownTextView {
 
     fn rebuild_everything(&self) {
         let Some(storage) = self.text_storage() else { return };
+        self.forget_applied_elisions();
         self.rebuild_paragraph_index();
         let document = self.parsed_document();
         self.ivars().engine.borrow_mut().decorate(&storage, &document, &DirtySet::wholesale());
@@ -1860,6 +2540,7 @@ impl MarkdownTextView {
     /// Theme colour / accent swaps that do not change typography.
     fn restyle_attributes_preserving_geometry(&self) {
         let Some(storage) = self.text_storage() else { return };
+        self.forget_applied_elisions();
         let document = self.parsed_document();
         self.ivars().engine.borrow_mut().decorate(&storage, &document, &DirtySet::wholesale());
         self.apply_source_presentation(None);
@@ -1889,6 +2570,10 @@ impl MarkdownTextView {
     /// `rebuildBaseDisplayMap(document:)`, through the shared producer in
     /// `view::base_display_map`.
     fn rebuild_base_display_map(&self, document: &ParsedDocument) {
+        if self.is_hosted() {
+            self.hosted_rebuild_base_display_map(document, None);
+            return;
+        }
         let Some(storage) = self.text_storage() else { return };
         let paragraph_index = self.paragraph_index();
         let style_sheet = self.style_sheet();
@@ -2442,10 +3127,17 @@ impl MarkdownTextView {
             if let Some(rail) = self.gutter_rail() {
                 rail.reload();
             }
+            if self.is_hosted() {
+                self.hosted_relayout();
+            }
         }
     }
 
     fn apply_elided_attribute(&self) {
+        if self.is_hosted() {
+            self.apply_elided_attribute_scoped(None);
+            return;
+        }
         let Some(storage) = self.text_storage() else { return };
         if !(storage.length() > 0) {
             return;
@@ -2469,6 +3161,66 @@ impl MarkdownTextView {
                 continue;
             }
             unsafe { storage.addAttribute_value_range(attribute_keys::dr_elided(), &flag, ns(range)) };
+        }
+        storage.endEditing();
+    }
+
+    /// A `decorate` outside `hosted_update` reset attributes the hosted
+    /// elision bookkeeping cannot see; the next application rewrites them all.
+    fn forget_applied_elisions(&self) {
+        self.with_hosted(|hosted| hosted.applied_elisions = None);
+    }
+
+    /// The hosted `applyElidedAttribute()`. With `wiped`, the storage already
+    /// carries the ranges applied last time everywhere outside `wiped`, where
+    /// `decorate` just reset every attribute; only the difference is written,
+    /// so TextKit does not invalidate the whole document. Without it, the
+    /// attribute is rewritten everywhere, as Downright does.
+    fn apply_elided_attribute_scoped(&self, wiped: Option<&[NSRange]>) {
+        let Some(storage) = self.text_storage() else { return };
+        if !(storage.length() > 0) {
+            return;
+        }
+        let definition_elisions = self.definition_elisions();
+        let elision = self.ivars().elision.borrow().clone();
+        let identity = elision.is_identity() && definition_elisions.is_empty();
+        let was_identity = self.ivars().elision_was_identity.get();
+        self.ivars().elision_was_identity.set(identity);
+        let length = storage.length() as isize;
+        let mut ranges = elision.elided_ranges.clone();
+        ranges.extend(definition_elisions);
+        let ranges: Vec<NSRange> = RangeSet::normalized(&ranges)
+            .into_iter()
+            .filter(|range| range.upper_bound() <= length && range.length > 0)
+            .collect();
+        let previous = self.with_hosted(|hosted| hosted.applied_elisions.replace(ranges.clone())).flatten();
+        if identity && was_identity {
+            return;
+        }
+        let flag = NSNumber::new_bool(true);
+        storage.beginEditing();
+        match (wiped, previous) {
+            (Some(wiped), Some(previous)) => {
+                for range in previous.iter().filter(|range| !ranges.contains(range)) {
+                    if let Some(range) = self.clamp_to_storage(*range) {
+                        storage.removeAttribute_range(attribute_keys::dr_elided(), ns(range));
+                    }
+                }
+                for range in &ranges {
+                    let rewritten = wiped
+                        .iter()
+                        .any(|scope| upleft_core::ns_range::ns_intersection_range(*scope, *range).length > 0);
+                    if rewritten || !previous.contains(range) {
+                        unsafe { storage.addAttribute_value_range(attribute_keys::dr_elided(), &flag, ns(*range)) };
+                    }
+                }
+            }
+            _ => {
+                storage.removeAttribute_range(attribute_keys::dr_elided(), ns(NSRange::new(0, length)));
+                for range in &ranges {
+                    unsafe { storage.addAttribute_value_range(attribute_keys::dr_elided(), &flag, ns(*range)) };
+                }
+            }
         }
         storage.endEditing();
     }
@@ -2506,6 +3258,9 @@ impl MarkdownTextView {
         *self.ivars().fragment_context.collapse_overrides.borrow_mut() =
             self.ivars().code_collapse_overrides.borrow().clone();
         self.invalidate_all_fragments();
+        if self.is_hosted() {
+            self.hosted_relayout();
+        }
     }
 
     /// Collapse state for one block, without walking the document.
@@ -2531,6 +3286,7 @@ impl MarkdownTextView {
             let dirty = DirtySet::new(blocks, false);
             let document = self.parsed_document();
             let rewritten = self.ivars().engine.borrow().decorated_bounds(&dirty, &document, storage.length() as isize);
+            self.forget_applied_elisions();
             self.ivars().engine.borrow_mut().decorate(&storage, &document, &dirty);
             self.rebuild_display_map(false, &rewritten);
         }
@@ -3051,6 +3807,10 @@ impl MarkdownTextView {
         }
         self.restore_viewport_to(viewport_anchor);
         self.gutter_rail_needs_display();
+        if self.is_hosted() {
+            let selection = self.source_selected_ranges();
+            self.with_hosted(|hosted| hosted.selection = selection);
+        }
         if let Some(delegate) = self.delegate() {
             delegate.did_change_selection(self);
         }
@@ -3115,6 +3875,7 @@ impl MarkdownTextView {
         let Some(storage) = self.text_storage() else { return };
         let Some(range) = self.clamp_to_storage(previous) else { return };
         let document = self.parsed_document();
+        self.forget_applied_elisions();
         self.ivars().engine.borrow_mut().decorate(&storage, &document, &DirtySet::new(vec![range], false));
         let hidden = self.current_display_map().hidden_ranges_in_paragraph_containing(range.location);
         self.apply_hidden_attribute(&hidden, Some(range), &[]);
@@ -3371,6 +4132,10 @@ impl MarkdownTextView {
         if self.ivars().elision.borrow().is_elided(offset) {
             self.unfold_headings_containing(&[NSRange::new(offset, 1)]);
         }
+        if self.is_hosted() {
+            // The host owns the scroll view; `did_navigate_to` told it where.
+            return;
+        }
         let Some(rect) = self.rect_for_offset(offset) else { return };
         let Some(scroll_view) = self.scroll_view() else {
             self.scrollRectToVisible(rect);
@@ -3553,6 +4318,9 @@ impl MarkdownTextView {
 
     /// The container is the reading measure plus a trailing bleed lane.
     pub fn column_width(&self) -> CGFloat {
+        if let Some(width) = self.hosted_width() {
+            return width;
+        }
         self.style_sheet().measure_width + render_metrics::CODE_BLEED
     }
 
@@ -3563,8 +4331,14 @@ impl MarkdownTextView {
             container.setSize(CGSize::new(column_width, CGFloat::MAX));
         }
         self.ivars().fragment_context.content_width.set(column_width);
-        self.setMinSize(NSSize::new(column_width, 0.0));
-        self.setMaxSize(NSSize::new(column_width + render_metrics::REVEAL_SLACK * 2.0, CGFloat::MAX));
+        if self.is_hosted() {
+            // The frame is the content's; `hosted_relayout` sets it.
+            self.setMinSize(NSSize::new(0.0, 0.0));
+            self.setMaxSize(NSSize::new(CGFloat::MAX, CGFloat::MAX));
+        } else {
+            self.setMinSize(NSSize::new(column_width, 0.0));
+            self.setMaxSize(NSSize::new(column_width + render_metrics::REVEAL_SLACK * 2.0, CGFloat::MAX));
+        }
         self.setBackgroundColor(&style_sheet.background);
         self.setInsertionPointColor(Some(if self.mode().policy().shows_insertion_point {
             &style_sheet.accent
@@ -3576,7 +4350,7 @@ impl MarkdownTextView {
     }
 
     pub fn apply_responsive_measure(&self, width: CGFloat) {
-        if !(width > 100.0) {
+        if !(width > 100.0) || self.is_hosted() {
             return;
         }
         let previous_width = unsafe { self.textContainer() }.map_or(0.0, |container| container.size().width);
@@ -3640,6 +4414,10 @@ impl MarkdownTextView {
     /// Scoped layout invalidation (§12).
     pub fn invalidate_fragments(&self, source_range: Option<NSRange>) {
         self.ivars().last_fragment_invalidation_range_for_testing.set(Some(source_range));
+        self.with_hosted(|hosted| hosted.lower_layout_floor(source_range.map_or(0, |range| range.location)));
+        // Out-of-band invalidations (an image that loaded) still resize a
+        // hosted view; `update` and the setters relayout synchronously first.
+        self.schedule_hosted_relayout();
         let layout_manager = &self.ivars().markdown_layout_manager;
         let Some(source_range) = source_range else {
             layout_manager.invalidateLayoutForRange(&layout_manager.documentRange());
@@ -3805,6 +4583,109 @@ fn post_announcement(element: &MarkdownTextView, announcement: &str) {
             Some(&user_info),
         )
     };
+}
+
+/// Blocks before `edit_floor` whose parse changed although their text did
+/// not, because of text after them: inline spans resolved by a reference or
+/// footnote definition that was added, removed or edited, and (when the edit
+/// inserted a tag) safe HTML annotations paired with a tag in a later block.
+/// Empty, without walking the documents, when neither can have changed.
+fn blocks_reparsed_by_later_text(
+    old: &ParsedDocument,
+    new: &ParsedDocument,
+    edit_floor: isize,
+    inserted_html: bool,
+) -> Vec<NSRange> {
+    // Any change to a definition, its text included: how a reference to it
+    // parses can depend on more than its label.
+    let same_footnotes = old.footnotes.len() == new.footnotes.len()
+        && old.footnotes.iter().all(|(key, footnote)| {
+            new.footnotes
+                .get(key)
+                .is_some_and(|other| other.range == footnote.range && other.subtree_hash == footnote.subtree_hash)
+        });
+    let same_references = old.link_references.len() == new.link_references.len()
+        && old.link_references.iter().all(|(key, reference)| {
+            new.link_references.get(key).is_some_and(|other| {
+                other.destination == reference.destination && other.title == reference.title && other.range == reference.range
+            })
+        });
+    let check_inlines = !(same_footnotes && same_references);
+    if !check_inlines && !inserted_html {
+        return Vec::new();
+    }
+    let relevant = |block: &upleft_core::MDBlock| {
+        block.range.upper_bound() <= edit_floor
+            && ((check_inlines && !block.inlines.is_empty()) || (inserted_html && block.safe_html.is_some()))
+    };
+    let mut old_blocks: HashMap<(isize, isize), Arc<upleft_core::MDBlock>> = HashMap::new();
+    old.root.walk(&mut |block| {
+        if relevant(block) {
+            old_blocks.insert((block.range.location, block.range.length), block.clone());
+        }
+    });
+    let mut dirty = Vec::new();
+    new.root.walk(&mut |block| {
+        if !relevant(block) {
+            return;
+        }
+        let same = old_blocks.get(&(block.range.location, block.range.length)).is_some_and(|before| {
+            (!check_inlines || spans_equal(&before.inlines, &block.inlines))
+                && (!inserted_html || before.safe_html == block.safe_html)
+        });
+        if !same {
+            dirty.push(block.range);
+        }
+    });
+    dirty
+}
+
+fn spans_equal(a: &[upleft_core::InlineSpan], b: &[upleft_core::InlineSpan]) -> bool {
+    use upleft_core::InlineKind as K;
+    a.len() == b.len()
+        && a.iter().zip(b).all(|(x, y)| {
+            let same_kind = match (&x.kind, &y.kind) {
+                (K::Link { destination: d1, title: t1 }, K::Link { destination: d2, title: t2 }) => d1 == d2 && t1 == t2,
+                (K::Autolink { destination: d1 }, K::Autolink { destination: d2 }) => d1 == d2,
+                (K::Wikilink { target: t1, label: l1 }, K::Wikilink { target: t2, label: l2 }) => t1 == t2 && l1 == l2,
+                (K::Image { source: s1, alt: a1 }, K::Image { source: s2, alt: a2 }) => s1 == s2 && a1 == a2,
+                (K::InlineMath { latex_range: r1 }, K::InlineMath { latex_range: r2 }) => r1 == r2,
+                (K::PathToken(p1), K::PathToken(p2)) => p1 == p2,
+                (K::FootnoteReference { identifier: i1 }, K::FootnoteReference { identifier: i2 }) => i1 == i2,
+                (k1, k2) => std::mem::discriminant(k1) == std::mem::discriminant(k2),
+            };
+            same_kind
+                && x.range == y.range
+                && x.content_range == y.content_range
+                && x.leading_marker_range == y.leading_marker_range
+                && x.trailing_marker_range == y.trailing_marker_range
+                && spans_equal(&x.children, &y.children)
+        })
+}
+
+/// How many trailing UTF-16 units two texts share.
+fn common_suffix_length(old: &[u16], new: &[u16]) -> usize {
+    let limit = old.len().min(new.len());
+    let mut count = 0;
+    while count < limit && old[old.len() - 1 - count] == new[new.len() - 1 - count] {
+        count += 1;
+    }
+    count
+}
+
+/// How many leading UTF-16 units two texts share.
+fn common_prefix_length(old: &[u16], new: &[u16]) -> usize {
+    let limit = old.len().min(new.len());
+    let mut index = 0;
+    // Whole blocks first: slice equality is a memcmp.
+    const BLOCK: usize = 256;
+    while index + BLOCK <= limit && old[index..index + BLOCK] == new[index..index + BLOCK] {
+        index += BLOCK;
+    }
+    while index < limit && old[index] == new[index] {
+        index += 1;
+    }
+    index
 }
 
 /// `NSValue(range:)`.

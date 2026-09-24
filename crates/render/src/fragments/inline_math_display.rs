@@ -6,7 +6,7 @@
 //! span's length with word joiners. The attachment itself
 //! (`MathRenderer.inlineAttachment`) lives in `upleft-math`.
 
-use upleft_core::{InlineKind, NSRange, ParsedDocument};
+use upleft_core::{BlockRef, InlineKind, NSRange, ParsedDocument};
 use upleft_math::downright::inline_math_display::inline_attachment;
 
 use crate::engine::display_map::DisplaySubstitution;
@@ -16,8 +16,13 @@ pub struct InlineMathDisplay;
 
 impl InlineMathDisplay {
     pub fn ranges(document: &ParsedDocument) -> Vec<NSRange> {
+        InlineMathDisplay::ranges_in(std::slice::from_ref(&document.root))
+    }
+
+    /// `ranges(document:)` over `blocks` and their descendants only.
+    pub fn ranges_in(blocks: &[BlockRef]) -> Vec<NSRange> {
         let mut result = Vec::new();
-        document.root.walk(&mut |block| {
+        let mut visit = |block: &BlockRef| {
             for span in &block.inlines {
                 span.walk(&mut |inline| {
                     if matches!(inline.kind, InlineKind::InlineMath { .. }) && inline.range.length > 0 {
@@ -25,7 +30,10 @@ impl InlineMathDisplay {
                     }
                 });
             }
-        });
+        };
+        for block in blocks {
+            block.walk(&mut visit);
+        }
         // Swift's sort is stable, and so is this one.
         result.sort_by_key(|range| range.location);
         result
@@ -43,7 +51,17 @@ impl InlineMathDisplay {
         style_sheet: &StyleSheet,
         excluded_range: Option<NSRange>,
     ) -> Vec<DisplaySubstitution> {
-        InlineMathDisplay::ranges(document)
+        InlineMathDisplay::substitutions_for(document, InlineMathDisplay::ranges(document), style_sheet, excluded_range)
+    }
+
+    /// `substitutions` for ranges already found (`ranges_in`).
+    pub fn substitutions_for(
+        document: &ParsedDocument,
+        ranges: Vec<NSRange>,
+        style_sheet: &StyleSheet,
+        excluded_range: Option<NSRange>,
+    ) -> Vec<DisplaySubstitution> {
+        ranges
             .into_iter()
             .filter_map(|range| {
                 if let Some(excluded) = excluded_range

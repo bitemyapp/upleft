@@ -3,7 +3,7 @@
 
 use objc2::runtime::AnyObject;
 use objc2_foundation::{NSAttributedString, NSDictionary, NSNumber, NSString};
-use upleft_core::{InlineKind, NSRange, ParsedDocument, swift_text};
+use upleft_core::{BlockRef, InlineKind, NSRange, ParsedDocument, swift_text};
 
 use crate::engine::display_map::DisplaySubstitution;
 use crate::engine::keys;
@@ -20,8 +20,13 @@ pub struct FootnoteReferenceDisplay;
 
 impl FootnoteReferenceDisplay {
     pub fn references(document: &ParsedDocument) -> Vec<Reference> {
+        FootnoteReferenceDisplay::references_in(std::slice::from_ref(&document.root))
+    }
+
+    /// `references(in:)` over `blocks` and their descendants only.
+    pub fn references_in(blocks: &[BlockRef]) -> Vec<Reference> {
         let mut result = Vec::new();
-        document.root.walk(&mut |block| {
+        let mut visit = |block: &BlockRef| {
             for span in &block.inlines {
                 span.walk(&mut |inline| {
                     if let InlineKind::FootnoteReference { identifier } = &inline.kind {
@@ -29,7 +34,10 @@ impl FootnoteReferenceDisplay {
                     }
                 });
             }
-        });
+        };
+        for block in blocks {
+            block.walk(&mut visit);
+        }
         result.sort_by_key(|reference| reference.range.location);
         result
     }
@@ -39,7 +47,16 @@ impl FootnoteReferenceDisplay {
         style_sheet: &StyleSheet,
         excluded_range: Option<NSRange>,
     ) -> Vec<DisplaySubstitution> {
-        FootnoteReferenceDisplay::references(document)
+        FootnoteReferenceDisplay::substitutions_for(FootnoteReferenceDisplay::references(document), style_sheet, excluded_range)
+    }
+
+    /// `substitutions` for references already found (`references_in`).
+    pub fn substitutions_for(
+        references: Vec<Reference>,
+        style_sheet: &StyleSheet,
+        excluded_range: Option<NSRange>,
+    ) -> Vec<DisplaySubstitution> {
+        references
             .into_iter()
             .filter_map(|reference| {
                 if let Some(excluded) = excluded_range

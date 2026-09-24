@@ -65,6 +65,18 @@ impl MermaidImage {
 pub fn image(source: &str, style_sheet: &StyleSheet) -> Option<MermaidImage> {
     let trimmed = trimmed_source(source)?;
     let scale = scale();
+    render_trimmed(trimmed, style_sheet, scale)
+}
+
+/// `image` at a backing scale the caller read, for any thread (an Upleft
+/// extension for hosted views, which render diagrams on a worker). Nothing
+/// on this path needs the main thread: see
+/// `upleft_render::fragments::async_objects`.
+pub fn image_at_scale(source: &str, style_sheet: &StyleSheet, scale: CGFloat) -> Option<MermaidImage> {
+    render_trimmed(trimmed_source(source)?, style_sheet, scale)
+}
+
+fn render_trimmed(trimmed: &str, style_sheet: &StyleSheet, scale: CGFloat) -> Option<MermaidImage> {
     // Render via `prepare(from:)` into our own bitmap context, flipped to
     // y=0-at-top first (see the Swift for why `renderImage` is not used).
     let renderer = MermaidImageRenderer::new(theme(style_sheet), LayoutConfig::default());
@@ -79,6 +91,10 @@ pub fn image(source: &str, style_sheet: &StyleSheet) -> Option<MermaidImage> {
 pub fn install_fragment_renderer() {
     upleft_render::fragments::mermaid_fragment::install_mermaid_renderer(|source, style_sheet| {
         image(source, style_sheet).map(|image| image.ns_image())
+    });
+    // Hosted views render diagrams on a worker, through the thread-safe path.
+    upleft_render::fragments::async_objects::install_async_mermaid_renderer(|source, style_sheet, scale| {
+        image_at_scale(source, style_sheet, scale).map(|image| image.ns_image())
     });
 }
 

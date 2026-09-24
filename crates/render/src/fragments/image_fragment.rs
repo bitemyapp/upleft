@@ -281,7 +281,7 @@ fn viewport_height_cap(fragment: &DownrightFragment) -> CGFloat {
     let height = fragment
         .context()
         .and_then(|context| context.text_view())
-        .and_then(|view| view.enclosingScrollView())
+        .and_then(|view| view.scroll_view())
         .map_or(800.0, |scroll| scroll.contentSize().height);
     smax(120.0, height * 0.70)
 }

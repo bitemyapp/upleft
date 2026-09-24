@@ -7,7 +7,7 @@
 use objc2::rc::Retained;
 use objc2_foundation::{NSAttributedString, NSString};
 use upleft_core::ns_range::ns_intersection_range;
-use upleft_core::{BlockContent, InlineKind, InlineSpan, MDBlock, NSRange, ParsedDocument};
+use upleft_core::{BlockContent, BlockRef, InlineKind, InlineSpan, MDBlock, NSRange, ParsedDocument};
 
 use super::display_map::DisplaySubstitution;
 
@@ -34,13 +34,26 @@ impl HardWrapReflow {
         excluded_ranges: &[NSRange],
         enabled: bool,
     ) -> Plan {
+        HardWrapReflow::plan_in(std::slice::from_ref(&document.root), text, hidden_ranges, excluded_ranges, enabled)
+    }
+
+    /// `plan` over `blocks` and their descendants only. A paragraph's group
+    /// reaches at most its own trailing separator and the hidden prefix of
+    /// its own line.
+    pub fn plan_in(
+        blocks: &[BlockRef],
+        text: &[u16],
+        hidden_ranges: &[NSRange],
+        excluded_ranges: &[NSRange],
+        enabled: bool,
+    ) -> Plan {
         if !enabled || text.is_empty() {
             return Plan::default();
         }
 
         let mut ranges: Vec<NSRange> = Vec::new();
         let mut substitutions: Vec<DisplaySubstitution> = Vec::new();
-        document.root.walk(&mut |block| {
+        let mut visit = |block: &BlockRef| {
             if !matches!(block.content, BlockContent::Paragraph) {
                 return;
             }
@@ -98,7 +111,10 @@ impl HardWrapReflow {
                     zero_width_replacement(hidden.length),
                 ));
             }
-        });
+        };
+        for block in blocks {
+            block.walk(&mut visit);
+        }
 
         ranges.sort_by_key(|range| range.location);
         Plan { ranges, substitutions }

@@ -138,7 +138,11 @@ objc2-core-text = { workspace = true, features = ["CTFont", "CTFontDescriptor", 
 
 [dev-dependencies]
 serde_json.workspace = true
-objc2-app-kit = { workspace = true, features = ["NSImage"] }
+objc2-app-kit = { workspace = true, features = ["NSImage", "NSRunningApplication", "NSBitmapImageRep", "NSScrollView", "NSFontManager"] }
+objc2-core-foundation = { workspace = true, features = ["CFRunLoop"] }
+# The hosted_transcript example installs the Mermaid renderer, as every host does.
+upleft-mermaid.workspace = true
+upleft-math.workspace = true
 
 [[test]]
 name = "directory_watcher"
