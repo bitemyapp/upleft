@@ -41,7 +41,10 @@ pub(crate) struct AlignmentsRef {
 ///
 /// `blockDirective` and the `doxygen*` cases come only from
 /// `BlockDirectiveParser`, which is not ported (Downright never enables it).
+/// `CustomBlock` and `CustomInline` come only from cmark extensions
+/// swift-markdown never attaches, so only the cmark oracle can build them.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
+#[cfg_attr(not(any(test, feature = "cmark-oracle")), allow(dead_code))]
 pub(crate) enum RawMarkupData {
     BlockQuote,
     CodeBlock {
@@ -276,6 +279,15 @@ impl RawMarkupArena {
         StrRef {
             start,
             len: to_u32(string.len()),
+        }
+    }
+
+    /// The string appended to the buffer since `start`, which the caller
+    /// built in pieces with `push_str`'s buffer growing in between.
+    pub(crate) fn str_since(&self, start: usize) -> StrRef {
+        StrRef {
+            start: to_u32(start),
+            len: to_u32(self.strings.len() - start),
         }
     }
 

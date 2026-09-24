@@ -1,16 +1,33 @@
 [package]
 name = "upleft-markup"
-description = "Rust port of the swift-markdown layer Downright parses with (cmark-gfm → Markup tree)"
+description = "Rust port of the swift-markdown layer Downright parses with (Markdown → Markup tree), on pulldown-cmark"
 version.workspace = true
 edition.workspace = true
 license = "Apache-2.0"
 publish.workspace = true
 repository.workspace = true
 
+[features]
+# Builds the original cmark-gfm converter (`parser::cmark_oracle`) beside the
+# pulldown-cmark adapter, for the differential tool
+# (`examples/markup_diff.rs`). No shipped binary enables it, so none links
+# the C parser.
+cmark-oracle = ["dep:upleft-cmark-gfm-sys"]
+
 [dependencies]
-upleft-cmark-gfm-sys.workspace = true
+pulldown-cmark = { version = "=0.13.4", default-features = false }
+upleft-cmark-gfm-sys = { workspace = true, optional = true }
 upleft-swift-text.workspace = true
+
+[dev-dependencies]
+# The unit tests compare the adapter with the C oracle.
+upleft-cmark-gfm-sys.workspace = true
+serde_json.workspace = true
 
 [[bench]]
 name = "parse"
 harness = false
+
+[[example]]
+name = "markup_diff"
+required-features = ["cmark-oracle"]
