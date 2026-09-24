@@ -13,3 +13,7 @@
 [submodule "vendor/elk-swift"]
 	path = vendor/elk-swift
 	url = https://github.com/lukilabs/elk-swift
+[submodule "vendor/pulldown-cmark"]
+	path = vendor/pulldown-cmark
+	url = https://github.com/bitemyapp/pulldown-cmark
+	branch = upleft

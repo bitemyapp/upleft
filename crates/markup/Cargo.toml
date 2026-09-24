@@ -15,7 +15,9 @@ repository.workspace = true
 cmark-oracle = ["dep:upleft-cmark-gfm-sys"]
 
 [dependencies]
-pulldown-cmark = { version = "=0.13.4", default-features = false }
+# bitemyapp/pulldown-cmark, branch `upleft`: 0.13.4 plus an option that
+# follows cmark-gfm where CommonMark 0.31 and cmark-gfm disagree.
+pulldown-cmark = { path = "../../vendor/pulldown-cmark/pulldown-cmark", default-features = false }
 # Already a dependency of pulldown-cmark.
 memchr = "2.5"
 upleft-cmark-gfm-sys = { workspace = true, optional = true }

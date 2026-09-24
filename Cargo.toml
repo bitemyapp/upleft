@@ -1,6 +1,8 @@
 [workspace]
 resolver = "3"
 members = ["crates/*"]
+# vendor/pulldown-cmark is its own workspace; upleft-markup uses it by path.
+exclude = ["vendor"]
 
 [workspace.package]
 version = "0.1.0"
