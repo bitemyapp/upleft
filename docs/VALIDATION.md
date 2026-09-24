@@ -9,7 +9,7 @@ Upleft parses Markdown with pulldown-cmark, not the cmark-gfm C library Downrigh
 - **Differential.** Every check runs the same input through `downright-oracle` and `upleft-oracle`. The Swift side is Downright's own code, rebranded (see AGENTS.md, "App identity"). Dumps are compared structurally, with doubles compared bit for bit. Images are compared pixel for pixel.
 - **Headless.** Window checks use a borderless window placed outside every screen and never activate the app. `cacheDisplay` records it. Nothing appears on screen and focus never moves.
 - **Parallel and low priority.** Headless captures share nothing on screen, so `conform` runs them on half the cores at nice 10. Only the opt-in `--capture screen` mode is serialised by the machine-wide lock.
-- **Cached.** Swift results are cached by oracle binary, input and flags, so after the first run only the Rust side is re-rendered. The cache does not key on the OS: after a macOS update, cached Swift captures can differ from fresh ones by one colour level in antialiased text. On macOS 26.6.2 that made `render-state` 62/100 and `render` on `generated/docs/` 107/116 against the cache, identically on `main`; with fresh Swift captures (`--no-cache`) both are 100/100 and 116/116. Rerun with `--no-cache` after an OS update.
+- **Cached.** Swift results are cached by oracle binary, macOS build, input and flags, so after the first run only the Rust side is re-rendered. The macOS build is part of the key because an OS update can move antialiased text by one colour level. On macOS 26.6.2, before the key included the build, stale captures made `render-state` report 62/100; with fresh captures it is 100/100.
 
 ## What is checked
 
@@ -20,7 +20,7 @@ Upleft parses Markdown with pulldown-cmark, not the cmark-gfm C library Downrigh
 | `highlight`, `stylesheet`, `vscode-theme` | 909, 12, 19 | syntax runs, every resolved font, colour and metric, theme import |
 | `math-image`, `math-tree` | 15420 each | formula bitmaps and display trees, 6 themes × light and dark |
 | `elk`, `mermaid-*` | 449, 308 + 1232 × 2 + 211 | diagram layout and bitmaps |
-| `render` | 3636 | the real text view, every corpus document, in 4 variants: pixels plus the layout of every fragment |
+| `render` | 3660 | the real text view, every corpus document, in 4 variants: pixels plus the layout of every fragment |
 | `render-dark-themes`, `render-images`, `render-density`, `density-*` | 100, 28, 1126, 1830 + 240 | themed fragments, loaded local images, the document map |
 | `render-state` | 100 | what the rest cannot see (below) |
 

@@ -222,11 +222,26 @@ fn optional_stamp(path: &Path) -> Option<u64> {
     path.exists().then(|| binary_stamp(path))
 }
 
+/// The macOS build (`sw_vers -buildVersion`). Cached Swift results are only
+/// valid for the OS that produced them: an update can move antialiased text
+/// by a colour level, so every cache key includes it.
+fn os_build() -> &'static str {
+    static BUILD: std::sync::OnceLock<String> = std::sync::OnceLock::new();
+    BUILD.get_or_init(|| {
+        Command::new("/usr/bin/sw_vers")
+            .arg("-buildVersion")
+            .output()
+            .map(|output| String::from_utf8_lossy(&output.stdout).trim().to_owned())
+            .unwrap_or_default()
+    })
+}
+
 fn binary_stamp(path: &Path) -> u64 {
     let metadata = fs::metadata(path).unwrap_or_else(|error| panic!("{}: {error}", path.display()));
     let mut hasher = DefaultHasher::new();
     metadata.len().hash(&mut hasher);
     metadata.modified().ok().hash(&mut hasher);
+    os_build().hash(&mut hasher);
     hasher.finish()
 }
 
