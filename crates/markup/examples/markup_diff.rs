@@ -340,6 +340,14 @@ const BLOCKS: &[&str] = &[
     "* list\n\n      indented code in item\n",
     "`code\nspanning` lines and <a\nhref=\"x\">",
     "![image *alt*](src.png) ![ref][ref]",
+    "^[attributed *text*](key: 'value') and ^[plain](x: 1) and ^[link](http://x.y)",
+    "Here are the results:\n| Stage | Time |\n|---|--:|\n| parse | `1.2 ms` |\n| `a\\|b` | **bold** |",
+    "- [ ] todo with `code` and [link](x)\n- [x] done ~~struck~~\n  - nested *em*",
+    "> [!NOTE]\n> A callout with **bold** and a list:\n> - one\n> - two",
+    "1. Step one:\n   ```sh\n   cargo build\n   ```\n2. Step two\n\n   Details.",
+    "Text with a footnote[^1] and <https://auto.link> and trailing  \nbreak\\\nand more.",
+    "#### Heading with `code` and trailing hashes ####",
+    "Paragraph\n***\n\n---\nnot a heading\n\n___",
 ];
 
 /// A corpus document with a few random edits.

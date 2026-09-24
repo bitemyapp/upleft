@@ -29,6 +29,16 @@ pub(crate) struct StrRef {
     len: u32,
 }
 
+impl StrRef {
+    /// The same string without its last `bytes` bytes.
+    pub(crate) fn shortened(self, bytes: usize) -> StrRef {
+        StrRef {
+            start: self.start,
+            len: self.len - bytes as u32,
+        }
+    }
+}
+
 /// A run of table column alignments stored in the document's alignment buffer.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub(crate) struct AlignmentsRef {

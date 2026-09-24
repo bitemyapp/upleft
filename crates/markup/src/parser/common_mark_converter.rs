@@ -231,6 +231,10 @@ enum FrameKind<'a> {
         destination: Option<CowStr<'a>>,
         title: CowStr<'a>,
         collapsed: bool,
+        /// `[text](destination)`, which after a `^` is an attribute span.
+        inline: bool,
+        /// `<scheme:…>` or `<address@…>`, whose text cmark decodes.
+        autolink: bool,
     },
     Image {
         source: CowStr<'a>,
@@ -345,6 +349,12 @@ struct Converter<'a> {
     code_ticks: Vec<(NodeId, i64)>,
     /// A subject line buffer to reuse for the next inline context.
     spare_lines: Vec<SubjectLine>,
+    /// Whether the source has `^[`, which may start swift-markdown's inline
+    /// attributes; only then are text and link sources recorded.
+    attributes_possible: bool,
+    /// Source offsets of text nodes and inline links, by node, when
+    /// `attributes_possible`.
+    inline_sources: Vec<(NodeId, usize, usize)>,
     /// The first line's indentation of the HTML block being read, used
     /// unless pulldown-cmark reports it.
     html_indentation: Option<String>,
@@ -377,6 +387,8 @@ impl<'a> Converter<'a> {
             unshifted_ends: Vec::new(),
             code_ticks: Vec::new(),
             spare_lines: Vec::new(),
+            attributes_possible: memchr::memmem::find(text.as_bytes(), b"^[").is_some(),
+            inline_sources: Vec::new(),
             html_indentation: None,
         }
     }
@@ -941,6 +953,9 @@ impl<'a> Converter<'a> {
         let string = self.arena.str_since(pending.string_start);
         let range = cmark_range(line, start_column, line, end_column, 0);
         let node = self.arena.create(RawMarkupData::Text(string), range, &[]);
+        if self.attributes_possible {
+            self.inline_sources.push((node, pending.start, end));
+        }
         self.children.push(node);
         if let Some(context) = self.inline.as_mut() {
             context.previous_end = end;
@@ -968,7 +983,13 @@ impl<'a> Converter<'a> {
             return;
         }
         self.ensure_inline_container(range.start);
-        self.add_text_piece(&text, range.clone());
+        if text.contains('&') && self.top_is(|kind| matches!(kind, FrameKind::Link { autolink: true, .. })) {
+            // `make_str_with_entities`.
+            let decoded = decode_entities(&text);
+            self.add_text_piece(&decoded, range.clone());
+        } else {
+            self.add_text_piece(&text, range.clone());
+        }
         self.note_inline_end(range.end);
     }
 
@@ -1244,6 +1265,8 @@ impl<'a> Converter<'a> {
 
     fn close_paragraph(&mut self, end: usize) {
         self.flush_text(None);
+        let children_start = self.frames.last().expect("a paragraph frame").children_start;
+        self.rewrite_inline_attributes(children_start);
         self.gap_from = self.gap_from.max(end);
         let frame = self.frames.pop().expect("a paragraph frame");
         let context = self.inline.take().expect("a paragraph's inline context");
@@ -1558,6 +1581,8 @@ impl<'a> Converter<'a> {
                         destination,
                         title,
                         collapsed,
+                        inline: link_type == LinkType::Inline,
+                        autolink: matches!(link_type, LinkType::Autolink | LinkType::Email),
                     },
                     range.start,
                     range.start + 1,
@@ -1740,6 +1765,8 @@ impl<'a> Converter<'a> {
             return;
         }
         self.flush_text(None);
+        let children_start = self.frames.last().expect("an inline frame").children_start;
+        self.rewrite_inline_attributes(children_start);
         let frame = self.frames.pop().expect("an inline frame");
         let (start_line, start_column) = frame.start;
         let line = self.inline_line();
@@ -1799,10 +1826,244 @@ impl<'a> Converter<'a> {
             }
             _ => unreachable!(),
         };
+        let inline_link = matches!(frame.kind, FrameKind::Link { inline: true, .. });
         let node = self.container(&frame, data, parsed_range);
+        if self.attributes_possible && inline_link {
+            self.inline_sources.push((node, range.start, range.end));
+        }
         self.children.push(node);
         self.inline.as_mut().unwrap().previous_end = range.end;
         self.note_inline_end(range.end);
+    }
+
+    // MARK: Inline attributes
+
+    fn inline_source(&self, node: NodeId) -> Option<(usize, usize)> {
+        self.inline_sources
+            .binary_search_by_key(&node, |&(id, _, _)| id)
+            .ok()
+            .map(|index| (self.inline_sources[index].1, self.inline_sources[index].2))
+    }
+
+    /// `manual_scan_attribute_attributes`: from `from`, the offset of the
+    /// `)` that closes the attributes (parentheses nest; backslash escapes
+    /// skip), if it comes before `to`.
+    fn attributes_end(&self, from: usize, to: usize) -> Option<usize> {
+        let mut index = from;
+        let mut depth = 0;
+        while index < to {
+            match self.bytes[index] {
+                b'\\' if index + 1 < to && self.bytes[index + 1].is_ascii_punctuation() => index += 2,
+                b'(' => {
+                    depth += 1;
+                    if depth > 32 {
+                        return None;
+                    }
+                    index += 1;
+                }
+                b')' if depth == 0 => return Some(index),
+                b')' => {
+                    depth -= 1;
+                    index += 1;
+                }
+                _ => index += 1,
+            }
+        }
+        None
+    }
+
+    /// swift-markdown's inline attributes, `^[text](attributes)`: cmark-gfm
+    /// opens an attribute span at `^[`. pulldown-cmark reads it as a `^`
+    /// before a link, or as text. Rewrites the children of the inline
+    /// container being closed accordingly.
+    fn rewrite_inline_attributes(&mut self, children_start: usize) {
+        if !self.attributes_possible {
+            return;
+        }
+        let mut index = children_start;
+        while index < self.children.len() {
+            let node = self.children[index];
+            let data = self.arena.nodes[node as usize].data;
+            match data {
+                RawMarkupData::Link { .. } => {
+                    if self.link_to_attributes(node, index, children_start) {
+                        index = index.saturating_sub(1).max(children_start);
+                        continue;
+                    }
+                }
+                RawMarkupData::Text(_) => {
+                    if self.split_attributes(node, index) {
+                        continue;
+                    }
+                }
+                _ => {}
+            }
+            index += 1;
+        }
+    }
+
+    /// A `^` before an inline link: the link is an attribute span, and the
+    /// `^` leaves the text before it. Returns whether it rewrote anything.
+    fn link_to_attributes(&mut self, node: NodeId, index: usize, children_start: usize) -> bool {
+        let Some((start, end)) = self.inline_source(node) else {
+            return false;
+        };
+        if start == 0 || self.bytes[start - 1] != b'^' || self.is_escaped(start - 1) || index == children_start {
+            return false;
+        }
+        let previous = self.children[index - 1];
+        let RawMarkupData::Text(previous_string) = self.arena.nodes[previous as usize].data else {
+            return false;
+        };
+        if self.inline_source(previous).map(|(_, previous_end)| previous_end) != Some(start)
+            || !self.arena.str(previous_string).ends_with('^')
+        {
+            return false;
+        }
+        // The `(` that opens the destination: the last one the closing `)`
+        // balances.
+        let mut depth = 0;
+        let mut open = None;
+        for position in (start..end - 1).rev() {
+            match self.bytes[position] {
+                b')' if !self.is_escaped(position) => depth += 1,
+                b'(' if !self.is_escaped(position) => {
+                    if depth == 0 {
+                        open = Some(position);
+                        break;
+                    }
+                    depth -= 1;
+                }
+                _ => {}
+            }
+        }
+        let Some(open) = open else {
+            return false;
+        };
+        if self.attributes_end(open + 1, end) != Some(end - 1) {
+            return false;
+        }
+        let attributes = self.arena.push_str(&self.text[open + 1..end - 1]);
+        let link = &mut self.arena.nodes[node as usize];
+        link.data = RawMarkupData::InlineAttributes { attributes };
+        link.parsed_range = link.parsed_range.and_then(|range| {
+            let lower = SourceLocation::new(range.lower_bound.line, range.lower_bound.column - 1);
+            (lower <= range.upper_bound).then(|| SourceRange::new(lower, range.upper_bound))
+        });
+        // The text before loses its `^`.
+        let shortened = previous_string.shortened(1);
+        if self.arena.str(previous_string).len() == 1 {
+            self.children.remove(index - 1);
+        } else {
+            let text = &mut self.arena.nodes[previous as usize];
+            text.data = RawMarkupData::Text(shortened);
+            text.parsed_range = text.parsed_range.and_then(|range| {
+                let upper = SourceLocation::new(range.upper_bound.line, range.upper_bound.column - 1);
+                (range.lower_bound <= upper).then(|| SourceRange::new(range.lower_bound, upper))
+            });
+            if let Some(entry) = self
+                .inline_sources
+                .iter_mut()
+                .find(|(id, _, _)| *id == previous)
+            {
+                entry.2 -= 1;
+            }
+        }
+        true
+    }
+
+    /// `^[text](attributes)` all inside one text node, which pulldown-cmark
+    /// left as text: splits it around an attribute span. Only a node whose
+    /// string is its source (no escapes or entities) is split.
+    fn split_attributes(&mut self, node: NodeId, index: usize) -> bool {
+        let Some((start, end)) = self.inline_source(node) else {
+            return false;
+        };
+        let RawMarkupData::Text(string) = self.arena.nodes[node as usize].data else {
+            return false;
+        };
+        if self.arena.str(string) != &self.text[start..end] {
+            return false;
+        }
+        let Some(range) = self.arena.nodes[node as usize].parsed_range else {
+            return false;
+        };
+        let line = range.lower_bound.line;
+        let start_column = range.lower_bound.column;
+        let column = |offset: usize| start_column + (offset - start) as i64;
+        let mut position = start;
+        while position + 1 < end {
+            let found = memchr::memmem::find(&self.bytes[position..end], b"^[").map(|found| position + found);
+            let Some(caret) = found else {
+                return false;
+            };
+            position = caret + 1;
+            if self.is_escaped(caret) {
+                continue;
+            }
+            // The matching `]`.
+            let mut depth = 0;
+            let mut close = None;
+            let mut scan = caret + 2;
+            while scan < end {
+                match self.bytes[scan] {
+                    b'\\' => scan += 1,
+                    b'[' => depth += 1,
+                    b']' if depth == 0 => {
+                        close = Some(scan);
+                        break;
+                    }
+                    b']' => depth -= 1,
+                    _ => {}
+                }
+                scan += 1;
+            }
+            let Some(close) = close else {
+                continue;
+            };
+            if self.bytes.get(close + 1) != Some(&b'(') {
+                continue;
+            }
+            let Some(closing) = self.attributes_end(close + 2, end) else {
+                continue;
+            };
+            // Split: text before, the span with its text, text after.
+            let upper = range.upper_bound;
+            let mut replacement = Vec::with_capacity(3);
+            let text_node = |this: &mut Self, from: usize, to: usize, end_column: i64| {
+                let string = this.arena.push_str(&this.text[from..to]);
+                let range = cmark_range(line, column(from), line, end_column, 0);
+                let id = this.arena.create(RawMarkupData::Text(string), range, &[]);
+                this.inline_sources.push((id, from, to));
+                id
+            };
+            if caret > start {
+                replacement.push(text_node(self, start, caret, column(caret - 1)));
+            }
+            let inner = (close > caret + 2).then(|| text_node(self, caret + 2, close, column(close - 1)));
+            let attributes = self.arena.push_str(&self.text[close + 2..closing]);
+            let span_range = cmark_range(line, column(caret), line, column(closing), 0);
+            let children: Vec<NodeId> = inner.into_iter().collect();
+            let span = self
+                .arena
+                .create(RawMarkupData::InlineAttributes { attributes }, span_range, &children);
+            replacement.push(span);
+            if closing + 1 < end {
+                let rest = self.arena.push_str(&self.text[closing + 1..end]);
+                let rest_range = Some(SourceRange::new(
+                    SourceLocation::new(line, column(closing + 1)),
+                    upper,
+                ))
+                .filter(|range| range.lower_bound <= range.upper_bound);
+                let id = self.arena.create(RawMarkupData::Text(rest), rest_range, &[]);
+                self.inline_sources.push((id, closing + 1, end));
+                replacement.push(id);
+            }
+            self.inline_sources.sort_unstable_by_key(|&(id, _, _)| id);
+            self.children.splice(index..index + 1, replacement);
+            return true;
+        }
+        false
     }
 
     fn end_heading(&mut self, range: Range<usize>) {
@@ -1821,6 +2082,8 @@ impl<'a> Converter<'a> {
             }
         }
         self.flush_text(None);
+        let children_start = self.frames.last().expect("a heading frame").children_start;
+        self.rewrite_inline_attributes(children_start);
         self.drop_inline();
         let frame = self.frames.pop().expect("a heading frame");
         let FrameKind::Heading { level, setext } = frame.kind else {
@@ -2307,6 +2570,10 @@ impl<'a> Converter<'a> {
 
     fn end_table_cell(&mut self) {
         self.flush_text(None);
+        if self.inline.is_some() {
+            let children_start = self.frames.last().expect("a table cell frame").children_start;
+            self.rewrite_inline_attributes(children_start);
+        }
         self.drop_inline();
         self.skip_inlines = false;
         let frame = self.frames.pop().expect("a table cell frame");
