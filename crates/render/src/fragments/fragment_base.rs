@@ -123,6 +123,21 @@ pub fn cf_absolute_time_get_current() -> f64 {
 /// App-side trust hook for local assets outside the document directory.
 pub type LocalAssetAuthorizer = Rc<dyn Fn(&str) -> bool>;
 
+/// Hosted views (Upleft extension): what the host knows of a remote
+/// (`http`/`https`) image, which it loads itself.
+pub enum RemoteImage {
+    /// Not loaded yet; the host calls `MarkdownTextView::refresh_remote_image`
+    /// when it lands.
+    Loading,
+    Loaded(Retained<NSImage>),
+    /// The host could not load it, or will not.
+    Failed,
+}
+
+/// Hosted views (Upleft extension): the host's answer for a remote image,
+/// by its destination as written. Without one, remote images are blocked.
+pub type RemoteImageResolver = Rc<dyn Fn(&str) -> RemoteImage>;
+
 /// View-side state the fragments read while drawing (`FragmentContext`).
 ///
 /// Shared as `Rc<FragmentContext>`; fragments hold it weakly so they never
@@ -151,6 +166,8 @@ pub struct FragmentContext {
     pub document_url: RefCell<Option<String>>,
     /// Existing app trust, if any.
     pub local_asset_authorizer: RefCell<Option<LocalAssetAuthorizer>>,
+    /// Hosted views (Upleft extension): remote images the host loads.
+    pub remote_image_resolver: RefCell<Option<RemoteImageResolver>>,
     /// Paragraph structure of the current text.
     pub paragraph_index: RefCell<ParagraphIndex>,
     /// Zoom + fold + search visibility (§5.2, §7.1, §9.4).
@@ -188,6 +205,7 @@ impl FragmentContext {
             content_width: Cell::new(640.0),
             document_url: RefCell::new(None),
             local_asset_authorizer: RefCell::new(None),
+            remote_image_resolver: RefCell::new(None),
             paragraph_index: RefCell::new(ParagraphIndex::empty()),
             elision: RefCell::new(ElisionPlan::none()),
             cue_elision: RefCell::new(ElisionPlan::none()),

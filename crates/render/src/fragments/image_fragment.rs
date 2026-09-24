@@ -23,7 +23,8 @@ use crate::appkit_compat::{RectExt, attribute_value, attributed_string, keys, re
 use crate::engine::render_metrics;
 use crate::fragments::bounded_image_cache::IMAGES;
 use crate::fragments::fragment_base::{
-    DownrightFragment, FailedObject, FragmentBehavior, FragmentContext, draw_ns_image, draw_text, fill_rect, mixed,
+    DownrightFragment, FailedObject, FragmentBehavior, FragmentContext, RemoteImage, draw_ns_image, draw_text, fill_rect,
+    mixed,
 };
 use crate::fragments::local_asset_policy::{LocalAssetPolicy, LocalAssetRequest, file_url};
 use crate::render_contracts::{FragmentPayload, ThemeAppearance, attribute_keys};
@@ -37,8 +38,8 @@ enum LoadResult {
     /// Not in the cache yet; a background decode is in flight and will
     /// invalidate this fragment's layout when it lands.
     Loading,
-    /// Declared by the Swift, never produced by `loadResult`.
-    #[allow(dead_code)]
+    /// Declared by the Swift, never produced by `loadResult`; a hosted
+    /// view's remote image the host could not load (an Upleft extension).
     Missing,
     Blocked,
 }
@@ -242,6 +243,9 @@ fn display_size(fragment: &DownrightFragment) -> CGSize {
 }
 
 fn load_result(fragment: &DownrightFragment) -> LoadResult {
+    if let Some(result) = remote_result(fragment) {
+        return result;
+    }
     let Some(request) = resolved_request(fragment) else { return LoadResult::Blocked };
     let authorizer = fragment.context().and_then(|context| context.local_asset_authorizer.borrow().clone());
     if !LocalAssetPolicy::allows(&request, authorizer.as_ref()) {
@@ -255,6 +259,22 @@ fn load_result(fragment: &DownrightFragment) -> LoadResult {
         return LoadResult::Loading;
     };
     LoadResult::Loaded(image)
+}
+
+/// A remote image, when the host resolves them (hosted views, an Upleft
+/// extension): `None` for every other destination.
+fn remote_result(fragment: &DownrightFragment) -> Option<LoadResult> {
+    let destination = fragment.payload().detail();
+    let lower = destination.trim_start().to_ascii_lowercase();
+    if !(lower.starts_with("http://") || lower.starts_with("https://")) {
+        return None;
+    }
+    let resolver = fragment.context()?.remote_image_resolver.borrow().clone()?;
+    Some(match resolver(destination.trim()) {
+        RemoteImage::Loading => LoadResult::Loading,
+        RemoteImage::Loaded(image) => LoadResult::Loaded(image),
+        RemoteImage::Failed => LoadResult::Missing,
+    })
 }
 
 /// Asks the background loader for this image; when it arrives the fragment's

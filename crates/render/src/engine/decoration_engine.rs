@@ -216,6 +216,9 @@ pub struct DecorationEngine {
     /// with the cache a block's attributes depend on how often it was
     /// decorated before; a streamed message must end up as if decorated once.
     uses_program_cache: bool,
+    /// Hosted segments (Upleft extension): the text continues a document
+    /// shown above it, so its first heading is not the document's first.
+    continues_document: bool,
 }
 
 impl DecorationEngine {
@@ -241,6 +244,7 @@ impl DecorationEngine {
             fonts: RefCell::new(FontMemo::default()),
             renders_open_fences_as_code: false,
             uses_program_cache: true,
+            continues_document: false,
         }
     }
 
@@ -296,6 +300,11 @@ impl DecorationEngine {
     /// See `MarkdownTextView::set_streaming`.
     pub fn set_renders_open_fences_as_code(&mut self, enabled: bool) {
         self.renders_open_fences_as_code = enabled;
+    }
+
+    /// Hosted segments (Upleft extension): see `continues_document`.
+    pub fn set_continues_document(&mut self, continues: bool) {
+        self.continues_document = continues;
     }
 
     /// An open Mermaid or math fence at the end of a streaming message, as
@@ -850,11 +859,12 @@ impl DecorationEngine {
         if !matches!(block.content, BlockContent::Heading { .. }) {
             return;
         }
-        let is_first = state
-            .document
-            .headings
-            .first()
-            .is_some_and(|heading| heading.range.location == block.range.location);
+        let is_first = !self.continues_document
+            && state
+                .document
+                .headings
+                .first()
+                .is_some_and(|heading| heading.range.location == block.range.location);
         // A heading that follows another heading has no prose to be
         // separated from; the full gap there reads as a missing section.
         let follows = follows_another_heading(block, state);

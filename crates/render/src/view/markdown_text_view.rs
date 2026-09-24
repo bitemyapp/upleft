@@ -342,6 +342,9 @@ struct HostedState {
     /// Every layout fragment's height, by its element's TextKit offset, in
     /// document order: `content_height` is their sum.
     fragment_heights: std::collections::BTreeMap<isize, CGFloat>,
+    /// TextKit's viewport is the whole view, not the part in sight
+    /// (`set_hosted_full_viewport`).
+    full_viewport: bool,
 }
 
 impl HostedState {
@@ -483,6 +486,18 @@ define_class!(
         fn __draw_background(&self, rect: NSRect) {
             let _: () = unsafe { msg_send![super(self), drawViewBackgroundInRect: rect] };
             self.draw_scoped_source_background(rect);
+        }
+
+        /// A hosted view with a full viewport (`set_hosted_full_viewport`)
+        /// has TextKit lay out and draw every fragment, in sight or not.
+        #[unsafe(method(viewportBoundsForTextViewportLayoutController:))]
+        fn __viewport_bounds(&self, controller: &objc2_app_kit::NSTextViewportLayoutController) -> CGRect {
+            if self.ivars().hosted.borrow().as_ref().is_some_and(|hosted| hosted.full_viewport) {
+                let bounds = self.bounds();
+                let inset = self.textContainerInset();
+                return rect(0.0, 0.0, smax(1.0, bounds.width() - inset.width * 2.0), smax(1.0, bounds.height() - inset.height * 2.0));
+            }
+            unsafe { msg_send![super(self), viewportBoundsForTextViewportLayoutController: controller] }
         }
 
         #[unsafe(method(viewDidMoveToWindow))]
@@ -932,6 +947,7 @@ impl MarkdownTextView {
             layout_floor: Some(0),
             edit_observer: None,
             fragment_heights: std::collections::BTreeMap::new(),
+            full_viewport: false,
         });
         // Every edit of the storage, the host's or the decorator's, may drop
         // TextKit layout from its first character on.
@@ -1095,6 +1111,30 @@ impl MarkdownTextView {
             .as_ref()
             .map_or(0.0, |hosted| hosted.fragment_heights.values().fold(0.0, |sum, height| sum + height));
         inset + total + inset
+    }
+
+    /// Marks a hosted view as the continuation of a document shown above it
+    /// (a long message the host set as several views, cut between top-level
+    /// blocks): its first heading keeps the space above it that the first
+    /// heading of a document gives up. Set it before the first `update`.
+    pub fn set_hosted_continuation(&self, continues: bool) {
+        if self.is_hosted() {
+            self.ivars().engine.borrow_mut().set_continues_document(continues);
+        }
+    }
+
+    /// Hosted views (Upleft extension): with `full`, TextKit's viewport is
+    /// the whole view, so every fragment is laid out and drawn whether it
+    /// is in sight or not. For capturing a whole message off screen: each
+    /// fragment then keeps a rendering surface.
+    pub fn set_hosted_full_viewport(&self, full: bool) {
+        let Some(changed) = self.with_hosted(|hosted| std::mem::replace(&mut hosted.full_viewport, full) != full) else {
+            return;
+        };
+        if changed && let Some(layout_manager) = self.textLayoutManager() {
+            layout_manager.textViewportLayoutController().layoutViewport();
+            self.setNeedsDisplay(true);
+        }
     }
 
     /// Whether the host is still appending to this message.
@@ -1541,6 +1581,31 @@ impl MarkdownTextView {
     pub fn set_local_asset_authorizer(&self, authorizer: Option<crate::fragments::fragment_base::LocalAssetAuthorizer>) {
         *self.ivars().fragment_context.local_asset_authorizer.borrow_mut() = authorizer;
         self.invalidate_all_fragments();
+    }
+
+    /// Hosted views (Upleft extension): the host's loader for `http` and
+    /// `https` images. Without one they draw as blocked.
+    pub fn set_remote_image_resolver(&self, resolver: Option<crate::fragments::fragment_base::RemoteImageResolver>) {
+        *self.ivars().fragment_context.remote_image_resolver.borrow_mut() = resolver;
+        self.invalidate_all_fragments();
+    }
+
+    /// Hosted views (Upleft extension): the remote image at `destination`
+    /// landed (or failed). Lays out again the blocks that show it; the height
+    /// is reported on the next main-queue turn.
+    pub fn refresh_remote_image(&self, destination: &str) {
+        let document = self.parsed_document();
+        let mut ranges = Vec::new();
+        document.root.walk(&mut |block| {
+            if block.children.is_empty() && document.substring(block.range).contains(destination) {
+                ranges.push(block.range);
+            }
+        });
+        for range in ranges {
+            if let Some(range) = self.clamp_to_storage(range) {
+                self.invalidate_fragments(Some(range));
+            }
+        }
     }
 
     /// Re-evaluate blocked local image fragments after an explicit trust grant.
