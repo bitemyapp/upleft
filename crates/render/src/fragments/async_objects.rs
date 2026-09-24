@@ -148,9 +148,44 @@ fn state() -> std::sync::MutexGuard<'static, State> {
     STATE.lock().unwrap_or_else(|poison| poison.into_inner())
 }
 
+thread_local! {
+    /// The main screen's backing scale, until the screens change.
+    static MAIN_SCREEN_SCALE: std::cell::Cell<Option<CGFloat>> = const { std::cell::Cell::new(None) };
+    /// The observer that forgets it then.
+    static SCREEN_OBSERVER: std::cell::OnceCell<Retained<objc2::runtime::ProtocolObject<dyn objc2_foundation::NSObjectProtocol>>> =
+        const { std::cell::OnceCell::new() };
+}
+
 /// `NSScreen.main?.backingScaleFactor ?? 2`, read on the main thread.
+///
+/// Every layout of a hosted Mermaid fragment asks for the scale, and
+/// `NSScreen.mainScreen` asks the window server each time (about 0.1 ms, most
+/// of a long transcript's layout). The value is kept until AppKit reports
+/// that the screens changed.
 fn main_screen_scale(mtm: MainThreadMarker) -> CGFloat {
-    NSScreen::mainScreen(mtm).map_or(2.0, |screen| screen.backingScaleFactor())
+    if let Some(scale) = MAIN_SCREEN_SCALE.get() {
+        return scale;
+    }
+    SCREEN_OBSERVER.with(|observer| {
+        observer.get_or_init(|| {
+            let block = block2::RcBlock::new(|_note: std::ptr::NonNull<objc2_foundation::NSNotification>| {
+                MAIN_SCREEN_SCALE.set(None);
+            });
+            // SAFETY: the name is an AppKit static; the block only clears a
+            // main-thread cell, and the main queue delivers it.
+            unsafe {
+                objc2_foundation::NSNotificationCenter::defaultCenter().addObserverForName_object_queue_usingBlock(
+                    Some(objc2_app_kit::NSApplicationDidChangeScreenParametersNotification),
+                    None,
+                    Some(&objc2_foundation::NSOperationQueue::mainQueue()),
+                    &block,
+                )
+            }
+        });
+    });
+    let scale = NSScreen::mainScreen(mtm).map_or(2.0, |screen| screen.backingScaleFactor());
+    MAIN_SCREEN_SCALE.set(Some(scale));
+    scale
 }
 
 /// The diagram a hosted Mermaid fragment draws.
