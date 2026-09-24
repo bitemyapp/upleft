@@ -16,6 +16,8 @@ cmark-oracle = ["dep:upleft-cmark-gfm-sys"]
 
 [dependencies]
 pulldown-cmark = { version = "=0.13.4", default-features = false }
+# Already a dependency of pulldown-cmark.
+memchr = "2.5"
 upleft-cmark-gfm-sys = { workspace = true, optional = true }
 upleft-swift-text.workspace = true
 

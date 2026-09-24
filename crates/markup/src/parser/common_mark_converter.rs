@@ -54,13 +54,32 @@ pub(crate) struct MarkupParser;
 impl MarkupParser {
     /// `parseString(_:source:options:)`.
     pub(crate) fn parse_string(string: &str, options: ParseOptions) -> Document {
-        if string.contains('\0') {
+        let mut text = std::borrow::Cow::Borrowed(string);
+        if text.contains('\0') {
             // cmark replaces each NUL with U+FFFD as it reads lines, so its
             // strings and columns are those of the replaced text.
-            let replaced = string.replace('\0', "\u{FFFD}");
-            return Converter::new(&replaced, options).run();
+            text = std::borrow::Cow::Owned(text.replace('\0', "\u{FFFD}"));
         }
-        Converter::new(string, options).run()
+        if text.bytes().any(|byte| byte == b'\r') {
+            // cmark ends a line at a lone `\r` and never passes the line
+            // ending on; pulldown-cmark misreads lone `\r`s, so they become
+            // `\n`s (the same length, so offsets and lines are unchanged).
+            let bytes = text.as_bytes();
+            let lone = (0..bytes.len()).any(|index| bytes[index] == b'\r' && bytes.get(index + 1) != Some(&b'\n'));
+            if lone {
+                let mut normalized = String::with_capacity(text.len());
+                let mut characters = text.chars().peekable();
+                while let Some(character) = characters.next() {
+                    if character == '\r' && characters.peek() != Some(&'\n') {
+                        normalized.push('\n');
+                    } else {
+                        normalized.push(character);
+                    }
+                }
+                text = std::borrow::Cow::Owned(normalized);
+            }
+        }
+        Converter::new(&text, options).run()
     }
 }
 
@@ -170,6 +189,8 @@ struct InlineContext {
     kept_whitespace: Option<usize>,
     /// Where an ATX heading's content ends after `chop_trailing_hashtags`.
     content_end: Option<usize>,
+    /// The source offsets of the line last looked up, and its index.
+    cached: (usize, usize, usize),
 }
 
 #[derive(Debug)]
@@ -322,6 +343,8 @@ struct Converter<'a> {
     unshifted_ends: Vec<NodeId>,
     /// Every code span and its backtick count, which its range includes.
     code_ticks: Vec<(NodeId, i64)>,
+    /// A subject line buffer to reuse for the next inline context.
+    spare_lines: Vec<SubjectLine>,
     /// The first line's indentation of the HTML block being read, used
     /// unless pulldown-cmark reports it.
     html_indentation: Option<String>,
@@ -353,6 +376,7 @@ impl<'a> Converter<'a> {
             gap_from: 0,
             unshifted_ends: Vec::new(),
             code_ticks: Vec::new(),
+            spare_lines: Vec::new(),
             html_indentation: None,
         }
     }
@@ -363,7 +387,10 @@ impl<'a> Converter<'a> {
         if !self.options.contains(ParseOptions::DISABLE_SMART_OPTS) {
             pulldown_options |= Options::ENABLE_SMART_PUNCTUATION;
         }
-        let parser = Parser::new_ext(self.text, pulldown_options).into_offset_iter();
+        // cmark skips a UTF-8 byte order mark at the start of the first line;
+        // pulldown-cmark would read it as text.
+        let bom = if self.text.starts_with('\u{FEFF}') { 3 } else { 0 };
+        let parser = Parser::new_ext(&self.text[bom..], pulldown_options).into_offset_iter();
 
         self.frames.push(Frame {
             kind: FrameKind::Document,
@@ -375,6 +402,7 @@ impl<'a> Converter<'a> {
         });
 
         for (event, range) in parser {
+            let range = range.start + bom..range.end + bom;
             match event {
                 Event::Start(tag) => self.start(tag, range),
                 Event::End(tag) => self.end(tag, range),
@@ -653,18 +681,21 @@ impl<'a> Converter<'a> {
     // MARK: Inline contexts
 
     fn new_inline_context(
-        &self,
+        &mut self,
         first_offset: usize,
         start_line: i64,
         block_offset: i64,
         single_line: bool,
     ) -> InlineContext {
+        let mut lines = std::mem::take(&mut self.spare_lines);
+        lines.clear();
+        lines.push(SubjectLine {
+            source_start: first_offset,
+            subject_start: 0,
+        });
         InlineContext {
             first_source_line: self.line_of(first_offset),
-            lines: vec![SubjectLine {
-                source_start: first_offset,
-                subject_start: 0,
-            }],
+            lines,
             line: start_line,
             block_offset,
             base: 0,
@@ -673,16 +704,29 @@ impl<'a> Converter<'a> {
             single_line,
             kept_whitespace: None,
             content_end: None,
+            cached: (0, 0, 0),
+        }
+    }
+
+    /// Ends the current inline context, keeping its line buffer for reuse.
+    fn drop_inline(&mut self) {
+        if let Some(context) = self.inline.take() {
+            self.spare_lines = context.lines;
+        }
+    }
+
+    /// Forgets the paragraph a table could have interrupted.
+    fn discard_closed_paragraph(&mut self) {
+        if let Some(paragraph) = self.closed_paragraph.take() {
+            self.spare_lines = paragraph.context.lines;
         }
     }
 
     /// The subject position of a source offset in the current inline
     /// container.
     fn subject(&mut self, offset: usize) -> i64 {
-        let line = self.lines.line_of(offset);
         let context = self.inline.as_ref().expect("an inline context");
-        let index = line.saturating_sub(context.first_source_line);
-        if context.single_line || line < context.first_source_line {
+        if context.single_line {
             let first = context.lines[0];
             let removed = context
                 .removed
@@ -691,10 +735,28 @@ impl<'a> Converter<'a> {
                 .count() as i64;
             return first.subject_start + offset as i64 - first.source_start as i64 - removed;
         }
+        // Most lookups fall on the line of the previous one.
+        if (context.cached.0..context.cached.1).contains(&offset) {
+            let subject_line = context.lines[context.cached.2];
+            return subject_line.subject_start + offset.saturating_sub(subject_line.source_start) as i64;
+        }
+        let line = self.lines.line_of(offset);
+        if line < context.first_source_line {
+            let first = context.lines[0];
+            return first.subject_start + offset as i64 - first.source_start as i64;
+        }
+        let index = line - context.first_source_line;
         while self.inline.as_ref().unwrap().lines.len() <= index {
             self.extend_subject();
         }
-        let context = self.inline.as_ref().unwrap();
+        let next_start = if line + 1 < self.lines.count() {
+            self.lines.start(line + 1)
+        } else {
+            usize::MAX
+        };
+        let line_start = self.lines.start(line);
+        let context = self.inline.as_mut().unwrap();
+        context.cached = (line_start, next_start, index);
         let subject_line = context.lines[index];
         subject_line.subject_start + offset.saturating_sub(subject_line.source_start) as i64
     }
@@ -1249,7 +1311,7 @@ impl<'a> Converter<'a> {
         }
         self.close_synthetic_paragraph();
         if !matches!(tag, Tag::Table(_)) {
-            self.closed_paragraph = None;
+            self.discard_closed_paragraph();
         }
         if !matches!(
             tag,
@@ -1558,7 +1620,7 @@ impl<'a> Converter<'a> {
             TagEnd::Heading(_) => self.end_heading(range.clone()),
             TagEnd::BlockQuote(_) => {
                 self.close_synthetic_paragraph();
-                self.closed_paragraph = None;
+                self.discard_closed_paragraph();
                 self.prefixes.pop();
                 let frame = self.frames.pop().expect("a block quote frame");
                 self.container = frame.outer_container;
@@ -1572,7 +1634,7 @@ impl<'a> Converter<'a> {
             }
             TagEnd::List(_) => {
                 self.close_synthetic_paragraph();
-                self.closed_paragraph = None;
+                self.discard_closed_paragraph();
                 let frame = self.frames.pop().expect("a list frame");
                 let FrameKind::List { start } = frame.kind else {
                     unreachable!()
@@ -1602,7 +1664,7 @@ impl<'a> Converter<'a> {
             }
             TagEnd::Item => {
                 self.close_synthetic_paragraph();
-                self.closed_paragraph = None;
+                self.discard_closed_paragraph();
                 let width = match self.prefixes.pop() {
                     Some(Prefix::Item { width, .. }) => width,
                     _ => 0,
@@ -1720,10 +1782,8 @@ impl<'a> Converter<'a> {
                     .as_deref()
                     .map(trim_cmark_space)
                     .filter(|destination| !destination.is_empty())
-                    .map(|destination| destination.to_owned());
-                let title = (!title.is_empty()).then(|| title.to_string());
-                let destination = destination.map(|destination| self.arena.push_str(&destination));
-                let title = title.map(|title| self.arena.push_str(&title));
+                    .map(|destination| self.arena.push_str(destination));
+                let title = (!title.is_empty()).then(|| self.arena.push_str(title));
                 RawMarkupData::Link { destination, title }
             }
             FrameKind::Image {
@@ -1733,10 +1793,8 @@ impl<'a> Converter<'a> {
             } => {
                 let source = Some(trim_cmark_space(source))
                     .filter(|source| !source.is_empty())
-                    .map(str::to_owned);
-                let title = (!title.is_empty()).then(|| title.to_string());
-                let source = source.map(|source| self.arena.push_str(&source));
-                let title = title.map(|title| self.arena.push_str(&title));
+                    .map(|source| self.arena.push_str(source));
+                let title = (!title.is_empty()).then(|| self.arena.push_str(title));
                 RawMarkupData::Image { source, title }
             }
             _ => unreachable!(),
@@ -1763,7 +1821,7 @@ impl<'a> Converter<'a> {
             }
         }
         self.flush_text(None);
-        self.inline = None;
+        self.drop_inline();
         let frame = self.frames.pop().expect("a heading frame");
         let FrameKind::Heading { level, setext } = frame.kind else {
             unreachable!()
@@ -1788,7 +1846,7 @@ impl<'a> Converter<'a> {
     /// list it stays open across blank lines until the next block.
     fn rule(&mut self, range: Range<usize>) {
         self.close_synthetic_paragraph();
-        self.closed_paragraph = None;
+        self.discard_closed_paragraph();
         self.scan_gap_before(range.start);
         self.gap_from = range.end;
         let start = self.block_start(range.start);
@@ -1799,16 +1857,44 @@ impl<'a> Converter<'a> {
     }
 
     fn end_code_block(&mut self, range: Range<usize>) {
+        let first_line = self.line_of(range.start);
+        let unclosed_fence_at_end = self
+            .frames
+            .last()
+            .is_some_and(|frame| matches!(frame.kind, FrameKind::CodeBlock { fenced: Some(_), .. }))
+            && range.end == self.bytes.len()
+            && !self.bytes.ends_with(b"\n")
+            && !self.bytes.ends_with(b"\r")
+            && self.lines.count() - 1 > first_line;
+        if unclosed_fence_at_end {
+            // A last line without a line ending that is blank once the
+            // fence's indentation is stripped: pulldown-cmark leaves it out,
+            // cmark keeps it as a line of the block.
+            let last = self.lines.count() - 1;
+            let line = self.line(last);
+            let (mut scan, all_matched) = line.match_prefixes(&self.prefixes);
+            let opening = self.line(first_line);
+            let (opening_scan, _) = opening.match_prefixes(&self.prefixes);
+            let mut fence_offset = range.start.saturating_sub(opening_scan.offset);
+            while fence_offset > 0 && is_space_or_tab(line.peek(scan.offset)) {
+                line.advance(&mut scan, 1, true);
+                fence_offset -= 1;
+            }
+            let end = self.lines.end(last);
+            let content = &self.text[scan.offset.min(end)..end];
+            if all_matched && content.bytes().all(is_space_or_tab) {
+                if !self.literal.is_empty() && !self.literal.ends_with('\n') {
+                    self.literal.push('\n');
+                }
+                self.literal.push_str(content);
+                self.literal.push('\n');
+            }
+        }
         let frame = self.frames.pop().expect("a code block frame");
         let FrameKind::CodeBlock { fenced, ref info } = frame.kind else {
             unreachable!()
         };
-        let first_line = self.line_of(frame.range.start);
-        let mut code = normalize_line_endings(&self.literal);
-        if !code.is_empty() && !code.ends_with('\n') {
-            code.push('\n');
-        }
-        let code = self.arena.push_str(&code);
+        let code = self.push_literal();
         let language = info
             .as_deref()
             .map(str::trim)
@@ -1833,6 +1919,22 @@ impl<'a> Converter<'a> {
         };
         self.record(node, first_line, Some(frame.start), frame.range, rule);
         self.children.push(node);
+    }
+
+    /// Stores the code or HTML block literal read so far: line endings as
+    /// `\n`, and a final one (cmark gives every line one).
+    fn push_literal(&mut self) -> crate::base::raw_markup::StrRef {
+        let start = self.arena.strings.len();
+        if self.literal.contains('\r') {
+            let normalized = self.literal.replace("\r\n", "\n").replace('\r', "\n");
+            self.arena.strings.push_str(&normalized);
+        } else {
+            self.arena.strings.push_str(&self.literal);
+        }
+        if self.arena.strings.len() > start && !self.arena.strings.ends_with('\n') {
+            self.arena.strings.push('\n');
+        }
+        self.arena.str_since(start)
     }
 
     fn is_closing_fence(&self, line: usize, fence: u8, length: usize) -> bool {
@@ -1875,11 +1977,7 @@ impl<'a> Converter<'a> {
         self.flush_html_indentation();
         let frame = self.frames.pop().expect("an HTML block frame");
         let first_line = self.line_of(frame.range.start);
-        let mut literal = normalize_line_endings(&self.literal);
-        if !literal.is_empty() && !literal.ends_with('\n') {
-            literal.push('\n');
-        }
-        let literal = self.arena.push_str(&literal);
+        let literal = self.push_literal();
         let node = self.arena.create(RawMarkupData::HtmlBlock(literal), None, &[]);
         let kind = html_block_kind(&self.bytes[frame.range.start..]);
         let rule = if (1..=5).contains(&kind) {
@@ -1949,7 +2047,7 @@ impl<'a> Converter<'a> {
         {
             // A loose item: pulldown-cmark's paragraph starts after the box.
             let frame = self.frames.pop().unwrap();
-            self.inline = None;
+            self.drop_inline();
             self.open_paragraph(range.start, false);
             self.frames.last_mut().unwrap().range.end = frame.range.end;
         } else {
@@ -2173,7 +2271,7 @@ impl<'a> Converter<'a> {
 
         let mut start = (0, 0);
         let mut end_column = 0;
-        self.inline = None;
+        self.drop_inline();
         self.skip_inlines = true;
         if let (Some(cell), Some(cell_state)) = (cell, cell_state)
             && !cell_state.autocompleted
@@ -2209,7 +2307,7 @@ impl<'a> Converter<'a> {
 
     fn end_table_cell(&mut self) {
         self.flush_text(None);
-        self.inline = None;
+        self.drop_inline();
         self.skip_inlines = false;
         let frame = self.frames.pop().expect("a table cell frame");
         let FrameKind::TableCell { end_column } = frame.kind else {
@@ -2366,13 +2464,6 @@ fn normalize_code(text: &str) -> String {
     } else {
         code
     }
-}
-
-fn normalize_line_endings(text: &str) -> String {
-    if !text.contains('\r') {
-        return text.to_owned();
-    }
-    text.replace("\r\n", "\n").replace('\r', "\n")
 }
 
 fn contains(haystack: &[u8], needle: &[u8]) -> bool {

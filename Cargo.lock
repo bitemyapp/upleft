@@ -748,6 +748,7 @@ dependencies = [
 name = "upleft-markup"
 version = "0.1.0"
 dependencies = [
+ "memchr",
  "pulldown-cmark",
  "serde_json",
  "upleft-cmark-gfm-sys",

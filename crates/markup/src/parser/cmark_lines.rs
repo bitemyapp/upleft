@@ -18,9 +18,13 @@ pub(crate) struct SourceLines {
     starts: Vec<usize>,
     /// Byte offset where each line's content ends (before its line ending).
     ends: Vec<usize>,
-    /// `last_line_length` where it is not the line's length: an ATX heading's
-    /// line, which `chop_trailing_hashtags` trims in place.
-    lengths: Vec<(usize, usize)>,
+    /// `last_line_length` for each line: its length without the line ending,
+    /// or less for an ATX heading's line, which `chop_trailing_hashtags`
+    /// trims in place.
+    lengths: Vec<u32>,
+    /// The line of the last lookup: lookups mostly move forward a line at a
+    /// time.
+    cursor: std::cell::Cell<usize>,
 }
 
 impl SourceLines {
@@ -45,10 +49,16 @@ impl SourceLines {
             starts.push(start);
             ends.push(bytes.len());
         }
+        let lengths = starts
+            .iter()
+            .zip(&ends)
+            .map(|(start, end)| (end - start) as u32)
+            .collect();
         SourceLines {
             starts,
             ends,
-            lengths: Vec::new(),
+            lengths,
+            cursor: std::cell::Cell::new(0),
         }
     }
 
@@ -60,11 +70,24 @@ impl SourceLines {
     /// The 0-based line containing `offset`. An offset inside a line ending
     /// belongs to that line; the end of the text belongs to the last line.
     pub(crate) fn line_of(&self, offset: usize) -> usize {
-        match self.starts.binary_search(&offset) {
+        let count = self.starts.len();
+        let hint = self.cursor.get();
+        if hint < count && self.starts[hint] <= offset {
+            if hint + 1 == count || offset < self.starts[hint + 1] {
+                return hint;
+            }
+            if hint + 2 == count || offset < self.starts[hint + 2] {
+                self.cursor.set(hint + 1);
+                return hint + 1;
+            }
+        }
+        let line = match self.starts.binary_search(&offset) {
             Ok(line) => line,
             Err(0) => 0,
             Err(next) => next - 1,
-        }
+        };
+        self.cursor.set(line);
+        line
     }
 
     pub(crate) fn start(&self, line: usize) -> usize {
@@ -79,10 +102,7 @@ impl SourceLines {
     /// cmark's `last_line_length` for the line: its length without the line
     /// ending.
     pub(crate) fn len(&self, line: usize) -> usize {
-        if let Some(&(_, length)) = self.lengths.iter().rev().find(|&&(at, _)| at == line) {
-            return length;
-        }
-        self.ends[line] - self.starts[line]
+        self.lengths[line] as usize
     }
 
     /// The line's full length (`curline.size` without the line ending), which
@@ -93,13 +113,13 @@ impl SourceLines {
 
     /// Records that cmark trimmed the line to `length` bytes.
     pub(crate) fn set_len(&mut self, line: usize, length: usize) {
-        self.lengths.push((line, length));
+        self.lengths[line] = length as u32;
     }
 
 }
 
 fn memchr_line_end(bytes: &[u8]) -> Option<usize> {
-    bytes.iter().position(|&byte| byte == b'\n' || byte == b'\r')
+    memchr::memchr2(b'\n', b'\r', bytes)
 }
 
 /// A container that consumes a prefix of each line it continues on.
@@ -160,8 +180,11 @@ impl<'a> Line<'a> {
     }
 
     pub(crate) fn scan(&self) -> LineScan {
+        // `S_process_line` skips a byte order mark at the start of the first
+        // line.
+        let bom = self.index == 0 && self.bytes.starts_with(&[0xEF, 0xBB, 0xBF]);
         LineScan {
-            offset: self.start,
+            offset: self.start + if bom { 3 } else { 0 },
             column: 0,
             partially_consumed_tab: false,
         }
