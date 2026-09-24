@@ -103,7 +103,7 @@ While streaming, a Mermaid or math fence the stream has not closed yet (no closi
 
 A hosted `update` keeps its whole-document passes proportional to the edit: the paragraph index, the base display map, the elided-attribute pass, the accessibility children and the layout. It also decorates everything a whole-text update would have changed, so a streamed message ends up identical to the same message given whole. That includes the inserted text itself, whole physical paragraphs, and blocks whose parse changed because of later text: a footnote or link reference defined further down, or safe HTML paired with a closing tag in a later block. The diff cannot see those blocks, because it compares each block's own bytes. `hosted_embedding_tests` checks storage attributes, display maps, paragraphs and heights for streamed and whole messages, and `hosted_transcript` checks pixels.
 
-Appends are cheap. On an Apple M5 Max, in a release build, an append to a 200 KB message costs 2.2 ms at p50 and 3.1 ms at p99. That covers `update` with the storage edit and the host's restack, `prepare_for_display`, and the window's draw. The worst append, 6.7 ms, was the one that completed a footnote definition, which re-decorates every paragraph citing it. On Downright's document path the same appends cost 29 ms at p50. The first update of a whole message lays all of it out, because the height must be exact: 370 ms for 200 KB. A host restoring a long history should create the visible rows first.
+Appends are cheap. On an Apple M5 Max, in a release build, an append to a 200 KB message costs 2.3 ms at p50 and 3.3 ms at p99. That covers `update` with the storage edit and the host's restack, `prepare_for_display`, and the window's draw. The worst append, 6.5 ms, was the one that completed a footnote definition, which re-decorates every paragraph citing it. On Downright's document path the same appends cost 29 ms at p50. The first update of a whole message lays all of it out, because the height must be exact: about 390 ms for 200 KB. A host restoring a long history should create the visible rows first.
 
 ## Diagrams and math off the main thread
 
@@ -171,9 +171,10 @@ Subclasses of `DownrightFragment` are also registered at run time, under the nam
 
 ## Limitations
 
-- The first update of a whole message lays out all of it, on the main thread (about 370 ms for 200 KB). The height must be exact, and TextKit lays out only on the main thread.
+- The first update of a whole message lays out all of it, on the main thread (about 390 ms for 200 KB). The height must be exact, and TextKit lays out only on the main thread.
 - While a diagram or formula renders, its block is a placeholder of estimated height. The message's height changes once when the image lands. A key the view has rendered before takes that size at once.
 - Hyphenation applies to whole paragraphs. TextKit has no per-run switch, so inline code in a hyphenated paragraph can break at a hyphen.
 - A hosted view reads the main screen's backing scale when it schedules a diagram, as Downright does when it draws one. A window that moves to a screen with another scale keeps the diagrams it has until they are laid out again.
+- Hosted views are built and tested for Read mode. `set_mode` still works on them, but editing in a hosted view (Live or Source mode) is untested.
 - Source focus (`focus_source`) works in a hosted view but takes the full base-display-map pass on every update.
 - A hosted view still captures a viewport anchor in `set_mode`, `set_configuration` and `set_style_sheet`. Nothing uses it, and nothing scrolls.

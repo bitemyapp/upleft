@@ -979,7 +979,9 @@ impl MarkdownTextView {
         ivars.fragment_context.mode.set(RenderMode::Read);
         this.apply_measure();
         this.apply_mode_chrome();
-        this.hosted_relayout();
+        // No layout yet: the host's first `update` decorates, lays out and
+        // sizes the view.
+        this.setFrameSize(NSSize::new(width, 0.0));
         this
     }
 
