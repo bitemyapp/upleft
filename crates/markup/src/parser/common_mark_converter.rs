@@ -142,6 +142,9 @@ struct BlockRecord {
     start: Option<(i64, i64)>,
     /// Where pulldown-cmark's source range for the block ends.
     range_end: usize,
+    /// The container (document, block quote or item) the block is in, whose
+    /// link reference definitions can end it.
+    container: u32,
     rule: EndRule,
 }
 
@@ -349,6 +352,8 @@ struct Converter<'a> {
     code_ticks: Vec<(NodeId, i64)>,
     /// A subject line buffer to reuse for the next inline context.
     spare_lines: Vec<SubjectLine>,
+    /// Where the code block's last text event ended.
+    code_text_end: usize,
     /// Whether the source has `^[`, which may start swift-markdown's inline
     /// attributes; only then are text and link sources recorded.
     attributes_possible: bool,
@@ -387,6 +392,7 @@ impl<'a> Converter<'a> {
             unshifted_ends: Vec::new(),
             code_ticks: Vec::new(),
             spare_lines: Vec::new(),
+            code_text_end: 0,
             attributes_possible: memchr::memmem::find(text.as_bytes(), b"^[").is_some(),
             inline_sources: Vec::new(),
             html_indentation: None,
@@ -473,14 +479,20 @@ impl<'a> Converter<'a> {
         (line as i64 + 1, (offset - self.lines.start(line)) as i64 + 1)
     }
 
-    /// The last line of `range` that is not blank.
+    /// The last line of `range` that is not blank once the current
+    /// containers' prefixes are stripped.
     fn last_content_line(&self, range: &Range<usize>) -> usize {
         let first = self.line_of(range.start);
         let mut last = self.line_of(range.end.saturating_sub(1).max(range.start));
         while last > first {
             let start = self.lines.start(last);
             let end = self.lines.end(last);
-            if self.bytes[start..end].iter().all(|&byte| is_space_or_tab(byte)) {
+            let blank = self.bytes[start..end].iter().all(|&byte| is_space_or_tab(byte)) || {
+                let line = self.line(last);
+                let (scan, all_matched) = line.match_prefixes(&self.prefixes);
+                all_matched && line.first_nonspace(&scan).blank
+            };
+            if blank {
                 last -= 1;
             } else {
                 break;
@@ -536,6 +548,7 @@ impl<'a> Converter<'a> {
             first_line,
             start,
             range_end: range.end,
+            container: self.container,
             rule,
         });
     }
@@ -587,7 +600,8 @@ impl<'a> Converter<'a> {
                             || self.line_of(container_end.saturating_sub(1)) + 1,
                             |next| next.first_line,
                         );
-                        let definition = self.definition_line(self.line_of(record.range_end), bound);
+                        let definition =
+                            self.definition_line(self.line_of(record.range_end), bound, record.container);
                         let candidate = match (next.map(|next| next.first_line), definition) {
                             (Some(a), Some(b)) => Some(a.min(b)),
                             (a, b) => a.or(b),
@@ -610,12 +624,14 @@ impl<'a> Converter<'a> {
         }
     }
 
-    /// The first line of a link reference definition in lines `from..to`.
-    fn definition_line(&self, from: usize, to: usize) -> Option<usize> {
+    /// The first line of a link reference definition in lines `from..to`
+    /// that is directly in `container`.
+    fn definition_line(&self, from: usize, to: usize, container: u32) -> Option<usize> {
         let index = self.definitions.partition_point(|&(line, _, _)| line < from);
-        self.definitions
-            .get(index)
-            .filter(|&&(line, _, _)| line < to)
+        self.definitions[index..]
+            .iter()
+            .take_while(|&&(line, _, _)| line < to)
+            .find(|&&(_, _, definition_container)| definition_container == container)
             .map(|&(line, _, _)| line)
     }
 
@@ -965,6 +981,7 @@ impl<'a> Converter<'a> {
     fn text_event(&mut self, text: CowStr<'a>, range: Range<usize>) {
         if self.top_is(|kind| matches!(kind, FrameKind::CodeBlock { .. })) {
             self.literal.push_str(&text);
+            self.code_text_end = range.end;
             return;
         }
         if self.top_is(|kind| matches!(kind, FrameKind::HtmlBlock { .. })) {
@@ -1442,6 +1459,7 @@ impl<'a> Converter<'a> {
                     CodeBlockKind::Indented => (None, None),
                 };
                 self.literal.clear();
+                self.code_text_end = range.start;
                 self.push_frame(FrameKind::CodeBlock { fenced, info }, start, range);
             }
             Tag::HtmlBlock => {
@@ -1704,19 +1722,34 @@ impl<'a> Converter<'a> {
                 else {
                     unreachable!()
                 };
-                // A definition is a paragraph child until cmark finalizes it.
-                let empty = self.children.len() == frame.children_start
-                    && !self
-                        .definitions
-                        .last()
-                        .is_some_and(|definition| definition.2 == item_container);
+                // A definition is a paragraph child until cmark finalizes it,
+                // at the blank line after it: from then on the item is empty.
+                let no_children = self.children.len() == frame.children_start;
+                let last_definition = self
+                    .definitions
+                    .last()
+                    .filter(|definition| definition.2 == item_container)
+                    .map(|definition| definition.0);
+                let empty = no_children && last_definition.is_none();
                 let node = self.container(&frame, RawMarkupData::ListItem { checkbox }, None);
                 // An item with nothing after its marker continues only over
                 // blank lines indented at least as far as its content
                 // (`parse_node_item_prefix` needs a child to accept a less
                 // indented blank line).
+                let after_definitions = last_definition
+                    .filter(|_| no_children)
+                    .map(|line| line + 1)
+                    .filter(|&line| line < self.lines.count() && {
+                        let text_line = self.line(line);
+                        let (scan, all_matched) = text_line.match_prefixes(&self.prefixes);
+                        all_matched && text_line.first_nonspace(&scan).blank
+                    });
                 let rule = if empty {
                     let n = self.empty_item_end(first_line, width);
+                    self.finish_block(node, Some(frame.start), first_line, n, false);
+                    EndRule::Done { n }
+                } else if let Some(blank) = after_definitions {
+                    let n = self.empty_item_end(blank, width);
                     self.finish_block(node, Some(frame.start), first_line, n, false);
                     EndRule::Done { n }
                 } else {
@@ -1946,8 +1979,10 @@ impl<'a> Converter<'a> {
         let attributes = self.arena.push_str(&self.text[open + 1..end - 1]);
         let link = &mut self.arena.nodes[node as usize];
         link.data = RawMarkupData::InlineAttributes { attributes };
+        // `handle_close_bracket_attribute` puts the span on the line of its
+        // closing bracket, at the opener's column.
         link.parsed_range = link.parsed_range.and_then(|range| {
-            let lower = SourceLocation::new(range.lower_bound.line, range.lower_bound.column - 1);
+            let lower = SourceLocation::new(range.upper_bound.line, range.lower_bound.column - 1);
             (lower <= range.upper_bound).then(|| SourceRange::new(lower, range.upper_bound))
         });
         // The text before loses its `^`.
@@ -2079,6 +2114,9 @@ impl<'a> Converter<'a> {
                 let length = self.arena.strings.len() - cut.len();
                 self.arena.strings.truncate(length);
                 pending.end = content_end.max(pending.start);
+            } else if cut.bytes().all(is_space_or_tab) {
+                // Whitespace pulldown-cmark counted in a decoded piece's range.
+                pending.end = content_end.max(pending.start);
             }
         }
         self.flush_text(None);
@@ -2128,7 +2166,8 @@ impl<'a> Converter<'a> {
             && range.end == self.bytes.len()
             && !self.bytes.ends_with(b"\n")
             && !self.bytes.ends_with(b"\r")
-            && self.lines.count() - 1 > first_line;
+            && self.lines.count() - 1 > first_line
+            && self.code_text_end <= self.lines.start(self.lines.count() - 1);
         if unclosed_fence_at_end {
             // A last line without a line ending that is blank once the
             // fence's indentation is stripped: pulldown-cmark leaves it out,
@@ -2170,7 +2209,23 @@ impl<'a> Converter<'a> {
         let rule = match fenced {
             Some((fence, length)) => {
                 let last = self.line_of(range.end.saturating_sub(1).max(range.start));
-                if last > first_line && self.is_closing_fence(last, fence, length) {
+                let last_is_content = self.code_text_end > self.lines.start(last);
+                if last > first_line && last_is_content && self.is_closing_fence(last, fence, length) {
+                    // pulldown-cmark kept a closing fence followed by a tab
+                    // as a line of code; cmark closes the block there.
+                    let code = self.arena.str(code);
+                    let without = code[..code.len() - 1].rfind('\n').map_or(0, |newline| newline + 1);
+                    let trimmed = code.len() - without;
+                    if let RawMarkupData::CodeBlock { code, language } = self.arena.nodes[node as usize].data {
+                        self.arena.nodes[node as usize].data = RawMarkupData::CodeBlock {
+                            code: code.shortened(trimmed),
+                            language,
+                        };
+                    }
+                    let n = Finalize::Line(last);
+                    self.finish_block(node, Some(frame.start), first_line, n, true);
+                    EndRule::Done { n }
+                } else if last > first_line && self.is_closing_fence(last, fence, length) {
                     let n = Finalize::Line(last);
                     self.finish_block(node, Some(frame.start), first_line, n, true);
                     EndRule::Done { n }

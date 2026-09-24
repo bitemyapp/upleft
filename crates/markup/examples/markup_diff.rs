@@ -8,11 +8,13 @@
 //!
 //! ```sh
 //! cargo run --release -p upleft-markup --features cmark-oracle --example markup_diff -- \
-//!     [--corpus] [--spec] [--mutations N] [--random N] [--show K] [--category TEXT] [FILE...]
+//!     [--corpus] [--spec] [--incremental] [--mutations N] [--random N] [--show K]
+//!     [--category TEXT] [--source NAME] [FILE...]
 //! ```
 //!
-//! With no source flags and no files it checks the corpus, the spec examples
-//! and 2,000 mutated and 2,000 random documents.
+//! With no source flags and no files it checks the corpus, the spec examples,
+//! the texts the `incremental` suite parses after each edit, and 2,000
+//! mutated and 2,000 random documents. `--source NAME` prints one input.
 
 use std::collections::BTreeMap;
 use std::path::{Path, PathBuf};
@@ -392,6 +394,86 @@ fn mutate(random: &mut Random, source: &str) -> String {
     text.into_iter().collect()
 }
 
+/// The texts the `incremental` conformance suite parses: each corpus
+/// document after each of its eight edits (`IncrementalDump.edit`), applied
+/// in UTF-16 units as `NSTextStorage` applies them.
+fn incremental_texts(source: &str) -> Vec<String> {
+    fn snap(offset: isize, text: &[u16]) -> isize {
+        let n = text.len() as isize;
+        let mut p = 0.max(offset.min(n));
+        while p > 0 && p < n && (0xDC00..=0xDFFF).contains(&text[p as usize]) {
+            p -= 1;
+        }
+        p
+    }
+    let is_letter = |c: u16| (0x41..=0x5A).contains(&c) || (0x61..=0x7A).contains(&c);
+    let is_break = |c: u16| c == 0x0A || c == 0x0D;
+    let line_start = |offset: isize, text: &[u16]| {
+        let mut s = offset;
+        while s > 0 && !is_break(text[(s - 1) as usize]) {
+            s -= 1;
+        }
+        s
+    };
+    let mut text: Vec<u16> = source.encode_utf16().collect();
+    let mut texts = Vec::new();
+    for step in 0..8 {
+        let n = text.len() as isize;
+        let (start, length, replacement): (isize, isize, &str) = match step {
+            0 => (snap(n / 3, &text), 0, "x"),
+            1 => {
+                let p = snap(2 * n / 3, &text);
+                if p >= n {
+                    (p, 0, "")
+                } else {
+                    let c = text[p as usize];
+                    (p, if (0xD800..=0xDBFF).contains(&c) && p + 1 < n { 2 } else { 1 }, "")
+                }
+            }
+            2 => (snap(n / 2, &text), 0, "\n"),
+            3 => {
+                let start = snap(n / 4, &text);
+                let mut found = (start, 0);
+                let mut i = start;
+                while i < n {
+                    if is_letter(text[i as usize]) {
+                        let mut j = i;
+                        while j < n && is_letter(text[j as usize]) {
+                            j += 1;
+                        }
+                        if j - i >= 3 {
+                            found = (i, j - i);
+                            break;
+                        }
+                        i = j;
+                    } else {
+                        i += 1;
+                    }
+                }
+                (found.0, found.1, "renamed")
+            }
+            4 => (line_start(snap(3 * n / 4, &text), &text), 0, "# "),
+            5 => {
+                let s = line_start(snap(n / 5, &text), &text);
+                let mut e = s;
+                while e < n && !is_break(text[e as usize]) {
+                    e += 1;
+                }
+                if e < n {
+                    e += if text[e as usize] == 0x0D && e + 1 < n && text[(e + 1) as usize] == 0x0A { 2 } else { 1 };
+                }
+                (s, e - s, "")
+            }
+            6 => (snap(3 * n / 5, &text), 0, "**"),
+            _ => (snap(4 * n / 5, &text), 0, "\n\n- item\n"),
+        };
+        let replacement: Vec<u16> = replacement.encode_utf16().collect();
+        text.splice(start as usize..(start + length) as usize, replacement);
+        texts.push(String::from_utf16_lossy(&text));
+    }
+    texts
+}
+
 /// A document built from random blocks, inline fragments and nesting.
 fn generate(random: &mut Random) -> String {
     let mut text = String::new();
@@ -431,6 +513,7 @@ fn main() {
     let arguments: Vec<String> = std::env::args().skip(1).collect();
     let mut use_corpus = false;
     let mut use_spec = false;
+    let mut use_incremental = false;
     let mut mutations = 0;
     let mut random_documents = 0;
     let mut show = 3;
@@ -442,6 +525,7 @@ fn main() {
         match arguments[index].as_str() {
             "--corpus" => use_corpus = true,
             "--spec" => use_spec = true,
+            "--incremental" => use_incremental = true,
             "--mutations" => {
                 index += 1;
                 mutations = arguments[index].parse().expect("a count");
@@ -466,10 +550,16 @@ fn main() {
         }
         index += 1;
     }
-    let default = files.is_empty() && !use_corpus && !use_spec && mutations == 0 && random_documents == 0;
+    let default = files.is_empty()
+        && !use_corpus
+        && !use_spec
+        && !use_incremental
+        && mutations == 0
+        && random_documents == 0;
     if default {
         use_corpus = true;
         use_spec = true;
+        use_incremental = true;
         mutations = 2000;
         random_documents = 2000;
     }
@@ -502,6 +592,15 @@ fn main() {
             }
         }
     }
+    if use_incremental {
+        for path in rest.iter().chain(&spec) {
+            if let Some(text) = read(path) {
+                for (step, edited) in incremental_texts(&text).into_iter().enumerate() {
+                    inputs.push((format!("{} edit {step}", path.display()), edited, "incremental"));
+                }
+            }
+        }
+    }
     let seeds: Vec<String> = rest.iter().chain(&spec).filter_map(|path| read(path)).collect();
     let mut random = Random(0x5EED_CAFE_F00D);
     for number in 0..mutations {
@@ -525,6 +624,9 @@ fn main() {
 
     let mut by_source: BTreeMap<&str, (usize, usize)> = BTreeMap::new();
     let mut tally = Tally::default();
+    // Documents whose trees have the same shape but differ in ranges or
+    // properties: where an emulation gap would show.
+    let mut same_shape: BTreeMap<&str, Vec<&str>> = BTreeMap::new();
     for (name, text, source) in &inputs {
         let reference = dump(&cmark_oracle::parse(text, ParseOptions::DISABLE_SMART_OPTS));
         let candidate = dump(&Document::parse(text, ParseOptions::DISABLE_SMART_OPTS));
@@ -536,6 +638,9 @@ fn main() {
         }
         let mut found = Vec::new();
         compare(&reference, &candidate, "", &mut found);
+        if !found.iter().any(|(category, _)| category.starts_with("shape")) {
+            same_shape.entry(source).or_default().push(name);
+        }
         let mut seen = std::collections::BTreeSet::new();
         for (category, example) in found {
             *tally.nodes.entry(category.clone()).or_default() += 1;
@@ -552,6 +657,10 @@ fn main() {
     println!("identical trees:");
     for (source, (total, identical)) in &by_source {
         println!("  {source:<10} {identical:>6}/{total}");
+    }
+    println!("\nsame shape, other differences:");
+    for (source, names) in &same_shape {
+        println!("  {source:<10} {:>6}  {}", names.len(), names.iter().cloned().collect::<Vec<_>>().join(", "));
     }
     let mut categories: Vec<_> = tally.documents.iter().collect();
     categories.sort_by(|a, b| b.1.cmp(a.1).then(a.0.cmp(b.0)));
