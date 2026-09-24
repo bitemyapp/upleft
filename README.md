@@ -52,6 +52,8 @@ crates/swift-text           Swift String/Character/CharacterSet/NSString semanti
 corpus/                     documents the conformance runner checks
 ```
 
+Other applications can embed the renderer: docs/EMBEDDING.md covers hosted mode, where each `MarkdownTextView` is one message in the host's own scroll view (a chat transcript, for example).
+
 ## Conformance
 
 `oracle/` is a small Swift package that links Downright's own `MarkdownCore` and `MarkdownRender`. It writes three outputs for a document:
