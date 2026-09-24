@@ -10,13 +10,13 @@ The layers below are ported in this order. A layer counts as done only when the 
 
 | Layer | Swift source | Rust crate | Conformance gate | Status |
 |---|---|---|---|---|
-| cmark-gfm (C, not rewritten) | `swiftlang/swift-cmark` @ `7898f1b` | `upleft-cmark-gfm-sys` | links the identical C sources | done |
-| swift-markdown converter | `apple/swift-markdown` @ `27b7fc1` | `upleft-markup` | syntax-tree dump identical | **done**: 897/897 corpus documents identical; 5,000-line document parses in 2.1 ms vs 15.3 ms in Swift |
-| MarkdownCore | `Sources/MarkdownCore` | `upleft-core` | `parse` dump identical | **done**: parse 909/909 corpus documents identical (plus 14/14 UTF-8 edge cases); the text-level functions (`core-text`, `core-io`) are identical on 909/909 documents and 33/33 byte-level edge cases. The 5,000-line document parses in 6.3 ms vs 29.9 ms in Swift, and every other benchmarked stage is at least as fast. |
-| MarkdownRender | `Sources/MarkdownRender` | `upleft-render` | `decorate` dump and `render` pixels identical | **done**. The text view, every object fragment (lists, code, callouts, tables, images, rules, front matter, math, Mermaid), the density gutter and the decoration engine: render 3660/3660 (every corpus document in 4 variants), render-state 100/100 (all themes, Read mode, below the fold, highlights, change marks, folding, zoom, streamed appends, edits), render-dark-themes 100/100, render-images 28/28, decorate 5454/5454, incremental 2727/2727, displaymap 2727/2727. All captures are headless. Wholesale decoration is 0.44× Swift's time and document open to first frame 0.79×. See docs/VALIDATION.md. |
+| cmark-gfm (C) → pulldown-cmark | `swiftlang/swift-cmark` @ `7898f1b` | `pulldown-cmark` 0.13.4 plus the adapter in `upleft-markup`; `upleft-cmark-gfm-sys` (the C sources) is now only a test oracle | syntax-tree dump identical wherever the two parsers agree | **replaced**: no shipped binary links C Markdown code. The adapter rebuilds cmark-gfm's tree and source ranges, quirks included; against the C parser it is identical on 251/251 corpus documents, 744/744 spec examples, 7923/7960 texts the `incremental` suite parses after its edits, 19808/20000 mutated and 19786/20000 random documents. Every remaining difference is a genuine parsing difference (CommonMark 0.31 versus 0.29 plus GFM); they are listed in docs/KNOWN-DIFFERENCES.md. |
+| swift-markdown converter | `apple/swift-markdown` @ `27b7fc1` | `upleft-markup` | syntax-tree dump identical | **done**: markup 915/915 corpus documents identical; the 5,000-line document parses in 0.9 ms vs 10.6 ms in Swift (1.5 ms with the old cmark-gfm converter) |
+| MarkdownCore | `Sources/MarkdownCore` | `upleft-core` | `parse` dump identical | **done**: parse 915/915 corpus documents identical (plus 14/14 UTF-8 edge cases); the text-level functions (`core-text`, `core-io`) are identical on 915/915 documents and 33/33 byte-level edge cases. The 5,000-line document parses in 3.9 ms vs 24.1 ms in Swift, and every other benchmarked stage is at least as fast. |
+| MarkdownRender | `Sources/MarkdownRender` | `upleft-render` | `decorate` dump and `render` pixels identical | **done**. The text view, every object fragment (lists, code, callouts, tables, images, rules, front matter, math, Mermaid), the density gutter and the decoration engine: render 3660/3660 (every corpus document in 4 variants), render-state 100/100 (all themes, Read mode, below the fold, highlights, change marks, folding, zoom, streamed appends, edits), render-dark-themes 100/100, render-images 28/28, decorate 5490/5490, incremental 2718/2745 (the 27 are 9 edited texts that hit parser differences; see docs/VALIDATION.md), displaymap 2745/2745. All captures are headless. Wholesale decoration is 0.44× Swift's time and document open to first frame 0.79×. See docs/VALIDATION.md. |
 | SwiftMath | `Vendor/SwiftMath` | `upleft-math` | math pixels identical | **done**: math-image and math-tree each 15420/15420 identical (1285 inputs × 6 themes × light and dark); parse, typeset and render together take 137–175 ms vs 263–278 ms in Swift |
 | beautiful-mermaid + ELK | `lukilabs/*` | `upleft-mermaid`, `upleft-elk` | diagram pixels identical | **done**. ELK: elk 449/449 layouts identical (Mermaid-generated, elk-swift test, random and polyline graphs; where elk-swift itself varies between runs, Rust matches one of its outcomes), 6.6–14× faster than elk-swift. Mermaid, on 308 corpus diagrams of every type: mermaid-parse 308/308, mermaid-layout 1232/1232 and mermaid (bridge pixels) 1232/1232 across light, dark, Nord and High Contrast; mermaid-replay 211/211 (ELK inputs byte-identical to Swift's). The uncached bridge path is about 2.7× faster than Swift. |
-| DownrightApp and the command-line tools | `Sources/DownrightApp`, `drdownright`, `down`, `DownrightSpotlightMetadata`, `DownrightSpotlightImporter`, `DownrightQL`, `DownrightThumb` | `upleft-app`, `upleft` (the app binary), `upleft-cli`, `upleft-spotlight-metadata`, `upleft-spotlight-importer`, `upleft-quicklook`, `upleft-thumb`, `upleft-foundation` | app-layer suites identical; window captures identical | in progress. Done: the non-UI layer, the command-line tools, the windows, menus and panels, the app binary and `just upleft-app` (Upleft.app with `down`, Sparkle 2.9.6, the Spotlight importer and both Quick Look extensions). html-export 13706/13706 (6 themes × light and dark, plus print), spotlight 928/928, down-cli 244/244, workspace 6/6, find 4/4, palette 23/23, formats 30/30, updater 10/10, local-ai 4/4; app-window 42/42 (document window, start, setup and Settings windows, captured off-screen by the window server) and app-menu 4/4; panel 228/228 and panel-model 39/39 (589 states: every `Panels/` view built from a scenario off-screen, window-server pixels and view-tree dumps); quicklook-preview 16/16, quicklook-thumbnail 2745/2745. All `just app-bench` and `just panel-bench` stages (task panel on the 5,000-line document 0.76×, palette ranking 0.74–0.77× Swift) and `just app-window-bench` (document open, mode switch: 0.61–0.89× Swift) are as fast or faster. Unverified: the app launched on screen, a real Sparkle update, the system loading the importer and extensions. See `crates/app/PORTING.md` and `crates/app/src/panels/PORTING.md`. |
+| DownrightApp and the command-line tools | `Sources/DownrightApp`, `drdownright`, `down`, `DownrightSpotlightMetadata`, `DownrightSpotlightImporter`, `DownrightQL`, `DownrightThumb` | `upleft-app`, `upleft` (the app binary), `upleft-cli`, `upleft-spotlight-metadata`, `upleft-spotlight-importer`, `upleft-quicklook`, `upleft-thumb`, `upleft-foundation` | app-layer suites identical; window captures identical | in progress. Done: the non-UI layer, the command-line tools, the windows, menus and panels, the app binary and `just upleft-app` (Upleft.app with `down`, Sparkle 2.9.6, the Spotlight importer and both Quick Look extensions). html-export 14042/14042 (6 themes × light and dark, plus print), spotlight 928/928, down-cli 244/244, workspace 6/6, find 4/4, palette 23/23, formats 30/30, updater 10/10, local-ai 4/4; app-window 42/42 (document window, start, setup and Settings windows, captured off-screen by the window server) and app-menu 4/4; panel 228/228 and panel-model 39/39 (589 states: every `Panels/` view built from a scenario off-screen, window-server pixels and view-tree dumps); quicklook-preview 16/16, quicklook-thumbnail 2745/2745. All `just app-bench` and `just panel-bench` stages (task panel on the 5,000-line document 0.76×, palette ranking 0.74–0.77× Swift) and `just app-window-bench` (document open, mode switch: 0.61–0.89× Swift) are as fast or faster. Unverified: the app launched on screen, a real Sparkle update, the system loading the importer and extensions. See `crates/app/PORTING.md` and `crates/app/src/panels/PORTING.md`. |
 
 ## Performance
 
@@ -24,15 +24,15 @@ The layers below are ported in this order. A layer counts as done only when the 
 
 | Stage | Swift p50 | Upleft p50 | Upleft / Swift |
 |---|---:|---:|---:|
-| cmark alone (5k lines) | 11.5 | 1.6 | 0.14 |
-| MarkdownParser.parse, all passes | 25.3 | 5.2 | 0.21 |
-| parse 100 KB (cold open) | 21.1 | 3.9 | 0.18 |
-| incremental decorate, one dirty block | 0.086 | 0.051 | 0.59 |
-| wholesale decorate (mode switch) | 103.6 | 45.6 | 0.44 |
-| edit + paragraph map (typing response) | 0.138 | 0.080 | 0.58 |
-| worker pipeline (end-to-end convergence) | 25.7 | 5.4 | 0.21 |
-| Metrics.metrics | 24.1 | 5.7 | 0.24 |
-| syntax highlight 10 KB | 0.082 | 0.051 | 0.62 |
+| cmark alone (5k lines; Upleft: pulldown-cmark and the adapter) | 10.6 | 0.89 | 0.08 |
+| MarkdownParser.parse, all passes | 24.1 | 3.9 | 0.16 |
+| parse 100 KB (cold open) | 19.8 | 3.1 | 0.16 |
+| incremental decorate, one dirty block | 0.086 | 0.045 | 0.52 |
+| wholesale decorate (mode switch) | 93.2 | 41.1 | 0.44 |
+| edit + paragraph map (typing response) | 0.139 | 0.076 | 0.55 |
+| worker pipeline (end-to-end convergence) | 24.1 | 3.9 | 0.16 |
+| Metrics.metrics | 22.9 | 4.8 | 0.21 |
+| syntax highlight 10 KB | 0.082 | 0.046 | 0.56 |
 
 All 21 drbench stages are as fast or faster. The math, Mermaid and ELK layers have their own benchmarks; see each crate's `PORTING.md` and the status table above.
 
@@ -40,7 +40,7 @@ All 21 drbench stages are as fast or faster. The math, Mermaid and ELK layers ha
 
 ```text
 vendor/downright            the Swift original (git submodule, pinned)
-vendor/swift-cmark          cmark-gfm at the revision Downright resolves
+vendor/swift-cmark          cmark-gfm at the revision Downright resolves (Upleft's test oracle)
 vendor/swift-markdown       swift-markdown at the revision Downright resolves
 vendor/beautiful-mermaid-swift, vendor/elk-swift   Mermaid dependencies
 oracle/                     downright-oracle: the Swift reference for conformance

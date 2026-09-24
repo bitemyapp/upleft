@@ -3,6 +3,11 @@
 //! swift-markdown's `CommonMarkConverter` touches is declared here; the
 //! parse must be byte-for-byte the one Downright gets, so this crate never
 //! patches or reimplements the C library.
+//!
+//! Upleft parses with pulldown-cmark. This crate is the oracle that
+//! `upleft-markup`'s adapter is checked against: a dev-dependency of its
+//! tests and the `cmark-oracle` feature of its differential tool, linked by
+//! no shipped binary.
 #![allow(non_camel_case_types)]
 
 use core::ffi::{c_char, c_int, c_uint, c_void};

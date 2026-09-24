@@ -9,12 +9,14 @@
 //! ```sh
 //! cargo run --release -p upleft-markup --features cmark-oracle --example markup_diff -- \
 //!     [--corpus] [--spec] [--incremental] [--mutations N] [--random N] [--show K]
-//!     [--category TEXT] [--source NAME] [FILE...]
+//!     [--category TEXT] [--source NAME] [--minimize] [FILE...]
 //! ```
 //!
 //! With no source flags and no files it checks the corpus, the spec examples,
 //! the texts the `incremental` suite parses after each edit, and 2,000
-//! mutated and 2,000 random documents. `--source NAME` prints one input.
+//! mutated and 2,000 random documents. `--source NAME` prints one input;
+//! `--minimize` shrinks every differing input to a minimal repro and counts
+//! identical repros together.
 
 use std::collections::BTreeMap;
 use std::path::{Path, PathBuf};
@@ -509,6 +511,51 @@ fn generate(random: &mut Random) -> String {
     text
 }
 
+fn differs(text: &str) -> bool {
+    let reference = dump(&cmark_oracle::parse(text, ParseOptions::DISABLE_SMART_OPTS));
+    let candidate = dump(&Document::parse(text, ParseOptions::DISABLE_SMART_OPTS));
+    reference != candidate
+}
+
+/// Shrinks a differing document while it still differs: whole lines first,
+/// then single characters (a greedy one-at-a-time delta debugging).
+fn minimize(text: &str) -> String {
+    let mut lines: Vec<String> = text.split_inclusive('\n').map(str::to_owned).collect();
+    let mut changed = true;
+    while changed {
+        changed = false;
+        let mut index = 0;
+        while index < lines.len() {
+            let mut candidate = lines.clone();
+            candidate.remove(index);
+            if differs(&candidate.concat()) {
+                lines = candidate;
+                changed = true;
+            } else {
+                index += 1;
+            }
+        }
+    }
+    let mut characters: Vec<char> = lines.concat().chars().collect();
+    changed = true;
+    while changed {
+        changed = false;
+        let mut index = 0;
+        while index < characters.len() {
+            let mut candidate = characters.clone();
+            candidate.remove(index);
+            let candidate_text: String = candidate.iter().collect();
+            if differs(&candidate_text) {
+                characters = candidate;
+                changed = true;
+            } else {
+                index += 1;
+            }
+        }
+    }
+    characters.into_iter().collect()
+}
+
 fn main() {
     let arguments: Vec<String> = std::env::args().skip(1).collect();
     let mut use_corpus = false;
@@ -519,6 +566,7 @@ fn main() {
     let mut show = 3;
     let mut category_filter: Option<String> = None;
     let mut print_source: Option<String> = None;
+    let mut minimize_differences = false;
     let mut files = Vec::new();
     let mut index = 0;
     while index < arguments.len() {
@@ -542,6 +590,7 @@ fn main() {
                 index += 1;
                 category_filter = Some(arguments[index].clone());
             }
+            "--minimize" => minimize_differences = true,
             "--source" => {
                 index += 1;
                 print_source = Some(arguments[index].clone());
@@ -618,6 +667,25 @@ fn main() {
             if name == wanted {
                 print!("{text}");
             }
+        }
+        return;
+    }
+
+    if minimize_differences {
+        // Every differing input, shrunk to a minimal repro; identical repros
+        // are counted together.
+        let mut repros: BTreeMap<String, (usize, String)> = BTreeMap::new();
+        for (name, text, _) in &inputs {
+            if differs(text) {
+                let repro = minimize(text);
+                let entry = repros.entry(repro).or_insert((0, name.clone()));
+                entry.0 += 1;
+            }
+        }
+        let mut sorted: Vec<_> = repros.into_iter().collect();
+        sorted.sort_by(|a, b| (b.1).0.cmp(&(a.1).0).then(a.0.cmp(&b.0)));
+        for (repro, (count, name)) in sorted {
+            println!("{count:>5}  {repro:?}  ({name})");
         }
         return;
     }

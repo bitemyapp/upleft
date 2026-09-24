@@ -2118,6 +2118,10 @@ impl<'a> Converter<'a> {
                 // Whitespace pulldown-cmark counted in a decoded piece's range.
                 pending.end = content_end.max(pending.start);
             }
+            if pending.string_start == self.arena.strings.len() {
+                // Nothing of the text was inside the heading's content.
+                self.pending = None;
+            }
         }
         self.flush_text(None);
         let children_start = self.frames.last().expect("a heading frame").children_start;
