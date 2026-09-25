@@ -118,7 +118,7 @@ impl FragmentBehavior for CodeBlockFragment {
                 // Rounded top edge; square bottom butting the first code line.
                 fill_rect_corners(
                     cg,
-                    band,
+                    card_rect(band, &style),
                     &style.code_background,
                     render_metrics::CODE_CORNER_RADIUS,
                     RectCorners::TOP_LEFT | RectCorners::TOP_RIGHT,
@@ -134,7 +134,7 @@ impl FragmentBehavior for CodeBlockFragment {
             Role::CloseChrome => {
                 fill_rect_corners(
                     cg,
-                    band,
+                    card_rect(band, &style),
                     &style.code_background,
                     render_metrics::CODE_CORNER_RADIUS,
                     RectCorners::BOTTOM_LEFT | RectCorners::BOTTOM_RIGHT,
@@ -165,24 +165,36 @@ fn header_bar(style: &StyleSheet) -> bool {
     style.host.code_header == Some(true)
 }
 
+/// The part of `band` the block shows: with the header bar, the band less
+/// the code inset it reaches back past the view's leading edge, so the
+/// card's leading corners round where they can be seen.
+fn card_rect(band: CGRect, style: &StyleSheet) -> CGRect {
+    if !header_bar(style) {
+        return band;
+    }
+    let inset = render_metrics::CODE_INSET_X;
+    rect(band.min_x() + inset, band.min_y(), smax(1.0, band.width() - inset), band.height())
+}
+
 impl CodeBlockFragment {
     /// The host's header bar (`HostTypography::code_header`): the band
     /// tinted a step darker than the code under it with a hairline below,
     /// the language as a pill at the leading edge, the copy control always
     /// at the trailing edge — a check in the accent once copied.
     fn draw_header_bar(&self, fragment: &DownrightFragment, band: CGRect, style: &StyleSheet, cg: &CGContext) {
+        let card = card_rect(band, style);
         fill_rect_corners(
             cg,
-            band,
+            card,
             &style.code_rule.colorWithAlphaComponent(0.45),
             render_metrics::CODE_CORNER_RADIUS,
             RectCorners::TOP_LEFT | RectCorners::TOP_RIGHT,
         );
-        fill_rect(cg, rect(band.min_x(), band.max_y() - 1.0, band.width(), 1.0), &style.code_rule, 0.0);
+        fill_rect(cg, rect(card.min_x(), card.max_y() - 1.0, card.width(), 1.0), &style.code_rule, 0.0);
         if !self.language.is_empty() {
             let width = chip_text(&self.language, style).size().width + 16.0;
-            let y = band.min_y() + smax(0.0, (band.height() - 19.0) / 2.0);
-            let pill = rect(band.min_x() + 12.0, y, width, 19.0);
+            let y = card.min_y() + smax(0.0, (card.height() - 19.0) / 2.0);
+            let pill = rect(card.min_x() + 12.0, y, width, 19.0);
             fill_rect(cg, pill, &style.accent.colorWithAlphaComponent(0.16), 9.5);
             draw_text(cg, &chip_text(&self.language, style), pill.inset_by(8.0, 3.0), true);
         }
