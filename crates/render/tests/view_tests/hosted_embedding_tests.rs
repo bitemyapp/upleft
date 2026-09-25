@@ -33,6 +33,7 @@ pub const TESTS: &[crate::Test] = &[
     ("streamed_message_cut_back_matches_its_head", streamed_message_cut_back_matches_its_head),
     ("laid_out_again_matches_a_fresh_layout", laid_out_again_matches_a_fresh_layout),
     ("table_rows_added_after_layout_share_the_table", table_rows_added_after_layout_share_the_table),
+    ("hosted_lines_are_found_again", hosted_lines_are_found_again),
 ];
 
 fn host_sheet(typography: HostTypography) -> Rc<StyleSheet> {
@@ -501,4 +502,34 @@ fn table_rows_added_after_layout_share_the_table(mtm: MainThreadMarker) {
     let (whole, _other) = hosted(&whole_text, 520.0, mtm);
     settle();
     expect!(view.content_height() == whole.content_height());
+}
+
+/// A host keeps the reader's place by the line at the top of its viewport:
+/// every line `hosted_line_at` names is where `hosted_line_top` finds it,
+/// and after the width changes the same character's line is found.
+fn hosted_lines_are_found_again(mtm: MainThreadMarker) {
+    let text = "# Keeping a place\n\nA paragraph with **strong** and *emphasised* words, `inline code`, and a [link](https://example.com), long enough to wrap onto several lines at this width and more at a narrower one.\n\n- one item\n- another item that is long enough to wrap onto a second line\n\n```rust\nfn main() {\n    println!(\"hello\");\n}\n```\n\n> A quote, also long enough to wrap onto more than one line at the narrower width.\n";
+    let (view, _storage) = hosted(text, 320.0, mtm);
+    let height = view.frame().size.height;
+    let mut lines = Vec::new();
+    let mut y = 0.0;
+    while y < height {
+        let (line, top) = view.hosted_line_at(y).expect("a line");
+        expect!(top <= y + 0.001);
+        expect!(view.hosted_line_top(line) == Some(top));
+        if lines.last().is_none_or(|(last, _)| *last != line) {
+            lines.push((line, top));
+        }
+        y += 3.0;
+    }
+    expect!(lines.len() > 8);
+    expect!(lines.windows(2).all(|pair| pair[0].1 < pair[1].1));
+    view.set_hosted_width(200.0);
+    for (line, _) in &lines {
+        let top = view.hosted_line_top(*line).expect("found again");
+        let (found, found_top) = view.hosted_line_at(top + 0.5).expect("a line there");
+        expect!(found_top == top);
+        expect!(found.paragraph == line.paragraph);
+        expect!(found.character <= line.character);
+    }
 }
