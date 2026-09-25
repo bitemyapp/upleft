@@ -132,6 +132,14 @@ impl SafeHTMLParser {
     /// `parse(_ source: NSString, range:)`: the Markdown parser already holds
     /// the UTF-16 source, so no per-block substring is made to rule HTML out.
     pub fn parse_ns(source: &[u16], range: Option<NSRange>) -> Option<SafeHTMLDocument> {
+        Self::parse_ns_in(source, range, false, false)
+    }
+
+    /// `parse_ns` for a part of a longer document (Upleft extension, see
+    /// `SegmentContext`): `opened_before` and `closed_after` say whether the
+    /// rest of the document holds the `<details>` opening tag before the part
+    /// or the closing tag after it that a lone tag in the part pairs with.
+    pub fn parse_ns_in(source: &[u16], range: Option<NSRange>, opened_before: bool, closed_after: bool) -> Option<SafeHTMLDocument> {
         let bounds = range.unwrap_or(NSRange::new(0, source.length()));
         if !(bounds.location >= 0 && bounds.length > 0 && bounds.upper_bound() <= source.length()) {
             return None;
@@ -140,7 +148,24 @@ impl SafeHTMLParser {
         source.find_unit(0x3C, bounds)?;
 
         let mut parser = Parser::new(source, bounds);
+        parser.opened_before = opened_before;
+        parser.closed_after = closed_after;
         Some(parser.parse())
+    }
+
+    /// Upleft extension, for `SegmentContext`: whether `source` holds a real
+    /// `<details>` opening tag written as an HTML block, and whether it holds
+    /// a `</details>` closing tag written as one — what pairing a lone tag
+    /// looks for across blocks, found as the pairing finds it.
+    pub fn details_tags(source: &[u16]) -> (bool, bool) {
+        let length = source.length();
+        if length == 0 || !source.contains(&0x3C) {
+            return (false, false);
+        }
+        let parser = Parser::new(source, NSRange::new(0, length));
+        // An opening tag counts with the character after it, which a part
+        // cut before a block always holds.
+        (parser.has_opening_details(length), parser.has_closing_details(0))
     }
 
     const ALLOWED_NAMES: [&'static str; 22] = [
@@ -343,11 +368,24 @@ struct Parser<'a> {
     annotations: Vec<SafeHTMLAnnotation>,
     saw_tag: bool,
     rejected: bool,
+    /// `parse_ns_in`: the pairing tags the rest of the document holds.
+    opened_before: bool,
+    closed_after: bool,
 }
 
 impl<'a> Parser<'a> {
     fn new(source: &'a [u16], bounds: NSRange) -> Parser<'a> {
-        Parser { source, bounds, cursor: bounds.location, stack: Vec::new(), annotations: Vec::new(), saw_tag: false, rejected: false }
+        Parser {
+            source,
+            bounds,
+            cursor: bounds.location,
+            stack: Vec::new(),
+            annotations: Vec::new(),
+            saw_tag: false,
+            rejected: false,
+            opened_before: false,
+            closed_after: false,
+        }
     }
 
     fn parse(&mut self) -> SafeHTMLDocument {
@@ -381,7 +419,7 @@ impl<'a> Parser<'a> {
             // lines, emitting the closing tag in a later HTML block. Keep that
             // inert container source-addressed; any other open stack is
             // malformed and therefore literal.
-            if self.stack.len() == 1 && self.stack[0].name == "details" && self.has_closing_details(upper) {
+            if self.stack.len() == 1 && self.stack[0].name == "details" && (self.has_closing_details(upper) || self.closed_after) {
                 let open = self.stack.pop().expect("one open element");
                 self.annotations.push(SafeHTMLAnnotation::new(
                     open.kind,
@@ -522,7 +560,10 @@ impl<'a> Parser<'a> {
                 // The matching opening tag can live in the preceding HTML block
                 // when Markdown holds a blank line inside `<details>`. Safe only
                 // for that inert container.
-                if self.stack.is_empty() && tag.name == "details" && self.has_opening_details(self.bounds.location) {
+                if self.stack.is_empty()
+                    && tag.name == "details"
+                    && (self.has_opening_details(self.bounds.location) || self.opened_before)
+                {
                     self.annotations.push(SafeHTMLAnnotation::new(
                         SafeHTMLKind::DetailsClosing,
                         tag.range,

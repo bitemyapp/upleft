@@ -128,6 +128,21 @@ impl MarkdownTextView {
         self.attribute_at_point_with_offset(key, point, self.source_offset_at(point))
     }
 
+    /// A footnote's text, for its reference's tool tip: defined in the
+    /// document, or (a part of a longer one, Upleft extension) in the rest.
+    fn footnote_text(&self, identifier: &str) -> Option<String> {
+        let document = self.parsed_document();
+        if let Some(footnote) = document.footnotes.get(identifier) {
+            return Some(crate::swift_compat::trim_whitespaces_and_newlines(&document.substring(footnote.content_range)).to_owned());
+        }
+        document
+            .segment_context
+            .footnotes
+            .iter()
+            .find(|(other, _)| other == identifier)
+            .map(|(_, text)| crate::swift_compat::trim_whitespaces_and_newlines(text).to_owned())
+    }
+
     fn attribute_at_point_with_offset(&self, key: &NSString, point: NSPoint, offset: isize) -> Option<AttributeHit> {
         let point_sensitive = key.isEqualToString(attribute_keys::dr_link())
             || key.isEqualToString(attribute_keys::dr_path_token())
@@ -269,10 +284,9 @@ impl MarkdownTextView {
             Some("Edit front matter".to_owned())
         } else if let Some(hit) = self.attribute_at_point_with_offset(attribute_keys::dr_reference(), point, offset)
             && let Ok(identifier) = hit.0.downcast::<NSString>()
-            && let Some(footnote) = self.parsed_document().footnotes.get(&identifier.to_string())
+            && let Some(text) = self.footnote_text(&identifier.to_string())
         {
-            let document = self.parsed_document();
-            Some(crate::swift_compat::trim_whitespaces_and_newlines(&document.substring(footnote.content_range)).to_owned())
+            Some(text)
         } else {
             link_hit.and_then(|hit| hit.0.downcast::<NSString>().ok()).map(|destination| destination.to_string())
         };

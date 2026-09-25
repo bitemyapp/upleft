@@ -4679,7 +4679,13 @@ fn blocks_reparsed_by_later_text(
                 other.destination == reference.destination && other.title == reference.title && other.range == reference.range
             })
         });
-    let check_inlines = !(same_footnotes && same_references);
+    // A part of a longer document (Upleft extension, `SegmentContext`):
+    // what the rest of it defines and pairs with.
+    let same_context = old.segment_context == new.segment_context;
+    let check_inlines = !(same_footnotes && same_references && same_context);
+    let inserted_html = inserted_html
+        || old.segment_context.details_opened_before != new.segment_context.details_opened_before
+        || old.segment_context.details_closed_after != new.segment_context.details_closed_after;
     if !check_inlines && !inserted_html {
         return Vec::new();
     }

@@ -632,6 +632,43 @@ pub struct ParsedDocument {
     pub link_references: HashMap<String, LinkReference>,
     /// Line start offsets, for `line:column` lookups.
     pub line_starts: Vec<isize>,
+    /// Upleft extension: what the rest of a longer document gave this part
+    /// of it (`MarkdownParser::parse_segment`); empty for a whole document.
+    pub segment_context: SegmentContext,
+}
+
+/// Upleft extension, for hosts that show one long document as several
+/// hosted views, each a part of it cut between top-level blocks: what the
+/// rest of the document contributes to how a part parses, so the part parses
+/// exactly as the same text does inside the whole document. Nothing of it is
+/// in the part's text.
+#[derive(Clone, Debug, Default, PartialEq, Eq)]
+pub struct SegmentContext {
+    /// Link reference definitions from the rest of the document, each as its
+    /// first line of source (`[label]: destination "title"`). References
+    /// resolve against them as against definitions placed before the part,
+    /// so one of them wins over the part's own definition of the same label.
+    pub references: Vec<String>,
+    /// Footnotes defined in the rest of the document: identifier and text.
+    pub footnotes: Vec<(String, String)>,
+    /// A real `<details>` opening tag, written as an HTML block, comes
+    /// before the part: a closing tag in the part may pair with it.
+    pub details_opened_before: bool,
+    /// A `</details>` closing tag, written as an HTML block, comes after the
+    /// part: an opening tag in the part may pair with it.
+    pub details_closed_after: bool,
+    /// Link reference labels (lowercased) and footnote identifiers the part
+    /// defines that the rest defines again after it. A document keeps the
+    /// last definition of a label in `link_references` and `footnotes`, so
+    /// the part's own is not there: it is not hidden in Read mode.
+    pub superseded_references: Vec<String>,
+    pub superseded_footnotes: Vec<String>,
+}
+
+impl SegmentContext {
+    pub fn is_empty(&self) -> bool {
+        *self == SegmentContext::default()
+    }
 }
 
 impl ParsedDocument {
@@ -691,6 +728,7 @@ impl ParsedDocument {
             footnotes,
             link_references,
             line_starts,
+            segment_context: SegmentContext::default(),
         }
     }
 

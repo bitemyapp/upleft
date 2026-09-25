@@ -24,7 +24,7 @@ use crate::hashing::FNV;
 use crate::inlines::{InlineBuilder, StringSet};
 use crate::model::{
     BlockContent, BlockIdentity, BlockRef, Checkbox, FrontMatter, InlineSpan, ListMarkerStyle, MDBlock, ParsedDocument,
-    TableAlignment, TableCell, TableData, TableRow,
+    SegmentContext, TableAlignment, TableCell, TableData, TableRow,
 };
 use crate::ns_range::NSRange;
 use crate::safe_html::{SafeHTMLDocument, SafeHTMLParser};
@@ -41,9 +41,37 @@ impl MarkdownParser {
 
     /// `MarkdownParser.parse(_:options:)`.
     pub fn parse_with(text: &str, options: ParseOptions) -> Arc<ParsedDocument> {
+        Self::parse_in(text, options, &SegmentContext::default())
+    }
+
+    /// Upleft extension: `text` as a part of a longer document, cut before a
+    /// top-level block, parsed as it parses inside that document given what
+    /// the rest contributes (`SegmentContext`). With an empty context this is
+    /// `parse`.
+    pub fn parse_segment(text: &str, context: &SegmentContext) -> Arc<ParsedDocument> {
+        Self::parse_in(text, ParseOptions::DEFAULT, context)
+    }
+
+    fn parse_in(text: &str, options: ParseOptions, context: &SegmentContext) -> Arc<ParsedDocument> {
         let map = SourceMap::new(text);
         if !(map.length > 0) {
-            return ParsedDocument::empty();
+            if context.is_empty() {
+                return ParsedDocument::empty();
+            }
+            let mut empty = ParsedDocument::new(
+                String::new(),
+                0,
+                MDBlock::new(BlockContent::Document, NSRange::new(0, 0), NSRange::new(0, 0)).into_ref(),
+                None,
+                Vec::new(),
+                Vec::new(),
+                Vec::new(),
+                HashMap::new(),
+                HashMap::new(),
+                vec![0],
+            );
+            empty.segment_context = context.clone();
+            return Arc::new(empty);
         }
         let run_extensions = map.length <= options.extension_pass_limit;
 
@@ -58,14 +86,42 @@ impl MarkdownParser {
             &body_owned
         };
 
+        // A part's references from the rest of the document go before its
+        // text, each its own paragraph, where cmark reads them as definitions;
+        // what they parse to is dropped, and lines shift back past them.
+        let prefixed;
+        let (body, prefix_lines): (&str, isize) = if context.references.is_empty() {
+            (body, 0)
+        } else {
+            let mut prefix = String::new();
+            for reference in &context.references {
+                prefix.push_str(reference.lines().next().unwrap_or(""));
+                prefix.push_str("\n\n");
+            }
+            let lines = prefix.matches('\n').count() as isize;
+            prefix.push_str(body);
+            prefixed = prefix;
+            (&prefixed, lines)
+        };
+        let line_offset = line_offset - prefix_lines;
+
         let document = Document::parse(body, MarkupParseOptions::DISABLE_SMART_OPTS);
         let scan = SourceScanner::new(&map);
 
-        let footnote_identifiers: StringSet = scan.footnote_definitions.iter().map(|d| d.identifier.clone()).collect();
+        let mut footnote_identifiers: StringSet = scan.footnote_definitions.iter().map(|d| d.identifier.clone()).collect();
+        for (identifier, _) in &context.footnotes {
+            footnote_identifiers.insert(identifier.clone());
+        }
         let mut builder = BlockBuilder::new(&map, line_offset, options, run_extensions, footnote_identifiers);
+        builder.details_opened_before = context.details_opened_before;
+        builder.details_closed_after = context.details_closed_after;
 
-        let mut children: Vec<BlockRef> =
-            document.children().filter_map(|child| builder.block(child, 1, 0)).map(Arc::new).collect();
+        let mut children: Vec<BlockRef> = document
+            .children()
+            .filter(|child| child.range().is_none_or(|range| range.lower_bound.line as isize > prefix_lines))
+            .filter_map(|child| builder.block(child, 1, 0))
+            .map(Arc::new)
+            .collect();
         if let Some(front) = &front_matter {
             children.insert(0, Arc::new(builder.front_matter_block(front)));
         }
@@ -85,7 +141,15 @@ impl MarkdownParser {
         let length = map.length;
         let line_starts = map.line_starts.clone();
         let utf16 = map.text;
-        Arc::new(ParsedDocument::with_utf16(
+        let mut footnotes = derived.footnotes;
+        let mut link_references = scan.link_references;
+        for identifier in &context.superseded_footnotes {
+            footnotes.remove(identifier);
+        }
+        for label in &context.superseded_references {
+            link_references.remove(label);
+        }
+        let mut parsed = ParsedDocument::with_utf16(
             text.to_owned(),
             utf16,
             length,
@@ -94,10 +158,12 @@ impl MarkdownParser {
             derived.headings,
             derived.tasks,
             path_tokens,
-            derived.footnotes,
-            scan.link_references,
+            footnotes,
+            link_references,
             line_starts,
-        ))
+        );
+        parsed.segment_context = context.clone();
+        Arc::new(parsed)
     }
 }
 
@@ -109,6 +175,9 @@ pub struct BlockBuilder<'m> {
     options: ParseOptions,
     run_extensions: bool,
     pub inlines: InlineBuilder<'m>,
+    /// `SegmentContext::details_opened_before` and `details_closed_after`.
+    pub details_opened_before: bool,
+    pub details_closed_after: bool,
 }
 
 impl<'m> BlockBuilder<'m> {
@@ -125,6 +194,8 @@ impl<'m> BlockBuilder<'m> {
             options,
             run_extensions,
             inlines: InlineBuilder::new(map, line_offset, options, run_extensions, footnote_identifiers),
+            details_opened_before: false,
+            details_closed_after: false,
         }
     }
 
@@ -144,7 +215,7 @@ impl<'m> BlockBuilder<'m> {
         if !self.map.may_contain_html {
             return None;
         }
-        SafeHTMLParser::parse_ns(self.text(), Some(range))
+        SafeHTMLParser::parse_ns_in(self.text(), Some(range), self.details_opened_before, self.details_closed_after)
     }
 
     pub fn block(&mut self, markup: Markup<'_>, depth: isize, quote_depth: isize) -> Option<MDBlock> {
