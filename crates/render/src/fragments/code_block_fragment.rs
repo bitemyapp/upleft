@@ -400,13 +400,19 @@ impl CodeBlockFragment {
         if block.upper_bound() + 2 < storage.length() as isize {
             return false;
         }
-        let text = fragment.source_text(block);
-        let mut lines = text.trim_end().lines();
-        let _opening = lines.next();
-        !lines.last().is_some_and(|line| {
-            let line = line.trim_start();
-            line.starts_with("```") || line.starts_with("~~~")
-        })
+        // Only the block's tail: its last line is either a closing fence or
+        // code, and a long block's text is not copied on every draw.
+        let tail_start = smax(block.location as CGFloat, (block.upper_bound() - 96) as CGFloat) as isize;
+        let tail = fragment.source_text(crate::core_types::NSRange::new(tail_start, block.upper_bound() - tail_start));
+        let trimmed = tail.trim_end();
+        let last = trimmed.rsplit('\n').next().unwrap_or("");
+        let whole_block_is_one_line = tail_start == block.location && !trimmed.contains('\n');
+        if whole_block_is_one_line {
+            // Only the opening fence has arrived.
+            return true;
+        }
+        let last = last.trim_start();
+        !(last.starts_with("```") || last.starts_with("~~~"))
     }
 
     /// A body row under the header bar: line numbers in the inset's gutter
@@ -429,7 +435,14 @@ impl CodeBlockFragment {
             }
         }
         let Some(threshold) = style.host.code_line_numbers else { return };
-        if self.line_count < threshold {
+        // A block the stream has not closed counts a closing fence it does
+        // not have yet; checked only on the edge, where it matters.
+        let count = if self.line_count + 1 == threshold && self.is_streaming_block(fragment) {
+            self.line_count + 1
+        } else {
+            self.line_count
+        };
+        if count < threshold {
             return;
         }
         let Some(context) = fragment.context() else { return };
