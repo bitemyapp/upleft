@@ -9,7 +9,9 @@ Upleft parses Markdown with its fork of pulldown-cmark, not the cmark-gfm C libr
 - **Differential.** Every check runs the same input through `downright-oracle` and `upleft-oracle`. The Swift side is Downright's own code, rebranded (see AGENTS.md, "App identity"). Dumps are compared structurally, with doubles compared bit for bit. Images are compared pixel for pixel.
 - **Headless.** Window checks use a borderless window placed outside every screen and never activate the app. `cacheDisplay` records it. Nothing appears on screen and focus never moves.
 - **Parallel and low priority.** Headless captures share nothing on screen, so `conform` runs them on half the cores at nice 10. Only the opt-in `--capture screen` mode is serialised by the machine-wide lock.
-- **Cached.** Swift results are cached by oracle binary, macOS build, input and flags, so after the first run only the Rust side is re-rendered. The macOS build is part of the key because an OS update can move antialiased text by one colour level. On macOS 26.6.2, before the key included the build, stale captures made `render-state` report 62/100; with fresh captures it is 100/100.
+- **Cached.** Swift results are cached by oracle binary, macOS build, display setup, input and flags, so after the first run only the Rust side is re-rendered. Each part of the key once let stale captures through:
+  - **macOS build:** an OS update can move antialiased text by one colour level. After the update to 26.6.2, stale captures made `render-state` report 62/100; with fresh captures it is 100/100.
+  - **Display setup** (each screen's size and backing scale): an off-screen capture takes its backing scale from the screens. Captures cached while a 1× display was the main one failed the same 38 cases once a 2× display was.
 
 ## What is checked
 

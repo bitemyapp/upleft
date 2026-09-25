@@ -236,12 +236,34 @@ fn os_build() -> &'static str {
     })
 }
 
+static DISPLAY_SETUP: std::sync::OnceLock<String> = std::sync::OnceLock::new();
+
+/// Records the displays, primary first, as point size and backing scale.
+/// An off-screen capture takes its backing scale from the screens, so cached
+/// Swift results are only valid for the display setup that produced them:
+/// captures cached with a 1× display as the main one failed a third of
+/// `render-state` once a 2× display was. Called on the main thread before
+/// any worker starts.
+fn record_display_setup() {
+    let Some(mtm) = objc2::MainThreadMarker::new() else { return };
+    let screens = objc2_app_kit::NSScreen::screens(mtm);
+    let setup: Vec<String> = screens
+        .iter()
+        .map(|screen| {
+            let size = screen.frame().size;
+            format!("{}x{}@{}", size.width, size.height, screen.backingScaleFactor())
+        })
+        .collect();
+    let _ = DISPLAY_SETUP.set(setup.join(","));
+}
+
 fn binary_stamp(path: &Path) -> u64 {
     let metadata = fs::metadata(path).unwrap_or_else(|error| panic!("{}: {error}", path.display()));
     let mut hasher = DefaultHasher::new();
     metadata.len().hash(&mut hasher);
     metadata.modified().ok().hash(&mut hasher);
     os_build().hash(&mut hasher);
+    DISPLAY_SETUP.get().hash(&mut hasher);
     hasher.finish()
 }
 
@@ -572,6 +594,7 @@ fn main() -> ExitCode {
 }
 
 fn run() -> ExitCode {
+    record_display_setup();
     // Lower priority for the runner and every oracle it starts, so a
     // conformance run never competes with the owner's foreground work.
     unsafe extern "C" {
