@@ -8,6 +8,7 @@
 #![allow(clippy::neg_cmp_op_on_partial_ord)]
 
 use std::any::Any;
+use std::cell::{Cell, RefCell};
 use std::collections::BTreeSet;
 use std::rc::Rc;
 
@@ -24,7 +25,7 @@ use objc2_foundation::{NSAttributedString, NSDictionary, NSMutableAttributedStri
 use upleft_core::model::{InlineSpan, TableAlignment, TableCell, TableData, TableRow};
 
 use crate::appkit_compat::{
-    RectExt, attributed_string, attributes_dictionary, enumerate_attribute, keys, ns, ns_string, rect,
+    RectExt, attribute_value, attributed_string, attributes_dictionary, enumerate_attribute, keys, ns, ns_string, rect,
     string_bounding_rect,
 };
 use crate::core_types::NSRange;
@@ -33,7 +34,7 @@ use crate::engine::render_metrics;
 use crate::fragments::fragment_base::{
     DownrightFragment, FragmentBehavior, FragmentContext, TableLayoutKey, clipped, draw_text, fill_rect,
 };
-use crate::render_contracts::{FragmentPayload, ThemeAppearance};
+use crate::render_contracts::{FragmentPayload, ThemeAppearance, attribute_keys};
 use crate::swift_compat::{is_whitespace_or_newline, smax, smin, split_on_whitespace_characters};
 use crate::theme::style_sheet::StyleSheet;
 
@@ -564,9 +565,16 @@ fn is_numeric(text: &str) -> bool {
 // MARK: - TableRowFragment
 
 /// `TableRowFragment`'s stored properties and hooks.
+///
+/// Upleft: the table and the row are resolved again from the storage every
+/// time (`current`). TextKit lays a row's fragment out again when its
+/// element did not change instead of making a new one, so a row laid out
+/// after rows were added to the table (a streamed answer) would otherwise
+/// measure the table as it was when the fragment was made, and every row
+/// shares one layout.
 pub struct TableRowFragment {
-    data: Rc<TableData>,
-    row_index: isize,
+    data: RefCell<Rc<TableData>>,
+    row_index: Cell<isize>,
 }
 
 /// `TableRowFragment.make(textElement:range:payload:context:)`: `None` when
@@ -580,21 +588,15 @@ pub fn make(
     let data = payload.table_data()?;
     // Resolved against the element's own range so a row keeps its identity
     // when the table moves.
-    let element_start = match (text_element.elementRange(), text_element.textContentManager()) {
-        (Some(element_range), Some(manager)) => {
-            manager.offsetFromLocation_toLocation(&manager.documentRange().location(), &element_range.location())
-        }
-        _ => payload.source_range().location,
-    };
-    let row_index =
-        data.rows.iter().position(|row| row.range.contains(element_start)).map_or(-1, |index| index as isize);
+    let element_start = element_start(text_element).unwrap_or_else(|| payload.source_range().location);
+    let row_index = row_containing(&data, element_start);
     Some(Retained::into_super(DownrightFragment::new(
         c"TableRowFragment",
         text_element,
         range,
         payload,
         context,
-        Box::new(TableRowFragment { data, row_index }),
+        Box::new(TableRowFragment { data: RefCell::new(data), row_index: Cell::new(row_index) }),
     )))
 }
 
@@ -604,22 +606,24 @@ impl FragmentBehavior for TableRowFragment {
     }
 
     fn override_height(&self, fragment: &DownrightFragment) -> Option<CGFloat> {
-        if self.row().is_none() {
+        let (data, row_index) = self.current(fragment);
+        if row(&data, row_index).is_none() {
             return Some(0.0);
         }
         let Some(layout) = self.layout(fragment) else { return Some(0.0) };
-        if !(self.row_index < layout.row_heights.len() as isize) {
+        if !(row_index < layout.row_heights.len() as isize) {
             return Some(0.0);
         }
-        Some(layout.row_heights[self.row_index as usize])
+        Some(layout.row_heights[row_index as usize])
     }
 
     fn draw_object(&self, fragment: &DownrightFragment, point: CGPoint, cg: &CGContext) {
         let Some(style) = fragment.style_sheet() else { return };
         let Some(layout) = self.layout(fragment) else { return };
-        let Some(row) = self.row() else { return };
-        let row_height = if self.row_index < layout.row_heights.len() as isize {
-            layout.row_heights[self.row_index as usize]
+        let (data, row_index) = self.current(fragment);
+        let Some(row) = row(&data, row_index) else { return };
+        let row_height = if row_index < layout.row_heights.len() as isize {
+            layout.row_heights[row_index as usize]
         } else {
             style.line_height
         };
@@ -635,7 +639,7 @@ impl FragmentBehavior for TableRowFragment {
         }
 
         if layout.is_stacked {
-            self.draw_stacked_row(fragment, row, frame, &layout, &style, cg);
+            self.draw_stacked_row(fragment, &data, row, frame, &layout, &style, cg);
             return;
         }
 
@@ -698,13 +702,42 @@ impl FragmentBehavior for TableRowFragment {
     }
 }
 
+fn element_start(text_element: &NSTextElement) -> Option<isize> {
+    let (element_range, manager) = (text_element.elementRange()?, text_element.textContentManager()?);
+    Some(manager.offsetFromLocation_toLocation(&manager.documentRange().location(), &element_range.location()))
+}
+
+fn row_containing(data: &TableData, offset: isize) -> isize {
+    data.rows.iter().position(|row| row.range.contains(offset)).map_or(-1, |index| index as isize)
+}
+
+fn row(data: &TableData, index: isize) -> Option<&TableRow> {
+    if index >= 0 && index < data.rows.len() as isize { Some(&data.rows[index as usize]) } else { None }
+}
+
 impl TableRowFragment {
-    fn row(&self) -> Option<&TableRow> {
-        if self.row_index >= 0 && self.row_index < self.data.rows.len() as isize {
-            Some(&self.data.rows[self.row_index as usize])
-        } else {
-            None
+    /// The table this row belongs to as the storage has it now, and the
+    /// row's index in it.
+    fn current(&self, fragment: &DownrightFragment) -> (Rc<TableData>, isize) {
+        let fresh = fragment.context().and_then(|context| {
+            let storage = context.storage()?;
+            let element = fragment.textElement()?;
+            let start = element_start(&element)?;
+            if !(start >= 0 && start < storage.length() as isize) {
+                return None;
+            }
+            let payload = attribute_value(&storage, attribute_keys::dr_fragment(), start as usize)?
+                .downcast::<FragmentPayload>()
+                .ok()?;
+            Some((payload.table_data()?, start))
+        });
+        if let Some((data, start)) = fresh
+            && !Rc::ptr_eq(&data, &self.data.borrow())
+        {
+            self.row_index.set(row_containing(&data, start));
+            *self.data.borrow_mut() = data;
         }
+        (self.data.borrow().clone(), self.row_index.get())
     }
 
     /// The table's shared geometry, from the context's cache.
@@ -714,8 +747,9 @@ impl TableRowFragment {
         let storage = context.storage()?;
         // A table is a full-bleed block: `contentWidth` is the table's to use.
         let width = fragment.content_width();
+        let (data, _) = self.current(fragment);
         let key = TableLayoutKey {
-            location: fragment.payload().source_range().location,
+            location: data.rows.first().map_or(fragment.payload().source_range().location, |row| row.range.location),
             width: crate::swift_compat::int_truncating((width * 4.0).round()) as isize,
             text_revision: context.text_revision.get(),
         };
@@ -724,7 +758,7 @@ impl TableRowFragment {
         {
             return Some(layout);
         }
-        let made = Rc::new(TableLayout::make(&self.data, &storage, width, &style));
+        let made = Rc::new(TableLayout::make(&data, &storage, width, &style));
         context.table_layouts.borrow_mut().insert(key, made.clone() as Rc<dyn Any>);
         Some(made)
     }
@@ -732,6 +766,7 @@ impl TableRowFragment {
     fn draw_stacked_row(
         &self,
         fragment: &DownrightFragment,
+        data: &TableData,
         row: &TableRow,
         frame: objc2_core_foundation::CGRect,
         layout: &TableLayout,
@@ -742,13 +777,12 @@ impl TableRowFragment {
             return;
         }
         let Some(storage) = fragment.context().and_then(|context| context.storage()) else { return };
-        let header_text: Option<Vec<String>> = self
-            .data
+        let header_text: Option<Vec<String>> = data
             .rows
             .iter()
             .find(|row| row.is_header)
             .map(|header| header.cells.iter().map(|cell| TableCellPresentation::plain_text(cell, &storage)).collect());
-        let labels = TableLayout::stacked_labels(header_text.as_deref(), self.data.column_count());
+        let labels = TableLayout::stacked_labels(header_text.as_deref(), data.column_count());
         let mut y = frame.min_y() + render_metrics::TABLE_ROW_PADDING;
 
         for (index, cell) in row.cells.iter().enumerate() {

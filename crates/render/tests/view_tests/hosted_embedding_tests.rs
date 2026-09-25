@@ -31,6 +31,8 @@ pub const TESTS: &[crate::Test] = &[
     ("streamed_message_matches_whole_message", streamed_message_matches_whole_message),
     ("host_style_sheet_typography", host_style_sheet_typography),
     ("streamed_message_cut_back_matches_its_head", streamed_message_cut_back_matches_its_head),
+    ("laid_out_again_matches_a_fresh_layout", laid_out_again_matches_a_fresh_layout),
+    ("table_rows_added_after_layout_share_the_table", table_rows_added_after_layout_share_the_table),
 ];
 
 fn host_sheet(typography: HostTypography) -> Rc<StyleSheet> {
@@ -465,3 +467,35 @@ fn host_style_sheet_typography(_mtm: MainThreadMarker) {
     expect!(plain.measure_width == downright.measure_width);
 }
 
+/// A paragraph with a footnote's superscript, laid out again (a new width,
+/// an invalidation), is as tall as a first layout at that width makes it.
+fn laid_out_again_matches_a_fresh_layout(mtm: MainThreadMarker) {
+    for text in [
+        "A paragraph.[^1]\n\nB paragraph.[^1] More.\n\n[^1]: A note.\n",
+        "Where $x$ holds.[^m]\n\n## Next\n\nText.\n\n[^m]: Note.\n",
+    ] {
+        let (view, _storage) = hosted(text, 520.0, mtm);
+        settle();
+        view.set_hosted_width(720.0);
+        let (fresh, _other) = hosted(text, 720.0, mtm);
+        settle();
+        expect!(view.content_height() == fresh.content_height());
+        view.invalidate_all_fragments();
+        expect!(view.content_height() == fresh.content_height());
+    }
+}
+
+/// Rows appended to a table whose first rows are already laid out measure
+/// with them: every row's fragment reads the table as it is now.
+fn table_rows_added_after_layout_share_the_table(mtm: MainThreadMarker) {
+    let head = "| Check | Query | Threshold |\n| :--- | :--- | ---: |\n| Row counts per tenant | `count(*)` grouped by tenant | 0 |\n";
+    let rest = "| Late rows | rows with `ingested_at` more than 60 s after upload | 0.1 % |\n| Duplicates | rows sharing a natural key | 0 |\n\nAfter.\n";
+    let (view, storage) = hosted(head, 520.0, mtm);
+    settle();
+    let _ = view.content_height();
+    append(&view, &storage, rest);
+    let whole_text = format!("{head}{rest}");
+    let (whole, _other) = hosted(&whole_text, 520.0, mtm);
+    settle();
+    expect!(view.content_height() == whole.content_height());
+}

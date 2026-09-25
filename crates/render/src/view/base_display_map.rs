@@ -310,10 +310,14 @@ pub fn layout_substitution(
     storage: &NSAttributedString,
     joiners: &mut WordJoinerRuns,
 ) -> DisplaySubstitution {
+    // Upleft: a footnote's superscript is text, not an attachment, and is
+    // shorter than its `[^id]` too. Left short, its element is shorter than
+    // its range, and TextKit, laying the paragraph out again (a new width,
+    // an invalidation), drops the space after it that a first layout gives.
     let inline_object = !substitution.is_hidden
         && substitution.replacement.as_ref().is_some_and(|replacement| {
             (replacement.length() as isize) < substitution.source_range.length
-                && has_attachment_at_start(replacement)
+                && (has_attachment_at_start(replacement) || is_footnote_reference(replacement))
         });
     if !inline_object {
         if !substitution.is_hidden {
@@ -346,6 +350,19 @@ pub fn layout_substitution(
         false,
         true,
     )
+}
+
+fn is_footnote_reference(string: &NSAttributedString) -> bool {
+    string.length() > 0
+        // SAFETY: reading an attribute value; the effective range is not asked for.
+        && unsafe {
+            string.attribute_atIndex_effectiveRange(
+                crate::render_contracts::attribute_keys::dr_reference(),
+                0,
+                std::ptr::null_mut(),
+            )
+        }
+        .is_some()
 }
 
 fn has_attachment_at_start(string: &NSAttributedString) -> bool {
