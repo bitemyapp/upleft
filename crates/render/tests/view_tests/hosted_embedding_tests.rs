@@ -431,6 +431,7 @@ fn host_style_sheet_typography(_mtm: MainThreadMarker) {
         line_height_multiple: Some(1.45),
         paragraph_spacing: Some(9.0),
         code_bleed: Some(0.0),
+        code_header: None,
         ..HostTypography::default()
     });
     expect!(terminal.revision == 0);

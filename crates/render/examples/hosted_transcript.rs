@@ -382,6 +382,7 @@ fn host_typography(style: &str) -> HostTypography {
             paragraph_spacing: Some(13.0),
             hyphenation_factor: Some(0.9),
             code_bleed: Some(0.0),
+            code_header: None,
             ..HostTypography::default()
         },
         "terminal" => HostTypography {
@@ -392,6 +393,7 @@ fn host_typography(style: &str) -> HostTypography {
             line_height_multiple: Some(1.45),
             paragraph_spacing: Some(9.0),
             code_bleed: Some(0.0),
+            code_header: None,
             ..HostTypography::default()
         },
         _ => HostTypography {
@@ -401,6 +403,7 @@ fn host_typography(style: &str) -> HostTypography {
             line_height_multiple: Some(1.5),
             paragraph_spacing: Some(11.0),
             code_bleed: Some(0.0),
+            code_header: None,
             ..HostTypography::default()
         },
     }

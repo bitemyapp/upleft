@@ -123,9 +123,13 @@ impl FragmentBehavior for CodeBlockFragment {
                     render_metrics::CODE_CORNER_RADIUS,
                     RectCorners::TOP_LEFT | RectCorners::TOP_RIGHT,
                 );
-                self.draw_horizontal_edge(band, true, &style, cg);
-                self.draw_rule(band, &style, cg);
-                self.draw_chip(fragment, band, &style, cg);
+                if header_bar(&style) {
+                    self.draw_header_bar(fragment, band, &style, cg);
+                } else {
+                    self.draw_horizontal_edge(band, true, &style, cg);
+                    self.draw_rule(band, &style, cg);
+                    self.draw_chip(fragment, band, &style, cg);
+                }
             }
             Role::CloseChrome => {
                 fill_rect_corners(
@@ -136,13 +140,17 @@ impl FragmentBehavior for CodeBlockFragment {
                     RectCorners::BOTTOM_LEFT | RectCorners::BOTTOM_RIGHT,
                 );
                 self.draw_horizontal_edge(band, false, &style, cg);
-                self.draw_rule(band, &style, cg);
+                if !header_bar(&style) {
+                    self.draw_rule(band, &style, cg);
+                }
                 // The closing fence carries a second copy control (§7.1).
                 self.draw_copy_control(fragment, band, &style, "", cg);
             }
             Role::Body => {
                 fill_rect(cg, band, &style.code_background, 0.0);
-                self.draw_rule(band, &style, cg);
+                if !header_bar(&style) {
+                    self.draw_rule(band, &style, cg);
+                }
             }
         }
     }
@@ -152,7 +160,50 @@ impl FragmentBehavior for CodeBlockFragment {
     }
 }
 
+/// Whether the host asked for the header bar (`HostTypography::code_header`).
+fn header_bar(style: &StyleSheet) -> bool {
+    style.host.code_header == Some(true)
+}
+
 impl CodeBlockFragment {
+    /// The host's header bar (`HostTypography::code_header`): the band
+    /// tinted a step darker than the code under it with a hairline below,
+    /// the language as a pill at the leading edge, the copy control always
+    /// at the trailing edge — a check in the accent once copied.
+    fn draw_header_bar(&self, fragment: &DownrightFragment, band: CGRect, style: &StyleSheet, cg: &CGContext) {
+        fill_rect_corners(
+            cg,
+            band,
+            &style.code_rule.colorWithAlphaComponent(0.45),
+            render_metrics::CODE_CORNER_RADIUS,
+            RectCorners::TOP_LEFT | RectCorners::TOP_RIGHT,
+        );
+        fill_rect(cg, rect(band.min_x(), band.max_y() - 1.0, band.width(), 1.0), &style.code_rule, 0.0);
+        if !self.language.is_empty() {
+            let width = chip_text(&self.language, style).size().width + 16.0;
+            let y = band.min_y() + smax(0.0, (band.height() - 19.0) / 2.0);
+            let pill = rect(band.min_x() + 12.0, y, width, 19.0);
+            fill_rect(cg, pill, &style.accent.colorWithAlphaComponent(0.16), 9.5);
+            draw_text(cg, &chip_text(&self.language, style), pill.inset_by(8.0, 3.0), true);
+        }
+        let Some(context) = fragment.context() else { return };
+        let source_range = fragment.payload().source_range();
+        let hovered = context.hovered_fragment_range.get() == Some(source_range);
+        let copied = context.copied_code_range.get() == Some(source_range);
+        let copy = copy_button_rect(band, style, &self.language);
+        if copied || hovered {
+            let fill = if copied { style.accent.colorWithAlphaComponent(0.20) } else { style.code_rule.colorWithAlphaComponent(0.6) };
+            fill_rect(cg, copy, &fill, 6.0);
+        }
+        let symbol = if copied { "checkmark" } else { "doc.on.doc" };
+        let description = if copied { "Copied" } else { "Copy code" };
+        let weight = if copied { unsafe { NSFontWeightBold } } else { unsafe { NSFontWeightMedium } };
+        if let Some(image) = symbol_image(symbol, Some(description), 12.0, weight) {
+            let icon_color = if copied { &style.accent } else { &style.text_secondary };
+            draw_ns_image(&tinted(&image, icon_color), copy.inset_by(8.0, 8.0), cg, 0.0);
+        }
+    }
+
     /// Untinted page background this fragment reserves, and where it sits.
     fn outer_gap(&self) -> (CGFloat, CGFloat) {
         match self.role {

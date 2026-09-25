@@ -136,6 +136,12 @@ pub struct HostTypography {
     /// prose's trailing edge (`RenderMetrics.codeBleed`, 88 pt). A chat
     /// column usually wants 0: prose as wide as code.
     pub code_bleed: Option<f64>,
+    /// A code block's first row drawn as a header bar (a chat host's
+    /// chrome): a tinted strip over a hairline, the language as a pill at
+    /// its leading edge, and the copy control always shown at its trailing
+    /// edge, with no left rule. `None` or `false` keeps Downright's chip,
+    /// hover-only copy control and rule.
+    pub code_header: Option<bool>,
 }
 
 /// A body face (`HostTypography::body_family`).
