@@ -649,7 +649,9 @@ pub struct SegmentContext {
     /// resolve against them as against definitions placed before the part,
     /// so one of them wins over the part's own definition of the same label.
     pub references: Vec<String>,
-    /// Footnotes defined in the rest of the document: identifier and text.
+    /// Footnotes defined in the rest of the document: identifier and text,
+    /// empty when the document keeps no block under the identifier (so its
+    /// references have no tool tip).
     pub footnotes: Vec<(String, String)>,
     /// A real `<details>` opening tag, written as an HTML block, comes
     /// before the part: a closing tag in the part may pair with it.

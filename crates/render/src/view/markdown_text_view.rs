@@ -345,6 +345,11 @@ struct HostedState {
     /// TextKit's viewport is the whole view, not the part in sight
     /// (`set_hosted_full_viewport`).
     full_viewport: bool,
+    /// Another view continues the text below (`set_hosted_continued`).
+    continued: bool,
+    /// How far below the view's top the text starts
+    /// (`set_hosted_content_offset`).
+    content_offset: CGFloat,
 }
 
 impl HostedState {
@@ -486,6 +491,15 @@ define_class!(
         fn __draw_background(&self, rect: NSRect) {
             let _: () = unsafe { msg_send![super(self), drawViewBackgroundInRect: rect] };
             self.draw_scoped_source_background(rect);
+        }
+
+        /// A hosted view's text starts its content offset below the top
+        /// (`set_hosted_content_offset`).
+        #[unsafe(method(textContainerOrigin))]
+        fn __text_container_origin(&self) -> NSPoint {
+            let origin: NSPoint = unsafe { msg_send![super(self), textContainerOrigin] };
+            let offset = self.ivars().hosted.borrow().as_ref().map_or(0.0, |hosted| hosted.content_offset);
+            NSPoint::new(origin.x, origin.y + offset)
         }
 
         /// A hosted view with a full viewport (`set_hosted_full_viewport`)
@@ -948,6 +962,8 @@ impl MarkdownTextView {
             edit_observer: None,
             fragment_heights: std::collections::BTreeMap::new(),
             full_viewport: false,
+            continued: false,
+            content_offset: 0.0,
         });
         // Every edit of the storage, the host's or the decorator's, may drop
         // TextKit layout from its first character on.
@@ -1099,18 +1115,131 @@ impl MarkdownTextView {
             );
             let laid_out = laid_out.into_inner();
             let first = laid_out.first().map_or(text_kit, |(offset, _)| (*offset).min(text_kit));
-            self.with_hosted(|hosted| {
-                hosted.fragment_heights.split_off(&first);
-                hosted.fragment_heights.extend(laid_out);
+            let old = self.with_hosted(|hosted| {
+                let old = hosted.fragment_heights.split_off(&first);
+                hosted.fragment_heights.extend(laid_out.iter().copied());
+                old
             });
+            // A fragment that changed height moves every fragment after it,
+            // and TextKit moves what it has drawn without drawing it again:
+            // moved by less than whole device pixels, its pixels would sit
+            // between them, not where a fresh layout draws them.
+            let scale = self.window().map_or(2.0, |window| window.backingScaleFactor());
+            let mut shift = 0.0;
+            let mut moved = false;
+            for (offset, height) in &laid_out {
+                if shift != 0.0 && ((shift * scale) - (shift * scale).round()).abs() > 1.0e-6 {
+                    moved = true;
+                    break;
+                }
+                shift += height - old.as_ref().and_then(|old| old.get(offset)).copied().unwrap_or(*height);
+            }
+            if moved {
+                self.redraw_surfaces();
+            }
         }
-        let total = self
-            .ivars()
-            .hosted
-            .borrow()
-            .as_ref()
-            .map_or(0.0, |hosted| hosted.fragment_heights.values().fold(0.0, |sum, height| sum + height));
-        inset + total + inset
+        let (total, continued, offset) = self.ivars().hosted.borrow().as_ref().map_or((0.0, false, 0.0), |hosted| {
+            (hosted.fragment_heights.values().fold(0.0, |sum, height| sum + height), hosted.continued, hosted.content_offset)
+        });
+        let trailing = if continued { self.trailing_line_height(&layout_manager) } else { 0.0 };
+        offset + inset + total - trailing + inset
+    }
+
+    /// The empty line TextKit lays out after the text's final line break, as
+    /// the last layout fragment ends with it: from the top of that line to
+    /// the fragment's bottom. Zero when the text does not end with a break.
+    fn trailing_line_height(&self, layout_manager: &NSTextLayoutManager) -> CGFloat {
+        use objc2_app_kit::NSTextSelectionDataSource;
+        let Some(storage) = self.text_storage() else { return 0.0 };
+        let length = storage.length();
+        if length == 0 || !matches!(storage.string().characterAtIndex(length - 1), 0x0A | 0x0D | 0x2029) {
+            return 0.0;
+        }
+        let trailing = Cell::new(0.0);
+        let block = block2::StackBlock::new(|fragment: NonNull<objc2_app_kit::NSTextLayoutFragment>| -> Bool {
+            let fragment = unsafe { fragment.as_ref() };
+            trailing.set(trailing_line(fragment));
+            Bool::NO
+        });
+        layout_manager.enumerateTextLayoutFragmentsFromLocation_options_usingBlock(
+            Some(&layout_manager.documentRange().endLocation()),
+            objc2_app_kit::NSTextLayoutFragmentEnumerationOptions::Reverse
+                | objc2_app_kit::NSTextLayoutFragmentEnumerationOptions::EnsuresLayout,
+            &block,
+        );
+        trailing.get()
+    }
+
+    /// Hosted views (Upleft extension): the text starts `offset` points
+    /// below the view's top, and the view is that much taller. AppKit sets a
+    /// layer-backed view's frame on whole device pixels, while one view's
+    /// lines fall between them: a host that stacks several views as one
+    /// text places each on a whole pixel and moves its text by the rest, so
+    /// every line lands where it would in one view. TextKit moves fragments
+    /// it has drawn without drawing them again: after the view has been
+    /// displayed, a new offset wants `invalidate_all_fragments` too.
+    pub fn set_hosted_content_offset(&self, offset: CGFloat) {
+        let Some(changed) = self.with_hosted(|hosted| std::mem::replace(&mut hosted.content_offset, offset) != offset) else {
+            return;
+        };
+        if !changed {
+            return;
+        }
+        self.invalidateTextContainerOrigin();
+        if let Some(layout_manager) = self.textLayoutManager() {
+            layout_manager.textViewportLayoutController().layoutViewport();
+        }
+        // What TextKit drew it only moves: draw every surface again where
+        // it now is, so its pixels follow the new sub-pixel offset.
+        self.redraw_surfaces();
+        self.hosted_relayout();
+    }
+
+    /// Every surface of the view placed and drawn again where it is now.
+    /// TextKit draws each layout fragment in a view of its own, set on the
+    /// window's device pixels when it lays out the viewport; a text view
+    /// moved by part of a pixel carries them off the pixels until the next
+    /// viewport layout, and a fragment that only moves keeps the pixels it
+    /// drew. A host that moves hosted views calls it (Upleft extension).
+    pub fn redraw_surfaces(&self) {
+        if let Some(layout_manager) = self.textLayoutManager() {
+            layout_manager.textViewportLayoutController().layoutViewport();
+        }
+        fn redraw(view: &NSView) {
+            view.setNeedsDisplay(true);
+            if let Some(layer) = view.layer() {
+                redraw_layer(&layer);
+            }
+            for subview in view.subviews().iter() {
+                redraw(&subview);
+            }
+        }
+        fn redraw_layer(layer: &objc2_quartz_core::CALayer) {
+            layer.setNeedsDisplay();
+            // SAFETY: `sublayers` hands out the layer's own array, read here
+            // on the main thread that owns the view's layer tree.
+            if let Some(sublayers) = unsafe { layer.sublayers() } {
+                for sublayer in sublayers.iter() {
+                    redraw_layer(&sublayer);
+                }
+            }
+        }
+        redraw(self);
+    }
+
+    /// Hosted views (Upleft extension): another view continues the text
+    /// below this one (a long message the host set as several views, cut
+    /// before a top-level block), so the text's final line break opens no
+    /// line. TextKit lays out an empty line after it, as at the end of any
+    /// text; the view's height leaves it out, and ends where one view of the
+    /// whole text would go on with the next view's first block.
+    pub fn set_hosted_continued(&self, continued: bool) {
+        let Some(changed) = self.with_hosted(|hosted| std::mem::replace(&mut hosted.continued, continued) != continued) else {
+            return;
+        };
+        if changed {
+            self.hosted_relayout();
+        }
     }
 
     /// Marks a hosted view as the continuation of a document shown above it
@@ -4652,6 +4781,32 @@ fn post_announcement(element: &MarkdownTextView, announcement: &str) {
             Some(&user_info),
         )
     };
+}
+
+/// The part of a layout fragment below its last paragraph's own lines and
+/// the space after them: the empty line TextKit lays out after a final line
+/// break, which the fragment of the text's last paragraph ends with.
+pub fn trailing_line(fragment: &objc2_app_kit::NSTextLayoutFragment) -> CGFloat {
+    let lines = fragment.textLineFragments();
+    let count = lines.count();
+    if count < 2 || lines.objectAtIndex(count - 1).characterRange().length != 0 {
+        return 0.0;
+    }
+    let last = lines.objectAtIndex(count - 2).typographicBounds();
+    let after = fragment
+        .textElement()
+        .and_then(|element| element.downcast::<objc2_app_kit::NSTextParagraph>().ok())
+        .and_then(|paragraph| {
+            let text = paragraph.attributedString();
+            if text.length() == 0 {
+                return None;
+            }
+            // SAFETY: the index lies in the string; a null range pointer is allowed.
+            let style = unsafe { text.attribute_atIndex_effectiveRange(objc2_app_kit::NSParagraphStyleAttributeName, 0, std::ptr::null_mut()) };
+            style.and_then(|style| style.downcast::<objc2_app_kit::NSParagraphStyle>().ok()).map(|style| style.paragraphSpacing())
+        })
+        .unwrap_or(0.0);
+    smax(0.0, fragment.layoutFragmentFrame().height() - (last.origin.y + last.size.height + after))
 }
 
 /// Blocks before `edit_floor` whose parse changed although their text did

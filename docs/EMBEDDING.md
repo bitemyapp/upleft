@@ -111,8 +111,18 @@ A host may show a long document as several hosted views stacked one above the ot
 
 - **`MarkdownParser::parse_segment(text, &SegmentContext)`** parses a part as it parses inside the whole document. The context carries what the rest of the document contributes, and none of it is in the part's text: the link reference and footnote definitions the part cites (cmark resolves against them as against definitions placed before the part), the labels the rest defines again after the part (a document keeps the last definition of a label, so the part's own is not hidden in Read mode), and whether a `<details>` opening tag comes before the part or a closing tag after it, which a lone tag in the part pairs with. `SafeHTMLParser::details_tags` finds those tags in a part's text as pairing does. The context is kept in `ParsedDocument::segment_context`, and `update` re-decorates the blocks whose parse a changed context changed, as it does for a definition added later in the same view.
 - **`set_hosted_continuation(true)`**, before the first `update`, marks a view whose part comes after a heading of the document: its first heading is not the document's first, and keeps the space above it.
+- **`set_hosted_continued(true)`** marks a view that another view continues below. TextKit lays out an empty line after a text's final line break; the view's height leaves it out, so the view ends where the whole document would go on with the next part.
 
-TextKit drops the space before a view's first paragraph, which the whole document would show between the parts; the host adds it above the view. Omperor checks every cut against the document parsed whole, and passes over a boundary where anything would differ.
+TextKit drops the space before a view's first paragraph, which the whole document would show between the parts; the host adds it above the view. It does so exactly for lines of text, not for what a fragment draws from its frame (a code or callout band, a quote bar, a table, a centred diagram, formula, image or rule), so a part should open with prose after a blank line. Omperor checks every cut against the document parsed whole, and passes over a boundary where anything would differ.
+
+### Pixels
+
+TextKit draws each layout fragment of a view in a view of its own (`_NSTextViewportElementView`), which it sets on the window's device pixels when it lays out the viewport, rounding out from the fragment's exact place, and moves what it has drawn without drawing it again when the text view moves. Two renderings of the same lines are therefore pixel-identical only if their fragments were laid out with the text at the same place on the pixel grid. For a host that stacks views:
+
+- **`set_hosted_content_offset(offset)`** starts the text `offset` points below the view's top (the view is that much taller). Put the view's frame on a whole device pixel and the text's remaining fraction in the offset: the view's pixels then depend only on where its text is. A new offset lays the viewport out again and draws every fragment again.
+- **`redraw_surfaces()`** lays the viewport out and draws every fragment again where it now is. Call it after moving a hosted view by part of a device pixel, if you do not keep its frame on whole pixels.
+- Scroll by whole device pixels, and keep the document's height on them: a scroll by part of a pixel leaves every fragment drawn before it off the grid.
+- A hosted update that changes a fragment's height draws the fragments after it again when it moves them by part of a pixel.
 
 ## Diagrams and math off the main thread
 

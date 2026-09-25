@@ -139,7 +139,7 @@ impl MarkdownTextView {
             .segment_context
             .footnotes
             .iter()
-            .find(|(other, _)| other == identifier)
+            .find(|(other, text)| other == identifier && !text.is_empty())
             .map(|(_, text)| crate::swift_compat::trim_whitespaces_and_newlines(text).to_owned())
     }
 
