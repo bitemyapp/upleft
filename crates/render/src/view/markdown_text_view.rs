@@ -2051,6 +2051,10 @@ impl MarkdownTextView {
                 .iter()
                 .any(|&unit| unit == u16::from(b'<') || unit == u16::from(b'>'));
             ranges.extend(blocks_reparsed_by_later_text(&previous, &document, edit_floor, inserted_html));
+            // - definitions that became or stopped being the ones the
+            //   document resolves (a label defined again later on, or by a
+            //   segment's context): Read mode hides only those;
+            ranges.extend(definitions_changed(&previous, &document));
             // - whole physical paragraphs, because a paragraph style belongs
             //   to the paragraph: a leaf block that starts after its list
             //   marker would leave the marker's style stale.
@@ -4809,6 +4813,29 @@ pub fn trailing_line(fragment: &objc2_app_kit::NSTextLayoutFragment) -> CGFloat 
         })
         .unwrap_or(0.0);
     smax(0.0, fragment.layoutFragmentFrame().height() - (last.origin.y + last.size.height + after))
+}
+
+/// The ranges of the definitions one of `old` and `new` resolves and the
+/// other does not, where they lie in `new`.
+fn definitions_changed(old: &ParsedDocument, new: &ParsedDocument) -> Vec<NSRange> {
+    let ranges = |document: &ParsedDocument| -> Vec<NSRange> {
+        let mut ranges: Vec<NSRange> = document
+            .link_references
+            .values()
+            .map(|reference| reference.range)
+            .chain(document.footnotes.values().map(|footnote| footnote.range))
+            .collect();
+        ranges.sort_by_key(|range| (range.location, range.length));
+        ranges
+    };
+    let (before, after) = (ranges(old), ranges(new));
+    before
+        .iter()
+        .filter(|range| !after.contains(range))
+        .chain(after.iter().filter(|range| !before.contains(range)))
+        .filter(|range| range.length > 0 && range.upper_bound() <= new.length)
+        .copied()
+        .collect()
 }
 
 /// Blocks before `edit_floor` whose parse changed although their text did

@@ -291,7 +291,7 @@ fn stream(text: &str, max: usize, mtm: MainThreadMarker) -> Retained<MarkdownTex
 /// A message streamed in token-sized pieces ends up exactly as the same
 /// message given whole: storage attributes, display map, paragraphs, height.
 fn streamed_message_matches_whole_message(mtm: MainThreadMarker) {
-    let documents: [&str; 7] = [
+    let documents: [&str; 8] = [
         include_str!("fixtures/hosted-stress.md"),
         // A quote whose paragraph goes on in lazy lines, joined as they come.
         "> The batch design made sense when uploads were a few per hour.\nIt stopped making sense around the time\nthe mobile app shipped.\n\nAfter.\n",
@@ -303,6 +303,9 @@ fn streamed_message_matches_whole_message(mtm: MainThreadMarker) {
         "See [the docs][docs] and a note[^n].\n\nMore [docs] here.\n\n[docs]: https://example.com \"Docs\"\n[^n]: The note.\n",
         // Paired HTML across blocks, a table growing, CRLF line ends.
         "<details>\r\n<summary>More</summary>\r\n\r\nHidden **text**.\r\n\r\n</details>\r\n\r\n| a | b |\r\n| - | - |\r\n| 1 | 2 |\r\n| 3 | 4 |\r\n",
+        // A footnote and a reference defined again further on: the first
+        // definitions stop being the ones the text resolves, and show.
+        "A note.[^x] See [docs].\n\n[^x]: The first note.\n\n[docs]: https://example.com/a\n\nMore text.\n\n[^x]: The second note.\n\n[docs]: https://example.com/b\n",
         // A fence left open for a while, math, a thematic break.
         "```rust\nfn main() {}\n```\n\n$$\nx^2\n$$\n\n***\n\n```math\n\\frac{1}{2}\n```\n",
     ];
@@ -343,7 +346,7 @@ fn streamed_message_matches_whole_message(mtm: MainThreadMarker) {
             checked.set(checked.get() + 1);
         }
     }
-    expect!(checked.get() == 14);
+    expect!(checked.get() == 16);
 }
 
 /// A streamed message cut back to a head that ends before a top-level
