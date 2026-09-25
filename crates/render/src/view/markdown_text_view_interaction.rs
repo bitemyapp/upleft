@@ -1256,7 +1256,12 @@ impl MarkdownTextView {
     }
 
     fn write_selection_flavours(&self, pasteboard: &NSPasteboard, storage: &objc2_app_kit::NSTextStorage, range: NSRange) {
-        let visible = self.exportable_attributed_string(range);
+        let tex = self.math_copy_as_tex().then(|| self.tex_copy(storage, range)).flatten();
+        let with_tex = tex.is_some();
+        let (range, visible) = match tex {
+            Some(tex) => tex,
+            None => (range, self.exportable_attributed_string(range)),
+        };
         let markdown_range = self.lossless_markdown_range(range);
         let markdown = storage.attributedSubstringFromRange(ns(markdown_range)).string();
         let markdown_type = downright_markdown_type();
@@ -1266,7 +1271,17 @@ impl MarkdownTextView {
         unsafe { pasteboard.declareTypes_owner(&types, None) };
         pasteboard.setString_forType(&visible.string(), unsafe { NSPasteboardTypeString });
         pasteboard.setString_forType(&markdown, &markdown_type);
-        let html = crate::clipboard_semantic_html::ClipboardSemanticHTML::render(&markdown.to_string());
+        let html = if with_tex {
+            let document = self.parsed_document();
+            crate::view::math_copy::html_with_tex(
+                markdown_range,
+                &crate::view::math_copy::math_spans(&document),
+                |range| document.substring(range),
+                crate::clipboard_semantic_html::ClipboardSemanticHTML::render,
+            )
+        } else {
+            crate::clipboard_semantic_html::ClipboardSemanticHTML::render(&markdown.to_string())
+        };
         pasteboard.setString_forType(&NSString::from_str(&html), unsafe { NSPasteboardTypeHTML });
         let rtf = unsafe {
             visible.RTFFromRange_documentAttributes(objc2_foundation::NSRange::new(0, visible.length()), &NSDictionary::new())
@@ -1274,6 +1289,69 @@ impl MarkdownTextView {
         if let Some(data) = rtf {
             pasteboard.setData_forType(Some(&data), unsafe { NSPasteboardTypeRTF });
         }
+    }
+
+    /// `set_math_copy_as_tex`: the selection widened to whole formulas, and
+    /// its visible text with every formula written as TeX in the text
+    /// attributes around it. `None` when the selection touches no formula,
+    /// which copies as before.
+    fn tex_copy(
+        &self,
+        storage: &objc2_app_kit::NSTextStorage,
+        range: NSRange,
+    ) -> Option<(NSRange, Retained<NSAttributedString>)> {
+        use crate::view::math_copy::{CopyPiece, copy_pieces, math_spans};
+        let document = self.parsed_document();
+        let spans = math_spans(&document);
+        if !spans.iter().any(|span| span.range.location < range.upper_bound() && range.location < span.range.upper_bound()) {
+            return None;
+        }
+        let shown: std::cell::RefCell<Vec<(NSRange, Retained<NSAttributedString>)>> = std::cell::RefCell::new(Vec::new());
+        let exported = |piece: NSRange| -> Retained<NSAttributedString> {
+            if let Some((_, string)) = shown.borrow().iter().find(|(known, _)| *known == piece) {
+                return string.clone();
+            }
+            let string = self.exportable_attributed_string(piece);
+            shown.borrow_mut().push((piece, string.clone()));
+            string
+        };
+        let (widened, pieces) = copy_pieces(&spans, range, |latex| document.substring(latex), |piece| exported(piece).string().to_string());
+        let out = NSMutableAttributedString::new();
+        let length = storage.length() as isize;
+        for piece in &pieces {
+            match piece {
+                CopyPiece::Prose(piece) => out.appendAttributedString(&exported(*piece)),
+                CopyPiece::Text(text) => {
+                    // The TeX takes the text attributes where it goes, with
+                    // Downright's private ones and any attachment left out.
+                    let at = if out.length() > 0 {
+                        Some(unsafe { out.attributesAtIndex_effectiveRange(out.length() - 1, std::ptr::null_mut()) })
+                    } else if widened.location < length {
+                        let attributes = unsafe { storage.attributesAtIndex_effectiveRange(widened.location as usize, std::ptr::null_mut()) };
+                        Some(attributes)
+                    } else {
+                        None
+                    };
+                    let piece = match at {
+                        Some(attributes) => unsafe {
+                            NSMutableAttributedString::initWithString_attributes(
+                                NSMutableAttributedString::alloc(),
+                                &NSString::from_str(text),
+                                Some(&attributes),
+                            )
+                        },
+                        None => NSMutableAttributedString::from_nsstring(&NSString::from_str(text)),
+                    };
+                    let whole = objc2_foundation::NSRange::new(0, piece.length());
+                    for key in Self::private_attribute_keys() {
+                        piece.removeAttribute_range(key, whole);
+                    }
+                    piece.removeAttribute_range(unsafe { objc2_app_kit::NSAttachmentAttributeName }, whole);
+                    out.appendAttributedString(&piece);
+                }
+            }
+        }
+        Some((widened, Retained::into_super(out)))
     }
 
     /// Hidden substitutions at both edges belong to a fully selected visible

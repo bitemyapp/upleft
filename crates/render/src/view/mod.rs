@@ -13,6 +13,7 @@ pub mod markdown_smart_paste;
 pub mod markdown_text_view;
 pub mod markdown_text_view_delegate;
 pub mod markdown_text_view_interaction;
+pub mod math_copy;
 pub mod paragraph_substitution;
 pub mod style_sheet_defaults;
 pub mod tracking_area;

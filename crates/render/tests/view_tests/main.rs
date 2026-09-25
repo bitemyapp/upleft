@@ -24,6 +24,7 @@ mod fragment_seam_tests;
 mod hosted_embedding_tests;
 mod layout_filler_tests;
 mod list_ornament_tests;
+mod math_copy_tests;
 mod smart_paste_integration_tests;
 mod speech_accessibility_tests;
 mod typing_invalidation_tests;
@@ -74,6 +75,7 @@ fn main() {
     tests.extend(decoration_view_tests::TESTS);
     tests.extend(bounded_image_cache_tests::TESTS);
     tests.extend(hosted_embedding_tests::TESTS);
+    tests.extend(math_copy_tests::TESTS);
 
     let selected: Vec<&Test> = tests
         .iter()

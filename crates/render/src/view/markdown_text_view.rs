@@ -310,6 +310,8 @@ pub struct MarkdownTextViewIvars {
     /// Hosted embedding (docs/EMBEDDING.md): `None` for Downright's document
     /// surface.
     hosted: RefCell<Option<HostedState>>,
+    /// Copy writes formulas as TeX (`set_math_copy_as_tex`).
+    math_copy_as_tex: Cell<bool>,
 }
 
 /// A line of a hosted view's text (`MarkdownTextView::hosted_line_at`): the
@@ -871,6 +873,7 @@ impl MarkdownTextView {
             pending_scroll_y: Cell::new(None),
             pending_motion_invalidation: Cell::new(None),
             hosted: RefCell::new(None),
+            math_copy_as_tex: Cell::new(false),
         });
         let this: Retained<MarkdownTextView> =
             unsafe { msg_send![super(this), initWithFrame: frame, textContainer: Some(&*container)] };
@@ -1030,6 +1033,26 @@ impl MarkdownTextView {
     }
 
     /// True for a view made by `new_hosted`.
+    /// Copy (Edit ▸ Copy, a drag of the selection, any
+    /// `writeSelectionToPasteboard:types:`) writes every formula the
+    /// selection touches as its TeX, `$…$` inline and `$$…$$` on lines of
+    /// its own for display math, instead of the typeset image. Off by
+    /// default, which is Downright's copy. The work happens at copy time
+    /// only: rendering and scrolling are unchanged. See `view::math_copy`.
+    pub fn set_math_copy_as_tex(&self, enabled: bool) {
+        self.ivars().math_copy_as_tex.set(enabled);
+    }
+
+    pub fn math_copy_as_tex(&self) -> bool {
+        self.ivars().math_copy_as_tex.get()
+    }
+
+    /// The LaTeX, without delimiters, of the formula at `offset` (a
+    /// `ContextTarget::hit_offset`), for a host's Copy LaTeX.
+    pub fn math_latex_at_source_offset(&self, offset: isize) -> Option<String> {
+        crate::view::math_copy::formula_at(&self.parsed_document(), offset).map(|(_, latex)| latex)
+    }
+
     pub fn is_hosted(&self) -> bool {
         self.ivars().hosted.borrow().is_some()
     }
