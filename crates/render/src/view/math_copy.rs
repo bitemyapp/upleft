@@ -223,9 +223,16 @@ fn escape_html(text: &str) -> String {
     out
 }
 
-/// The formula at `offset`, if any, and its LaTeX alone (Copy LaTeX).
+/// The formula at `offset`, if any, and its LaTeX alone (Copy LaTeX). A
+/// pointer on the right half of an inline formula's image resolves to the
+/// insertion point after it, so a formula ending at `offset` counts too.
 pub fn formula_at(document: &ParsedDocument, offset: isize) -> Option<(MathSpan, String)> {
-    let span = math_spans(document).into_iter().find(|span| span.range.contains(offset))?;
+    let spans = math_spans(document);
+    let span = spans
+        .iter()
+        .find(|span| span.range.contains(offset))
+        .or_else(|| spans.iter().find(|span| span.range.upper_bound() == offset))
+        .copied()?;
     let latex = document.substring(span.latex_range);
     let latex = if span.style == MathStyle::Inline { latex } else { latex.trim().to_owned() };
     Some((span, latex))
@@ -329,6 +336,9 @@ mod tests {
         let fence = utf16(&text[..text.find("a^2").unwrap()]);
         expect_eq(formula_at(&document, fence).map(|found| found.1), Some("a^2".to_owned()));
         expect_eq(formula_at(&document, 2), None);
+        // The insertion point just after the inline formula.
+        let after = utf16(&text[..text.find("$.").unwrap() + 1]);
+        expect_eq(formula_at(&document, after).map(|found| found.1), Some("E = mc^2".to_owned()));
     }
 
     #[test]
