@@ -1575,6 +1575,7 @@ impl MarkdownTextView {
     pub fn set_document_url(&self, url: Option<String>) {
         *self.ivars().document_url.borrow_mut() = url.clone();
         *self.ivars().fragment_context.document_url.borrow_mut() = url;
+        self.ivars().fragment_context.asset_requests.borrow_mut().clear();
         self.invalidate_all_fragments();
     }
 
@@ -1610,6 +1611,7 @@ impl MarkdownTextView {
 
     /// Re-evaluate blocked local image fragments after an explicit trust grant.
     pub fn refresh_local_assets(&self) {
+        self.ivars().fragment_context.asset_requests.borrow_mut().clear();
         self.invalidate_all_fragments();
         self.setNeedsDisplay(true);
     }

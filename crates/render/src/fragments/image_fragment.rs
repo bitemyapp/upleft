@@ -324,6 +324,19 @@ fn target_pixel_dimension(fragment: &DownrightFragment) -> isize {
 }
 
 fn resolved_request(fragment: &DownrightFragment) -> Option<LocalAssetRequest> {
-    let document = fragment.context().and_then(|context| context.document_url.borrow().clone()).map(|path| file_url(&path));
-    LocalAssetPolicy::request(fragment.payload().detail(), document.as_deref())
+    let context = fragment.context();
+    // A hosted view resolves each destination once (Upleft extension).
+    let hosted = context.as_ref().filter(|context| context.renders_objects_async.get());
+    let raw = fragment.payload().detail();
+    if let Some(context) = hosted
+        && let Some(request) = context.asset_requests.borrow().get(raw)
+    {
+        return request.clone();
+    }
+    let document = context.as_ref().and_then(|context| context.document_url.borrow().clone()).map(|path| file_url(&path));
+    let request = LocalAssetPolicy::request(raw, document.as_deref());
+    if let Some(context) = hosted {
+        context.asset_requests.borrow_mut().insert(raw.to_owned(), request.clone());
+    }
+    request
 }

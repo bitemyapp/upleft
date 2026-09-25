@@ -168,6 +168,11 @@ pub struct FragmentContext {
     pub local_asset_authorizer: RefCell<Option<LocalAssetAuthorizer>>,
     /// Hosted views (Upleft extension): remote images the host loads.
     pub remote_image_resolver: RefCell<Option<RemoteImageResolver>>,
+    /// Hosted views (Upleft extension): image destinations already resolved
+    /// against `document_url`. Resolving canonicalises paths through the
+    /// file system, and layout and drawing ask again every time; cleared
+    /// when the document URL changes or local assets are refreshed.
+    pub asset_requests: RefCell<HashMap<String, Option<crate::fragments::local_asset_policy::LocalAssetRequest>>>,
     /// Paragraph structure of the current text.
     pub paragraph_index: RefCell<ParagraphIndex>,
     /// Zoom + fold + search visibility (§5.2, §7.1, §9.4).
@@ -206,6 +211,7 @@ impl FragmentContext {
             document_url: RefCell::new(None),
             local_asset_authorizer: RefCell::new(None),
             remote_image_resolver: RefCell::new(None),
+            asset_requests: RefCell::new(HashMap::new()),
             paragraph_index: RefCell::new(ParagraphIndex::empty()),
             elision: RefCell::new(ElisionPlan::none()),
             cue_elision: RefCell::new(ElisionPlan::none()),
