@@ -61,6 +61,8 @@ On `MarkdownTextView`:
 | `set_style_sheet(Rc<StyleSheet>)` | Restyles the view; call it when the appearance or the typography changes. |
 | `prepare_for_display()` | Lays out and draws the visible part now, as Downright's first frame does. It is optional: the window's own display cycle does the same. |
 | `is_hosted()` | Whether the view was made by `new_hosted`. |
+| `hosted_line_at(y)` / `hosted_line_top(line)` | The line at `y` in view coordinates, as a `HostedLine` (its paragraph's source and TextKit offsets, and where the line starts in the paragraph) plus its top; and where that line is now. A host keeps the reader's place by the line at its viewport's top: after the text above it, a diagram landing, or a new width, `hosted_line_top` finds the line again (the line that now holds the same character). Both read the per-fragment heights (below), not TextKit's fragment origins. |
+| `hosted_pending_objects()` | The diagrams and formulas the view draws as placeholders while they render, as their fragments' tops and bottoms in view coordinates. |
 
 The view sets its own frame size and never its origin. The host positions it. `setDrawsBackground(false)` shows the host's background through the view; `setBackgroundColor` is reset from the style sheet when the style sheet changes.
 
