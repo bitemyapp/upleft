@@ -87,6 +87,23 @@ pub fn pending_count() -> usize {
     PENDING.load(Ordering::SeqCst)
 }
 
+/// Where `view` draws placeholders now: the TextKit offsets of the
+/// fragments waiting for a render. For a host that tells a placeholder in
+/// sight from a finished view.
+pub fn pending_offsets(view: &MarkdownTextView) -> Vec<isize> {
+    let Some(mtm) = MainThreadMarker::new() else { return Vec::new() };
+    let state = state();
+    let mut offsets = Vec::new();
+    for waiters in state.in_flight.values() {
+        for (waiter, offset) in waiters {
+            if waiter.get(mtm).load().is_some_and(|waiting| std::ptr::eq(&*waiting, view)) && !offsets.contains(offset) {
+                offsets.push(*offset);
+            }
+        }
+    }
+    offsets
+}
+
 /// What a fragment draws.
 pub enum ObjectImage {
     Ready(Retained<NSImage>),
@@ -111,7 +128,9 @@ struct SendColor(Retained<NSColor>);
 // SAFETY: a resolved colour is immutable.
 unsafe impl Send for SendColor {}
 
-type Waiter = MainThreadBound<ObjcWeak<MarkdownTextView>>;
+/// A view waiting for a render, and where in it the fragment that asked
+/// starts (its TextKit offset), for `pending_offsets`.
+type Waiter = (MainThreadBound<ObjcWeak<MarkdownTextView>>, isize);
 
 /// Bound on the remembered sizes and failures; both are only hints.
 const MEMORY: usize = 1024;
@@ -258,7 +277,8 @@ fn schedule(
 ) -> ObjectImage {
     let Some(mtm) = MainThreadMarker::new() else { return ObjectImage::Failed };
     let view = fragment.context().and_then(|context| context.text_view());
-    let waiter: Waiter = MainThreadBound::new(view.as_deref().map(ObjcWeak::from).unwrap_or_default(), mtm);
+    let offset = view.as_deref().map_or(-1, |view| view.text_kit_offset_of(fragment));
+    let waiter: Waiter = (MainThreadBound::new(view.as_deref().map(ObjcWeak::from).unwrap_or_default(), mtm), offset);
     let size = {
         let mut state = state();
         if state.failed.contains(&key) {
@@ -303,7 +323,7 @@ fn schedule(
             };
             drop(image);
             let mut notified: Vec<Retained<MarkdownTextView>> = Vec::new();
-            for waiter in waiters {
+            for (waiter, _) in waiters {
                 let Some(view) = waiter.into_inner(mtm).load() else { continue };
                 if notified.iter().any(|seen| std::ptr::eq(&**seen, &*view)) {
                     continue;

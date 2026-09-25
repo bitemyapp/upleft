@@ -312,6 +312,18 @@ pub struct MarkdownTextViewIvars {
     hosted: RefCell<Option<HostedState>>,
 }
 
+/// A line of a hosted view's text (`MarkdownTextView::hosted_line_at`): the
+/// source offset where its paragraph starts, and where the line starts in
+/// the paragraph as laid out.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub struct HostedLine {
+    pub paragraph: isize,
+    /// The paragraph's TextKit offset in the view that gave the line: the
+    /// same text in any view finds it by this.
+    pub element: isize,
+    pub character: isize,
+}
+
 /// State only a hosted view has. An Upleft extension with no Swift
 /// counterpart: see `MarkdownTextView::new_hosted` and docs/EMBEDDING.md.
 struct HostedState {
@@ -1363,6 +1375,115 @@ impl MarkdownTextView {
             }
         }
         self.hosted_relayout();
+    }
+
+    /// Hosted views (Upleft extension): the laid-out fragment at container
+    /// `y` — its element's TextKit offset, its top in the container, and
+    /// its height — from the heights the view keeps, which are exact where
+    /// TextKit's fragment origins may not be yet.
+    fn hosted_fragment_at(&self, y: CGFloat) -> Option<(isize, CGFloat, CGFloat)> {
+        let hosted = self.ivars().hosted.borrow();
+        let hosted = hosted.as_ref()?;
+        let mut top = 0.0;
+        let mut last = None;
+        for (&offset, &height) in &hosted.fragment_heights {
+            if y < top + height {
+                return Some((offset, top, height));
+            }
+            last = Some((offset, top, height));
+            top += height;
+        }
+        last
+    }
+
+    /// The laid-out fragment holding TextKit offset `text_kit`: its
+    /// element's offset, its top in the container, and its height.
+    fn hosted_fragment_holding(&self, text_kit: isize) -> Option<(isize, CGFloat, CGFloat)> {
+        let hosted = self.ivars().hosted.borrow();
+        let hosted = hosted.as_ref()?;
+        let (&offset, &height) =
+            hosted.fragment_heights.range(..=text_kit).next_back().or_else(|| hosted.fragment_heights.iter().next())?;
+        let top = hosted.fragment_heights.range(..offset).fold(0.0, |sum, (_, height)| sum + height);
+        Some((offset, top, height))
+    }
+
+    /// The line fragments of the layout fragment at TextKit offset
+    /// `element`: each line's first character in the fragment's own
+    /// paragraph (which may differ from the storage where the display
+    /// substitutes text), and its top and bottom relative to the fragment.
+    fn hosted_lines(&self, element: isize) -> Vec<(isize, CGFloat, CGFloat)> {
+        let storage = &self.ivars().content_storage;
+        let layout_manager = &self.ivars().markdown_layout_manager;
+        let Some(location) = storage.locationFromLocation_withOffset(&storage.documentRange().location(), element) else {
+            return Vec::new();
+        };
+        let Some(fragment) = layout_manager.textLayoutFragmentForLocation(&location) else { return Vec::new() };
+        fragment
+            .textLineFragments()
+            .iter()
+            .map(|line| {
+                let bounds = line.typographicBounds();
+                (line.characterRange().location as isize, bounds.min_y(), bounds.max_y())
+            })
+            .collect()
+    }
+
+    /// Hosted views (Upleft extension): the line at `y`, in view
+    /// coordinates, as a `HostedLine` and the line's top. A host keeps the
+    /// reader's place by it: `hosted_line_top` finds the line again after
+    /// the text above it, its own layout, or the width changed. `y` above
+    /// the text is its first line; below it, its last.
+    pub fn hosted_line_at(&self, y: CGFloat) -> Option<(HostedLine, CGFloat)> {
+        let origin = self.textContainerOrigin().y;
+        let (element, top, _) = self.hosted_fragment_at(y - origin)?;
+        let lines = self.hosted_lines(element);
+        let within = y - origin - top;
+        let line = lines
+            .iter()
+            .rev()
+            .find(|(_, min_y, _)| *min_y <= within)
+            .or_else(|| lines.first())
+            .copied()
+            .unwrap_or((0, 0.0, 0.0));
+        let paragraph = self.current_display_map().source_offset_for_text_kit(element);
+        Some((HostedLine { paragraph, element, character: line.0 }, origin + top + line.1))
+    }
+
+    /// Hosted views (Upleft extension): the top, in view coordinates, of
+    /// `line` as the view lays it out now: the line of the paragraph at its
+    /// source offset that holds its character. Lines rewrap when the width
+    /// changes; the character stays in the paragraph.
+    pub fn hosted_line_top(&self, line: HostedLine) -> Option<CGFloat> {
+        let origin = self.textContainerOrigin().y;
+        let map = self.current_display_map();
+        // The same text: the paragraph by its TextKit offset. Source offsets
+        // do not always come back to a paragraph's start.
+        let same = self.with_hosted(|hosted| hosted.fragment_heights.contains_key(&line.element)).unwrap_or(false)
+            && map.source_offset_for_text_kit(line.element) == line.paragraph;
+        let text_kit = if same { line.element } else { map.text_kit_offset_for_source(line.paragraph) };
+        let (element, top, _) = self.hosted_fragment_holding(text_kit)?;
+        let lines = self.hosted_lines(element);
+        let character = if element == text_kit { line.character } else { 0 };
+        let found = lines.iter().rev().find(|(start, ..)| *start <= character).or_else(|| lines.first()).map_or(0.0, |line| line.1);
+        Some(origin + top + found)
+    }
+
+    /// Hosted views (Upleft extension): the diagrams and formulas this view
+    /// draws as placeholders while they render on a worker, as their
+    /// fragments' tops and bottoms in view coordinates.
+    pub fn hosted_pending_objects(&self) -> Vec<(CGFloat, CGFloat)> {
+        let origin = self.textContainerOrigin().y;
+        crate::fragments::async_objects::pending_offsets(self)
+            .into_iter()
+            .filter_map(|offset| self.hosted_fragment_holding(offset))
+            .map(|(_, top, height)| (origin + top, origin + top + height))
+            .collect()
+    }
+
+    /// The TextKit offset of a layout fragment's start.
+    pub(crate) fn text_kit_offset_of(&self, fragment: &objc2_app_kit::NSTextLayoutFragment) -> isize {
+        let layout_manager = &self.ivars().markdown_layout_manager;
+        layout_manager.offsetFromLocation_toLocation(&layout_manager.documentRange().location(), &fragment.rangeInElement().location())
     }
 
     // MARK: - Accessors
