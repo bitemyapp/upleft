@@ -186,6 +186,11 @@ impl CalloutFragment {
         let dark = style.theme.appearance != ThemeAppearance::Light;
         let radius = render_metrics::CALLOUT_CORNER_RADIUS;
         let card = continuous(fragment, band);
+        let context = Some(cg);
+        // Each slice paints exactly its own rows: surfaces round out to the
+        // device pixel, and a tint painted twice where they meet is a seam.
+        CGContext::save_g_state(context);
+        CGContext::clip_to_rect(context, rect(card.min_x() - 1.0, band.min_y(), card.width() + 2.0, band.height()));
         let (from, to): (CGFloat, CGFloat) = if dark { (0.20, 0.05) } else { (0.13, 0.03) };
         fill_gradient(
             cg,
@@ -196,7 +201,6 @@ impl CalloutFragment {
             (CGPoint::new(card.min_x(), card.mid_y()), CGPoint::new(card.max_x(), card.mid_y())),
         );
         stroke_rect(cg, card, &color.colorWithAlphaComponent(if dark { 0.30 } else { 0.24 }), radius, 1.0);
-        let context = Some(cg);
         CGContext::save_g_state(context);
         // SAFETY: a null transform is allowed.
         let path = unsafe { CGPath::with_rounded_rect(card, radius, radius, std::ptr::null()) };
@@ -212,6 +216,7 @@ impl CalloutFragment {
                 0.0,
             );
         }
+        CGContext::restore_g_state(context);
     }
 
     /// One stroke down the whole callout.
