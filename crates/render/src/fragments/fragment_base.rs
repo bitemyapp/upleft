@@ -40,7 +40,7 @@ use objc2_app_kit::{
     NSParagraphStyle, NSStringDrawingOptions, NSTextElement, NSTextLayoutFragment, NSTextRange, NSTextStorage,
 };
 use objc2_core_foundation::{CGFloat, CGPoint, CGRect, CGSize};
-use objc2_core_graphics::{CGContext, CGMutablePath, CGPath};
+use objc2_core_graphics::{CGColorSpace, CGContext, CGGradient, CGGradientDrawingOptions, CGMutablePath, CGPath};
 use objc2_foundation::{
     NSAttributedString, NSCharacterSet, NSMutableAttributedString, NSPoint, NSString,
 };
@@ -903,6 +903,62 @@ pub fn mixed(color: &NSColor, other: &NSColor, amount: CGFloat) -> Retained<NSCo
         a.blueComponent() + (b.blueComponent() - a.blueComponent()) * t,
         a.alphaComponent() + (b.alphaComponent() - a.alphaComponent()) * t,
     )
+}
+
+/// A host's gradient fill (an Upleft extension): `target`, rounded by
+/// `radius`, filled with `color` whose alpha runs from `from` at `start` to
+/// `to` at `end`.
+pub fn fill_gradient(
+    cg: &CGContext,
+    target: CGRect,
+    radius: CGFloat,
+    color: &NSColor,
+    (from, to): (CGFloat, CGFloat),
+    (start, end): (CGPoint, CGPoint),
+) {
+    if !(target.size.width > 0.0 && target.size.height > 0.0) {
+        return;
+    }
+    let srgb = NSColorSpace::sRGBColorSpace();
+    let c = color.colorUsingColorSpace(&srgb).unwrap_or_else(|| color.retain());
+    let (r, g, b, a) = (c.redComponent(), c.greenComponent(), c.blueComponent(), c.alphaComponent());
+    let components: [CGFloat; 8] = [r, g, b, a * from, r, g, b, a * to];
+    let locations: [CGFloat; 2] = [0.0, 1.0];
+    // SAFETY: kCGColorSpaceSRGB is an immutable global.
+    let Some(space) = CGColorSpace::with_name(Some(unsafe { objc2_core_graphics::kCGColorSpaceSRGB })) else { return };
+    // SAFETY: two colours of four components and two locations, as `count` says.
+    let Some(gradient) =
+        (unsafe { CGGradient::with_color_components(Some(&space), components.as_ptr(), locations.as_ptr(), 2) })
+    else {
+        return;
+    };
+    let context = Some(cg);
+    CGContext::save_g_state(context);
+    // SAFETY: a null transform is allowed.
+    let path = unsafe { CGPath::with_rounded_rect(target, radius, radius, std::ptr::null()) };
+    CGContext::add_path(context, Some(&path));
+    CGContext::clip(context);
+    CGContext::draw_linear_gradient(context, Some(&gradient), start, end, CGGradientDrawingOptions(0));
+    CGContext::restore_g_state(context);
+}
+
+/// A host's hairline (an Upleft extension): `target` stroked `width` wide
+/// inside its edge, rounded by `radius`.
+pub fn stroke_rect(cg: &CGContext, target: CGRect, color: &NSColor, radius: CGFloat, width: CGFloat) {
+    if !(target.size.width > width && target.size.height > width) {
+        return;
+    }
+    let inset = target.inset_by(width / 2.0, width / 2.0);
+    let context = Some(cg);
+    CGContext::save_g_state(context);
+    CGContext::set_stroke_color_with_color(context, Some(&color.CGColor()));
+    CGContext::set_line_width(context, width);
+    let r = smax(0.0, radius - width / 2.0);
+    // SAFETY: a null transform is allowed.
+    let path = unsafe { CGPath::with_rounded_rect(inset, r, r, std::ptr::null()) };
+    CGContext::add_path(context, Some(&path));
+    CGContext::stroke_path(context);
+    CGContext::restore_g_state(context);
 }
 
 /// `drawNSImage(_:in:in:cornerRadius:)`: draws an image into a flipped

@@ -16,18 +16,20 @@ use std::rc::Rc;
 
 use objc2::rc::Retained;
 use objc2_app_kit::{
-    NSAttributedStringNSStringDrawing, NSColor, NSFont, NSFontWeightMedium, NSFontWeightSemibold, NSImage,
+    NSAttributedStringNSStringDrawing, NSColor, NSFont, NSFontWeightBold, NSFontWeightMedium, NSFontWeightSemibold, NSImage,
     NSImageSymbolConfiguration, NSParagraphStyle, NSTextElement, NSTextLayoutFragment, NSTextRange,
 };
 use objc2_core_foundation::{CGFloat, CGPoint, CGRect};
-use objc2_core_graphics::CGContext;
+use objc2_core_graphics::{CGContext, CGPath};
 use objc2_foundation::NSString;
 use upleft_core::model::CalloutKind;
 
 use crate::appkit_compat::{RectExt, attribute_value, attributed_string, intersection_range, keys, rect};
 use crate::engine::render_metrics;
 use crate::fragments::code_block_fragment::tinted;
-use crate::fragments::fragment_base::{DownrightFragment, FragmentBehavior, FragmentContext, draw_ns_image, draw_text, fill_rect};
+use crate::fragments::fragment_base::{
+    DownrightFragment, FragmentBehavior, FragmentContext, draw_ns_image, draw_text, fill_gradient, fill_rect, stroke_rect,
+};
 use crate::render_contracts::{FragmentPayload, ThemeAppearance};
 use crate::swift_compat::{is_whitespace_or_newline, smax, smin};
 use crate::theme::style_sheet::StyleSheet;
@@ -75,11 +77,19 @@ impl FragmentBehavior for CalloutFragment {
         let reserved_inset =
             if self.kind.is_none() { render_metrics::CALLOUT_INSET_X } else { render_metrics::CALLOUT_ICON_INSET_X };
         let color = self.kind.map_or_else(|| style.quote_rule.clone(), |kind| style.callout_color(kind));
-        let rule_width =
-            if self.kind.is_none() { render_metrics::QUOTE_RULE_WIDTH } else { render_metrics::CALLOUT_RULE_WIDTH };
+        let card = self.kind.is_some() && style.host.callout_card == Some(true);
+        let rule_width = if self.kind.is_none() {
+            render_metrics::QUOTE_RULE_WIDTH
+        } else if card {
+            CARD_SPINE_WIDTH
+        } else {
+            render_metrics::CALLOUT_RULE_WIDTH
+        };
         let band = band_rect(fragment, point, reserved_inset);
 
-        if self.kind.is_some() {
+        if card {
+            self.draw_card(fragment, band, &color, &style, cg);
+        } else if self.kind.is_some() {
             let tint_alpha: CGFloat = if style.theme.appearance == ThemeAppearance::Light { 0.042 } else { 0.060 };
             fill_rect(
                 cg,
@@ -88,7 +98,9 @@ impl FragmentBehavior for CalloutFragment {
                 render_metrics::CALLOUT_CORNER_RADIUS,
             );
         }
-        fill_rect(cg, self.rule_rect(fragment, band, rule_width), &color, rule_width / 2.0);
+        if !card {
+            fill_rect(cg, self.rule_rect(fragment, band, rule_width), &color, rule_width / 2.0);
+        }
 
         let Some(kind) = self.kind else { return };
         if !(is_header_element(fragment) && header_row_is_blank(fragment)) {
@@ -159,7 +171,49 @@ fn continuous(fragment: &DownrightFragment, band: CGRect) -> CGRect {
     grown
 }
 
+/// The card's spine (`HostTypography::callout_card`).
+const CARD_SPINE_WIDTH: CGFloat = 4.0;
+/// The card's icon badge: as large as the reserved lane allows.
+const CARD_BADGE_SIDE: CGFloat = 22.0;
+
 impl CalloutFragment {
+    /// The host's card (`HostTypography::callout_card`): the kind's colour
+    /// as a tint fading across the card, a hairline edge in the colour, a
+    /// spine following the card's rounded corners, and in dark mode a lit
+    /// top edge. Each slice draws the whole card grown past its own ends,
+    /// and its surface clips it, so the slices join without a seam.
+    fn draw_card(&self, fragment: &DownrightFragment, band: CGRect, color: &NSColor, style: &StyleSheet, cg: &CGContext) {
+        let dark = style.theme.appearance != ThemeAppearance::Light;
+        let radius = render_metrics::CALLOUT_CORNER_RADIUS;
+        let card = continuous(fragment, band);
+        let (from, to): (CGFloat, CGFloat) = if dark { (0.20, 0.05) } else { (0.13, 0.03) };
+        fill_gradient(
+            cg,
+            card,
+            radius,
+            color,
+            (from, to),
+            (CGPoint::new(card.min_x(), card.mid_y()), CGPoint::new(card.max_x(), card.mid_y())),
+        );
+        stroke_rect(cg, card, &color.colorWithAlphaComponent(if dark { 0.30 } else { 0.24 }), radius, 1.0);
+        let context = Some(cg);
+        CGContext::save_g_state(context);
+        // SAFETY: a null transform is allowed.
+        let path = unsafe { CGPath::with_rounded_rect(card, radius, radius, std::ptr::null()) };
+        CGContext::add_path(context, Some(&path));
+        CGContext::clip(context);
+        fill_rect(cg, rect(card.min_x(), card.min_y(), CARD_SPINE_WIDTH, card.height()), color, 0.0);
+        CGContext::restore_g_state(context);
+        if dark && is_header_element(fragment) {
+            fill_rect(
+                cg,
+                rect(card.min_x() + radius, card.min_y() + 1.0, smax(0.0, card.width() - radius * 2.0), 1.0),
+                &color.colorWithAlphaComponent(0.42),
+                0.0,
+            );
+        }
+    }
+
     /// One stroke down the whole callout.
     fn rule_rect(&self, fragment: &DownrightFragment, band: CGRect, width: CGFloat) -> CGRect {
         let end: CGFloat = if self.kind.is_none() { 0.0 } else { 4.0 };
@@ -187,7 +241,32 @@ impl CalloutFragment {
             .firstObject()
             .map_or(style.line_height, |line| smax(1.0, line.typographicBounds().height()));
 
-        if let Some(icon) =
+        let card = style.host.callout_card == Some(true);
+        if card {
+            // A solid badge in the kind's colour with the icon knocked out.
+            let badge = rect(
+                band.min_x() + rule_width + 4.0,
+                row_y + (row_height - CARD_BADGE_SIDE) / 2.0,
+                CARD_BADGE_SIDE,
+                CARD_BADGE_SIDE,
+            );
+            fill_rect(cg, badge, color, CARD_BADGE_SIDE / 2.0);
+            if let Some(icon) = NSImage::imageWithSystemSymbolName_accessibilityDescription(
+                &NSString::from_str(style.callout_symbol(kind)),
+                Some(&NSString::from_str(default_label(kind))),
+            ) {
+                let configuration =
+                    NSImageSymbolConfiguration::configurationWithPointSize_weight(11.0, unsafe { NSFontWeightBold });
+                let configured = icon.imageWithSymbolConfiguration(&configuration).unwrap_or(icon);
+                let size = configured.size();
+                draw_ns_image(
+                    &tinted(&configured, &style.background),
+                    rect(badge.mid_x() - size.width / 2.0, badge.mid_y() - size.height / 2.0, size.width, size.height),
+                    cg,
+                    0.0,
+                );
+            }
+        } else if let Some(icon) =
             NSImage::imageWithSystemSymbolName_accessibilityDescription(&NSString::from_str(style.callout_symbol(kind)), None)
         {
             let configuration = NSImageSymbolConfiguration::configurationWithPointSize_weight(
@@ -212,8 +291,19 @@ impl CalloutFragment {
 
         // An untitled callout gets its kind's name.
         let text = if self.title.is_empty() { default_label(kind) } else { self.title.as_str() };
-        let font = NSFont::systemFontOfSize_weight(style.body_font().pointSize() * 0.94, unsafe { NSFontWeightSemibold });
-        let label = attributed_string(text, &[(keys::font(), &font), (keys::foreground_color(), color)]);
+        let label = if card && self.title.is_empty() {
+            // The kind's own name, as tracked capitals: a label, not a heading.
+            let font = NSFont::systemFontOfSize_weight(style.body_font().pointSize() * 0.76, unsafe { NSFontWeightBold });
+            let kern = objc2_foundation::NSNumber::new_f64(1.1);
+            attributed_string(
+                &text.to_uppercase(),
+                &[(keys::font(), &font), (keys::foreground_color(), color), (keys::kern(), &kern)],
+            )
+        } else {
+            let weight = if card { unsafe { NSFontWeightBold } } else { unsafe { NSFontWeightSemibold } };
+            let font = NSFont::systemFontOfSize_weight(style.body_font().pointSize() * 0.94, weight);
+            attributed_string(text, &[(keys::font(), &font), (keys::foreground_color(), color)])
+        };
         let label_height = smin(row_height, label.size().height.ceil());
         draw_text(
             cg,

@@ -255,6 +255,7 @@ pub mod keys {
     key!(attachment, NSAttachmentAttributeName);
     key!(link, NSLinkAttributeName);
     key!(ligature, NSLigatureAttributeName);
+    key!(kern, NSKernAttributeName);
 }
 
 /// A source range (Swift `Int` offsets) as Foundation's unsigned `NSRange`,

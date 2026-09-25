@@ -142,6 +142,11 @@ pub struct HostTypography {
     /// edge, with no left rule. `None` or `false` keeps Downright's chip,
     /// hover-only copy control and rule.
     pub code_header: Option<bool>,
+    /// Callouts drawn as cards (a chat host's chrome): the kind's colour as
+    /// a tint that fades across the card, a hairline edge, a thicker spine,
+    /// the icon knocked out of a solid badge, and the kind's name set in
+    /// tracked capitals. `None` or `false` keeps Downright's rule and tint.
+    pub callout_card: Option<bool>,
 }
 
 /// A body face (`HostTypography::body_family`).
