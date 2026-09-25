@@ -147,6 +147,24 @@ pub struct HostTypography {
     /// the icon knocked out of a solid badge, and the kind's name set in
     /// tracked capitals. `None` or `false` keeps Downright's rule and tint.
     pub callout_card: Option<bool>,
+    /// With `code_header`, how the header bar is dressed (`CodeLook`).
+    /// `None` is `CodeLook::Card`.
+    pub code_look: Option<CodeLook>,
+    /// With `code_header`, line numbers in the code inset's gutter for
+    /// blocks of at least this many lines. `None` draws none.
+    pub code_line_numbers: Option<isize>,
+}
+
+/// How a host's code header bar is dressed (`HostTypography::code_look`).
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum CodeLook {
+    /// A tinted bar over a hairline, the language as a filled pill.
+    Card,
+    /// A book's figure caption: no tint, an accent rule along the top, the
+    /// language in tracked capitals and the file in italics.
+    Ledger,
+    /// A terminal window's title bar: three lights at the leading edge.
+    Console,
 }
 
 /// A body face (`HostTypography::body_family`).
@@ -728,6 +746,12 @@ impl StyleSheet {
             CalloutKind::Important => 4,
         };
         self.callout_colors[index].clone()
+    }
+
+    /// A diff's added (`true`) or removed line colour, from the code theme.
+    pub fn code_colors_diff(&self, added: bool) -> Retained<NSColor> {
+        let token = if added { SyntaxToken::DiffAdded } else { SyntaxToken::DiffRemoved };
+        self.code_color(token)
     }
 
     pub fn callout_symbol(&self, kind: CalloutKind) -> &'static str {

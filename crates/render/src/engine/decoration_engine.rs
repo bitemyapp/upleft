@@ -1392,9 +1392,19 @@ impl DecorationEngine {
         } else {
             &[]
         };
+        // A host's header bar shows the info string's file name, so the
+        // language is its first word; Downright highlights by the whole
+        // string, as it always has.
+        let header_bar = self.style_sheet.host.code_header == Some(true);
+        let language = if header_bar {
+            language.map(|language| language.split_whitespace().next().unwrap_or(language))
+        } else {
+            language
+        };
         let runs = self.syntax_cache.runs(code, language, self.highlighter.as_ref());
         let is_diff = language.is_some_and(|language| swift_text::str_eq(&swift_text::lowercased(language), "diff"));
-        if is_diff {
+        // With the header bar the fragment draws whole-line diff bands.
+        if is_diff && !header_bar {
             let mut cursor = 0isize;
             let length = code.len() as isize;
             while cursor < length {
