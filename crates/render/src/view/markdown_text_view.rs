@@ -2809,12 +2809,9 @@ impl MarkdownTextView {
             Some(storage) => Retained::into_super(Retained::into_super(storage)),
             None => NSAttributedString::new(),
         };
-        base_display_map::layout_display_map(
-            logical,
-            &self.paragraph_index(),
-            &storage,
-            &mut self.ivars().word_joiner_runs.borrow_mut(),
-        )
+        let layout =
+            if self.is_hosted() { base_display_map::hosted_layout_display_map } else { base_display_map::layout_display_map };
+        layout(logical, &self.paragraph_index(), &storage, &mut self.ivars().word_joiner_runs.borrow_mut())
     }
 
     /// Source Focus changes typography and local material, never characters.

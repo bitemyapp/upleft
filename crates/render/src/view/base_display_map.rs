@@ -310,14 +310,10 @@ pub fn layout_substitution(
     storage: &NSAttributedString,
     joiners: &mut WordJoinerRuns,
 ) -> DisplaySubstitution {
-    // Upleft: a footnote's superscript is text, not an attachment, and is
-    // shorter than its `[^id]` too. Left short, its element is shorter than
-    // its range, and TextKit, laying the paragraph out again (a new width,
-    // an invalidation), drops the space after it that a first layout gives.
     let inline_object = !substitution.is_hidden
         && substitution.replacement.as_ref().is_some_and(|replacement| {
             (replacement.length() as isize) < substitution.source_range.length
-                && (has_attachment_at_start(replacement) || is_footnote_reference(replacement))
+                && has_attachment_at_start(replacement)
         });
     if !inline_object {
         if !substitution.is_hidden {
@@ -333,7 +329,13 @@ pub fn layout_substitution(
             true,
         );
     }
-    let replacement = substitution.replacement.as_ref().expect("checked above");
+    padded(substitution, storage, joiners)
+}
+
+/// `substitution`'s replacement followed by word joiners up to its source
+/// length.
+fn padded(substitution: &DisplaySubstitution, storage: &NSAttributedString, joiners: &mut WordJoinerRuns) -> DisplaySubstitution {
+    let replacement = substitution.replacement.as_ref().expect("a replacement");
     let filler_count = substitution.source_range.length - replacement.length() as isize;
     let layout_replacement = NSMutableAttributedString::from_attributed_nsstring(replacement);
     layout_replacement.appendAttributedString(&layout_filler(
@@ -350,6 +352,44 @@ pub fn layout_substitution(
         false,
         true,
     )
+}
+
+/// `layout_display_map` for a hosted view (Upleft extension).
+pub fn hosted_layout_display_map(
+    logical: &DisplayMap,
+    paragraph_index: &ParagraphIndex,
+    storage: &NSAttributedString,
+    joiners: &mut WordJoinerRuns,
+) -> DisplayMap {
+    let substitutions = logical
+        .substitutions()
+        .iter()
+        .map(|sub| hosted_layout_substitution(sub, storage, joiners))
+        .collect();
+    DisplayMap::new(paragraph_index.clone(), substitutions)
+}
+
+/// `layout_substitution` for a hosted view (Upleft extension): a footnote's
+/// superscript, text shorter than its `[^id]`, is padded to source length
+/// too, as an inline object is. Left short, its element is shorter than its
+/// range, and TextKit, laying the paragraph out again (a new width, an
+/// invalidation, an async diagram landing above), drops the space after it
+/// that a first layout gives: a host stacking views as one text would see
+/// the spacing depend on how each view's layout came about. Downright keeps
+/// the short replacement, so its views do too.
+pub fn hosted_layout_substitution(
+    substitution: &DisplaySubstitution,
+    storage: &NSAttributedString,
+    joiners: &mut WordJoinerRuns,
+) -> DisplaySubstitution {
+    let short_footnote = !substitution.is_hidden
+        && substitution.replacement.as_ref().is_some_and(|replacement| {
+            (replacement.length() as isize) < substitution.source_range.length && is_footnote_reference(replacement)
+        });
+    if short_footnote {
+        return padded(substitution, storage, joiners);
+    }
+    layout_substitution(substitution, storage, joiners)
 }
 
 fn is_footnote_reference(string: &NSAttributedString) -> bool {
@@ -447,7 +487,10 @@ impl HostedBaseMap {
             // Source focus filters every producer by the focused range; it is
             // rare in a hosted view, so it takes the full path.
             self.key = None;
-            return rebuild_base_display_map(inputs, joiners);
+            let mut maps = rebuild_base_display_map(inputs, joiners);
+            maps.base_layout_map =
+                hosted_layout_display_map(&maps.base_display_map, inputs.paragraph_index, inputs.storage, joiners);
+            return maps;
         }
         let key = HostedBaseKey {
             policy: inputs.effective_policy,
@@ -549,7 +592,7 @@ impl HostedBaseMap {
                         return (*old).clone();
                     }
                 }
-                layout_substitution(sub, inputs.storage, joiners)
+                hosted_layout_substitution(sub, inputs.storage, joiners)
             })
             .collect();
         let base_layout_map = DisplayMap::new(inputs.paragraph_index.clone(), layout);
