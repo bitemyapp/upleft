@@ -30,6 +30,7 @@ pub const TESTS: &[crate::Test] = &[
     ("open_fence_renders_as_code_while_streaming", open_fence_renders_as_code_while_streaming),
     ("streamed_message_matches_whole_message", streamed_message_matches_whole_message),
     ("host_style_sheet_typography", host_style_sheet_typography),
+    ("streamed_message_cut_back_matches_its_head", streamed_message_cut_back_matches_its_head),
 ];
 
 fn host_sheet(typography: HostTypography) -> Rc<StyleSheet> {
@@ -232,6 +233,35 @@ fn fragments(view: &MarkdownTextView) -> Vec<(String, isize, f64, f64)> {
     out.into_inner()
 }
 
+/// What TextKit lays out: each layout fragment's text, line by line.
+fn laid_out_lines(view: &MarkdownTextView) -> Vec<String> {
+    use objc2_app_kit::NSTextSelectionDataSource;
+    let layout = view.textLayoutManager().expect("TextKit 2");
+    let out = RefCell::new(Vec::new());
+    let block = block2::StackBlock::new(|fragment: std::ptr::NonNull<objc2_app_kit::NSTextLayoutFragment>| -> objc2::runtime::Bool {
+        let fragment = unsafe { fragment.as_ref() };
+        let text = fragment
+            .textElement()
+            .and_then(|element| element.downcast::<objc2_app_kit::NSTextParagraph>().ok())
+            .map(|paragraph| paragraph.attributedString().string().to_string())
+            .unwrap_or_default();
+        let units: Vec<u16> = text.encode_utf16().collect();
+        let lines = fragment.textLineFragments();
+        for index in 0..lines.count() {
+            let range = lines.objectAtIndex(index).characterRange();
+            let end = (range.location + range.length).min(units.len());
+            out.borrow_mut().push(String::from_utf16_lossy(&units[range.location.min(end)..end]));
+        }
+        objc2::runtime::Bool::YES
+    });
+    layout.enumerateTextLayoutFragmentsFromLocation_options_usingBlock(
+        Some(&layout.documentRange().location()),
+        objc2_app_kit::NSTextLayoutFragmentEnumerationOptions::EnsuresLayout,
+        &block,
+    );
+    out.into_inner()
+}
+
 /// Runs the main queue until every diagram and formula has landed.
 fn settle() {
     crate::support::pump_main_queue(|| upleft_render::fragments::async_objects::pending_count() == 0, std::time::Duration::from_secs(20));
@@ -259,8 +289,12 @@ fn stream(text: &str, max: usize, mtm: MainThreadMarker) -> Retained<MarkdownTex
 /// A message streamed in token-sized pieces ends up exactly as the same
 /// message given whole: storage attributes, display map, paragraphs, height.
 fn streamed_message_matches_whole_message(mtm: MainThreadMarker) {
-    let documents: [&str; 5] = [
+    let documents: [&str; 7] = [
         include_str!("fixtures/hosted-stress.md"),
+        // A quote whose paragraph goes on in lazy lines, joined as they come.
+        "> The batch design made sense when uploads were a few per hour.\nIt stopped making sense around the time\nthe mobile app shipped.\n\nAfter.\n",
+        // Inline math, a footnote reference, then more blocks.
+        "Where $\\bar{s}$ is the size and $\\mu$ the rate, $\\rho \\approx 0.31$ holds at 32 partitions, so there is room before we need more.[^m]\n\n## Risks\n\n- [ ] **Ordering.** Two uploads.\n\n[^m]: A note.\n",
         // A setext underline and a list marker arrive mid-stream.
         "Title\n===\n\n- aaaa\n  - b\n- [x] A finished task\n\nPara\n---\n",
         // References and footnotes defined after their uses.
@@ -287,6 +321,14 @@ fn streamed_message_matches_whole_message(mtm: MainThreadMarker) {
             }
             assert!(display_substitutions(&streamed) == display_substitutions(&whole), "{label}: display maps differ");
             assert!(streamed.paragraph_index() == whole.paragraph_index(), "{label}: paragraph indexes differ");
+            let (a, b) = (laid_out_lines(&streamed), laid_out_lines(&whole));
+            if a != b {
+                let first = a.iter().zip(&b).position(|(x, y)| x != y);
+                if let Some(index) = first {
+                    eprintln!("  streamed {:?}\n  whole    {:?}", a[index], b[index]);
+                }
+                panic!("{label}: laid-out lines differ at line {first:?}");
+            }
             if streamed.content_height() != whole.content_height() {
                 let (fa, fb) = (fragments(&streamed), fragments(&whole));
                 for (x, y) in fa.iter().zip(&fb) {
@@ -299,7 +341,79 @@ fn streamed_message_matches_whole_message(mtm: MainThreadMarker) {
             checked.set(checked.get() + 1);
         }
     }
-    expect!(checked.get() == 10);
+    expect!(checked.get() == 14);
+}
+
+/// A streamed message cut back to a head that ends before a top-level
+/// block (a host sealing it, the rest going on in another view) ends up as
+/// a view of the head alone.
+fn streamed_message_cut_back_matches_its_head(mtm: MainThreadMarker) {
+    let quote = "Intro.\n\n> The batch design made sense when uploads were a few per hour.\nIt stopped making sense around the time\nthe mobile app shipped.\n\nMiddle paragraph.\n\nThe rest, which goes on.\n";
+    let stress = include_str!("fixtures/hosted-stress.md");
+    let mut cases: Vec<(&str, usize, usize)> = vec![(quote, quote.find("The rest").expect("the rest"), 1), (quote, quote.find("The rest").expect("the rest"), 8)];
+    // Every paragraph after a blank line in the stress fixture, the rest
+    // streamed a little way on.
+    let mut at = 0;
+    while let Some(found) = stress[at..].find("\n\n") {
+        let cut = at + found + 2;
+        at = cut;
+        if stress[cut..].starts_with(|c: char| c.is_alphabetic()) {
+            cases.push((stress, cut, 6));
+        }
+    }
+    for (text, cut, max) in cases {
+        let rest = (cut + 40).min(text.len());
+        let rest = (rest..=text.len()).find(|&end| text.is_char_boundary(end)).unwrap_or(text.len());
+        let text = &text[..rest];
+        let (streamed, storage) = hosted("", 520.0, mtm);
+        streamed.set_streaming(true);
+        let characters: Vec<char> = text.chars().collect();
+        let mut index = 0;
+        let mut seed: u64 = 0x2545_f491_4f6c_dd1d;
+        while index < characters.len() {
+            seed = seed.wrapping_mul(6364136223846793005).wrapping_add(1442695040888963407);
+            let take = (1 + (seed >> 33) as usize % max).min(characters.len() - index);
+            append(&streamed, &storage, &characters[index..index + take].iter().collect::<String>());
+            index += take;
+        }
+        streamed.set_streaming(false);
+        let previous = streamed.parsed_document();
+        let head = &text[..cut];
+        storage.beginEditing();
+        let units = head.encode_utf16().count();
+        storage.replaceCharactersInRange_withString(
+            objc2_foundation::NSRange::new(units, storage.length() - units),
+            &NSString::from_str(""),
+        );
+        storage.endEditing();
+        let fresh = parse(head);
+        let dirty = ASTDiff::dirty_set(Some(&previous), &fresh);
+        streamed.update(fresh, &dirty, true);
+        let (whole, _storage) = hosted(head, 520.0, mtm);
+        settle();
+        let label = format!("cut at {cut}, pieces of up to {max}");
+        let (a, b) = (attribute_runs(&streamed), attribute_runs(&whole));
+        if a != b {
+            let first = a.iter().zip(&b).position(|(x, y)| x != y);
+            if let Some(index) = first {
+                eprintln!("  cut back {:?}\n  whole    {:?}", a[index], b[index]);
+            } else {
+                eprintln!("  cut back ends {:?}\n  whole ends    {:?}", &a[a.len().saturating_sub(2)..], &b[b.len().saturating_sub(2)..]);
+            }
+            panic!("{label}: attribute runs differ at run {first:?}");
+        }
+        let (a, b) = (display_substitutions(&streamed), display_substitutions(&whole));
+        if a != b {
+            eprintln!("  cut back {a:?}\n  whole    {b:?}");
+            panic!("{label}: display maps differ");
+        }
+        let (a, b) = (laid_out_lines(&streamed), laid_out_lines(&whole));
+        if a != b {
+            eprintln!("  cut back {a:?}\n  whole    {b:?}");
+            panic!("{label}: laid-out lines differ");
+        }
+        assert!(streamed.content_height() == whole.content_height(), "{label}: heights differ");
+    }
 }
 
 fn host_style_sheet_typography(_mtm: MainThreadMarker) {
@@ -350,3 +464,4 @@ fn host_style_sheet_typography(_mtm: MainThreadMarker) {
     expect!(plain.line_height == downright.line_height);
     expect!(plain.measure_width == downright.measure_width);
 }
+

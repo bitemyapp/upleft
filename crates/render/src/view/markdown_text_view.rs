@@ -2089,6 +2089,11 @@ impl MarkdownTextView {
         if !is_wholesale_update && edit_floor < length {
             let start = self.paragraph_index().start_containing(edit_floor);
             invalidated.push(NSRange::new(start, length - start));
+        } else if !is_wholesale_update && length > 0 && changed.length == 0 && edit_floor >= length {
+            // Text removed from the end, nothing inserted: the paragraph that
+            // now ends the text is the edited one.
+            let start = self.paragraph_index().start_containing(length - 1);
+            invalidated.push(NSRange::new(start, length - start));
         }
         let invalidated = RangeSet::normalized(&invalidated);
         self.rebuild_display_map(is_wholesale_update, &invalidated);
