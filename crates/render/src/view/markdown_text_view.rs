@@ -1036,7 +1036,8 @@ impl MarkdownTextView {
     /// Copy (Edit ▸ Copy, a drag of the selection, any
     /// `writeSelectionToPasteboard:types:`) writes every formula the
     /// selection touches as its TeX, `$…$` inline and `$$…$$` on lines of
-    /// its own for display math, instead of the typeset image. Off by
+    /// its own for display math (or delimiters that parse back as the same
+    /// formula where those would not), instead of the typeset image. Off by
     /// default, which is Downright's copy. The work happens at copy time
     /// only: rendering and scrolling are unchanged. See `view::math_copy`.
     pub fn set_math_copy_as_tex(&self, enabled: bool) {

@@ -44,6 +44,15 @@ Upleft parses Markdown with its fork of pulldown-cmark, not the cmark-gfm C libr
 
 Every scenario is one capture compared against Downright pixel for pixel.
 
+## Copying formulas as TeX
+
+`set_math_copy_as_tex` has no Swift counterpart, so no suite compares it with Downright. `math_copy_conformance` (in `upleft-render`) checks it against the dialect instead, for every formula the renderer typesets: the copied LaTeX is byte for byte the string `InlineMathDisplay` or `MathFragment` hands `MathRenderer`; the copy parses back through `MarkdownParser` as the same formulas of the same kinds (whole documents, each formula alone, selections inside formulas and across containers); the HTML flavour carries the same LaTeX; Copy LaTeX returns it bare. The inputs are the generated corpus, each formula form in every container, whitespace and adversarial cases, and seeded random documents and corpus mutations.
+
+- `cargo test -p upleft-render --test math_copy_conformance -- --nocapture` (about 10 s) prints counts per property and category and minimizes failures. `UPLEFT_MATH_COPY_DOCS=a.md:b.md` adds documents, `UPLEFT_MATH_COPY_RANDOM=n` sets the random count, and `UPLEFT_MATH_COPY_DUMP=path` writes every copied formula for a TeX check.
+- `cargo test -p upleft-render --test view_tests -- math_copy math_latex` copies through a hosted view and a private pasteboard.
+
+Failures the copy cannot cause are reported as `residual:` and do not fail the test.
+
 ## Parser differential
 
 `crates/markup/examples/markup_diff.rs` parses each input with the pulldown-cmark adapter and with the cmark-gfm converter it replaced (`parser::cmark_oracle`, compiled only for tests and under the `cmark-oracle` feature), dumps both trees in the `markup` suite's format and counts differences by category. It needs no Swift build and runs in seconds.

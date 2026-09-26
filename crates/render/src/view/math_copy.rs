@@ -7,9 +7,15 @@
 //! rendering and scrolling do no work for it and nothing is cached.
 //!
 //! The selection is widened to whole formulas, then cut into prose pieces
-//! (copied as they are shown) and formulas, written as `$…$` inline, and as
-//! `$$…$$` with its delimiters on their own lines for display math and
-//! `math` fences.
+//! (copied as they are shown) and formulas. Each formula is written with
+//! exactly the LaTeX the renderer typesets (`latex`), in delimiters that
+//! parse back through this dialect as the same formula: `$…$` inline and
+//! `$$…$$` inline display where they do, else `\(…\)` and `\[…\]` (which
+//! the dollar guard rails and prose dollars leave alone), else the source's
+//! own; display blocks are `$$…$$` on lines of their own, or a `math`
+//! fence where a `$$` paragraph would break. The whole copy is parsed back
+//! before it is written. `math_copy_conformance` holds all of this to the
+//! dialect.
 
 use upleft_core::{BlockContent, InlineKind, NSRange, ParsedDocument};
 
