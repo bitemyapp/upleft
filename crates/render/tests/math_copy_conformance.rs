@@ -363,6 +363,28 @@ fn copied_formulas_conform_to_the_dialect() {
         check_document(&text, "neighbours", &mut report);
     }
 
+    // `UPLEFT_MATH_COPY_DUMP=path` writes each distinct formula of the
+    // corpus and the generated cases, as copied alone, one JSON string a
+    // line, for an external TeX check.
+    if let Ok(path) = std::env::var("UPLEFT_MATH_COPY_DUMP") {
+        let mut seen = std::collections::BTreeSet::new();
+        let mut texts: Vec<String> = documents.iter().map(|(_, text)| text.clone()).collect();
+        for latex in &formulas {
+            for &form in FORMS {
+                texts.push(format!("Before.\n\n{}\n\nAfter.\n", form.snippet(latex)));
+            }
+        }
+        for text in &texts {
+            let document = upleft_core::parser::MarkdownParser::parse(text);
+            let spans = upleft_render::view::math_copy::math_spans(&document);
+            for span in &spans {
+                seen.insert(upleft_render::view::math_copy_conformance::copy_source(&document, &spans, span.range));
+            }
+        }
+        let lines: Vec<String> = seen.iter().map(|tex| serde_json::to_string(tex).expect("json")).collect();
+        std::fs::write(&path, lines.join("\n") + "\n").expect("dump");
+    }
+
     // Seeded random documents, and mutations of the corpus.
     let count: usize = std::env::var("UPLEFT_MATH_COPY_RANDOM").ok().and_then(|n| n.parse().ok()).unwrap_or(10_000);
     let mut random = Random(0x9E37_79B9_7F4A_7C15);
