@@ -26,6 +26,7 @@ pub const TESTS: &[crate::Test] = &[
     ("math_copy_takes_a_partly_selected_formula_whole", math_copy_takes_a_partly_selected_formula_whole),
     ("math_copy_off_copies_as_before", math_copy_off_copies_as_before),
     ("math_latex_at_offset_is_the_bare_formula", math_latex_at_offset_is_the_bare_formula),
+    ("math_copy_conforms_through_the_view", math_copy_conforms_through_the_view),
 ];
 
 const MESSAGE: &str =
@@ -164,4 +165,96 @@ fn math_latex_at_offset_is_the_bare_formula(mtm: MainThreadMarker) {
     expect!(view.math_latex_at_source_offset(inside("\\tfrac")).as_deref() == Some("\\int_0^1 x\\,dx = \\tfrac12"));
     expect!(view.math_latex_at_source_offset(inside("b^2")).as_deref() == Some("a^2 + b^2 = c^2"));
     expect!(view.math_latex_at_source_offset(inside("Done")).is_none());
+}
+
+/// The differential check (`math_copy_conformance`) through a hosted view
+/// and a private pasteboard: prose as the view shows it, containers and all.
+fn math_copy_conforms_through_the_view(mtm: MainThreadMarker) {
+    use upleft_render::view::math_copy::same_formula;
+    use upleft_render::view::math_copy_conformance::{Report, alone, formulas, html_text, strip, typeset};
+
+    let latexes = ["E = mc^2", " x ", "\\$5", "\\text{a $ b}", "a \\\\ b", "α + β", "5 + x", "100", "x$y", "a\n+ b"];
+    let mut documents = Vec::new();
+    for latex in latexes {
+        let inline = [format!("${latex}$"), format!("\\({latex}\\)"), format!("$${latex}$$"), format!("\\[{latex}\\]")];
+        let blocks = [format!("$$\n{latex}\n$$"), format!("```math\n{latex}\n```"), format!("\\[\n{latex}\n\\]")];
+        for form in &inline {
+            let line = format!("Some text {form} more.");
+            documents.push(("paragraph", format!("Before.\n\n{line}\n\nAfter.\n")));
+            documents.push(("list-tight", format!("- a\n- {line}\n- c\n")));
+            documents.push(("list-loose", format!("- a\n\n- {line}\n\n- c\n")));
+            documents.push(("quote", format!("> {line}\n")));
+            documents.push(("quote-in-list", format!("- item\n\n  > {line}\n")));
+            documents.push(("footnote", format!("Text[^1].\n\n[^1]: {line}\n")));
+            documents.push(("callout", format!("> [!NOTE]\n> {line}\n")));
+            documents.push(("heading", format!("# Title {form}\n\nBody.\n")));
+            documents.push(("table-cell", format!("| a | b |\n|---|---|\n| {form} | x |\n")));
+            documents.push(("neighbours", format!("({form}), **5**{form} and {form}**5**.\n")));
+            documents.push(("crlf", format!("Before.\r\n\r\n{line}\r\n")));
+        }
+        for form in &blocks {
+            let quoted = form.lines().map(|line| format!("> {line}")).collect::<Vec<_>>().join("\n");
+            let listed = form.lines().map(|line| format!("  {line}")).collect::<Vec<_>>().join("\n");
+            documents.push(("paragraph", format!("Before.\n\n{form}\n\nAfter.\n")));
+            documents.push(("quote", format!("{quoted}\n")));
+            documents.push(("list-loose", format!("- a\n\n{listed}\n\n- c\n")));
+            documents.push(("crlf", format!("Before.\r\n\r\n{}\r\n\r\nAfter.\r\n", form.replace('\n', "\r\n"))));
+        }
+    }
+    documents.push(("stress", MESSAGE.to_owned()));
+
+    let mut report = Report::default();
+    for (category, text) in &documents {
+        let document = parse(text);
+        let expected = typeset(&document);
+        let (view, _storage) = hosted(text, mtm);
+        view.set_math_copy_as_tex(true);
+        // The whole document parses back as the same formulas.
+        let copied = copy(&view, NSRange::new(0, utf16_len(text)));
+        let back = formulas(&copied.plain);
+        let same = back.len() == expected.len()
+            && back.iter().zip(&expected).all(|(a, b)| same_formula((a.style, &a.latex), (b.formula.style, &b.formula.latex)));
+        // Without a formula the copy writes no TeX (Downright's copy). Prose
+        // is copied as shown, markers left out, so a `$` of the prose can
+        // pair with another once `**` between them is gone.
+        let spans = upleft_render::view::math_copy::math_spans(&document);
+        let mut prose = String::new();
+        let mut cursor = 0;
+        for span in &spans {
+            prose.push_str(&document.substring(NSRange::new(cursor, span.range.location - cursor)));
+            cursor = span.range.upper_bound();
+        }
+        prose.push_str(&document.substring(NSRange::new(cursor, document.length - cursor)));
+        let property = if prose.contains('$') { "residual:prose-dollars" } else { "view-round-trip-document" };
+        if !expected.is_empty() {
+            report.record(property, category, same, text, || format!("copied {:?}\nparsed back {back:?}", copied.plain));
+        }
+        // AppKit's RTF writes paragraph breaks as LF.
+        let rtf_same = copied.rtf == copied.plain.replace("\r\n", "\n");
+        report.record("view-rtf", category, rtf_same, text, || format!("rtf {:?}\nplain {:?}", copied.rtf, copied.plain));
+        // Each formula alone.
+        for (span, typeset) in spans.iter().zip(&expected) {
+            let copied = copy(&view, span.range);
+            let bare = strip(span.style, &copied.plain);
+            report.record("view-typeset", category, bare.as_deref() == Some(typeset.formula.latex.as_str()), text, || {
+                format!("formula {:?}\ncopied {:?}", typeset.formula, copied.plain)
+            });
+            let alone = alone(&typeset.formula);
+            let back = formulas(&copied.plain);
+            report.record("view-round-trip", category, back == [alone.clone()], text, || format!("copied {:?}\nparsed back {back:?}", copied.plain));
+            // The HTML comes from the lossless Markdown range, which may
+            // keep markers around the formula (`**`), so inline display math
+            // need not stand alone there.
+            let html_back = formulas(html_text(&copied.html).trim());
+            let html_same = matches!(html_back.as_slice(), [found] if same_formula((found.style, &found.latex), (alone.style, &alone.latex)));
+            report.record("view-html", category, html_same, text, || format!("html {:?}\nparsed back {html_back:?}", copied.html));
+            let at = view.math_latex_at_source_offset(span.range.location);
+            report.record("view-copy-latex", category, at.as_deref() == Some(typeset.formula.latex.as_str()), text, || format!("{at:?}"));
+        }
+    }
+    println!("{}", report.summary());
+    for failure in &report.failures {
+        println!("FAIL {} / {}\n{:?}\n{}\n", failure.property, failure.category, failure.input, failure.detail);
+    }
+    expect!(report.failed() == 0);
 }
