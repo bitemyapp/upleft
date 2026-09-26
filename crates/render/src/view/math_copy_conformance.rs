@@ -8,7 +8,8 @@
 //! and Copy LaTeX (`formula_at`) returns it bare.
 //!
 //! What was typeset is read from the renderer's own code:
-//! `InlineMathDisplay::ranges` and `InlineMathDisplay::latex` for inline
+//! `InlineMathDisplay::ranges` and `InlineMathDisplay::typeset_source` (as a
+//! host with `inline_math_content` typesets it) for inline
 //! math, `math_fragment::block_latex` for display blocks, both through
 //! `MathRenderer::source`; an inline formula's delimiters are the parser's
 //! markers. Nothing here reimplements the dialect.
@@ -65,12 +66,13 @@ pub fn typeset(document: &ParsedDocument) -> Vec<Typeset> {
                 }
                 let opener = inline.leading_marker_range.map(|range| document.substring(range)).unwrap_or_default();
                 let closer = inline.trailing_marker_range.map(|range| document.substring(range)).unwrap_or_default();
-                let whole = upleft_math::MathRenderer::source(&InlineMathDisplay::latex(document, inline.range)).unwrap_or_default();
-                let latex = whole
+                let whole = upleft_math::MathRenderer::source(&InlineMathDisplay::typeset_source(document, inline.range, true)).unwrap_or_default();
+                let bare = whole
                     .strip_prefix(opener.as_str())
                     .and_then(|rest| rest.strip_suffix(closer.as_str()))
                     .map(str::to_owned)
                     .unwrap_or(whole);
+                let latex = upleft_math::MathRenderer::source(&bare).unwrap_or_default();
                 let style = if opener == "$$" || opener == "\\[" { MathStyle::InlineDisplay } else { MathStyle::Inline };
                 found.push(Typeset { location: inline.range.location, formula: Formula { style, latex }, in_container });
             });
@@ -290,7 +292,7 @@ pub fn check_document(text: &str, category: &str, report: &mut Report) {
 
         // 1. What the copy writes is what was typeset.
         let bare = strip(span.style, &copied);
-        report.record("typeset", category, bare.as_deref() == Some(expected.latex.as_str()), text, || {
+        report.record("typeset", category, bare.as_deref().is_some_and(|bare| same_math(bare, &expected.latex)), text, || {
             format!("formula {:?}\ncopied {copied:?}\nstripped {bare:?}", expected)
         });
 
@@ -364,9 +366,19 @@ pub fn check_document(text: &str, category: &str, report: &mut Report) {
     let html = decode_entities(&math_copy::html_with_tex(whole, &spans, source, latex, ClipboardSemanticHTML::render));
     let mut cursor = 0;
     let mut missing = None;
-    for formula in &expected {
-        let written = written_forms(formula);
-        let next = written.iter().filter_map(|form| html[cursor..].find(form.as_str()).map(|at| (at, form.len()))).min();
+    for (span, formula) in spans.iter().zip(&expected) {
+        // The exact form first; the renderer's reading of the content when
+        // the copy kept whitespace the renderer trims (`\\( x \\)`); and last
+        // the formula's own source, which the copy writes when no rewritten
+        // form reads back the same in its context.
+        let exact = written_forms(formula)
+            .iter()
+            .filter_map(|form| html[cursor..].find(form.as_str()).map(|at| (at, form.len())))
+            .min();
+        let next = exact.or_else(|| find_written(&html[cursor..], formula)).or_else(|| {
+            let own = document.substring(span.range);
+            (!own.is_empty()).then(|| html[cursor..].find(own.as_str()).map(|at| (at, own.len()))).flatten()
+        });
         match next {
             Some((at, len)) => cursor += at + len,
             None => {
@@ -380,7 +392,9 @@ pub fn check_document(text: &str, category: &str, report: &mut Report) {
     // is lost with its line.
     let fences = text.contains("```") || text.contains("~~~");
     let property = if missing.is_some() && fences { "residual:html-fences" } else { "html-document" };
-    report.record(property, category, missing.is_none(), text, || format!("missing {missing:?}\nhtml {html:?}"));
+    report.record(property, category, missing.is_none(), text, || {
+        format!("missing {missing:?}\nhtml {html:?}\nplain {:?}", copy_source(&document, &spans, whole))
+    });
 }
 
 /// `formula` as it reads back when copied alone: inline display math is a
@@ -430,7 +444,7 @@ pub fn check_selection(text: &str, category: &str, selection: NSRange, report: &
     });
 }
 
-/// Every way a copy may write `formula`.
+/// The forms the copy writes `formula` in, with its LaTeX as is.
 fn written_forms(formula: &Formula) -> Vec<String> {
     let latex = &formula.latex;
     match formula.style {
@@ -445,6 +459,66 @@ fn written_forms(formula: &Formula) -> Vec<String> {
             forms
         }
     }
+}
+
+/// The first place in `html` where `formula` is written, in any of the forms
+/// the copy uses, with its content read as the renderer reads it
+/// (`same_math`): where it starts, and how long it is.
+fn find_written(html: &str, formula: &Formula) -> Option<(usize, usize)> {
+    let mut pairs: Vec<(String, String)> = match formula.style {
+        MathStyle::Inline => vec![("$".into(), "$".into()), ("\\(".into(), "\\)".into())],
+        MathStyle::InlineDisplay => vec![("$$".into(), "$$".into()), ("\\[".into(), "\\]".into())],
+        MathStyle::Display => vec![("$$\n".into(), "\n$$".into())],
+    };
+    if formula.style == MathStyle::Display {
+        for n in 3..8 {
+            let fence = "`".repeat(n);
+            pairs.push((format!("{fence}math\n"), format!("\n{fence}")));
+        }
+    }
+    let mut best: Option<(usize, usize)> = None;
+    for (open, close) in &pairs {
+        let mut from = 0;
+        while let Some(found) = html[from..].find(open.as_str()) {
+            let at = from + found;
+            let content_start = at + open.len();
+            // A closer can sit inside the formula (`$\\$5$`), so try each.
+            let mut search = content_start;
+            let mut matched = false;
+            while let Some(end) = html[search..].find(close.as_str()) {
+                let content = &html[content_start..search + end];
+                if same_math(content, &formula.latex) {
+                    let len = search + end + close.len() - at;
+                    if best.is_none_or(|(best_at, _)| at < best_at) {
+                        best = Some((at, len));
+                    }
+                    matched = true;
+                    break;
+                }
+                search += end + close.len().max(1);
+                if search > html.len() {
+                    break;
+                }
+            }
+            if matched {
+                break;
+            }
+            from = at + open.len().max(1);
+            if from >= html.len() {
+                break;
+            }
+        }
+    }
+    best
+}
+
+/// Whether two formulas' LaTeX typeset the same: equal as
+/// `MathRenderer::source` reads them, with the outer whitespace math mode
+/// ignores trimmed and a blank formula none. Hosted views typeset `\(…\)`
+/// and `\[…\]` from their content, where that trim applies inside the
+/// delimiters too.
+fn same_math(a: &str, b: &str) -> bool {
+    upleft_math::MathRenderer::source(a).unwrap_or_default() == upleft_math::MathRenderer::source(b).unwrap_or_default()
 }
 
 /// Whether `text` fails `property`.

@@ -27,7 +27,33 @@ pub const TESTS: &[crate::Test] = &[
     ("math_copy_off_copies_as_before", math_copy_off_copies_as_before),
     ("math_latex_at_offset_is_the_bare_formula", math_latex_at_offset_is_the_bare_formula),
     ("math_copy_conforms_through_the_view", math_copy_conforms_through_the_view),
+    ("math_backslash_inline_typesets_with_inline_math_content", math_backslash_inline_typesets_with_inline_math_content),
 ];
+
+/// `\(…\)` and `\[…\]` inline: Downright hands SwiftMath the whole span,
+/// which it rejects, so nothing is typeset. A host with
+/// `inline_math_content` typesets what lies between the delimiters; `$`
+/// math is typeset the same either way.
+fn math_backslash_inline_typesets_with_inline_math_content(_mtm: MainThreadMarker) {
+    use upleft_render::fragments::inline_math_display::InlineMathDisplay;
+    let text = "Inline \\(x^2 + 1\\), then \\[\\sum_k k\\], then $y_1$.\n";
+    let document = parse(text);
+    let appearance = NSAppearance::appearanceNamed(unsafe { NSAppearanceNameAqua }).expect("aqua");
+    let sheet = |content: Option<bool>| {
+        let host = HostTypography { inline_math_content: content, ..HostTypography::default() };
+        StyleSheet::for_host(Theme::fallback(), &appearance, true, host)
+    };
+    let typeset = |content: Option<bool>| InlineMathDisplay::substitutions(&document, &sheet(content), None).len();
+    expect!(InlineMathDisplay::ranges(&document).len() == 3);
+    // Downright's behaviour: only `$y_1$`.
+    expect!(typeset(None) == 1);
+    expect!(typeset(Some(true)) == 3);
+    let ranges = InlineMathDisplay::ranges(&document);
+    expect!(InlineMathDisplay::typeset_source(&document, ranges[0], true) == "x^2 + 1");
+    expect!(InlineMathDisplay::typeset_source(&document, ranges[1], true) == "\\sum_k k");
+    expect!(InlineMathDisplay::typeset_source(&document, ranges[2], true) == "$y_1$");
+    expect!(InlineMathDisplay::typeset_source(&document, ranges[0], false) == "\\(x^2 + 1\\)");
+}
 
 const MESSAGE: &str =
     "Mass–energy: $E = mc^2$ holds.\n\n$$\n\\int_0^1 x\\,dx = \\tfrac12\n$$\n\nAnd a fence:\n\n```math\na^2 + b^2 = c^2\n```\n\nDone.\n";
@@ -260,7 +286,11 @@ fn math_copy_conforms_through_the_view(mtm: MainThreadMarker) {
         for (span, typeset) in spans.iter().zip(&expected) {
             let copied = copy(&view, span.range);
             let bare = strip(span.style, &copied.plain);
-            report.record("view-typeset", category, bare.as_deref() == Some(typeset.formula.latex.as_str()), text, || {
+            // Read as the renderer reads it: hosted views typeset `\\( x \\)` from
+            // its content, whose outer whitespace `MathRenderer::source` trims.
+            let read = |latex: &str| upleft_math::MathRenderer::source(latex).unwrap_or_default();
+            let same = bare.as_deref().is_some_and(|bare| read(bare) == read(&typeset.formula.latex));
+            report.record("view-typeset", category, same, text, || {
                 format!("formula {:?}\ncopied {:?}", typeset.formula, copied.plain)
             });
             let alone = alone(&typeset.formula);

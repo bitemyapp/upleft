@@ -153,6 +153,11 @@ pub struct HostTypography {
     /// With `code_header`, line numbers in the code inset's gutter for
     /// blocks of at least this many lines. `None` draws none.
     pub code_line_numbers: Option<isize>,
+    /// Inline math written `\(…\)` or `\[…\]` is typeset from what lies
+    /// between its delimiters. Downright typesets the whole span; SwiftMath
+    /// reads `$` as nothing but rejects the backslash delimiters, so such a
+    /// formula never renders. `None` keeps Downright's behaviour.
+    pub inline_math_content: Option<bool>,
 }
 
 /// How a host's code header bar is dressed (`HostTypography::code_look`).

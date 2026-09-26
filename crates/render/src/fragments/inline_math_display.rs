@@ -46,6 +46,22 @@ impl InlineMathDisplay {
         document.substring(bounded)
     }
 
+    /// What the inline formula at `range` is handed to SwiftMath as. With
+    /// `content_only` (`HostTypography::inline_math_content`), a span written
+    /// `\(…\)` or `\[…\]` gives what lies between its delimiters, which
+    /// SwiftMath would otherwise reject; everything else is `latex`.
+    pub fn typeset_source(document: &ParsedDocument, range: NSRange, content_only: bool) -> String {
+        let whole = InlineMathDisplay::latex(document, range);
+        if content_only {
+            for (opener, closer) in [("\\(", "\\)"), ("\\[", "\\]")] {
+                if let Some(content) = whole.strip_prefix(opener).and_then(|rest| rest.strip_suffix(closer)) {
+                    return content.to_owned();
+                }
+            }
+        }
+        whole
+    }
+
     pub fn ranges_touching(document: &ParsedDocument, offset: isize) -> Vec<NSRange> {
         InlineMathDisplay::ranges(document)
             .into_iter()
@@ -76,7 +92,8 @@ impl InlineMathDisplay {
                 {
                     return None;
                 }
-                let latex = InlineMathDisplay::latex(document, range);
+                let content_only = style_sheet.host.inline_math_content == Some(true);
+                let latex = InlineMathDisplay::typeset_source(document, range, content_only);
                 let replacement = inline_attachment(
                     &latex,
                     style_sheet.math_point_size,

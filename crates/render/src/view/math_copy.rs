@@ -111,8 +111,8 @@ pub fn widened_selection(spans: &[MathSpan], selection: NSRange) -> (NSRange, Ve
     (widened, touched)
 }
 
-/// The LaTeX a formula is typeset from, its delimiters left out: exactly
-/// what the renderer hands `MathRenderer` (`InlineMathDisplay::latex` for
+/// The LaTeX a formula is typeset from, its delimiters left out and read as
+/// `MathRenderer::source` reads it: what a hosted view hands `MathRenderer` (`InlineMathDisplay::typeset_source` for
 /// inline math, `math_fragment::block_latex` for display blocks), as
 /// `MathRenderer::source` reads it. A blank formula has none (`""`).
 pub fn latex(document: &ParsedDocument, span: &MathSpan) -> String {
@@ -123,19 +123,25 @@ pub fn latex(document: &ParsedDocument, span: &MathSpan) -> String {
         }
         MathStyle::Inline | MathStyle::InlineDisplay => {
             // Inline math is typeset from the whole span, delimiters and all
-            // (SwiftMath reads `$` as nothing); the delimiters are the
+            // (SwiftMath reads `$` as nothing), except that hosted views
+            // typeset `\(…\)` and `\[…\]` from their content
+            // (`HostTypography::inline_math_content`); the delimiters are the
             // parser's markers around `latex_range`.
-            let whole = crate::fragments::inline_math_display::InlineMathDisplay::latex(document, span.range);
+            let whole = crate::fragments::inline_math_display::InlineMathDisplay::typeset_source(document, span.range, true);
             let whole = upleft_math::MathRenderer::source(&whole).unwrap_or_default();
             let opener = document.substring(NSRange::new(span.range.location, span.latex_range.location - span.range.location));
             let closer = document.substring(NSRange::new(
                 span.latex_range.upper_bound(),
                 span.range.upper_bound() - span.latex_range.upper_bound(),
             ));
-            match whole.strip_prefix(opener.as_str()).and_then(|rest| rest.strip_suffix(closer.as_str())) {
+            let bare = match whole.strip_prefix(opener.as_str()).and_then(|rest| rest.strip_suffix(closer.as_str())) {
                 Some(bare) => bare.to_owned(),
                 None => whole,
-            }
+            };
+            // Read as `MathRenderer` reads it, like a display block: the outer
+            // whitespace math mode ignores goes, so `$ x $` and `\\( x \\)`,
+            // typeset alike, carry the same LaTeX.
+            upleft_math::MathRenderer::source(&bare).unwrap_or_default()
         }
     }
 }
@@ -636,18 +642,20 @@ mod tests {
     // one per mismatch it found.
 
     #[test]
-    fn inline_display_math_keeps_its_padding() {
-        // Typeset from `$$ x $$` less its delimiters: ` x `, not `x`.
+    fn inline_display_math_copies_as_it_is_typeset() {
+        // `MathRenderer` reads `$$ x $$` as `x`: math mode ignores the
+        // padding, so the copy carries `x`.
         let text = "Some $$ x $$ more.\n";
-        expect_eq(copied_all(text), "Some $$ x $$ more.\n");
+        expect_eq(copied_all(text), "Some $$x$$ more.\n");
         let document = MarkdownParser::parse(text);
-        expect_eq(formula_at(&document, 7).map(|found| found.1), Some(" x ".to_owned()));
+        expect_eq(formula_at(&document, 7).map(|found| found.1), Some("x".to_owned()));
     }
 
     #[test]
     fn delimiters_the_guard_rails_reject_are_kept() {
-        // `$ x $` and `$100$` are not math in this dialect.
-        expect_eq(copied_all("Some \\( x \\) more.\n"), "Some \\( x \\) more.\n");
+        // `$100$` is not math in this dialect. (`\\( x \\)` is typeset from
+        // `x`, and `$x$` is math, so it takes KaTeX dollars.)
+        expect_eq(copied_all("Some \\( x \\) more.\n"), "Some $x$ more.\n");
         expect_eq(copied_all("Pay \\(100\\) now.\n"), "Pay \\(100\\) now.\n");
         // A digit after the closer.
         expect_eq(copied_all("\\(x\\)5\n"), "\\(x\\)5\n");
