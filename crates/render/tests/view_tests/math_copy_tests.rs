@@ -229,6 +229,30 @@ fn math_copy_conforms_through_the_view(mtm: MainThreadMarker) {
         if !expected.is_empty() {
             report.record(property, category, same, text, || format!("copied {:?}\nparsed back {back:?}", copied.plain));
         }
+        // Selections across containers, their ends inside prose and inside
+        // formulas: they parse back as the formulas they touch.
+        if !expected.is_empty() {
+            let length = utf16_len(text);
+            let first = spans[0].range;
+            let mut selections = vec![NSRange::new(2.min(length - 1), (length - 4).max(1))];
+            if first.length > 2 {
+                selections.push(NSRange::new(first.location + 1, length - first.location - 2));
+            }
+            for selection in selections {
+                let (_, touched) = upleft_render::view::math_copy::widened_selection(&spans, selection);
+                let wanted: Vec<_> = expected
+                    .iter()
+                    .filter(|typeset| touched.iter().any(|span| span.range.location == typeset.location))
+                    .collect();
+                let copied = copy(&view, selection);
+                let back = formulas(&copied.plain);
+                let same = back.len() == wanted.len()
+                    && back.iter().zip(&wanted).all(|(a, b)| same_formula((a.style, &a.latex), (b.formula.style, &b.formula.latex)));
+                report.record(property.replace("document", "selection").as_str(), category, same, text, || {
+                    format!("selection {selection:?}\ncopied {:?}\nparsed back {back:?}", copied.plain)
+                });
+            }
+        }
         // AppKit's RTF writes paragraph breaks as LF.
         let rtf_same = copied.rtf == copied.plain.replace("\r\n", "\n");
         report.record("view-rtf", category, rtf_same, text, || format!("rtf {:?}\nplain {:?}", copied.rtf, copied.plain));

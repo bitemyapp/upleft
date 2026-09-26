@@ -10,7 +10,8 @@
 
 use std::path::{Path, PathBuf};
 
-use upleft_render::view::math_copy_conformance::{Report, check_document, minimize};
+use upleft_core::NSRange;
+use upleft_render::view::math_copy_conformance::{Report, check_document, check_selection, minimize};
 
 fn corpus() -> PathBuf {
     Path::new(env!("CARGO_MANIFEST_DIR")).join("../../corpus/generated")
@@ -391,6 +392,16 @@ fn copied_formulas_conform_to_the_dialect() {
     for _ in 0..count {
         let text = random_document(&mut random, &formulas);
         check_document(&text, "random", &mut report);
+        // Random selections, their ends anywhere, formulas and prose alike.
+        let length = text.encode_utf16().count();
+        if length > 1 {
+            for _ in 0..2 {
+                let a = random.below(length);
+                let b = random.below(length);
+                let selection = NSRange::new(a.min(b) as isize, (a.max(b) - a.min(b)).max(1) as isize);
+                check_selection(&text, "random", selection, &mut report);
+            }
+        }
     }
     for _ in 0..count / 10 {
         if math_corpus.is_empty() {

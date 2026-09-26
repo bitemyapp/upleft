@@ -300,11 +300,12 @@ pub fn check_document(text: &str, category: &str, report: &mut Report) {
         let alone = alone(expected);
         let back = formulas(&copied);
         // The parser takes Markdown inline syntax inside a formula (`*b*`,
-        // a code span) for prose in some places and math in others; such a
-        // formula alone may not come back, whatever its delimiters.
-        let inline_markup = expected.latex.contains(['*', '`']);
-        let property = if inline_markup { "residual:inline-markup" } else { "round-trip" };
-        report.record(property, category, back.as_slice() == std::slice::from_ref(&alone), text, || {
+        // `_b_`, a code span) for prose in some places and math in others;
+        // such a formula alone may not come back, whatever its delimiters.
+        let inline_markup = expected.latex.contains(['*', '_', '`']);
+        let ok = back.as_slice() == std::slice::from_ref(&alone);
+        let property = if !ok && inline_markup { "residual:inline-markup" } else { "round-trip" };
+        report.record(property, category, ok, text, || {
             format!("formula {:?}\ncopied {copied:?}\nparsed back {back:?}", expected)
         });
 
@@ -319,8 +320,9 @@ pub fn check_document(text: &str, category: &str, report: &mut Report) {
         // 3. The HTML flavour carries the same LaTeX.
         let html = math_copy::html_with_tex(span.range, &spans, source, latex, ClipboardSemanticHTML::render);
         let html_back = formulas(html_text(&html).trim());
-        let property = if inline_markup { "residual:inline-markup" } else { "html" };
-        report.record(property, category, html_back.as_slice() == std::slice::from_ref(&alone), text, || {
+        let ok = html_back.as_slice() == std::slice::from_ref(&alone);
+        let property = if !ok && inline_markup { "residual:inline-markup" } else { "html" };
+        report.record(property, category, ok, text, || {
             format!("formula {:?}\nhtml {html:?}\nparsed back {html_back:?}", expected)
         });
 
@@ -376,7 +378,8 @@ pub fn check_document(text: &str, category: &str, report: &mut Report) {
     // The HTML projection (`ClipboardSemanticHTML`, as Downright's) reads
     // some lines the parser takes for prose as fences, and a formula in one
     // is lost with its line.
-    let property = if text.contains("```") || text.contains("~~~") { "residual:html-fences" } else { "html-document" };
+    let fences = text.contains("```") || text.contains("~~~");
+    let property = if missing.is_some() && fences { "residual:html-fences" } else { "html-document" };
     report.record(property, category, missing.is_none(), text, || format!("missing {missing:?}\nhtml {html:?}"));
 }
 
@@ -387,6 +390,44 @@ pub fn alone(formula: &Formula) -> Formula {
         Some(latex) => Formula { style: MathStyle::Display, latex },
         None => formula.clone(),
     }
+}
+
+/// A copy of `selection` in `text` parses back as the formulas it touches,
+/// or as the same formulas as the source it copies does (the selection
+/// widened to whole formulas, cut from the source as it is): a cut through
+/// prose (an indent, a fence) can make or unmake formulas. Like
+/// the whole-document round trip, only for documents whose formulas are all
+/// outside containers (prose is copied as its source).
+pub fn check_selection(text: &str, category: &str, selection: NSRange, report: &mut Report) {
+    let document = MarkdownParser::parse(text);
+    let spans = math_copy::math_spans(&document);
+    let typeset = typeset(&document);
+    if spans.len() != typeset.len() || typeset.iter().any(|typeset| typeset.in_container) {
+        return;
+    }
+    let (widened, touched) = math_copy::widened_selection(&spans, selection);
+    if touched.is_empty() {
+        return;
+    }
+    let expected: Vec<Formula> = typeset
+        .iter()
+        .filter(|typeset| touched.iter().any(|span| span.range.location == typeset.location))
+        .map(|typeset| typeset.formula.clone())
+        .collect();
+    let cut = formulas(&document.substring(widened));
+    let copied = copy_source(&document, &spans, selection);
+    let back = formulas(&copied);
+    let same = |a: &[Formula], b: &[Formula]| {
+        a.len() == b.len() && a.iter().zip(b).all(|(a, b)| math_copy::same_formula((a.style, &a.latex), (b.style, &b.latex)))
+    };
+    // The copy may also be truer than the cut: the formulas it touches.
+    let ok = same(&back, &cut) || same(&back, &expected);
+    // A cut that no longer reads as its source (half an indent, a fence
+    // opened mid-line) is prose broken by the selection, not by the copy.
+    let property = if ok || same(&cut, &expected) { "round-trip-selection" } else { "residual:selection-cuts-prose" };
+    report.record(property, category, ok, text, || {
+        format!("selection {selection:?}\nsource cut {cut:?}\ncopied {copied:?}\nparsed back {back:?}")
+    });
 }
 
 /// Every way a copy may write `formula`.
