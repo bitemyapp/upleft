@@ -39,6 +39,13 @@ impl InlineMathDisplay {
         result
     }
 
+    /// The source an inline formula at `range` is typeset from: the whole
+    /// span, its delimiters included (SwiftMath reads `$` as nothing).
+    pub fn latex(document: &ParsedDocument, range: NSRange) -> String {
+        let bounded = range.intersection(NSRange::new(0, document.length)).unwrap_or(range);
+        document.substring(bounded)
+    }
+
     pub fn ranges_touching(document: &ParsedDocument, offset: isize) -> Vec<NSRange> {
         InlineMathDisplay::ranges(document)
             .into_iter()
@@ -69,8 +76,7 @@ impl InlineMathDisplay {
                 {
                     return None;
                 }
-                let bounded = range.intersection(NSRange::new(0, document.length)).unwrap_or(range);
-                let latex = document.substring(bounded);
+                let latex = InlineMathDisplay::latex(document, range);
                 let replacement = inline_attachment(
                     &latex,
                     style_sheet.math_point_size,

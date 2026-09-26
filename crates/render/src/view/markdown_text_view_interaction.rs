@@ -1277,6 +1277,7 @@ impl MarkdownTextView {
                 markdown_range,
                 &crate::view::math_copy::math_spans(&document),
                 |range| document.substring(range),
+                |span| crate::view::math_copy::latex(&document, span),
                 crate::clipboard_semantic_html::ClipboardSemanticHTML::render,
             )
         } else {
@@ -1315,7 +1316,13 @@ impl MarkdownTextView {
             shown.borrow_mut().push((piece, string.clone()));
             string
         };
-        let (widened, pieces) = copy_pieces(&spans, range, |latex| document.substring(latex), |piece| exported(piece).string().to_string());
+        let (widened, pieces) = copy_pieces(
+            &spans,
+            range,
+            |span| crate::view::math_copy::latex(&document, span),
+            |source| document.substring(source),
+            |piece| exported(piece).string().to_string(),
+        );
         let out = NSMutableAttributedString::new();
         let length = storage.length() as isize;
         for piece in &pieces {

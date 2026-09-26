@@ -14,6 +14,7 @@ pub mod markdown_text_view;
 pub mod markdown_text_view_delegate;
 pub mod markdown_text_view_interaction;
 pub mod math_copy;
+pub mod math_copy_conformance;
 pub mod paragraph_substitution;
 pub mod style_sheet_defaults;
 pub mod tracking_area;

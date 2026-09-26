@@ -28,10 +28,7 @@ impl MathRenderer {
         color: &NSColor,
         padding: CGFloat,
     ) -> Option<Retained<NSImage>> {
-        let trimmed = trimming_whitespaces_and_newlines(latex);
-        if trimmed.is_empty() {
-            return None;
-        }
+        let trimmed = Self::source(latex)?;
         // SwiftMath traps rather than fails when it cannot find its fonts, so
         // the question has to be settled before we call into it.
         if !MathFontBundle::is_available() {
@@ -111,11 +108,19 @@ impl MathRenderer {
         color: &NSColor,
         padding: CGFloat,
     ) -> Option<MathRendererCacheKey> {
+        Some(Self::key(Self::source(latex)?, display, point_size, color, padding))
+    }
+
+    /// The LaTeX `image` typesets for `latex` (and files its image under),
+    /// or `None` for a blank formula: the source trimmed of whitespace and
+    /// newlines. An Upleft extension, so a copy of the formula can be checked
+    /// against exactly what was drawn.
+    pub fn source(latex: &str) -> Option<String> {
         let trimmed = trimming_whitespaces_and_newlines(latex);
         if trimmed.is_empty() {
             return None;
         }
-        Some(Self::key(trimmed, display, point_size, color, padding))
+        Some(trimmed)
     }
 
     /// The cached image for `key`, never typesetting (see `cache_key`).

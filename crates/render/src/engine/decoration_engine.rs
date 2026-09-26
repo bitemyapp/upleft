@@ -635,7 +635,7 @@ impl DecorationEngine {
 
             BlockContent::MathBlock { latex_range } => {
                 self.apply_base(block, context, state);
-                let detail = state.document.substring(*latex_range);
+                let detail = crate::fragments::math_fragment::block_latex(&state.document, *latex_range);
                 self.emit_fragment(FragmentKind::BlockMath, block, &detail, state);
             }
 

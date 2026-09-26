@@ -29,6 +29,12 @@ use crate::fragments::fragment_base::{DownrightFragment, FailedObject, FragmentB
 use crate::render_contracts::FragmentPayload;
 use crate::swift_compat::smax;
 
+/// The payload detail a display formula is typeset from: its LaTeX range as
+/// written (`MathRenderer::image` trims it).
+pub fn block_latex(document: &upleft_core::ParsedDocument, latex_range: upleft_core::NSRange) -> String {
+    document.substring(latex_range)
+}
+
 /// `MathFragment`'s hooks.
 pub struct MathFragment;
 
