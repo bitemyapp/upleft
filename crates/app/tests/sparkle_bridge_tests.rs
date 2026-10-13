@@ -147,6 +147,14 @@ fn dictionary(entries: &[(&'static str, Value)]) -> Retained<NSDictionary<NSStri
     NSDictionary::from_slices(&key_refs, &value_refs)
 }
 
+/// `+alloc` of Sparkle's class `name`, looked up once Sparkle is loaded
+/// (a static class reference has nothing to link to without Sparkle).
+fn sparkle_alloc<T: Message>(name: &std::ffi::CStr) -> objc2::rc::Allocated<T> {
+    let class = AnyClass::get(name).expect("Sparkle is loaded");
+    // SAFETY: `+alloc` answers an uninitialized instance of the class.
+    unsafe { msg_send![class, alloc] }
+}
+
 /// `-[SUAppcastItem initWithDictionary:]`, the parser's entry point (no
 /// state resolver, so no host-bundle comparisons).
 fn appcast_item(entries: Vec<(&'static str, Value)>) -> Retained<SUAppcastItem> {
@@ -154,7 +162,7 @@ fn appcast_item(entries: Vec<(&'static str, Value)>) -> Retained<SUAppcastItem> 
     // SAFETY: `initWithDictionary:` takes an `NSDictionary *` and answers a
     // nullable instance.
     let item: Option<Retained<SUAppcastItem>> =
-        unsafe { msg_send![SUAppcastItem::alloc(), initWithDictionary: &*dictionary] };
+        unsafe { msg_send![sparkle_alloc::<SUAppcastItem>(c"SUAppcastItem"), initWithDictionary: &*dictionary] };
     item.expect("Sparkle accepts the item")
 }
 
@@ -190,7 +198,7 @@ fn informational_item() -> Retained<SUAppcastItem> {
 fn user_update_state(stage: isize, user_initiated: bool) -> Retained<SPUUserUpdateState> {
     // SAFETY: the private initializer's signature, from
     // `SPUUserUpdateState+Private.h` in Sparkle 2.9.6.
-    unsafe { msg_send![SPUUserUpdateState::alloc(), initWithStage: stage, userInitiated: user_initiated] }
+    unsafe { msg_send![sparkle_alloc::<SPUUserUpdateState>(c"SPUUserUpdateState"), initWithStage: stage, userInitiated: user_initiated] }
 }
 
 /// `-[SPUDownloadData initWithData:URL:textEncodingName:MIMEType:]`.
@@ -201,7 +209,7 @@ fn download_data(bytes: &[u8]) -> Retained<SPUDownloadData> {
     // SAFETY: the initializer's signature, from `SPUDownloadData.m` in
     // Sparkle 2.9.6.
     unsafe {
-        msg_send![SPUDownloadData::alloc(), initWithData: &*data, URL: &*url, textEncodingName: None::<&NSString>, MIMEType: &*mime]
+        msg_send![sparkle_alloc::<SPUDownloadData>(c"SPUDownloadData"), initWithData: &*data, URL: &*url, textEncodingName: None::<&NSString>, MIMEType: &*mime]
     }
 }
 
@@ -713,7 +721,7 @@ fn appcast_items_map_to_update_metadata() {
 fn permission_request_adopts_the_spec_defaults() {
     let (_coordinator, driver) = make_bridge();
     let request =
-        SPUUpdatePermissionRequest::initWithSystemProfile(SPUUpdatePermissionRequest::alloc(), &NSArray::new());
+        SPUUpdatePermissionRequest::initWithSystemProfile(sparkle_alloc(c"SPUUpdatePermissionRequest"), &NSArray::new());
     let responses = Rc::new(RefCell::new(Vec::new()));
     let log = responses.clone();
     let reply = RcBlock::new(move |response: NonNull<SUUpdatePermissionResponse>| {
