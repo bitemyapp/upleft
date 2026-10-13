@@ -152,3 +152,6 @@ harness = false
 name = "view_tests"
 path = "tests/view_tests/main.rs"
 harness = false
+
+[target.'cfg(target_os = "linux")'.dependencies]
+notify = "8"

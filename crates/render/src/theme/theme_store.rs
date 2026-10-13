@@ -9,13 +9,16 @@
 //! caused the change, outside the lock, as in Swift.
 
 use std::collections::HashMap;
+#[cfg(target_os = "macos")]
 use std::ffi::CString;
 use std::sync::atomic::{AtomicBool, AtomicU64, Ordering};
 use std::sync::{Arc, LazyLock, Mutex, MutexGuard, Weak};
 use std::time::Duration;
 
+use dispatch2::DispatchQueue;
+#[cfg(target_os = "macos")]
 use dispatch2::{
-    _dispatch_source_type_vnode, DispatchObject, DispatchQueue, DispatchRetained, DispatchSource,
+    _dispatch_source_type_vnode, DispatchObject, DispatchRetained, DispatchSource,
     DispatchTime, dispatch_source_type_t, dispatch_source_vnode_flags_t,
 };
 use objc2::rc::Retained;
@@ -575,10 +578,12 @@ impl Drop for ThemeObservation {
 /// A coarse vnode watch on the user themes directory. Coarse on purpose: the
 /// reload re-reads every file anyway, and an editor that saves by rename would
 /// defeat per-file watches.
+#[cfg(target_os = "macos")]
 pub struct DirectoryWatcher {
     inner: Arc<WatcherInner>,
 }
 
+#[cfg(target_os = "macos")]
 struct WatcherInner {
     path: CString,
     on_change: Box<dyn Fn() + Send + Sync>,
@@ -588,6 +593,7 @@ struct WatcherInner {
     state: Mutex<WatchState>,
 }
 
+#[cfg(target_os = "macos")]
 #[derive(Default)]
 struct WatchState {
     source: Option<DispatchRetained<DispatchSource>>,
@@ -596,6 +602,7 @@ struct WatchState {
     pending: Option<Arc<AtomicBool>>,
 }
 
+#[cfg(target_os = "macos")]
 impl DirectoryWatcher {
     pub fn new(
         path: &str,
@@ -615,12 +622,14 @@ impl DirectoryWatcher {
     }
 }
 
+#[cfg(target_os = "macos")]
 impl Drop for DirectoryWatcher {
     fn drop(&mut self) {
         self.inner.stop();
     }
 }
 
+#[cfg(target_os = "macos")]
 impl WatcherInner {
     fn start(this: &Arc<WatcherInner>) {
         // SAFETY: a valid NUL-terminated path.
@@ -709,4 +718,47 @@ impl WatcherInner {
             }
         });
     }
+}
+
+#[cfg(target_os = "linux")]
+pub struct DirectoryWatcher {
+    stop: Arc<AtomicBool>,
+}
+
+#[cfg(target_os = "linux")]
+impl DirectoryWatcher {
+    pub fn new(path: &str, on_change: impl Fn() + Send + Sync + 'static) -> Option<Self> {
+        use notify::{EventKind, RecursiveMode, Watcher};
+        let path = std::path::PathBuf::from(path);
+        let stop = Arc::new(AtomicBool::new(false));
+        let stopped = Arc::clone(&stop);
+        // Watching starts before this returns, as the dispatch source does on
+        // macOS, so a write right after isn't missed; the thread only waits.
+        let (send, receive) = std::sync::mpsc::channel();
+        let mut watcher = notify::recommended_watcher(move |event: notify::Result<notify::Event>| {
+            if event.as_ref().is_ok_and(|event| matches!(event.kind, EventKind::Access(_))) {
+                return;
+            }
+            let _ = send.send(event);
+        }).ok()?;
+        watcher.watch(&path, RecursiveMode::NonRecursive).ok()?;
+        std::thread::Builder::new().name("upleft-theme-watch".into()).spawn(move || {
+            let _watcher = watcher;
+            while !stopped.load(Ordering::Acquire) {
+                if receive.recv_timeout(Duration::from_millis(200)).is_ok() {
+                    // Coalesce a save's burst off the GUI thread.
+                    while receive.recv_timeout(Duration::from_millis(150)).is_ok() {
+                        if stopped.load(Ordering::Acquire) { return; }
+                    }
+                    on_change();
+                }
+            }
+        }).ok()?;
+        Some(Self { stop })
+    }
+}
+
+#[cfg(target_os = "linux")]
+impl Drop for DirectoryWatcher {
+    fn drop(&mut self) { self.stop.store(true, Ordering::Release); }
 }
