@@ -11,8 +11,13 @@ upleft-markup.workspace = true
 upleft-swift-text.workspace = true
 objc2.workspace = true
 objc2-foundation = { workspace = true, features = ["NSString", "NSRegularExpression", "NSTextCheckingResult", "NSArray", "NSEnumerator", "NSRange", "NSObjCRuntime", "NSLocale", "NSData", "NSURL"] }
-objc2-natural-language = { version = "0.3.2", default-features = false, features = ["std", "NLTokenizer", "NLLanguage", "block2"] }
 block2.workspace = true
 uuid = { version = "1", features = ["v4"] }
 sha2 = "0.10"
 libc = "0.2"
+
+[target.'cfg(target_os = "macos")'.dependencies]
+objc2-natural-language = { version = "0.3.2", default-features = false, features = ["std", "NLTokenizer", "NLLanguage", "block2"] }
+
+[target.'cfg(target_os = "linux")'.dependencies]
+icu_segmenter = { version = "2.3", default-features = false, features = ["compiled_data"] }
