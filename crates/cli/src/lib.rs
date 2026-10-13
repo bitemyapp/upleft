@@ -13,3 +13,7 @@ pub mod agent_bridge;
 pub mod agent_watcher;
 pub mod doctor;
 pub mod markdown_cli;
+
+// Sidestep supplies the runtime and frameworks objc2 binds, on Linux.
+#[cfg(target_os = "linux")]
+use sidestep as _;

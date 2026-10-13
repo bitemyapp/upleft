@@ -39,3 +39,7 @@ pub use image_renderer::{MermaidImageRenderer, PreparedDiagram};
 pub use layout::GraphLayout;
 pub use theme::DiagramTheme;
 pub use types::{DiagramType, LayoutConfig, MermaidGraph, Payload, PositionedContent, PositionedGraph};
+
+// Sidestep supplies the runtime and frameworks objc2 binds, on Linux.
+#[cfg(target_os = "linux")]
+use sidestep as _;

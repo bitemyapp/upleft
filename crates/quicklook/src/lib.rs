@@ -7,3 +7,7 @@
 pub mod preview_view_controller;
 pub mod quick_look_loader;
 pub mod quick_look_policy;
+
+// Sidestep supplies the runtime and frameworks objc2 binds, on Linux.
+#[cfg(target_os = "linux")]
+use sidestep as _;

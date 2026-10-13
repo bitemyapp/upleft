@@ -34,3 +34,7 @@ pub mod foundation_io;
 pub mod json_encoder;
 pub mod json_serialization;
 pub mod url;
+
+// Sidestep supplies the runtime and frameworks objc2 binds, on Linux.
+#[cfg(target_os = "linux")]
+use sidestep as _;

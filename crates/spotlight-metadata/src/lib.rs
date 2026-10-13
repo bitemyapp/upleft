@@ -5,3 +5,7 @@
 //! AppKit, so an importer process can load it without starting the app.
 
 pub mod spotlight_metadata;
+
+// Sidestep supplies the runtime and frameworks objc2 binds, on Linux.
+#[cfg(target_os = "linux")]
+use sidestep as _;

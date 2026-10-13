@@ -22,3 +22,7 @@ pub mod security;
 pub mod support;
 pub mod updater;
 pub mod workspace;
+
+// Sidestep supplies the runtime and frameworks objc2 binds, on Linux.
+#[cfg(target_os = "linux")]
+use sidestep as _;

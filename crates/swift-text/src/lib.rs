@@ -1267,3 +1267,7 @@ pub fn string_key(s: &str) -> String {
 pub fn canonical_combining_class(c: char) -> u8 {
     unicode_normalization::char::canonical_combining_class(c)
 }
+
+// Sidestep supplies the runtime and frameworks objc2 binds, on Linux.
+#[cfg(target_os = "linux")]
+use sidestep as _;

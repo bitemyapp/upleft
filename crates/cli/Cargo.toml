@@ -33,3 +33,6 @@ objc2-core-foundation = { workspace = true, features = ["CFArray", "CFBase", "CF
 objc2-core-services = { version = "0.3.2", default-features = false, features = ["std", "FSEvents", "dispatch2"] }
 
 [dev-dependencies]
+
+[target.'cfg(target_os = "linux")'.dependencies]
+sidestep.workspace = true

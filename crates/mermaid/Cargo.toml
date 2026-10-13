@@ -75,6 +75,7 @@ default = ["elk"]
 elk = ["dep:upleft-elk"]
 
 [target.'cfg(target_os = "linux")'.dependencies]
+sidestep.workspace = true
 libc = "0.2"
 
 [dev-dependencies]

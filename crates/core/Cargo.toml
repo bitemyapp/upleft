@@ -20,4 +20,5 @@ libc = "0.2"
 objc2-natural-language = { version = "0.3.2", default-features = false, features = ["std", "NLTokenizer", "NLLanguage", "block2"] }
 
 [target.'cfg(target_os = "linux")'.dependencies]
+sidestep.workspace = true
 icu_segmenter = { version = "2.3", default-features = false, features = ["compiled_data"] }

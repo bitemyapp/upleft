@@ -17,3 +17,6 @@ objc2-foundation = { workspace = true, features = [
 ] }
 objc2-core-foundation = { workspace = true, features = ["CFArray", "CFBase", "CFDictionary", "CFString", "CFURL"] }
 objc2-core-services = { version = "0.3.2", default-features = false, features = ["std", "Metadata", "MDItem"] }
+
+[target.'cfg(target_os = "linux")'.dependencies]
+sidestep.workspace = true

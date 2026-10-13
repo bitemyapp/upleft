@@ -366,3 +366,6 @@ harness = false
 
 [target.'cfg(target_os = "macos")'.dependencies]
 objc2-avf-audio = { version = "0.3.2", default-features = false, features = ["std", "AVSpeechSynthesis"] }
+
+[target.'cfg(target_os = "linux")'.dependencies]
+sidestep.workspace = true

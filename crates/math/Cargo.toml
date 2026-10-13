@@ -74,3 +74,6 @@ objc2-core-text = { workspace = true, features = [
     "CTStringAttributes",
 ] }
 upleft-swift-text.workspace = true
+
+[target.'cfg(target_os = "linux")'.dependencies]
+sidestep.workspace = true

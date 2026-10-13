@@ -17,3 +17,6 @@ objc2-app-kit = { workspace = true, features = ["NSAppearance", "NSAttributedStr
 [[bin]]
 name = "upleft-bench"
 path = "src/main.rs"
+
+[target.'cfg(target_os = "linux")'.dependencies]
+sidestep.workspace = true

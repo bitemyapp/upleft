@@ -47,3 +47,7 @@ pub mod health;
 pub use contracts::*;
 pub use model::*;
 pub use ns_range::{NS_NOT_FOUND, NSRange};
+
+// Sidestep supplies the runtime and frameworks objc2 binds, on Linux.
+#[cfg(target_os = "linux")]
+use sidestep as _;

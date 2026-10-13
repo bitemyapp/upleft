@@ -67,3 +67,6 @@ path = "src/bin/conform.rs"
 [[bin]]
 name = "upleft-oracle"
 path = "src/bin/upleft-oracle.rs"
+
+[target.'cfg(target_os = "linux")'.dependencies]
+sidestep.workspace = true

@@ -46,3 +46,6 @@ objc2-app-kit = { workspace = true, features = ["NSAppearance", "NSBitmapImageRe
 [[test]]
 name = "preview_view_controller_tests"
 harness = false
+
+[target.'cfg(target_os = "linux")'.dependencies]
+sidestep.workspace = true

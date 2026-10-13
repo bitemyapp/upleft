@@ -20,3 +20,6 @@ objc2.workspace = true
 objc2-foundation = { workspace = true, features = ["NSString", "NSProcessInfo", "NSGeometry"] }
 objc2-app-kit = { workspace = true, features = ["NSApplication", "NSResponder", "NSRunningApplication", "NSMenu", "NSWindow", "NSWindowController", "NSView", "NSGraphics"] }
 serde_json.workspace = true
+
+[target.'cfg(target_os = "linux")'.dependencies]
+sidestep.workspace = true

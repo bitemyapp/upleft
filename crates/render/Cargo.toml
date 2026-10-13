@@ -154,4 +154,5 @@ path = "tests/view_tests/main.rs"
 harness = false
 
 [target.'cfg(target_os = "linux")'.dependencies]
+sidestep.workspace = true
 notify = "8"

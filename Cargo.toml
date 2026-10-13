@@ -34,6 +34,9 @@ objc2-core-foundation = { version = "0.3.2", default-features = false, features 
 objc2-core-graphics = { version = "0.3.2", default-features = false, features = ["std"] }
 objc2-core-text = { version = "0.3.2", default-features = false, features = ["std"] }
 serde_json = { version = "1.0.151", features = ["float_roundtrip", "preserve_order"] }
+# Linux: Sidestep, checked out beside this repository, supplies the
+# Objective-C runtime, Foundation and AppKit that objc2 binds (docs/LINUX.md).
+sidestep = { path = "../sidestep/crates/sidestep" }
 
 [profile.release]
 lto = "thin"
@@ -42,3 +45,24 @@ debug = "line-tables-only"
 
 [profile.dev.package."*"]
 opt-level = 2
+
+# tiny-skia's portable SIMD (Sidestep's rasterizer, on Linux) multiplies
+# 16-bit lanes expecting them to wrap; debug overflow checks turn some blend
+# modes into panics on x86_64.
+[profile.dev.package.tiny-skia]
+overflow-checks = false
+
+# Sidestep's fixes to objc2 for its runtime's ABI, not yet released upstream:
+# generated in the Sidestep checkout by `cargo run --release --manifest-path
+# tools/objc2-overlay/Cargo.toml` (docs/LINUX.md).
+[patch.crates-io]
+objc2 = { path = "../sidestep/.objc2-overlay/objc2-0.6.4" }
+objc2-app-kit = { path = "../sidestep/.objc2-overlay/objc2-app-kit-0.3.2" }
+objc2-core-foundation = { path = "../sidestep/.objc2-overlay/objc2-core-foundation-0.3.2" }
+objc2-core-graphics = { path = "../sidestep/.objc2-overlay/objc2-core-graphics-0.3.2" }
+objc2-core-services = { path = "../sidestep/.objc2-overlay/objc2-core-services-0.3.2" }
+objc2-core-text = { path = "../sidestep/.objc2-overlay/objc2-core-text-0.3.2" }
+objc2-foundation = { path = "../sidestep/.objc2-overlay/objc2-foundation-0.3.2" }
+objc2-image-io = { path = "../sidestep/.objc2-overlay/objc2-image-io-0.3.2" }
+objc2-quartz-core = { path = "../sidestep/.objc2-overlay/objc2-quartz-core-0.3.2" }
+objc2-uniform-type-identifiers = { path = "../sidestep/.objc2-overlay/objc2-uniform-type-identifiers-0.3.2" }

@@ -24,3 +24,7 @@ pub extern "C" fn main(argc: c_int, argv: *mut *mut c_char) -> c_int {
     // SAFETY: `argc`/`argv` are the process's own arguments.
     unsafe { NSExtensionMain(argc, argv) }
 }
+
+// Sidestep supplies the runtime and frameworks objc2 binds, on Linux.
+#[cfg(target_os = "linux")]
+use sidestep as _;

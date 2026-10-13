@@ -38,3 +38,6 @@ objc2-app-kit = { workspace = true, features = [
 
 [dev-dependencies]
 objc2-core-graphics = { workspace = true, features = ["CGBitmapContext", "CGColorSpace", "CGContext", "CGImage"] }
+
+[target.'cfg(target_os = "linux")'.dependencies]
+sidestep.workspace = true

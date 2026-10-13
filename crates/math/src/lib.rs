@@ -38,3 +38,7 @@ pub use math_render::mt_math_list::{MTLineStyle, MTMathAtom, MTMathAtomType, MTM
 pub use math_render::mt_math_list_builder::{MTMathListBuilder, MTParseError, MTParseErrors};
 pub use math_render::mt_math_list_display::MTDisplay;
 pub use math_render::mt_typesetter::MTTypesetter;
+
+// Sidestep supplies the runtime and frameworks objc2 binds, on Linux.
+#[cfg(target_os = "linux")]
+use sidestep as _;
