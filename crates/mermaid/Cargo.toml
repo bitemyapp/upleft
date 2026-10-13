@@ -74,5 +74,8 @@ default = ["elk"]
 # oracle, replay Swift's recorded ELK answers).
 elk = ["dep:upleft-elk"]
 
+[target.'cfg(target_os = "linux")'.dependencies]
+libc = "0.2"
+
 [dev-dependencies]
 objc2-app-kit = { workspace = true, features = ["NSAppearance", "NSBitmapImageRep", "NSImage", "NSImageRep"] }
