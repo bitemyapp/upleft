@@ -113,7 +113,7 @@ pub fn make_updater(
     let user_driver = DownrightUpdateDriverObject::new(mtm, driver.clone());
     let delegate = BackgroundDownloadNotifierObject::new(notifier.clone());
     let updater = SPUUpdater::initWithHostBundle_applicationBundle_userDriver_delegate(
-        SPUUpdater::alloc(mtm),
+        unsafe { msg_send![AnyClass::get(c"SPUUpdater")?, alloc] },
         host_bundle,
         application_bundle,
         ProtocolObject::from_ref(&*user_driver),
@@ -721,7 +721,7 @@ fn permission_request(request: &SPUUpdatePermissionRequest) -> SpuUpdatePermissi
 fn permission_response(response: &SuUpdatePermissionResponse) -> Retained<SUUpdatePermissionResponse> {
     let downloading = response.automatic_update_downloading.map(NSNumber::new_bool);
     SUUpdatePermissionResponse::initWithAutomaticUpdateChecks_automaticUpdateDownloading_sendSystemProfile(
-        SUUpdatePermissionResponse::alloc(),
+        unsafe { msg_send![AnyClass::get(c"SUUpdatePermissionResponse").expect("Sparkle permission response class"), alloc] },
         response.automatic_update_checks,
         downloading.as_deref(),
         response.send_system_profile,
