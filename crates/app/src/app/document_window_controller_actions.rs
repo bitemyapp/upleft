@@ -93,12 +93,14 @@ impl PresentationSnapshotView {
 
 // MARK: - Helpers
 
+#[cfg(target_os = "macos")]
 unsafe extern "C" {
     /// `<time.h>`: the clock in nanoseconds.
     fn clock_gettime_nsec_np(clock_id: u32) -> u64;
 }
 
 /// `CLOCK_UPTIME_RAW` (`<time.h>`): `mach_absolute_time` in nanoseconds.
+#[cfg(target_os = "macos")]
 const CLOCK_UPTIME_RAW: u32 = 8;
 
 /// `DispatchTime.now().uptimeNanoseconds`: `DispatchTime.now()` reads
@@ -106,7 +108,15 @@ const CLOCK_UPTIME_RAW: u32 = 8;
 /// timebase, which is `CLOCK_UPTIME_RAW`.
 fn uptime_nanoseconds() -> u64 {
     // SAFETY: a plain clock read.
-    unsafe { clock_gettime_nsec_np(CLOCK_UPTIME_RAW) }
+    #[cfg(target_os = "macos")]
+    { unsafe { clock_gettime_nsec_np(CLOCK_UPTIME_RAW) } }
+    #[cfg(not(target_os = "macos"))]
+    {
+        let mut time = libc::timespec { tv_sec: 0, tv_nsec: 0 };
+        if unsafe { libc::clock_gettime(libc::CLOCK_MONOTONIC_RAW, &mut time) } == 0 {
+            (time.tv_sec as u64).saturating_mul(1_000_000_000).saturating_add(time.tv_nsec as u64)
+        } else { 0 }
+    }
 }
 
 /// `NSImage(systemSymbolName:accessibilityDescription: nil)`.
