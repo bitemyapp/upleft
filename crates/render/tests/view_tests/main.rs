@@ -46,11 +46,14 @@ fn main() {
     // An app's main thread runs at user-interactive QoS; a test binary's
     // starts lower, and its main-queue timers then fire hundreds of
     // milliseconds late on a loaded machine.
+    #[cfg(target_os = "macos")]
     unsafe extern "C" {
         fn pthread_set_qos_class_self_np(class: u32, relative_priority: i32) -> i32;
     }
+    #[cfg(target_os = "macos")]
     const QOS_CLASS_USER_INTERACTIVE: u32 = 0x21;
     // SAFETY: sets the calling thread's own QoS class.
+    #[cfg(target_os = "macos")]
     unsafe { pthread_set_qos_class_self_np(QOS_CLASS_USER_INTERACTIVE, 0) };
     let reason = objc2_foundation::NSString::from_str("upleft view tests");
     let _activity = objc2_foundation::NSProcessInfo::processInfo().beginActivityWithOptions_reason(

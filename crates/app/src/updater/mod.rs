@@ -26,7 +26,7 @@ pub mod main_actor {
     /// Whether the caller is on the main thread (`pthread_main_np`).
     pub fn is_main_thread() -> bool {
         // SAFETY: `pthread_main_np` has no preconditions.
-        unsafe { libc::pthread_main_np() != 0 }
+        objc2::MainThreadMarker::new().is_some()
     }
 
     /// A value created on the main thread and only ever opened there. The

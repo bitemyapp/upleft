@@ -692,7 +692,7 @@ pub struct PrintRenderer;
 impl PrintRenderer {
     fn attributed_string(html: &str) -> Option<Retained<objc2_foundation::NSAttributedString>> {
         let data = NSData::with_bytes(html.as_bytes());
-        let encoding = NSNumber::new_usize(NSUTF8StringEncoding);
+        let encoding = NSNumber::new_usize(NSUTF8StringEncoding as usize);
         let options: Retained<NSDictionary<NSAttributedStringDocumentReadingOptionKey, AnyObject>> = unsafe {
             NSDictionary::from_slices(
                 &[NSDocumentTypeDocumentOption, NSCharacterEncodingDocumentOption],

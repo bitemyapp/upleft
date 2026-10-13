@@ -56,7 +56,7 @@ use upleft_swift_text as swift;
 use crate::ai::path_resolver::Resolution;
 use crate::assets::asset_resolver::url_with_string;
 
-#[link(name = "Quartz", kind = "framework")]
+#[cfg_attr(target_vendor = "apple", link(name = "Quartz", kind = "framework"))]
 unsafe extern "C" {}
 
 // MARK: - QuickLookRequest

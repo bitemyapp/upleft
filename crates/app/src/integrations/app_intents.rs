@@ -77,6 +77,7 @@ pub fn perform(path: String, completion: impl FnOnce(Result<(), OpenMarkdownInte
 
 // MARK: - Swift shim
 
+#[cfg(target_os = "macos")]
 unsafe extern "C" {
     fn upleft_app_intents_register_open_markdown(handler: Option<OpenMarkdownHandler>);
     fn upleft_app_intents_available() -> bool;
@@ -123,3 +124,8 @@ pub fn declarations_available() -> bool {
     // SAFETY: a plain query.
     unsafe { upleft_app_intents_available() }
 }
+
+#[cfg(not(target_os = "macos"))]
+unsafe fn upleft_app_intents_register_open_markdown(_: Option<OpenMarkdownHandler>) {}
+#[cfg(not(target_os = "macos"))]
+unsafe fn upleft_app_intents_available() -> bool { false }

@@ -194,7 +194,10 @@ impl SearchResult {
 fn replace_edit(range: NSRange, replacement: String) -> TextEdit {
     let mut bytes = [0u8; 16];
     // SAFETY: fills exactly the 16 bytes of `bytes`.
+    #[cfg(target_os = "macos")]
     unsafe { libc::arc4random_buf(bytes.as_mut_ptr().cast(), bytes.len()) };
+    #[cfg(not(target_os = "macos"))]
+    { bytes.copy_from_slice(upleft_core::Uuid::new_v4().as_bytes()); }
     bytes[6] = (bytes[6] & 0x0F) | 0x40;
     bytes[8] = (bytes[8] & 0x3F) | 0x80;
     TextEdit { id: upleft_core::Uuid::from_bytes(bytes), range, replacement, summary: "Replace".into(), rule: None }

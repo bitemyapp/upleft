@@ -974,7 +974,7 @@ const K_FS_EVENT_STREAM_CREATE_FLAG_WATCH_ROOT: u32 = 0x0000_0004;
 const K_FS_EVENT_STREAM_CREATE_FLAG_FILE_EVENTS: u32 = 0x0000_0010;
 const K_FS_EVENT_STREAM_EVENT_ID_SINCE_NOW: u64 = 0xFFFF_FFFF_FFFF_FFFF;
 
-#[link(name = "CoreServices", kind = "framework")]
+#[cfg_attr(target_vendor = "apple", link(name = "CoreServices", kind = "framework"))]
 unsafe extern "C" {
     fn FSEventStreamCreate(
         allocator: *const c_void,

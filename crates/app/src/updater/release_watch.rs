@@ -10,6 +10,7 @@
 //! `docs/KNOWN-DIFFERENCES.md`).
 
 use std::cell::{Cell, RefCell};
+#[cfg(target_os = "macos")]
 use std::ffi::c_void;
 use std::ptr::NonNull;
 use std::rc::{Rc, Weak};
@@ -476,6 +477,7 @@ fn ns_app_is_active() -> bool {
 
 // MARK: - NWPathMonitor
 
+#[cfg(target_os = "macos")]
 #[link(name = "Network", kind = "framework")]
 unsafe extern "C" {
     fn nw_path_monitor_create() -> *mut c_void;
@@ -488,11 +490,14 @@ unsafe extern "C" {
 }
 
 /// `nw_path_status_satisfied`.
+#[cfg(target_os = "macos")]
 const NW_PATH_STATUS_SATISFIED: i32 = 1;
 
 /// Swift's `NWPathMonitor`, over Network.framework's C API.
+#[cfg(target_os = "macos")]
 struct PathMonitor(*mut c_void);
 
+#[cfg(target_os = "macos")]
 impl PathMonitor {
     /// `monitor.pathUpdateHandler = { path in … path.status == .satisfied … }`
     /// then `monitor.start(queue: .main)`.
@@ -522,6 +527,7 @@ impl PathMonitor {
     }
 }
 
+#[cfg(target_os = "macos")]
 impl Drop for PathMonitor {
     fn drop(&mut self) {
         // SAFETY: balances `nw_path_monitor_create`.
@@ -672,4 +678,14 @@ impl ReleaseFeedProbe for ReleaseFeedURLProbe {
         let task = unsafe { self.session.dataTaskWithRequest_completionHandler(&request, &handler) };
         task.resume();
     }
+}
+
+// Network.framework only drives opportunistic updater wake-ups. The normal
+// update timer and explicit checks remain available without it.
+#[cfg(not(target_os = "macos"))]
+struct PathMonitor;
+#[cfg(not(target_os = "macos"))]
+impl PathMonitor {
+    fn start_on_main_queue(_: impl Fn(bool) + 'static) -> Self { Self }
+    fn cancel(&self) {}
 }

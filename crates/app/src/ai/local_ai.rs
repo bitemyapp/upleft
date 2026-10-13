@@ -539,6 +539,7 @@ impl LocalAILatestWinsController {
 pub mod shim {
     use super::*;
 
+    #[cfg(target_os = "macos")]
     unsafe extern "C" {
         fn upleft_local_ai_availability() -> i32;
         fn upleft_local_ai_respond(
@@ -552,6 +553,19 @@ pub mod shim {
         fn upleft_local_ai_cancel(handle: *mut c_void);
         fn upleft_local_ai_release(handle: *mut c_void);
     }
+
+    #[cfg(not(target_os = "macos"))]
+    unsafe fn upleft_local_ai_availability() -> i32 { 3 }
+    #[cfg(not(target_os = "macos"))]
+    unsafe fn upleft_local_ai_respond(_: *const u8, _: isize, _: *const u8, _: isize,
+        context: *mut c_void, completion: extern "C" fn(*mut c_void, i32, *const u8, isize)) -> *mut c_void {
+        completion(context, 3, std::ptr::null(), 0);
+        std::ptr::null_mut()
+    }
+    #[cfg(not(target_os = "macos"))]
+    unsafe fn upleft_local_ai_cancel(_: *mut c_void) {}
+    #[cfg(not(target_os = "macos"))]
+    unsafe fn upleft_local_ai_release(_: *mut c_void) {}
 
     /// What `SystemLanguageModel.default.availability` and the surrounding
     /// guards report.

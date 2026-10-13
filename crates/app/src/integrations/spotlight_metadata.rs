@@ -24,7 +24,7 @@ pub use upleft_spotlight_metadata::spotlight_metadata::{
     AttributeValue, SpotlightMetadata, SpotlightMetadataImporter, SpotlightMetadataKey,
 };
 
-#[link(name = "CoreSpotlight", kind = "framework")]
+#[cfg_attr(target_vendor = "apple", link(name = "CoreSpotlight", kind = "framework"))]
 unsafe extern "C" {}
 
 /// What `indexOpenedDocument(at:)` hands to Core Spotlight.

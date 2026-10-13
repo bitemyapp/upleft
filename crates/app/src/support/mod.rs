@@ -9,6 +9,7 @@ pub mod keybindings;
 pub mod preferences;
 pub mod quick_open_providers;
 pub mod reader_profiles;
+#[cfg_attr(not(target_os = "macos"), path = "speech_unavailable.rs")]
 pub mod speech_coordinator;
 pub mod system_integration;
 pub mod welcome_tour;
