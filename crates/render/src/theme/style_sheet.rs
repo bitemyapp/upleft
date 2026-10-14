@@ -158,6 +158,23 @@ pub struct HostTypography {
     /// reads `$` as nothing but rejects the backslash delimiters, so such a
     /// formula never renders. `None` keeps Downright's behaviour.
     pub inline_math_content: Option<bool>,
+    /// Formulas are typeset through `MathRenderer::host_dialect`, which
+    /// rewrites LaTeX that models write and SwiftMath lacks (`\bigl(`,
+    /// `\lvert`) to what it has, so they render rather than show as source.
+    /// Copying still yields the formula as written. `None` keeps Downright's
+    /// behaviour.
+    pub math_dialect: Option<bool>,
+}
+
+impl HostTypography {
+    /// The LaTeX to typeset for `latex` (see `math_dialect`).
+    pub fn typeset_latex<'a>(&self, latex: &'a str) -> std::borrow::Cow<'a, str> {
+        if self.math_dialect == Some(true) {
+            std::borrow::Cow::Owned(upleft_math::MathRenderer::host_dialect(latex))
+        } else {
+            std::borrow::Cow::Borrowed(latex)
+        }
+    }
 }
 
 /// How a host's code header bar is dressed (`HostTypography::code_look`).

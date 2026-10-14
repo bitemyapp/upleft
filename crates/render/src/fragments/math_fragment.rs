@@ -144,14 +144,15 @@ fn hosted_object(fragment: &DownrightFragment, style: &StyleSheet) -> Option<Obj
     if !context.renders_objects_async.get() {
         return None;
     }
-    Some(async_objects::math(fragment, fragment.payload().detail(), style.math_point_size * 1.12, &style.text))
+    let latex = style.host.typeset_latex(fragment.payload().detail());
+    Some(async_objects::math(fragment, &latex, style.math_point_size * 1.12, &style.text))
 }
 
 fn rendered_image(fragment: &DownrightFragment) -> Option<Retained<NSImage>> {
     let style = fragment.style_sheet()?;
     let point_size = style.math_point_size * 1.12;
     // The padded bitmap keeps ≥ 8pt of air on every edge (§11.3).
-    MathRenderer::image(fragment.payload().detail(), true, point_size, &style.text, 8.0)
+    MathRenderer::image(&style.host.typeset_latex(fragment.payload().detail()), true, point_size, &style.text, 8.0)
 }
 
 /// `DownrightFragment.draw(image:at:in:)`.

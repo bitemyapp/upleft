@@ -165,6 +165,7 @@ Inline math still typesets on the main thread when its paragraph is decorated. T
 | `paragraph_spacing: Option<f64>` | Space after a top-level paragraph, in points. List paragraphs keep their tighter spacing. |
 | `hyphenation_factor: Option<f32>` | `NSParagraphStyle.hyphenationFactor` for paragraphs, list items, quotes, callouts and footnotes. |
 | `code_bleed: Option<f64>` | The lane that code, tables, math and diagrams may use past the prose's trailing edge (88 pt in Downright). A chat column usually wants 0, so prose is as wide as code. |
+| `math_dialect: Option<bool>` | Typesets formulas through `MathRenderer::host_dialect`, which rewrites LaTeX that models write and SwiftMath lacks: `\bigl(`…`\bigr)` and the other sized pairs become `\left`…`\right`, unpaired sizes (`\big\|`) are dropped, `\lvert`, `\rvert` and `\vert` become `\|`, and `\lVert`, `\rVert` become `\Vert`. Downright shows such a formula as source. Copying a formula still yields it as written. |
 
 Omperor's three chat styles, as `hosted_transcript` writes them:
 

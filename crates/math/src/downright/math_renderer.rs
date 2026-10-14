@@ -168,6 +168,69 @@ impl MathRenderer {
         output
     }
 
+    /// LaTeX that models write and SwiftMath lacks, rewritten to what it
+    /// has, for hosts that set `HostTypography::math_dialect`. An Upleft
+    /// extension: Downright fails such a formula and shows its source.
+    ///
+    /// - Sized delimiters: `\bigl`, `\Bigl`, `\biggl` and `\Biggl` become
+    ///   `\left`, and their `r` forms `\right`, so the pair is sized to what
+    ///   it encloses. Should the pairs not balance, or for the unpaired
+    ///   `\big`, `\Big`, `\bigg`, `\Bigg` and their `m` forms, the size is
+    ///   dropped and the delimiter drawn at its natural size.
+    /// - `\lvert`, `\rvert` and `\vert` become `|`; `\lVert` and `\rVert`
+    ///   become `\Vert`.
+    pub fn host_dialect(latex: &str) -> String {
+        Self::rewrite_dialect(latex, true).unwrap_or_else(|| {
+            Self::rewrite_dialect(latex, false).expect("dropping sizes always succeeds")
+        })
+    }
+
+    /// One pass of `host_dialect`; `None` when `pair` was asked for and the
+    /// sized delimiters do not balance.
+    fn rewrite_dialect(latex: &str, pair: bool) -> Option<String> {
+        let characters: Vec<&str> = swift::characters(latex).collect();
+        let mut output = String::with_capacity(latex.len());
+        let mut cursor = 0;
+        let mut open = 0usize;
+
+        while cursor < characters.len() {
+            if characters[cursor] != "\\" {
+                output.push_str(characters[cursor]);
+                cursor += 1;
+                continue;
+            }
+            let command_start = cursor;
+            cursor += 1;
+            while cursor < characters.len() && swift::is_letter(characters[cursor]) {
+                cursor += 1;
+            }
+            let command: String = characters[command_start + 1..cursor].concat();
+            match command.as_str() {
+                "bigl" | "Bigl" | "biggl" | "Biggl" if pair => {
+                    open += 1;
+                    output.push_str("\\left");
+                }
+                "bigr" | "Bigr" | "biggr" | "Biggr" if pair => {
+                    open = open.checked_sub(1)?;
+                    output.push_str("\\right");
+                }
+                "big" | "Big" | "bigg" | "Bigg" | "bigl" | "Bigl" | "biggl" | "Biggl" | "bigr"
+                | "Bigr" | "biggr" | "Biggr" | "bigm" | "Bigm" | "biggm" | "Biggm" => {}
+                "lvert" | "rvert" | "vert" => output.push('|'),
+                // A space ends the command, as the next letter would else
+                // run into it.
+                "lVert" | "rVert" => output.push_str("\\Vert "),
+                _ => output.push_str(&characters[command_start..cursor].concat()),
+            }
+            // A backslash and a symbol (`\{`, `\|`) is one token.
+            if command.is_empty() && cursor < characters.len() {
+                output.push_str(characters[cursor]);
+                cursor += 1;
+            }
+        }
+        (open == 0).then_some(output)
+    }
+
     fn matching_brace(source: &[&str], opening: usize) -> Option<usize> {
         let mut depth = 0;
         let mut cursor = opening;

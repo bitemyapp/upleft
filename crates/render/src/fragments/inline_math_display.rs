@@ -95,7 +95,7 @@ impl InlineMathDisplay {
                 let content_only = style_sheet.host.inline_math_content == Some(true);
                 let latex = InlineMathDisplay::typeset_source(document, range, content_only);
                 let replacement = inline_attachment(
-                    &latex,
+                    &style_sheet.host.typeset_latex(&latex),
                     style_sheet.math_point_size,
                     &style_sheet.text,
                     &style_sheet.body_font(),
